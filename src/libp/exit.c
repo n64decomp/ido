@@ -5,9 +5,9 @@
 #include <rld_interface.h>
 #include <sys/prctl.h>
 
-static const char RO_1000FCD0[] = "@(#)$Header: IRIX 6.4:1263370533 built 11/12/96 at slayer:/slayer_xlv0/ficussg-nov05/root $";
+#include "libp.h"
 
-int _libp_pascal_file_counter; // really a common variable declared in every libp file
+static const char RO_1000FCD0[] = "@(#)$Header: IRIX 6.4:1263370533 built 11/12/96 at slayer:/slayer_xlv0/ficussg-nov05/root $";
 
 extern unsigned long _DYNAMIC_LINK;
     /* Identifies the link type of a program */
