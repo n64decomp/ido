@@ -1,3 +1,5 @@
+#include <stddef.h>
+
 extern unsigned int __Argc;
 extern char *__Argv[];
 
