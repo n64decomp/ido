@@ -1,33 +1,16 @@
-__asm__(R""(
-.macro glabel label
-    .global \label
-    .balign 4
-    \label:
-.endm
+#ifdef __sgi
 
-.data
-# 10011C30
-glabel _stdbuf
-    .word _sibuf
-    .word _sobuf
-    .type _stdbuf, @object
-    .size _stdbuf, .-_stdbuf # 8
+#include <stdio.h>
+#include <unistd.h>
 
-# 10011C38
-glabel _iob
-    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00
-    .word _sobuf
-    .byte 0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00
-    .word _smbuf + 0x10
-    .word 0x00,0x00,0x00,0x00,0x06,0x02
-    .type _iob, @object
-    .size _iob, .-_iob # 46
+extern unsigned char _smbuf[];
 
+unsigned char *_stdbuf[] = {_sibuf, _sobuf};
 
+FILE _iob[] = {
+    {0, NULL, NULL, _IOREAD, STDIN_FILENO},
+    {0, _sobuf, NULL, _IOWRT, STDOUT_FILENO},
+    {0, _smbuf + 0x10, NULL, _IOWRT | _IONBF, STDERR_FILENO}
+};
 
-
-.set noat      # allow manual use of $at
-.set noreorder # don't insert nops after branches
-
-.text
-)"");
+#endif
