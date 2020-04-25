@@ -28,7 +28,8 @@ glabel err
     # 0047B51C ovfwwarning
     # 0047BDF8 dbgerror
     # 0047FF7C skipproc
-    .byte 0x0f,0xb4,0xee,0x64,0x00,0x00,0x00,0x00
+    .word __iob + 0x20
+    .byte 0x00,0x00,0x00,0x00
     .type err, @object
     .size err, .-err # 8
 
