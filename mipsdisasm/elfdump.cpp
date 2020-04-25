@@ -641,14 +641,16 @@ int main(int argc, char *argv[])
    for (auto& item : split.split_items) {
       FILE *item_out = item.filename.empty() ? out : fopen_mkdir(item.filename, "w");
 
-      fprintf(item_out, "%s",
-         "__asm__(R\"\"(\n"
-         ".macro glabel label\n"
-         "    .global \\label\n"
-         "    .balign 4\n"
-         "    \\label:\n"
-         ".endm\n"
-         "\n");
+      if (item_out != out) {
+         fprintf(item_out, "%s",
+            "__asm__(R\"\"(\n"
+            ".macro glabel label\n"
+            "    .global \\label\n"
+            "    .balign 4\n"
+            "    \\label:\n"
+            ".endm\n"
+            "\n");
+      }
 
       // print jtbls etc.
       disasm_print_rodata(item_out, state, item.rodata_start, item.rodata_end);
@@ -679,8 +681,8 @@ int main(int argc, char *argv[])
       mipsdisasm_pass2(item_out, state, r.start, item.text_start, item.text_end);
       print_asm_footer(item_out, args.syntax);
 
-      fprintf(item_out, "%s", ")\"\");\n");
       if (item_out != out) {
+         fprintf(item_out, "%s", ")\"\");\n");
          fclose(item_out);
       }
    }
