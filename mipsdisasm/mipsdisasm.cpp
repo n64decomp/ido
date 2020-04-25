@@ -1104,6 +1104,9 @@ void disasm_print_bss(FILE *out, disasm_state *state, unsigned int vaddr_start, 
       unsigned int end_vaddr = i + 1 < state->bsss.size() ?
                                  state->bsss[i + 1] :
                                  state->bss_vaddr + state->bss_length;
+      if (end_vaddr > vaddr_end) {
+         end_vaddr = vaddr_end;
+      }
       unsigned int padding_to_add = 0;
       if (label != NULL && label->size != 0) {
          padding_to_add = end_vaddr - (vaddr + label->size);

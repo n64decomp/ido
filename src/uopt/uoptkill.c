@@ -343,7 +343,7 @@ glabel overlapping
     # 0044DBC4 indirectaccessed
     # 00458ED0 compareloc
     # 00478FA0 func_00478FA0
-/* 0044938C 3C1C0FBD */  .cpload $25
+/* 0044938C 3C1C0FBD */  .cpload $t9
 /* 00449390 279C0F04 */  
 /* 00449394 0399E021 */  
 /* 00449398 8F8E8A5C */  lw     $t6, %got(lang)($gp)

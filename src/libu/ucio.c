@@ -54,7 +54,7 @@ RO_1000E9F0:
 D_100118F0:
     # 00487624 ugetbufinit
     # 00487668 ugetint
-    .byte 0x10,0x01,0x39,0x20
+    .word B_10013920
 
 D_100118F4:
     # 00487624 ugetbufinit
@@ -81,6 +81,10 @@ D_100118FC:
 
 
 .bss
+B_10013920:
+    # 100118F0 D_100118F0
+    .space 16384
+
 B_10017920:
     # 00487624 ugetbufinit
     # 00487668 ugetint

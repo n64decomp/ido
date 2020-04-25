@@ -71,7 +71,7 @@ B_1001C2A0:
 B_1001C2A4:
     # 0048AE84 st_filebegin
     # 0048B120 st_endallfiles
-    .space 12
+    .space 4
 
 
 .bss

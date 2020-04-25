@@ -150,7 +150,7 @@ B_1001C2C0:
     # 00493C50 read_double
     # 0049462C read_int64
     # 00494E5C read_card64
-    .space 32
+    .space 4
 
 
 .bss

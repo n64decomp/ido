@@ -271,7 +271,7 @@ glabel induction_base
     .space 4
     .size induction_base, 4
     .type induction_base, @object
-    .space 16440
+    .space 56
 
 
 
