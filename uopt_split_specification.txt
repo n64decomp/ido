@@ -1,0 +1,517 @@
+[split]
+#.text            .data             .rodata           .bss              COMMON variables
+
+/crt1.c
+0040B620-0040B748         -                 -                 -         __Argv-__Argc
+
+/uopt/bvectin.c
+0040B750-0040B7D0         -                 -                 -         -
+
+/uopt/feedback.c
+0040B7D0-0040C14C 1000A000-1000A150 1000FD30-1000FD31         -         feedback-feedback_end
+
+/uopt/uoptdata.c
+        -                 -                 -                 -         u-gsptr
+
+/uopt/bitvector.c
+0040C150-0040F8D0         -                 -                 -         -
+
+/uopt/uoptcm.c
+0040F8D0-004120E0 1000A150-1000A1C4 1000FD40-1000FDB0         -         -
+
+/uopt/uoptcopy.c
+004120E0-0041A258 1000A1D0-1000A6DC 1000FDB0-1000FF70         -         -
+
+/uopt/uoptdbg.c
+0041A2A0-0041EC04 1000A6E0-1000AEB4 1000FF70-10010480         -         numlcse-allococ
+
+/uopt/uoptemit.c
+0041EC10-0042EB04 1000AEC0-1000B3C0 10010480-10010690         -         eereg_saved_locs-loopno
+
+/uopt/uoptcontrolflow.c
+0042EB10-0042FE94 1000B3C0-1000B514 10010690-100106E0         -         -
+
+/uopt/uoptind.c
+0042FEA0-00434094 1000B520-1000B680 100106E0-10010810         -         -
+
+/uopt/uoptinit.c
+004340A0-00439BC4 1000B680-1000C200 10010810-10010820         -         st_str-st_str
+
+/libmld/st_feinit.c
+00439BC4-00439BCC         -                 -                 -         -
+
+/uopt/uoptinput.c
+00439C40-004447A0 1000C200-1000C768 10010820-10010910         -         parcount-branched_back_lab
+
+/uopt/uoptitab.c
+004447A0-00447F88 1000C770-1000CAF4 10010910-10010A10         -         -
+
+/uopt/uoptvarusage.c
+00447F90-00449098 1000CB00-1000CB20 10010A10-10010A50 10013138-10013188 -
+
+/uopt/uoptkill.c
+004490B0-0044DF2C 1000CB20-1000CB98 10010A50-10010B10         -         -
+
+/uopt/uoptloc.c
+0044DF30-00453428 1000CBA0-1000CEE4 10010B10-10010BF0         -         -
+
+/uopt/uoptloop.c
+00453430-004562FC 1000CF00-1000CF62 10010BF0-10010C90         -         -
+
+/uopt/uoptmain.c
+00456310-004584D0 1000CF70-1000D1AE 10010C90-10010D00         -         -
+
+/uopt/uoptmtag.c
+004584D0-00458ED0 1000D1B0-1000D204         -         10013188-10013878 -
+
+/uopt/uoptppss.c
+00458ED0-0045C8A0 1000D210-1000D4D4 10010D00-10010D40         -         fsymtab-in_exception_frame
+
+/uopt/uoptprep.c
+0045C8A0-0045D998 1000D4E0-1000D558 10010D40-10010DD0         -         -
+
+/uopt/uoptreg1.c
+0045D9A0-004638B8 1000D560-1000D608 10010DD0-10010F20 10013878-100138E4 passedcl-outonly_parm
+
+/uopt/uoptreg2.c
+004638C0-0046B9E0 1000D610-1000D74C 10010F20-10010FC0         -         unconstrain-livrantemp
+
+/uopt/uoptroll.c
+0046BA10-00474104 1000D750-1000DBE0 10010FC0-10011140         -         i_var_inx-labelmap_unused
+
+/uopt/opt_saved_regs.c
+00474110-00474AEC         -         10011140-10011150         -         eeregsetmask-eeregsetmask
+
+/uopt/uoptscm.c
+00474AF0-00475B74 1000DBE0-1000DC20 10011150-100111D0         -         -
+
+/uopt/uopttail.c
+00475B80-00476AA0 1000DC20-1000DC6D 100111D0-10011200         -         -
+
+/uopt/uopttemp.c
+00476AA0-00476E3C 1000DC70-1000DC88         -                 -         -
+
+/uopt/uopttrep.c
+00476E40-0047B290 1000DC90-1000DE4C 10011200-10011330 100138E4-10017920 -
+
+/uopt/uoptutil.c
+0047B2D0-004806F4 1000DE50-1000E64F 10011330-100118A0         -         -
+
+/libu/uscan.c
+00480700-0048089C         -                 -                 -         -
+
+/libu/uini.c
+004808D0-0048668C 1000E650-1000E8A8         -                 -         -
+
+/libu/bwri.c
+00486690-00487120         -         100118A0-100118F0         -         dtyname-utab
+
+/libu/ucio.c
+00487120-00487954 1000E8B0-1000EA12 100118F0-10011900 10017920-1001C150 -
+
+/libu/bread.c
+00487960-00488118         -         10011900-10011940         -         dtytype-setconstantchars
+
+/libmld/stcu.c
+00488120-00488AF0 1000EA20-1000EC66 10011940-10011944         -         -
+
+/libmld/sterror.c
+00488AF0-00488BAC 1000EC70-1000EC7E         -                 -         -
+
+/libmld/stfd.c
+00488BB0-00489C9C 1000EC80-1000EEC6 10011950-10011A10 1001C150-1001C290 -
+
+/libmld/md_stfd.c
+00489C9C-0048A400 1000EED0-1000EF52 10011A10-10011AC0         -         pcfdcur-pcfdcur
+
+/libmld/sex.c
+0048A400-0048A430         -                 -                 -         -
+
+/libmld/md_mldfunc.c
+0048A430-0048A8DC 1000EF60-1000F046 10011AC0-10011B30         -         -
+
+/libmld/md_stcu.c
+0048A8E0-0048AD6C 1000F050-1000F157         -                 -         st_pchdr-st_pchdr
+
+/libmld/stinternal.c
+0048AD70-0048AE2C 1000F160-1000F172         -                 -         -
+
+/libmld/stfe.c
+0048AE40-0048C6E8 1000F180-1000F208 10011B30-10011B38 1001C290-1001C2A8 Uc-Uc
+
+/libmld/staux.c
+0048C6F0-0048D038 1000F210-1000F26D         -                 -         -
+
+/libmld/stio.c
+0048D050-0048F14C 1000F270-1000F430 10011B40-10011B70 1001C2B0-1001C2C0 -
+
+/libmld/swap.c
+0048F150-00491FCC 1000F430-1000F480         -                 -         -
+
+/libmld/stwarning.c
+00491FD0-00492094 1000F480-1000F496         -                 -         -
+
+/libmld/ldfsymorder.c
+004920A0-00492400         -                 -                 -         -
+
+/libp/textinput.c
+00492410-004954D0 1000F4A0-1000FA3A 10011B70-10011BF0 1001C2C0-1001C2C4 _libp_pascal_file_counter-_libp_ansi_pascal
+
+/libp/textoutput.c
+004954D0-00497BE0 1000FA40-1000FB85 10011BF0-10011C15         -         -
+
+/libp/err.c
+        -                 -         10011C20-10011C28         -         -
+
+/libp/data.c
+        -                 -         10011C30-10011C66         -         -
+
+/libp/output.c
+        -                 -         10012280-10012288         -         -
+
+/libp/new.c
+00497BE0-00497C8C         -                 -                 -         -
+
+/libp/rewrite.c
+00497C90-00497EB0 1000FB90-1000FBD6         -                 -         -
+
+/libp/get_arg.c
+00497EB0-00497F68         -                 -                 -         -
+
+/libp/clock.c
+00497F70-00497FEC         -                 -                 -         -
+
+/libp/reset.c
+00497FF0-004982F4 1000FBE0-1000FBF6         -                 -         -
+
+/libp/get.c
+00498300-004983E4 1000FC00-1000FC4F         -                 -         -
+
+/libp/getbuf.c
+004983F0-004984E8 1000FC50-1000FC6E         -                 -         -
+
+/libp/caseerror.c
+004984F0-00498634 1000FC60-1000FCBE         -                 -         -
+
+/libp/exit.c
+00498640-00498754 1000FCC0-1000FD2C         -                 -         -
+
+/libxmalloc/alloc.c
+00498760-00498BE0         -                 -                 -         malloc_scb-malloc_scb
+
+/libxmalloc/allocator.c
+00498BE0-00499124         -         10012290-100122A0         -         -
+[/split]
+
+[common-order]
+__Argv
+__rld_obj_head
+__Argc
+feedback
+feedback_end
+u
+ustrptr
+list
+strp
+sym
+sourcename
+uopt_uname
+listname
+strpname
+symname
+lastcopiedu
+perm_heap
+heapptr
+optab
+endblock
+table
+ustackbot
+ustack
+parstackbot
+parstack
+tempdisp
+templochead
+temploctail
+curlevel
+curblk
+entnam0
+entnam0len
+realstore
+currealpool
+realdispdiv
+realdispmod
+strpdisplace
+filteringout
+time1
+timer
+lasttime
+graphhead
+graphtail
+curgraphnode
+curstaticno
+curloopno
+stathead
+stattail
+blklev
+staticlinkloc
+nocopy
+nota_candof
+constprop
+maxlabnam
+dft_livbb
+bitposcount
+oldbitposcount
+firstconstbit
+r2bitpos
+varbits
+mvarbits
+fsymbits
+asgnbits
+slvarbits
+slasgnbits
+storeop
+trapop
+trapconstop
+indmults
+boolexp
+savedexp
+trepexp
+used_trepexp
+outmodebits
+notinmodebits
+varfactor_muls
+coloreditems
+vareqv
+asgneqv
+coloredparms
+iscolored12
+iscolored
+old
+workbvect
+bittab
+bittabsize
+pdeftab
+pdeftabsize
+highestmdef
+pdefmax
+pdefno
+itable
+toplevelloops
+looptab
+actnuminteeregs
+actnuminterregs
+setofr2bbs
+setofspills
+firsterreg
+firsteereg
+lasterreg
+lasteereg
+firstparmreg
+numoferregs
+regsinclass
+highesterreg
+highesteereg
+regsinclass1
+seterregs
+seteeregs
+setregs
+usedeeregs
+dftregsused
+regscantpass
+ugen_saved_eeregs
+movcostused
+passedbyfp
+offsetpassedbyint
+tempcount
+aentptr
+curmst
+parnumber
+numintval
+noop
+curlocpg
+curlocln
+loc_not_yet_seen
+bitvectorsize
+bvlivransize
+suppressopt
+o0o1specified
+lang
+inlopt
+listwritten
+symwritten
+usefeedback
+varrefs
+totalvarref
+varreflimit
+curvarreflimit
+docopyprog
+dordstore
+doscm
+docm
+proc_to_print
+at_proc_to_print
+ctrl_head
+dbugno
+genbbnum
+doingcopy
+doassoc
+doprecolor
+dorlodrstropt
+doheurab
+docreatebb
+do_opt_saved_regs
+do_const_in_reg
+docodehoist
+dorecur
+dogenvreg
+dotail
+domtag
+usingregoption
+no_r23
+no_r3
+dowhyuncolor
+nof77alias
+nopalias
+fortran_lang
+moremotion
+verbose
+bigendian
+usefp
+someusefp
+o3opt
+update_sym_file
+warned
+allcallersave
+propagate_ee_saves
+f77_static_flag
+kpic_flag
+dokpicopt
+outofmem
+mipsflag
+mips3_64data
+dwopcode
+g_num
+int_reg_size
+leaf_for_ugen
+has_exc_handler
+can_elim_tail
+use_c_semantics
+stack_reversed
+strictieee
+fp32reg
+multibbunroll
+warn_flag
+entflag
+unroll_times
+unroll_limit
+sizethreshold
+ldatab
+curproc
+indirprocs
+ciaprocs
+gsptr
+numlcse
+numlrdstr
+numgcopy
+numrdstr
+numgcse
+numinsert
+numtstrep
+numsrinc
+numexpr
+numstr
+totvarref
+totvarrref
+totvarsav
+totvarrsav
+totexpref
+totexprref
+totexpsav
+totexprsav
+totvarrlods
+totvarrstrs
+totexprlods
+totexprstrs
+lopttime
+dataflowtime
+dataflowiter
+numdataflow
+regaloctime
+lastdftime
+numlr
+finalnumlr
+numlu
+numoc
+numsplitlu
+numcalls
+contiglr
+aliasedlr
+aliasedlu
+aliasedoc
+numcoloredlr
+numcantcoloredlr
+num0occurlr
+numcalloverheadlr
+numsparselr
+numnotwellformedlr
+allococ
+eereg_saved_locs
+baseregexpr
+baseregbase
+unaltab
+gpunaltab
+spunaltab
+has_ix
+loopno
+st_str
+parcount
+passbyfp
+lastmst
+outparhead
+branched_back_lab
+fsymtab
+gp_rel_tab
+prochead
+lab_just_defined
+in_exception_block
+in_exception_frame
+passedcl
+outonly_parm
+unconstrain
+colorcand
+numofsplits
+bbtab
+formingtab
+forminginx
+formingmax
+livrantemp
+i_var_inx
+incr_stat
+incr_amount
+loopbody
+loopbodyend
+loopheader
+i_var_size
+looplab
+iter_start_bb
+labelmap_head
+labelmap_unused
+eeregsetmask
+dtyname
+mtyname
+noerrorsyet
+u_indent
+utab
+dtytype
+mtytype
+opchashtab
+memorychars
+datachars
+setconstantchars
+pcfdcur
+st_pchdr
+Uc
+_libp_pascal_file_counter
+_libp_ansi_pascal
+malloc_scb
+[/common-order]
