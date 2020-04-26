@@ -24,4 +24,11 @@
 0047BDF8 dbgerror
 0047FF7C skipproc
 */
-struct PascalFile err = {stderr, NULL};
+struct PascalFile err = {
+#ifdef __sgi
+    stderr,
+#else
+    NULL, // Initialize at program startup
+#endif
+    NULL
+};
