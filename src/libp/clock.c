@@ -4,7 +4,7 @@
 /*
 004807E0 getclock
 */
-long clock(void) {
+long clock(int unused) {
     struct tms buf;
 
     if (times(&buf) == -1) {

@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <stdarg.h>
+#include "libmld.h"
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -6,22 +10,6 @@ __asm__(R""(
 .endm
 
 .rdata
-RO_1000EF60:
-    # 0048A430 _md_st_internal
-    .asciz "%s: Internal: "
-
-RO_1000EF70:
-    # 0048A430 _md_st_internal
-    .asciz "\n"
-
-RO_1000EF74:
-    # 0048A4EC _md_st_error
-    .asciz "%s: Error: "
-
-RO_1000EF80:
-    # 0048A4EC _md_st_error
-    .asciz "\n"
-
 RO_1000EF84:
     # 0048A704 _md_st_malloc
     .asciz "_md_st_malloc: cannot allocate item of 1 byte with malloc(3)\n"
@@ -46,133 +34,52 @@ D_10011AFC:
 
 
 
-
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
 
 .text
+)"");
 
-glabel _md_st_internal
-    .ent _md_st_internal
-    # 00489CA0 st_symadd
-    # 00489F38 st_ifd_pcfd
-    # 00489FC4 st_pcfd_ifd
-    # 0048A06C st_psym_ifd_isym
-    # 0048A194 st_paux_iaux
-    # 0048A260 st_str_ifd_iss
-    # 0048A330 st_ppd_ifd_isym
-    # 0048A5E8 _md_st_str_iss
-    # 0048A86C _md_st_setfd
-    # 0048A954 st_extadd
-    # 0048AB3C st_pext_iext
-    # 0048ABB0 st_idn_index_fext
-    # 0048ACEC st_pdn_idn
-/* 0048A430 3C1C0FB9 */  .cpload $t9
-/* 0048A434 279CFE60 */  
-/* 0048A438 0399E021 */  
-/* 0048A43C 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0048A440 8F99807C */  lw    $t9, %call16(fprintf)($gp)
-/* 0048A444 AFA40028 */  sw    $a0, 0x28($sp)
-/* 0048A448 AFA5002C */  sw    $a1, 0x2c($sp)
-/* 0048A44C AFA60030 */  sw    $a2, 0x30($sp)
-/* 0048A450 8F8688F4 */  lw     $a2, %got(st_errname)($gp)
-/* 0048A454 8F858044 */  lw    $a1, %got(RO_1000EF60)($gp)
-/* 0048A458 8F848054 */  lw     $a0, %got(__iob)($gp)
-/* 0048A45C AFBF0024 */  sw    $ra, 0x24($sp)
-/* 0048A460 AFBC0020 */  sw    $gp, 0x20($sp)
-/* 0048A464 AFA70034 */  sw    $a3, 0x34($sp)
-/* 0048A468 8CC60000 */  lw    $a2, ($a2)
-/* 0048A46C 24A5EF60 */  addiu $a1, %lo(RO_1000EF60) # addiu $a1, $a1, -0x10a0
-/* 0048A470 0320F809 */  jalr  $t9
-/* 0048A474 24840020 */   addiu $a0, $a0, 0x20
-/* 0048A478 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0048A47C 8FAE0034 */  lw    $t6, 0x34($sp)
-/* 0048A480 8FAF0038 */  lw    $t7, 0x38($sp)
-/* 0048A484 8F99807C */  lw    $t9, %call16(fprintf)($gp)
-/* 0048A488 8F848054 */  lw     $a0, %got(__iob)($gp)
-/* 0048A48C 8FA50028 */  lw    $a1, 0x28($sp)
-/* 0048A490 8FA6002C */  lw    $a2, 0x2c($sp)
-/* 0048A494 8FA70030 */  lw    $a3, 0x30($sp)
-/* 0048A498 AFAE0010 */  sw    $t6, 0x10($sp)
-/* 0048A49C AFAF0014 */  sw    $t7, 0x14($sp)
-/* 0048A4A0 0320F809 */  jalr  $t9
-/* 0048A4A4 24840020 */   addiu $a0, $a0, 0x20
-/* 0048A4A8 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0048A4AC 8F99807C */  lw    $t9, %call16(fprintf)($gp)
-/* 0048A4B0 8F848054 */  lw     $a0, %got(__iob)($gp)
-/* 0048A4B4 8F858044 */  lw    $a1, %got(RO_1000EF70)($gp)
-/* 0048A4B8 24840020 */  addiu $a0, $a0, 0x20
-/* 0048A4BC 0320F809 */  jalr  $t9
-/* 0048A4C0 24A5EF70 */   addiu $a1, %lo(RO_1000EF70) # addiu $a1, $a1, -0x1090
-/* 0048A4C4 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0048A4C8 24040001 */  li    $a0, 1
-/* 0048A4CC 8F9988A8 */  lw    $t9, %call16(exit)($gp)
-/* 0048A4D0 0320F809 */  jalr  $t9
-/* 0048A4D4 00000000 */   nop   
-/* 0048A4D8 8FBF0024 */  lw    $ra, 0x24($sp)
-/* 0048A4DC 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0048A4E0 27BD0028 */  addiu $sp, $sp, 0x28
-/* 0048A4E4 03E00008 */  jr    $ra
-/* 0048A4E8 00000000 */   nop   
-    .type _md_st_internal, @function
-    .size _md_st_internal, .-_md_st_internal
-    .end _md_st_internal
+/*
+00489CA0 st_symadd
+00489F38 st_ifd_pcfd
+00489FC4 st_pcfd_ifd
+0048A06C st_psym_ifd_isym
+0048A194 st_paux_iaux
+0048A260 st_str_ifd_iss
+0048A330 st_ppd_ifd_isym
+0048A5E8 _md_st_str_iss
+0048A86C _md_st_setfd
+0048A954 st_extadd
+0048AB3C st_pext_iext
+0048ABB0 st_idn_index_fext
+0048ACEC st_pdn_idn
+*/
+void _md_st_internal(const char *arg0, ...) {
+    va_list arglist;
 
-glabel _md_st_error
-    .ent _md_st_error
-    # 0048A704 _md_st_malloc
-    # 0048A8E0 st_cuinit
-/* 0048A4EC 3C1C0FB9 */  .cpload $t9
-/* 0048A4F0 279CFDA4 */  
-/* 0048A4F4 0399E021 */  
-/* 0048A4F8 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0048A4FC 8F99807C */  lw    $t9, %call16(fprintf)($gp)
-/* 0048A500 AFA40028 */  sw    $a0, 0x28($sp)
-/* 0048A504 AFA5002C */  sw    $a1, 0x2c($sp)
-/* 0048A508 AFA60030 */  sw    $a2, 0x30($sp)
-/* 0048A50C 8F8688F4 */  lw     $a2, %got(st_errname)($gp)
-/* 0048A510 8F858044 */  lw    $a1, %got(RO_1000EF74)($gp)
-/* 0048A514 8F848054 */  lw     $a0, %got(__iob)($gp)
-/* 0048A518 AFBF0024 */  sw    $ra, 0x24($sp)
-/* 0048A51C AFBC0020 */  sw    $gp, 0x20($sp)
-/* 0048A520 AFA70034 */  sw    $a3, 0x34($sp)
-/* 0048A524 8CC60000 */  lw    $a2, ($a2)
-/* 0048A528 24A5EF74 */  addiu $a1, %lo(RO_1000EF74) # addiu $a1, $a1, -0x108c
-/* 0048A52C 0320F809 */  jalr  $t9
-/* 0048A530 24840020 */   addiu $a0, $a0, 0x20
-/* 0048A534 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0048A538 8FAE0034 */  lw    $t6, 0x34($sp)
-/* 0048A53C 8FAF0038 */  lw    $t7, 0x38($sp)
-/* 0048A540 8F99807C */  lw    $t9, %call16(fprintf)($gp)
-/* 0048A544 8F848054 */  lw     $a0, %got(__iob)($gp)
-/* 0048A548 8FA50028 */  lw    $a1, 0x28($sp)
-/* 0048A54C 8FA6002C */  lw    $a2, 0x2c($sp)
-/* 0048A550 8FA70030 */  lw    $a3, 0x30($sp)
-/* 0048A554 AFAE0010 */  sw    $t6, 0x10($sp)
-/* 0048A558 AFAF0014 */  sw    $t7, 0x14($sp)
-/* 0048A55C 0320F809 */  jalr  $t9
-/* 0048A560 24840020 */   addiu $a0, $a0, 0x20
-/* 0048A564 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0048A568 8F99807C */  lw    $t9, %call16(fprintf)($gp)
-/* 0048A56C 8F848054 */  lw     $a0, %got(__iob)($gp)
-/* 0048A570 8F858044 */  lw    $a1, %got(RO_1000EF80)($gp)
-/* 0048A574 24840020 */  addiu $a0, $a0, 0x20
-/* 0048A578 0320F809 */  jalr  $t9
-/* 0048A57C 24A5EF80 */   addiu $a1, %lo(RO_1000EF80) # addiu $a1, $a1, -0x1080
-/* 0048A580 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0048A584 24040001 */  li    $a0, 1
-/* 0048A588 8F9988A8 */  lw    $t9, %call16(exit)($gp)
-/* 0048A58C 0320F809 */  jalr  $t9
-/* 0048A590 00000000 */   nop   
-/* 0048A594 8FBF0024 */  lw    $ra, 0x24($sp)
-/* 0048A598 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0048A59C 27BD0028 */  addiu $sp, $sp, 0x28
-/* 0048A5A0 03E00008 */  jr    $ra
-/* 0048A5A4 00000000 */   nop   
-    .type _md_st_error, @function
-    .size _md_st_error, .-_md_st_error
-    .end _md_st_error
+    fprintf(stderr, "%s: Internal: ", st_errname);
+    va_start(arglist, format);
+    vfprintf(stderr, format, arglist);
+    fprintf(stderr, "\n");
+    exit(1);
+}
 
+/*
+0048A704 _md_st_malloc
+0048A8E0 st_cuinit
+*/
+void _md_st_error(const char *arg0, ...) {
+    va_list arglist;
+
+    fprintf(stderr, "%s: Error: ", st_errname);
+    va_start(arglist, format);
+    vfprintf(stderr, format, arglist);
+    fprintf(stderr, "\n");
+    exit(1);
+}
+
+__asm__(R""(
 glabel _md_st_str_extiss
     .ent _md_st_str_extiss
     # 0048A260 st_str_ifd_iss

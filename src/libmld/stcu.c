@@ -40,7 +40,11 @@ RO_1000EBA8:
 
 RO_1000EBE4:
     # 00488984 st_pext_dn
-    .asciz "st_pext_dn: index out of range (%d)\n\x00\x00\x00\x00libmld"
+    .asciz "st_pext_dn: index out of range (%d)\n"
+
+RO_1000EC0C:
+    # 10011940
+    .asciz "libmld"
 
 RO_1000EC14:
     # 00488A48 st_setmsgname
@@ -55,7 +59,7 @@ glabel st_errname
     # 0048A4EC _md_st_error
     # 0048AD70 st_internal
     # 00491FD0 st_warning
-    .byte 0x10,0x00,0xec,0x0c
+    .word RO_1000EC0C
     .type st_errname, @object
     .size st_errname, .-st_errname # 4
 

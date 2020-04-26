@@ -76,25 +76,14 @@ glabel opchashtab
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
 
-.text
-glabel resetur
-    .ent resetur
-/* 00487960 3C1C0FB9 */  .cpload $t9
-/* 00487964 279C2930 */  
-/* 00487968 0399E021 */  
-/* 0048796C 8F998764 */  lw    $t9, %call16(ugetclose)($gp)
-/* 00487970 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 00487974 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 00487978 0320F809 */  jalr  $t9
-/* 0048797C AFBC0018 */   sw    $gp, 0x18($sp)
-/* 00487980 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 00487984 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00487988 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0048798C 03E00008 */  jr    $ra
-/* 00487990 00000000 */   nop   
-    .type resetur, @function
-    .size resetur, .-resetur
-    .end resetur
+)"");
+
+// unused
+void resetur(void) {
+    ugetclose();
+}
+
+__asm__(R""(
 
     .type func_00487994, @function
 func_00487994:
