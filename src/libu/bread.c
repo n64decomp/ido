@@ -1,3 +1,5 @@
+#include "libu.h"
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -76,6 +78,7 @@ glabel opchashtab
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
 
+.text
 )"");
 
 // unused
@@ -84,6 +87,7 @@ void resetur(void) {
 }
 
 __asm__(R""(
+.set noreorder
 
     .type func_00487994, @function
 func_00487994:

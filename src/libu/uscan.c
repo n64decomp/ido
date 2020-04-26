@@ -27,7 +27,7 @@ void openstdout(struct PascalFile *file) {
 }
 
 // unused
-void openstdout(struct PascalFile *file) {
+void openstdin(struct PascalFile *file) {
 }
 
 // unused

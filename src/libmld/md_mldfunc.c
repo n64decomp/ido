@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "libmld.h"
@@ -55,7 +56,7 @@ D_10011AFC:
 0048ABB0 st_idn_index_fext
 0048ACEC st_pdn_idn
 */
-void _md_st_internal(const char *arg0, ...) {
+void _md_st_internal(const char *format, ...) {
     va_list arglist;
 
     fprintf(stderr, "%s: Internal: ", st_errname);
@@ -69,7 +70,7 @@ void _md_st_internal(const char *arg0, ...) {
 0048A704 _md_st_malloc
 0048A8E0 st_cuinit
 */
-void _md_st_error(const char *arg0, ...) {
+void _md_st_error(const char *format, ...) {
     va_list arglist;
 
     fprintf(stderr, "%s: Error: ", st_errname);
@@ -80,6 +81,7 @@ void _md_st_error(const char *arg0, ...) {
 }
 
 __asm__(R""(
+.set noreorder
 glabel _md_st_str_extiss
     .ent _md_st_str_extiss
     # 0048A260 st_str_ifd_iss
