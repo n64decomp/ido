@@ -12,5 +12,6 @@ void st_warning(const char *format, ...) {
     fprintf(stderr, "%s: Warning: ", st_errname);
     va_start(arglist, format);
     vfprintf(stderr, format, arglist);
+    va_end(arglist);
     fprintf(stderr, "\n");
 }

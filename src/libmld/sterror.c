@@ -18,6 +18,7 @@ void st_error(const char *format, ...) {
     fprintf(stderr, "%s: Error: ", st_errname);
     va_start(arglist, format);
     vfprintf(stderr, format, arglist);
+    va_end(arglist);
     fprintf(stderr, "\n");
     exit(1);
 }

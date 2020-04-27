@@ -1,3 +1,8 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "libmld.h"
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -45,10 +50,6 @@ RO_1000EBE4:
 RO_1000EC0C:
     # 10011940
     .asciz "libmld"
-
-RO_1000EC14:
-    # 00488A48 st_setmsgname
-    .asciz "libmld: Internal: cannot allocate to initialize component name for libmld errors\n"
 
 .data
 # 10011940
@@ -775,52 +776,14 @@ glabel st_iextmax
     .size st_iextmax, .-st_iextmax
     .end st_iextmax
 
-glabel st_setmsgname
-    .ent st_setmsgname
-/* 00488A48 3C1C0FB9 */  .cpload $t9
-/* 00488A4C 279C1848 */  
-/* 00488A50 0399E021 */  
-/* 00488A54 8F9980C0 */  lw    $t9, %call16(strlen)($gp)
-/* 00488A58 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 00488A5C AFBF001C */  sw    $ra, 0x1c($sp)
-/* 00488A60 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 00488A64 0320F809 */  jalr  $t9
-/* 00488A68 AFA40020 */   sw    $a0, 0x20($sp)
-/* 00488A6C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00488A70 24440001 */  addiu $a0, $v0, 1
-/* 00488A74 8F9980C8 */  lw    $t9, %call16(malloc)($gp)
-/* 00488A78 0320F809 */  jalr  $t9
-/* 00488A7C 00000000 */   nop   
-/* 00488A80 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00488A84 00402025 */  move  $a0, $v0
-/* 00488A88 8F8388F4 */  lw     $v1, %got(st_errname)($gp)
-/* 00488A8C 1440000F */  bnez  $v0, .L00488ACC
-/* 00488A90 AC620000 */   sw    $v0, ($v1)
-/* 00488A94 8F99807C */  lw    $t9, %call16(fprintf)($gp)
-/* 00488A98 8F848054 */  lw     $a0, %got(__iob)($gp)
-/* 00488A9C 8F858044 */  lw    $a1, %got(RO_1000EC14)($gp)
-/* 00488AA0 24840020 */  addiu $a0, $a0, 0x20
-/* 00488AA4 0320F809 */  jalr  $t9
-/* 00488AA8 24A5EC14 */   addiu $a1, %lo(RO_1000EC14) # addiu $a1, $a1, -0x13ec
-/* 00488AAC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00488AB0 24040001 */  li    $a0, 1
-/* 00488AB4 8F9988A8 */  lw    $t9, %call16(exit)($gp)
-/* 00488AB8 0320F809 */  jalr  $t9
-/* 00488ABC 00000000 */   nop   
-/* 00488AC0 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00488AC4 8F8488F4 */  lw     $a0, %got(st_errname)($gp)
-/* 00488AC8 8C840000 */  lw    $a0, ($a0)
-.L00488ACC:
-/* 00488ACC 8F9980C4 */  lw    $t9, %call16(strcpy)($gp)
-/* 00488AD0 8FA50020 */  lw    $a1, 0x20($sp)
-/* 00488AD4 0320F809 */  jalr  $t9
-/* 00488AD8 00000000 */   nop   
-/* 00488ADC 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 00488AE0 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00488AE4 27BD0020 */  addiu $sp, $sp, 0x20
-/* 00488AE8 03E00008 */  jr    $ra
-/* 00488AEC 00000000 */   nop   
-    .type st_setmsgname, @function
-    .size st_setmsgname, .-st_setmsgname
-    .end st_setmsgname
 )"");
+
+// unused
+void st_setmsgname(const char *name) {
+    st_errname = malloc(strlen(name) + 1);
+    if (st_errname == NULL) {
+        fprintf(stderr, "libmld: Internal: cannot allocate to initialize component name for libmld errors\n");
+        exit(1);
+    }
+    strcpy(st_errname, name);
+}

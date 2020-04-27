@@ -4,7 +4,9 @@ __asm__(R""(
     .balign 4
     \label:
 .endm
+)"");
 
+#if 0
 .rdata
 RO_1000F430:
     # 00491140 swap_aux
@@ -20,9 +22,10 @@ jtbl_1000F464:
     .gpword .L0049135C
     .gpword .L0049135C
     .gpword .L0049135C
+#endif
 
 
-
+__asm__(R""(
 
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
@@ -2188,6 +2191,8 @@ glabel swap_opt
     .size swap_opt, .-swap_opt
     .end swap_opt
 
+)"");
+#if 0
 glabel swap_aux
     .ent swap_aux
 /* 00491140 3C1C0FB9 */  .cpload $t9
@@ -3223,3 +3228,4 @@ glabel swap_shdr
     .size swap_shdr, .-swap_shdr
     .end swap_shdr
 )"");
+#endif

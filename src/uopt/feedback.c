@@ -1,3 +1,12 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include "libxmalloc/xmalloc.h"
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -6,34 +15,6 @@ __asm__(R""(
 .endm
 
 .rdata
-RO_1000A000:
-    # 0040B7D0 func_0040B7D0
-    .asciz "%s: %s, "
-
-RO_1000A00C:
-    # 0040B7D0 func_0040B7D0
-    .asciz "%s: error %d (error code unknown), "
-
-RO_1000A030:
-    # 0040B930 read_feedback_file
-    .asciz "opening feedback input %s."
-
-RO_1000A04C:
-    # 0040B930 read_feedback_file
-    .asciz "getting status on %s."
-
-RO_1000A064:
-    # 0040B930 read_feedback_file
-    .asciz "%s: unable to allocate %d byte feedback buffer.\n"
-
-RO_1000A098:
-    # 0040B930 read_feedback_file
-    .asciz "reading feedback file %s."
-
-RO_1000A0B4:
-    # 0040B930 read_feedback_file
-    .asciz "%s: feedback file stamp = %x, not %x.\n"
-
 RO_1000A0DC:
     # 0040BCA0 path_blockno
     .asciz "name/length inconsistency in feedback file.\n"
@@ -52,248 +33,82 @@ glabel sym_file_updated
     .size sym_file_updated, .-sym_file_updated # 1
 
 
-
-.bss
-    .balign 4
-# 1001C2EC
-glabel feedback
-    # 0040B930 read_feedback_file
-    # 0042EB10 incorp_feedback
-    .space 4
-    .size feedback, 4
-    .type feedback, @object
-
-    .balign 4
-# 1001C2F0
-glabel feedback_end
-    # 0040B930 read_feedback_file
-    # 0042EB10 incorp_feedback
-    .space 4
-    .size feedback_end, 4
-    .type feedback_end, @object
-
-
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
 
 .text
+)"");
 
-    .type func_0040B7D0, @function
-func_0040B7D0:
-    # 0040B930 read_feedback_file
-/* 0040B7D0 3C1C0FC1 */  .cpload $t9
-/* 0040B7D4 279CEAC0 */  
-/* 0040B7D8 0399E021 */  
-/* 0040B7DC 8F8E8060 */  lw     $t6, %got(errno)($gp)
-/* 0040B7E0 8F8F805C */  lw     $t7, %got(sys_nerr)($gp)
-/* 0040B7E4 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0040B7E8 8DCE0000 */  lw    $t6, ($t6)
-/* 0040B7EC 8DEF0000 */  lw    $t7, ($t7)
-/* 0040B7F0 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0040B7F4 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0040B7F8 01CF082B */  sltu  $at, $t6, $t7
-/* 0040B7FC AFA40028 */  sw    $a0, 0x28($sp)
-/* 0040B800 AFA5002C */  sw    $a1, 0x2c($sp)
-/* 0040B804 AFA60030 */  sw    $a2, 0x30($sp)
-/* 0040B808 AFA70034 */  sw    $a3, 0x34($sp)
-/* 0040B80C 10200010 */  beqz  $at, .L0040B850
-/* 0040B810 AFAE0020 */   sw    $t6, 0x20($sp)
-/* 0040B814 8F888058 */  lw     $t0, %got(sys_errlist)($gp)
-/* 0040B818 8F988940 */  lw     $t8, %got(__Argv)($gp)
-/* 0040B81C 000EC880 */  sll   $t9, $t6, 2
-/* 0040B820 03284821 */  addu  $t1, $t9, $t0
-/* 0040B824 8F99807C */  lw    $t9, %call16(fprintf)($gp)
-/* 0040B828 8F848054 */  lw     $a0, %got(__iob)($gp)
-/* 0040B82C 8F858044 */  lw    $a1, %got(RO_1000A000)($gp)
-/* 0040B830 8F180000 */  lw    $t8, ($t8)
-/* 0040B834 8D270000 */  lw    $a3, ($t1)
-/* 0040B838 24840020 */  addiu $a0, $a0, 0x20
-/* 0040B83C 24A5A000 */  addiu $a1, %lo(RO_1000A000) # addiu $a1, $a1, -0x6000
-/* 0040B840 0320F809 */  jalr  $t9
-/* 0040B844 8F060000 */   lw    $a2, ($t8)
-/* 0040B848 1000000C */  b     .L0040B87C
-/* 0040B84C 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0040B850:
-/* 0040B850 8F8A8940 */  lw     $t2, %got(__Argv)($gp)
-/* 0040B854 8F99807C */  lw    $t9, %call16(fprintf)($gp)
-/* 0040B858 8F848054 */  lw     $a0, %got(__iob)($gp)
-/* 0040B85C 8F858044 */  lw    $a1, %got(RO_1000A00C)($gp)
-/* 0040B860 8D4A0000 */  lw    $t2, ($t2)
-/* 0040B864 8FA70020 */  lw    $a3, 0x20($sp)
-/* 0040B868 24840020 */  addiu $a0, $a0, 0x20
-/* 0040B86C 24A5A00C */  addiu $a1, %lo(RO_1000A00C) # addiu $a1, $a1, -0x5ff4
-/* 0040B870 0320F809 */  jalr  $t9
-/* 0040B874 8D460000 */   lw    $a2, ($t2)
-/* 0040B878 8FBC0018 */  lw    $gp, 0x18($sp)
-.L0040B87C:
-/* 0040B87C 8F998080 */  lw    $t9, %call16(_doprnt)($gp)
-/* 0040B880 8F868054 */  lw     $a2, %got(__iob)($gp)
-/* 0040B884 8FA40028 */  lw    $a0, 0x28($sp)
-/* 0040B888 27A5002C */  addiu $a1, $sp, 0x2c
-/* 0040B88C 0320F809 */  jalr  $t9
-/* 0040B890 24C60020 */   addiu $a2, $a2, 0x20
-/* 0040B894 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0040B898 8F8B8064 */  lw     $t3, %got(__us_rsthread_stdio)($gp)
-/* 0040B89C 8D6B0000 */  lw    $t3, ($t3)
-/* 0040B8A0 11600008 */  beqz  $t3, .L0040B8C4
-/* 0040B8A4 00000000 */   nop   
-/* 0040B8A8 8F998084 */  lw    $t9, %call16(__semputc)($gp)
-/* 0040B8AC 8F858054 */  lw     $a1, %got(__iob)($gp)
-/* 0040B8B0 2404000A */  li    $a0, 10
-/* 0040B8B4 0320F809 */  jalr  $t9
-/* 0040B8B8 24A50020 */   addiu $a1, $a1, 0x20
-/* 0040B8BC 10000013 */  b     .L0040B90C
-/* 0040B8C0 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0040B8C4:
-/* 0040B8C4 8F828054 */  lw     $v0, %got(__iob)($gp)
-/* 0040B8C8 8C4C0020 */  lw    $t4, 0x20($v0)
-/* 0040B8CC 258DFFFF */  addiu $t5, $t4, -1
-/* 0040B8D0 05A10008 */  bgez  $t5, .L0040B8F4
-/* 0040B8D4 AC4D0020 */   sw    $t5, 0x20($v0)
-/* 0040B8D8 8F998088 */  lw    $t9, %call16(__flsbuf)($gp)
-/* 0040B8DC 8F858054 */  lw     $a1, %got(__iob)($gp)
-/* 0040B8E0 2404000A */  li    $a0, 10
-/* 0040B8E4 0320F809 */  jalr  $t9
-/* 0040B8E8 24A50020 */   addiu $a1, $a1, 0x20
-/* 0040B8EC 10000007 */  b     .L0040B90C
-/* 0040B8F0 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0040B8F4:
-/* 0040B8F4 8C4E0024 */  lw    $t6, 0x24($v0)
-/* 0040B8F8 2418000A */  li    $t8, 10
-/* 0040B8FC A1D80000 */  sb    $t8, ($t6)
-/* 0040B900 8C590024 */  lw    $t9, 0x24($v0)
-/* 0040B904 27280001 */  addiu $t0, $t9, 1
-/* 0040B908 AC480024 */  sw    $t0, 0x24($v0)
-.L0040B90C:
-/* 0040B90C 8F9988A8 */  lw    $t9, %call16(exit)($gp)
-/* 0040B910 24040001 */  li    $a0, 1
-/* 0040B914 0320F809 */  jalr  $t9
-/* 0040B918 00000000 */   nop   
-/* 0040B91C 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0040B920 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0040B924 27BD0028 */  addiu $sp, $sp, 0x28
-/* 0040B928 03E00008 */  jr    $ra
-/* 0040B92C 00000000 */   nop   
+/*
+0040B930 read_feedback_file
+0042EB10 incorp_feedback
+*/
+unsigned char *feedback; // TODO: pointer to a feedback struct
 
-glabel read_feedback_file
-    .ent read_feedback_file
-    # 00434720 processargs
-/* 0040B930 3C1C0FC1 */  .cpload $t9
-/* 0040B934 279CE960 */  
-/* 0040B938 0399E021 */  
-/* 0040B93C 8F99808C */  lw    $t9, %call16(open)($gp)
-/* 0040B940 27BDFF40 */  addiu $sp, $sp, -0xc0
-/* 0040B944 AFBF0024 */  sw    $ra, 0x24($sp)
-/* 0040B948 AFBC0020 */  sw    $gp, 0x20($sp)
-/* 0040B94C AFA400C0 */  sw    $a0, 0xc0($sp)
-/* 0040B950 0320F809 */  jalr  $t9
-/* 0040B954 00002825 */   move  $a1, $zero
-/* 0040B958 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0040B95C 04410008 */  bgez  $v0, .L0040B980
-/* 0040B960 AFA200BC */   sw    $v0, 0xbc($sp)
-/* 0040B964 8F998018 */  lw    $t9, %got(func_0040B7D0)($gp)
-/* 0040B968 8F848044 */  lw    $a0, %got(RO_1000A030)($gp)
-/* 0040B96C 8FA500C0 */  lw    $a1, 0xc0($sp)
-/* 0040B970 2739B7D0 */  addiu $t9, %lo(func_0040B7D0) # addiu $t9, $t9, -0x4830
-/* 0040B974 0320F809 */  jalr  $t9
-/* 0040B978 2484A030 */   addiu $a0, %lo(RO_1000A030) # addiu $a0, $a0, -0x5fd0
-/* 0040B97C 8FBC0020 */  lw    $gp, 0x20($sp)
-.L0040B980:
-/* 0040B980 8F998090 */  lw    $t9, %call16(fstat)($gp)
-/* 0040B984 8FA400BC */  lw    $a0, 0xbc($sp)
-/* 0040B988 27A50034 */  addiu $a1, $sp, 0x34
-/* 0040B98C 0320F809 */  jalr  $t9
-/* 0040B990 00000000 */   nop   
-/* 0040B994 04410008 */  bgez  $v0, .L0040B9B8
-/* 0040B998 8FBC0020 */   lw    $gp, 0x20($sp)
-/* 0040B99C 8F998018 */  lw    $t9, %got(func_0040B7D0)($gp)
-/* 0040B9A0 8F848044 */  lw    $a0, %got(RO_1000A04C)($gp)
-/* 0040B9A4 8FA500C0 */  lw    $a1, 0xc0($sp)
-/* 0040B9A8 2739B7D0 */  addiu $t9, %lo(func_0040B7D0) # addiu $t9, $t9, -0x4830
-/* 0040B9AC 0320F809 */  jalr  $t9
-/* 0040B9B0 2484A04C */   addiu $a0, %lo(RO_1000A04C) # addiu $a0, $a0, -0x5fb4
-/* 0040B9B4 8FBC0020 */  lw    $gp, 0x20($sp)
-.L0040B9B8:
-/* 0040B9B8 8F9988B4 */  lw    $t9, %call16(xmalloc)($gp)
-/* 0040B9BC 8FA40064 */  lw    $a0, 0x64($sp)
-/* 0040B9C0 0320F809 */  jalr  $t9
-/* 0040B9C4 00000000 */   nop   
-/* 0040B9C8 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0040B9CC 14400011 */  bnez  $v0, .L0040BA14
-/* 0040B9D0 AFA20030 */   sw    $v0, 0x30($sp)
-/* 0040B9D4 8F8E8940 */  lw     $t6, %got(__Argv)($gp)
-/* 0040B9D8 8F99807C */  lw    $t9, %call16(fprintf)($gp)
-/* 0040B9DC 8F848054 */  lw     $a0, %got(__iob)($gp)
-/* 0040B9E0 8F858044 */  lw    $a1, %got(RO_1000A064)($gp)
-/* 0040B9E4 8DCE0000 */  lw    $t6, ($t6)
-/* 0040B9E8 8FA70064 */  lw    $a3, 0x64($sp)
-/* 0040B9EC 24840020 */  addiu $a0, $a0, 0x20
-/* 0040B9F0 24A5A064 */  addiu $a1, %lo(RO_1000A064) # addiu $a1, $a1, -0x5f9c
-/* 0040B9F4 0320F809 */  jalr  $t9
-/* 0040B9F8 8DC60000 */   lw    $a2, ($t6)
-/* 0040B9FC 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0040BA00 24040001 */  li    $a0, 1
-/* 0040BA04 8F9988A8 */  lw    $t9, %call16(exit)($gp)
-/* 0040BA08 0320F809 */  jalr  $t9
-/* 0040BA0C 00000000 */   nop   
-/* 0040BA10 8FBC0020 */  lw    $gp, 0x20($sp)
-.L0040BA14:
-/* 0040BA14 8F998094 */  lw    $t9, %call16(read)($gp)
-/* 0040BA18 8FA400BC */  lw    $a0, 0xbc($sp)
-/* 0040BA1C 8FA50030 */  lw    $a1, 0x30($sp)
-/* 0040BA20 0320F809 */  jalr  $t9
-/* 0040BA24 8FA60064 */   lw    $a2, 0x64($sp)
-/* 0040BA28 04410008 */  bgez  $v0, .L0040BA4C
-/* 0040BA2C 8FBC0020 */   lw    $gp, 0x20($sp)
-/* 0040BA30 8F998018 */  lw    $t9, %got(func_0040B7D0)($gp)
-/* 0040BA34 8F848044 */  lw    $a0, %got(RO_1000A098)($gp)
-/* 0040BA38 8FA500C0 */  lw    $a1, 0xc0($sp)
-/* 0040BA3C 2739B7D0 */  addiu $t9, %lo(func_0040B7D0) # addiu $t9, $t9, -0x4830
-/* 0040BA40 0320F809 */  jalr  $t9
-/* 0040BA44 2484A098 */   addiu $a0, %lo(RO_1000A098) # addiu $a0, $a0, -0x5f68
-/* 0040BA48 8FBC0020 */  lw    $gp, 0x20($sp)
-.L0040BA4C:
-/* 0040BA4C 8F998098 */  lw    $t9, %call16(close)($gp)
-/* 0040BA50 8FA400BC */  lw    $a0, 0xbc($sp)
-/* 0040BA54 0320F809 */  jalr  $t9
-/* 0040BA58 00000000 */   nop   
-/* 0040BA5C 8FA80030 */  lw    $t0, 0x30($sp)
-/* 0040BA60 3C036465 */  lui   $v1, 0x6465
-/* 0040BA64 34636566 */  ori   $v1, $v1, 0x6566
-/* 0040BA68 8D070000 */  lw    $a3, ($t0)
-/* 0040BA6C 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0040BA70 10670012 */  beq   $v1, $a3, .L0040BABC
-/* 0040BA74 00000000 */   nop   
-/* 0040BA78 8F8F8940 */  lw     $t7, %got(__Argv)($gp)
-/* 0040BA7C 8F99807C */  lw    $t9, %call16(fprintf)($gp)
-/* 0040BA80 8F848054 */  lw     $a0, %got(__iob)($gp)
-/* 0040BA84 8DEF0000 */  lw    $t7, ($t7)
-/* 0040BA88 8F858044 */  lw    $a1, %got(RO_1000A0B4)($gp)
-/* 0040BA8C 24840020 */  addiu $a0, $a0, 0x20
-/* 0040BA90 8DE60000 */  lw    $a2, ($t7)
-/* 0040BA94 AFA30010 */  sw    $v1, 0x10($sp)
-/* 0040BA98 0320F809 */  jalr  $t9
-/* 0040BA9C 24A5A0B4 */   addiu $a1, %lo(RO_1000A0B4) # addiu $a1, $a1, -0x5f4c
-/* 0040BAA0 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0040BAA4 24040001 */  li    $a0, 1
-/* 0040BAA8 8F9988A8 */  lw    $t9, %call16(exit)($gp)
-/* 0040BAAC 0320F809 */  jalr  $t9
-/* 0040BAB0 00000000 */   nop   
-/* 0040BAB4 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0040BAB8 8FA80030 */  lw    $t0, 0x30($sp)
-.L0040BABC:
-/* 0040BABC 8F818948 */  lw     $at, %got(feedback)($gp)
-/* 0040BAC0 8FB80064 */  lw    $t8, 0x64($sp)
-/* 0040BAC4 8FBF0024 */  lw    $ra, 0x24($sp)
-/* 0040BAC8 AC280000 */  sw    $t0, ($at)
-/* 0040BACC 8F81894C */  lw     $at, %got(feedback_end)($gp)
-/* 0040BAD0 0118C821 */  addu  $t9, $t0, $t8
-/* 0040BAD4 27BD00C0 */  addiu $sp, $sp, 0xc0
-/* 0040BAD8 03E00008 */  jr    $ra
-/* 0040BADC AC390000 */   sw    $t9, ($at)
-    .type read_feedback_file, @function
-    .size read_feedback_file, .-read_feedback_file
-    .end read_feedback_file
+/*
+0040B930 read_feedback_file
+0042EB10 incorp_feedback
+*/
+unsigned char *feedback_end; // TODO: pointer to a feedback struct
+
+extern char *__Argv[];
+
+/*
+0040B930 read_feedback_file
+*/
+static void func_0040B7D0(const char *format, ...) {
+    va_list arglist;
+
+    if (errno < sys_nerr) {
+        fprintf(stderr, "%s: %s, ", __Argv[0], sys_errlist[errno]);
+    } else {
+        fprintf(stderr, "%s: error %d (error code unknown), ", __Argv[0], errno);
+    }
+    va_start(arglist, format);
+#ifdef __sgi
+    _doprnt(format, arglist, stderr);
+#else
+    vfprintf(stderr, format, arglist);
+#endif
+    va_end(arglist);
+    putc('\n', stderr);
+    exit(1);
+}
+
+/*
+00434720 processargs
+*/
+void read_feedback_file(const char *path) {
+    int fd;
+    struct stat statbuf;
+    unsigned char *filebuf;
+
+    fd = open(path, O_RDONLY);
+    if (fd < 0) {
+        func_0040B7D0("opening feedback input %s.", path);
+    }
+    if (fstat(fd, &statbuf) < 0) {
+        func_0040B7D0("getting status on %s.", path);
+    }
+    filebuf = xmalloc(statbuf.st_size);
+    if (filebuf == NULL) {
+        fprintf(stderr, "%s: unable to allocate %d byte feedback buffer.\n", __Argv[0], (int)statbuf.st_size);
+        exit(1);
+    }
+    if (read(fd, filebuf, statbuf.st_size) < 0) {
+        func_0040B7D0("reading feedback file %s.", path);
+    }
+    close(fd);
+    if (0x64656566 != *(int *)filebuf) {
+        fprintf(stderr, "%s: feedback file stamp = %x, not %x.\n", __Argv[0], *(int *)filebuf, 0x64656566);
+        exit(1);
+    }
+    feedback = filebuf;
+    feedback_end = filebuf + statbuf.st_size;
+}
+
+__asm__(R""(
+.set noreorder
 
     .type func_0040BAE0, @function
 func_0040BAE0:
@@ -477,9 +292,29 @@ glabel path_blockno
 /* 0040BD54 5058000E */  beql  $v0, $t8, .L0040BD90
 /* 0040BD58 AE000000 */   sw    $zero, ($s0)
 /* 0040BD5C 8F99807C */  lw    $t9, %call16(fprintf)($gp)
+)"");
+#ifdef __sgi
+__asm__(R""(
 /* 0040BD60 8F848054 */  lw     $a0, %got(__iob)($gp)
+)"");
+#else
+__asm__(R""(
+                         lw     $a0, %got(stderr)($gp)
+)"");
+#endif
+__asm__(R""(
 /* 0040BD64 8F858044 */  lw    $a1, %got(RO_1000A0DC)($gp)
+)"");
+#ifdef __sgi
+__asm__(R""(
 /* 0040BD68 24840020 */  addiu $a0, $a0, 0x20
+)"");
+#else
+__asm__(R""(
+                         lw    $a0, ($a0)
+)"");
+#endif
+__asm__(R""(
 /* 0040BD6C 0320F809 */  jalr  $t9
 /* 0040BD70 24A5A0DC */   addiu $a1, %lo(RO_1000A0DC) # addiu $a1, $a1, -0x5f24
 /* 0040BD74 8FBC0034 */  lw    $gp, 0x34($sp)
@@ -654,10 +489,30 @@ glabel path_blockno
 /* 0040BFDC 1614000B */  bne   $s0, $s4, .L0040C00C
 /* 0040BFE0 3C137FFF */   lui   $s3, 0x7fff
 /* 0040BFE4 8F99807C */  lw    $t9, %call16(fprintf)($gp)
+)"");
+#ifdef __sgi
+__asm__(R""(
 /* 0040BFE8 8F848054 */  lw     $a0, %got(__iob)($gp)
+)"");
+#else
+__asm__(R""(
+                         lw    $a0, %got(stderr)($gp)
+)"");
+#endif
+__asm__(R""(
 /* 0040BFEC 8F858044 */  lw    $a1, %got(RO_1000A10C)($gp)
 /* 0040BFF0 02E03025 */  move  $a2, $s7
+)"");
+#ifdef __sgi
+__asm__(R""(
 /* 0040BFF4 24840020 */  addiu $a0, $a0, 0x20
+)"");
+#else
+__asm__(R""(
+                         lw    $a0, ($a0)
+)"");
+#endif
+__asm__(R""(
 /* 0040BFF8 0320F809 */  jalr  $t9
 /* 0040BFFC 24A5A10C */   addiu $a1, %lo(RO_1000A10C) # addiu $a1, $a1, -0x5ef4
 /* 0040C000 8FBC0034 */  lw    $gp, 0x34($sp)

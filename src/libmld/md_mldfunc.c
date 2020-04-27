@@ -62,6 +62,7 @@ void _md_st_internal(const char *format, ...) {
     fprintf(stderr, "%s: Internal: ", st_errname);
     va_start(arglist, format);
     vfprintf(stderr, format, arglist);
+    va_end(arglist);
     fprintf(stderr, "\n");
     exit(1);
 }
@@ -76,6 +77,7 @@ void _md_st_error(const char *format, ...) {
     fprintf(stderr, "%s: Error: ", st_errname);
     va_start(arglist, format);
     vfprintf(stderr, format, arglist);
+    va_end(arglist);
     fprintf(stderr, "\n");
     exit(1);
 }

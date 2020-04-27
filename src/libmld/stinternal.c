@@ -31,6 +31,7 @@ void st_internal(const char *format, ...) {
     fprintf(stderr, "%s: Internal: ", st_errname);
     va_start(arglist, format);
     vfprintf(stderr, format, arglist);
+    va_end(arglist);
     fprintf(stderr, "\n");
     exit(1);
 }
