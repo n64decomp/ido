@@ -1,3 +1,4 @@
+#ifdef __sgi
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -33,7 +34,6 @@ glabel __Argc
     .space 4
     .size __Argc, 4
     .type __Argc, @object
-
 
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
@@ -126,3 +126,4 @@ glabel _mcount
     .size _mcount, .-_mcount
     .end _mcount
 )"");
+#endif

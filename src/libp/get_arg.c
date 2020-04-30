@@ -1,7 +1,7 @@
 #include <stddef.h>
 
 extern unsigned int __Argc;
-extern char *__Argv[];
+extern char **__Argv;
 
 /*
 00434720 processargs

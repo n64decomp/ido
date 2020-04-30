@@ -2119,8 +2119,8 @@ glabel oneproc
     .size oneproc, .-oneproc
     .end oneproc
 
-glabel main
-    .ent main
+glabel main1
+    .ent main1
 /* 0045806C 3C1C0FBC */  .cpload $t9
 /* 00458070 279C2224 */  
 /* 00458074 0399E021 */  
@@ -2421,7 +2421,7 @@ glabel main
 /* 004584C4 27BD0030 */  addiu $sp, $sp, 0x30
 /* 004584C8 03E00008 */  jr    $ra
 /* 004584CC 00001025 */   move  $v0, $zero
-    .type main, @function
-    .size main, .-main
-    .end main
+    .type main1, @function
+    .size main1, .-main1
+    .end main1
 )"");

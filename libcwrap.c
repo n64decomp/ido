@@ -12,8 +12,8 @@ int __iob[3 * 0x20];
 
 unsigned char _sibuf[1];
 
-extern int __Argc;
-extern char **__Argv;
+int __Argc;
+char **__Argv;
 
 void _doprnt() {
     puts("doprnt");
