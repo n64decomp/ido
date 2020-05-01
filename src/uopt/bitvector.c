@@ -124,8 +124,10 @@ void setbit(struct BitVector *bv, int bitpos) {
 void resetbit(struct BitVector *bv, int bitpos) {
     int pos_in_block;
 
-    pos_in_block = bitpos & 0x7f;
-    bv->blocks[bitpos >> 7].words[pos_in_block >> 5] &= ~(1U << (~pos_in_block & 0x1f));
+    if (bitpos < (bv->num_blocks << 7)) {
+        pos_in_block = bitpos & 0x7f;
+        bv->blocks[bitpos >> 7].words[pos_in_block >> 5] &= ~(1U << (~pos_in_block & 0x1f));
+    }
 }
 
 /*

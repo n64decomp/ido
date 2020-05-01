@@ -91,7 +91,7 @@ struct AllocBlock *alloc_mark(struct AllocBlock **heap) {
     struct AllocItem *temp_a0;
     struct AllocItem *temp_a1;
     struct AllocBlock *phi_v0;
-    struct AllocBlock *phi_v1;
+    struct AllocBlock *last_block;
     ssize_t phi_t2;
 
     alloc_scb(&block, 0x10000);
@@ -100,18 +100,13 @@ struct AllocBlock *alloc_mark(struct AllocBlock **heap) {
     }
     if (*heap != NULL) {
         phi_v0 = (*heap)->next;
-        phi_v1 = *heap;
-        if ((*heap)->next != NULL) {
-loop_4:
-            temp_v0 = phi_v0->next;
-            phi_v0 = temp_v0;
-            phi_v1 = phi_v0;
-            if (temp_v0 != NULL) {
-                goto loop_4;
-            }
+        last_block = *heap;
+        while (phi_v0 != NULL) {
+            last_block = phi_v0;
+            phi_v0 = phi_v0->next;
         }
-        phi_v1->next = block;
-        block->prev = phi_v1;
+        last_block->next = block;
+        block->prev = last_block;
     }
     *heap = block;
     phi_t2 = block->size;
@@ -193,8 +188,8 @@ int alloc_next_scb(ssize_t size, struct AllocBlock **heap) {
     phi_v0 = (*heap)->next;
     last_block = *heap;
     while (phi_v0 != NULL) {
-        phi_v0 = phi_v0->next;
         last_block = phi_v0;
+        phi_v0 = phi_v0->next;
     }
     last_block->next = sp2C;
     sp2C->prev = last_block;
@@ -204,7 +199,7 @@ int alloc_next_scb(ssize_t size, struct AllocBlock **heap) {
         (*heap)->item_list->prev->next = sp2C->item_list;
         (*heap)->item_list->prev = sp2C->item_list;
     }
-    (*heap)->item_list = (struct AllocItem *) sp2C->prev;
+    (*heap)->item_list = sp2C->item_list;
     return 1;
 }
 
