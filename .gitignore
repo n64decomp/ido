@@ -2,6 +2,9 @@
 *.o
 *.obj
 
+# Asm files
+*.s
+
 # Precompiled Headers
 *.gch
 *.pch
