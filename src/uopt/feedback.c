@@ -39,6 +39,8 @@ glabel sym_file_updated
 .text
 )"");
 
+// See /usr/include/cmplrs/feedback.h for feedback structure
+
 /*
 0040B930 read_feedback_file
 0042EB10 incorp_feedback

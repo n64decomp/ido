@@ -2118,7 +2118,9 @@ glabel oneproc
     .type oneproc, @function
     .size oneproc, .-oneproc
     .end oneproc
+)"");
 
+#if 0
 glabel main1
     .ent main1
 /* 0045806C 3C1C0FBC */  .cpload $t9
@@ -2424,4 +2426,75 @@ glabel main1
     .type main1, @function
     .size main1, .-main1
     .end main1
-)"");
+#endif
+
+void oneproc(void); // defined above in asm
+
+#include <stdlib.h>
+#include <stdio.h>
+#include "common.h"
+#include "uoptinit.h"
+#include "uoptinput.h"
+#include "uoptdbg.h"
+#include "uoptdata.h"
+#include "libp/libp.h"
+#include "libu/libu.h"
+
+int main1(int argc, char *argv[]) {
+    timer = getclock();
+    optinit();
+    if (suppressopt != 0) {
+        if (o0o1specified == 0 && warn_flag != 2) {
+            writeln(err.c_file);
+            write_string(err.c_file, "uopt: Warning: file not optimized; use -g3 if both optimization and debug wanted", 0x50, 0x50);
+            writeln(err.c_file);
+            fflush(err.c_file);
+            warned = TRUE;
+        }
+        do {
+            readuinstr(&u, ustrptr);
+            if (Ueof == u.Opc) {
+                write_string(err.c_file, "uopt: Error: unexpected EOF in input ucode; giving up.", 0x36, 0x36);
+                writeln(err.c_file);
+                fflush(err.c_file);
+                abort();
+            }
+            uwrite(&u);
+        } while (Ustp != u.Opc);
+    } else {
+        getop();
+        while (Ueof != u.Opc) {
+            while (Uent != u.Opc && Ustp != u.Opc) {
+                copyline();
+                getop();
+            }
+            if (Uent == u.Opc) {
+                oneproc();
+            } else {
+                copyline();
+            }
+            getop();
+        }
+    }
+    if (verbose != 0) {
+        writeln(err.c_file);
+    }
+    uputclose();
+    write_updated_st();
+    timer = (getclock() - timer);
+    if (listwritten != 0) {
+        write_string(list.c_file, " * * ", 5, 5);
+        write_integer(list.c_file, timer / 1000, 4, 10);
+        write_char(list.c_file, '.', 1);
+        write_integer(list.c_file, timer % 1000, 3, 10);
+        write_string(list.c_file, " SECONDS IN WHOLE UCODE TO UCODE OPTIMIZATION", 0x2D, 0x2D);
+        writeln(list.c_file);
+    }
+    if (listwritten != 0) {
+        printstat();
+    }
+    if (warned != 0 && warn_flag == 2) {
+        exit(1);
+    }
+    return 0;
+}
