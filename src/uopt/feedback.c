@@ -51,7 +51,7 @@ unsigned char *feedback; // TODO: pointer to a feedback struct
 */
 unsigned char *feedback_end; // TODO: pointer to a feedback struct
 
-extern char *__Argv[];
+extern char **__Argv;
 
 /*
 0040B930 read_feedback_file
