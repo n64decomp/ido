@@ -231,7 +231,7 @@ void bvcopynot(struct BitVector *to, struct BitVector *from) {
 */
 unsigned char bvecteq(struct BitVector *a, struct BitVector *b) {
     int i;
-    unsigned char ret = TRUE;
+    unsigned char ret = true;
 
     for (i = 0; i < a->num_blocks; i++) {
         ret = ((a->blocks[i].words[0] ^ b->blocks[i].words[0]) |
@@ -260,7 +260,7 @@ unsigned char bvecteq(struct BitVector *a, struct BitVector *b) {
 */
 unsigned char bvectempty(struct BitVector *bv) {
     int i;
-    unsigned char ret = TRUE;
+    unsigned char ret = true;
 
     for (i = 0; i < bv->num_blocks; i++) {
         ret = (bv->blocks[i].words[0] | bv->blocks[i].words[1] |
@@ -537,7 +537,7 @@ void formbvlivran(struct BitVector *bv) {
 
     bv->blocks = alloc_new(bvlivransize * sizeof(struct BitVectorBlock), &perm_heap);
     if (bv->blocks == NULL) {
-        outofmem = TRUE;
+        outofmem = true;
         return;
     }
 

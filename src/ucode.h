@@ -17,6 +17,8 @@
 #ifndef UCODE_H
 #define UCODE_H
 
+#include "common.h"
+
 #ifndef _MIPSEB // built-in gcc
 #define _MIPSEB
 #endif
@@ -292,7 +294,7 @@ union Bcode {
 #ifdef _LONGLONG
   long long dw_array[Maxinstlength / 2];
 #endif
-}Uc;
+};
 
 /* access paths to members of the U_code structure */
 #define UCVT    Uopcde
@@ -323,7 +325,11 @@ union Bcode {
 enum uoperand {Sdtype, Smtype, Slexlev, Slabel0, Slabel1, Sblockno, Sdtype2,
           Spop, Spush, Sexternal, Slength, Sconstval, Scomment, Soffset,
           Ssomenumber, Soffset2, Sinitval, Slabel2, SarrayOffset,
-          Sdtypenum, Slbound, Shbound, Send};
+          Sdtypenum, Slbound, Shbound, Send}
+#ifdef __GNUC__
+__attribute__((packed));
+#endif
+;
   /* describes the order and type of operands in a u-code instruction:
     Slabel0: label stored in the I1 field that is a label that needs to be
              written left-justified in ascii ucode;
@@ -334,6 +340,22 @@ enum uoperand {Sdtype, Smtype, Slexlev, Slabel0, Slabel1, Sblockno, Sdtype2,
     Scomment: the constval field storing a comment;
     Ssomenumber: the I1 field not storing a block number;
     Sdtypenum: the dtype field storing a number;                */
+
+#ifdef __GNUC__
+typedef enum uoperand uoperand;
+#else
+typedef unsigned char uoperand;
+#endif
+
+struct utabrec {
+    uoperand format[Maxoperands]; // operands
+    char opcname[4];            // opcode name table
+    bool hasattr;               // true if using lexlev field for \v and \o attributes
+    bool hasconst;              // true if instruction requires constant
+    unsigned char instlength;   // length of instruction (1..8)
+    unsigned char stack_pop;    // whether leaf, unary or binary op (0..3)
+    unsigned char stack_push;   // whether statement or expression (0..1)
+};
 
 enum mtagtype {
     mtag_anything,              /* can dereference anything */

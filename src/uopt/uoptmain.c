@@ -2126,7 +2126,7 @@ int main1(int argc, char *argv[]) {
             write_string(err.c_file, "uopt: Warning: file not optimized; use -g3 if both optimization and debug wanted", 0x50, 0x50);
             writeln(err.c_file);
             fflush(err.c_file);
-            warned = TRUE;
+            warned = true;
         }
         do {
             readuinstr(&u, ustrptr);

@@ -36,7 +36,7 @@ void reset(struct PascalFile *file, const char *path, int pathlen, size_t bufsiz
     FILE *c_file;
     int new_pathlen;
 
-    free_used_path = FALSE;
+    free_used_path = false;
     new_pathlen = pathlen;
     if (pathlen != 0) {
         for (i = pathlen - 1; path[i] == ' '; i--) {
@@ -52,7 +52,7 @@ void reset(struct PascalFile *file, const char *path, int pathlen, size_t bufsiz
         memcpy(used_path, path, pathlen);
         used_path[pathlen] = '\0';
         file->path = used_path;
-        free_used_path = TRUE;
+        free_used_path = true;
     } else {
         used_path = file->path;
         if (file->path == NULL) {
@@ -61,7 +61,7 @@ void reset(struct PascalFile *file, const char *path, int pathlen, size_t bufsiz
                 return;
             }
             used_path = malloc(24);
-            free_used_path = TRUE;
+            free_used_path = true;
             sprintf(used_path, "/tmp/pas%d.%d", ++_libp_pascal_file_counter, getpid());
             file->path = used_path;
         }

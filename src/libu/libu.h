@@ -4,13 +4,17 @@
 #include "ucode.h"
 #include "libp/libp.h"
 
+// uscan.c
 void openstdout(struct PascalFile *file);
 long getclock(void);
 
 // bread.c
+void initur(const char *path);
 void readuinstr(struct Bcrec *uinstr, char *ustr);
 
 // bwri.c
+extern struct utabrec utab[0x9C];
+void inituwrite(const char *path);
 void uwrite(struct Bcrec *uinstr);
 
 // ucio.c
