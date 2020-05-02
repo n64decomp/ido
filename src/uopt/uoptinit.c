@@ -3984,27 +3984,6 @@ void processargs(void); // TODO: remove after processargs decompilation
 0045806C main
 */
 void optinit(void) {
-    int sp20;
-    int temp_t6;
-    int temp_t6_2;
-    int temp_t7;
-    int temp_t7_2;
-    int temp_t7_3;
-    int temp_t7_4;
-    int temp_t8;
-    int temp_t9;
-    int temp_t9_2;
-    int temp_t9_3;
-    int phi_t8;
-    int phi_t7;
-    int phi_t8_2;
-    int phi_t7_2;
-    int phi_t7_3;
-    int phi_t9;
-    int phi_t7_4;
-    int phi_t9_2;
-
-#if 1
     func_004376E0(0, 0, 1, 0);
     func_004376E0(1, 0, 1, 1);
     func_004376E0(2, 0, 1, 0);
@@ -4146,7 +4125,7 @@ void optinit(void) {
     func_004376E0(0x8B, 0, 0, 0);
     func_004376E0(0x8C, 1, 1, 0);
     func_004376E0(0x8D, 0, 1, 1);
-#endif
+
     perm_heap = NULL;
     ustrptr = alloc_new(0x400, &perm_heap);
     ustackbot = alloc_new(0x10, &perm_heap);
@@ -4239,54 +4218,10 @@ void optinit(void) {
     lasterreg[1] = (6 + 0x17);
     firsteereg[1] = (6 + 0x18);
     lasteereg[1] = 0x23;
-    phi_t8 = firsterreg[1];
-    if (firsterreg[1] < 0) {
-        phi_t8 = 0;
-    }
-    temp_t7 = lasterreg[1] + 1;
-    phi_t7 = temp_t7;
-    if (temp_t7 >= 0x21) {
-        phi_t7 = 0x20;
-    }
-    temp_t7_2 = phi_t8 - phi_t7;
-    sp20 = firsterreg[1];
-    seterregs[2] = (unsigned int) ((unsigned int) ((temp_t7_2 >> 0x1F) << temp_t7_2) >> phi_t8);
-    temp_t7_3 = lasterreg[1] - 0x1F;
-    temp_t8 = firsterreg[1] - 0x20;
-    phi_t8_2 = temp_t8;
-    if (temp_t8 < 0) {
-        phi_t8_2 = 0;
-    }
-    phi_t7_2 = temp_t7_3;
-    if (temp_t7_3 >= 0x21) {
-        phi_t7_2 = 0x20;
-    }
-    temp_t6 = phi_t8_2 - phi_t7_2;
-    seterregs[3] = (unsigned int) ((unsigned int) ((temp_t6 >> 0x1F) << temp_t6) >> phi_t8_2);
-    phi_t7_3 = firsteereg[1];
-    if (firsteereg[1] < 0) {
-        phi_t7_3 = 0;
-    }
-    temp_t9 = lasteereg[1] + 1;
-    phi_t9 = temp_t9;
-    if (temp_t9 >= 0x21) {
-        phi_t9 = 0x20;
-    }
-    temp_t9_2 = phi_t7_3 - phi_t9;
-    sp20 = firsteereg[1];
-    seteeregs[2] = (unsigned int) ((unsigned int) ((temp_t9_2 >> 0x1F) << temp_t9_2) >> phi_t7_3);
-    temp_t9_3 = lasteereg[1] - 0x1F;
-    temp_t7_4 = firsteereg[1] - 0x20;
-    phi_t7_4 = temp_t7_4;
-    if (temp_t7_4 < 0) {
-        phi_t7_4 = 0;
-    }
-    phi_t9_2 = temp_t9_3;
-    if (temp_t9_3 >= 0x21) {
-        phi_t9_2 = 0x20;
-    }
-    temp_t6_2 = phi_t7_4 - phi_t9_2;
-    seteeregs[3] = (unsigned int) ((unsigned int) ((temp_t6_2 >> 0x1F) << temp_t6_2) >> phi_t7_4);
+    seterregs[2] = GENMASK(firsterreg[1], lasterreg[1] + 1);
+    seterregs[3] = GENMASK(firsterreg[1] - 32, lasterreg[1] - 32 + 1);
+    seteeregs[2] = GENMASK(firsteereg[1], lasteereg[1] + 1);
+    seteeregs[3] = GENMASK(firsteereg[1] - 32, lasteereg[1] - 32 + 1);
     setregs[2] = (seterregs[2] | seteeregs[2]);
     setregs[3] = (seterregs[3] | seteeregs[3]);
     gsptr = alloc_new(0x34, &perm_heap);
