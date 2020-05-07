@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "common.h"
 #include "uoptppss.h"
+#include "uoptdbg.h"
 #include "uoptcontrolflow.h"
 #include "uoptdata.h"
 #include "libp/libp.h"
@@ -4179,7 +4180,7 @@ void optinit(void) {
     varreflimit = 0x14;
     dbugno = 0;
     proc_to_print[0] = ' ';
-    ctrl_head = 0;
+    ctrl_head = NULL;
     movcostused = 1.0f;
     docopyprog = true;
     dordstore = true;

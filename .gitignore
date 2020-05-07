@@ -26,3 +26,6 @@
 
 # Makefile dependencies
 *.d
+
+# Build
+build/*

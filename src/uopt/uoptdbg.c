@@ -1,3 +1,7 @@
+#include "ucode.h"
+#include "libp/libp.h"
+#include "uoptdata.h"
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -6,21 +10,6 @@ __asm__(R""(
 .endm
 
 .rdata
-RO_1000A6E0:
-    # 0041A2A0 printmtyp
-    .asciz "uoptdbg.p"
-
-    .balign 4
-jtbl_1000A6EC:
-    # 0041A2A0 printmtyp
-    .gpword .L0041A2E4
-    .gpword .L0041A374
-    .gpword .L0041A308
-    .gpword .L0041A398
-    .gpword .L0041A350
-    .gpword .L0041A3BC
-    .gpword .L0041A32C
-
 RO_1000A708:
     # 0041A410 printitab
     .ascii "    "
@@ -1253,118 +1242,52 @@ glabel allococ
     .type allococ, @object
 
 
+)"");
+
+/*
+0041A410 printitab
+0041AC2C printtab
+*/
+void printmtyp(enum Memtype type) {
+    switch ((enum Memtype)(unsigned char)type) {
+        case Zmt: write_char(list.c_file, 'Z', 1); break;
+        case Pmt: write_char(list.c_file, 'P', 1); break;
+        case Tmt: write_char(list.c_file, 'T', 1); break;
+        case Smt: write_char(list.c_file, 'S', 1); break;
+        case Mmt: write_char(list.c_file, 'M', 1); break;
+        case Rmt: write_char(list.c_file, 'R', 1); break;
+        case Amt: write_char(list.c_file, 'A', 1); break;
+        default: caseerror(1, 42, "uoptdbg.p", 9);
+    }
+}
+
+/*
+00456A2C oneproc
+*/
+#if 0
+void printitab(void) {
+    int i;
+
+    if (proc_to_print[0] == ' ' || at_proc_to_print) {
+        write_string(list.c_file, " index    ", 0xA, 0xA);
+        write_string(list.c_file, "  bit ", 6, 6);
+        write_string(list.c_file, "kind    op      l      r  ", 0x1A, 0x1A);
+        writeln(list.c_file);
+
+        for (i = 0; i < bitposcount; i++) {
+            write_char(list.c_file, '{', 1);
+            ...
+        }
+    }
+}
+#endif
+
+__asm__(R""(
+
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
 
 .text
-glabel printmtyp
-    .ent printmtyp
-    # 0041A410 printitab
-    # 0041AC2C printtab
-/* 0041A2A0 3C1C0FC0 */  .cpload $t9
-/* 0041A2A4 279CFFF0 */  
-/* 0041A2A8 0399E021 */  
-/* 0041A2AC 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0041A2B0 308200FF */  andi  $v0, $a0, 0xff
-/* 0041A2B4 2C410007 */  sltiu $at, $v0, 7
-/* 0041A2B8 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0041A2BC AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0041A2C0 10200047 */  beqz  $at, .L0041A3E0
-/* 0041A2C4 AFA40020 */   sw    $a0, 0x20($sp)
-/* 0041A2C8 8F818044 */  lw    $at, %got(jtbl_1000A6EC)($gp)
-/* 0041A2CC 00027080 */  sll   $t6, $v0, 2
-/* 0041A2D0 002E0821 */  addu  $at, $at, $t6
-/* 0041A2D4 8C2EA6EC */  lw    $t6, %lo(jtbl_1000A6EC)($at)
-/* 0041A2D8 01DC7021 */  addu  $t6, $t6, $gp
-/* 0041A2DC 01C00008 */  jr    $t6
-/* 0041A2E0 00000000 */   nop   
-.L0041A2E4:
-/* 0041A2E4 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A2E8 8F848CCC */  lw     $a0, %got(list)($gp)
-/* 0041A2EC 2405005A */  li    $a1, 90
-/* 0041A2F0 24060001 */  li    $a2, 1
-/* 0041A2F4 2407000A */  li    $a3, 10
-/* 0041A2F8 0320F809 */  jalr  $t9
-/* 0041A2FC 8C840000 */   lw    $a0, ($a0)
-/* 0041A300 1000003F */  b     .L0041A400
-/* 0041A304 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0041A308:
-/* 0041A308 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A30C 8F848CCC */  lw     $a0, %got(list)($gp)
-/* 0041A310 24050050 */  li    $a1, 80
-/* 0041A314 24060001 */  li    $a2, 1
-/* 0041A318 2407000A */  li    $a3, 10
-/* 0041A31C 0320F809 */  jalr  $t9
-/* 0041A320 8C840000 */   lw    $a0, ($a0)
-/* 0041A324 10000036 */  b     .L0041A400
-/* 0041A328 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0041A32C:
-/* 0041A32C 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A330 8F848CCC */  lw     $a0, %got(list)($gp)
-/* 0041A334 24050054 */  li    $a1, 84
-/* 0041A338 24060001 */  li    $a2, 1
-/* 0041A33C 2407000A */  li    $a3, 10
-/* 0041A340 0320F809 */  jalr  $t9
-/* 0041A344 8C840000 */   lw    $a0, ($a0)
-/* 0041A348 1000002D */  b     .L0041A400
-/* 0041A34C 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0041A350:
-/* 0041A350 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A354 8F848CCC */  lw     $a0, %got(list)($gp)
-/* 0041A358 24050053 */  li    $a1, 83
-/* 0041A35C 24060001 */  li    $a2, 1
-/* 0041A360 2407000A */  li    $a3, 10
-/* 0041A364 0320F809 */  jalr  $t9
-/* 0041A368 8C840000 */   lw    $a0, ($a0)
-/* 0041A36C 10000024 */  b     .L0041A400
-/* 0041A370 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0041A374:
-/* 0041A374 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A378 8F848CCC */  lw     $a0, %got(list)($gp)
-/* 0041A37C 2405004D */  li    $a1, 77
-/* 0041A380 24060001 */  li    $a2, 1
-/* 0041A384 2407000A */  li    $a3, 10
-/* 0041A388 0320F809 */  jalr  $t9
-/* 0041A38C 8C840000 */   lw    $a0, ($a0)
-/* 0041A390 1000001B */  b     .L0041A400
-/* 0041A394 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0041A398:
-/* 0041A398 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A39C 8F848CCC */  lw     $a0, %got(list)($gp)
-/* 0041A3A0 24050052 */  li    $a1, 82
-/* 0041A3A4 24060001 */  li    $a2, 1
-/* 0041A3A8 2407000A */  li    $a3, 10
-/* 0041A3AC 0320F809 */  jalr  $t9
-/* 0041A3B0 8C840000 */   lw    $a0, ($a0)
-/* 0041A3B4 10000012 */  b     .L0041A400
-/* 0041A3B8 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0041A3BC:
-/* 0041A3BC 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A3C0 8F848CCC */  lw     $a0, %got(list)($gp)
-/* 0041A3C4 24050041 */  li    $a1, 65
-/* 0041A3C8 24060001 */  li    $a2, 1
-/* 0041A3CC 2407000A */  li    $a3, 10
-/* 0041A3D0 0320F809 */  jalr  $t9
-/* 0041A3D4 8C840000 */   lw    $a0, ($a0)
-/* 0041A3D8 10000009 */  b     .L0041A400
-/* 0041A3DC 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0041A3E0:
-/* 0041A3E0 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0041A3E4 8F868044 */  lw    $a2, %got(RO_1000A6E0)($gp)
-/* 0041A3E8 24040001 */  li    $a0, 1
-/* 0041A3EC 2405002A */  li    $a1, 42
-/* 0041A3F0 24070009 */  li    $a3, 9
-/* 0041A3F4 0320F809 */  jalr  $t9
-/* 0041A3F8 24C6A6E0 */   addiu $a2, %lo(RO_1000A6E0) # addiu $a2, $a2, -0x5920
-/* 0041A3FC 8FBC0018 */  lw    $gp, 0x18($sp)
-.L0041A400:
-/* 0041A400 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0041A404 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0041A408 03E00008 */  jr    $ra
-/* 0041A40C 00000000 */   nop   
-    .type printmtyp, @function
-    .size printmtyp, .-printmtyp
-    .end printmtyp
 
 glabel printitab
     .ent printitab
