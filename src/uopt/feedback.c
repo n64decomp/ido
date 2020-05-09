@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -61,11 +62,22 @@ extern char **__Argv;
 static void func_0040B7D0(const char *format, ...) {
     va_list arglist;
 
+#ifdef __sgi
     if (errno < sys_nerr) {
         fprintf(stderr, "%s: %s, ", __Argv[0], sys_errlist[errno]);
     } else {
         fprintf(stderr, "%s: error %d (error code unknown), ", __Argv[0], errno);
     }
+#else
+    char buf[1024];
+    int saved_errno = errno;
+    if (strerror_r(errno, buf, sizeof(buf)) == 0) {
+        fprintf(stderr, "%s: %s, ", __Argv[0], buf);
+    } else {
+        fprintf(stderr, "%s: error %d (error code unknown), ", __Argv[0], saved_errno);
+    }
+#endif
+
     va_start(arglist, format);
 #ifdef __sgi
     _doprnt(format, arglist, stderr);
