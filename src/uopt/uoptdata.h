@@ -50,6 +50,26 @@ struct RealstoreData {
     struct RealstoreData *next;
 };
 
+struct Graphnode;
+struct GraphnodeList {
+    struct Graphnode *graphnode;
+    struct GraphnodeList *next;
+};
+
+struct Graphnode {
+    int unk0;
+    int unk4;
+    unsigned short staticno;
+    unsigned short padA;
+    struct Graphnode *next;
+    int unk10;
+    struct GraphnodeList *unk14;
+    struct GraphnodeList *unk18;
+    struct Stat *stat1C; // 0x1C
+    struct Stat *stat; // 0x20
+    int unk[(0x174 - 0x24) / 4]; // 0x24
+};
+
 struct Proc {
     int unk0;
     void *unk4;
@@ -75,7 +95,23 @@ struct Proc {
     void *unk38;
 };
 
-extern struct Bcrec u;
+struct Stat {
+    unsigned char unk0;
+    int unk4;
+    struct Stat *next; // 0x8, towards tail
+    struct Stat *prev; // 0xC, towards head
+    void *graphnode; // 0x10
+    int unk14;
+    int unk18;
+    int unk1C;
+    void *unk20;
+    int unk24;
+    int unk28;
+    int unk2C;
+    int unk30;
+};
+
+extern union Bcode u;
 extern char *ustrptr;
 extern struct PascalFile list;
 extern struct PascalFile strp;
@@ -85,7 +121,7 @@ extern char uopt_uname[1024];
 extern char listname[1024];
 extern char strpname[1024];
 extern char symname[1024];
-extern struct Bcrec lastcopiedu;
+extern union Bcode lastcopiedu;
 extern struct AllocBlock *perm_heap;
 extern struct AllocBlock *heapptr;
 extern struct optabrec optab[0x9C];
@@ -111,13 +147,13 @@ extern bool filteringout;
 extern long time1;
 extern long timer;
 extern long lasttime;
-extern void *graphhead; // TODO: fix type
-extern void *graphtail; // TODO: fix type
-extern void *curgraphnode; // TODO: fix type
-extern int curstaticno;
+extern struct Graphnode *graphhead;
+extern struct Graphnode *graphtail;
+extern struct Graphnode *curgraphnode;
+extern unsigned int curstaticno;
 extern int curloopno;
-extern void *stathead; // TODO: fix type (0x34 bytes allocated)
-extern void *stattail; // TODO: same as above
+extern struct Stat *stathead;
+extern struct Stat *stattail;
 extern int blklev[128];
 extern int staticlinkloc;
 extern void *nocopy; // TODO: fix type (0x40 bytes allocated)

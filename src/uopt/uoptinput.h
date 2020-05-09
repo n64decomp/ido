@@ -3,5 +3,6 @@
 
 void getop(void);
 void copyline(void);
+void readnxtinst(void);
 
 #endif

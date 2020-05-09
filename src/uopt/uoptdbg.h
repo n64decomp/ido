@@ -31,7 +31,16 @@ extern int dataflowiter;
 extern int numdataflow;
 extern int regaloctime;
 
-void printstat(void);
+void printitab(void);
+void printtab(void);
 void printbv(struct BitVector *bv);
+void printlinfo(void);
+void printcm(void);
+void printscm(void);
+void printregs(void);
+void printinterproc(void);
+void printsav(void);
+void printstat(void);
+void print_loop_relations(void *, int num_dashes); // TODO: arg0 type
 
 #endif

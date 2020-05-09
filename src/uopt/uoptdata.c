@@ -48,7 +48,7 @@
 0047FE1C func_0047FE1C
 0047FF7C skipproc
 */
-struct Bcrec u;
+union Bcode u;
 
 /*
 00414108 func_00414108
@@ -147,7 +147,7 @@ char symname[1024];
 0047FE1C func_0047FE1C
 0047FF7C skipproc
 */
-struct Bcrec lastcopiedu;
+union Bcode lastcopiedu;
 
 /*
 0040C254 setbit
@@ -613,7 +613,7 @@ long lasttime;
 004761D0 tail_recursion
 00479DC4 eliminduct
 */
-void *graphhead; // TODO: fix type
+struct Graphnode *graphhead;
 
 /*
 00410204 codemotion
@@ -633,7 +633,7 @@ void *graphhead; // TODO: fix type
 00475680 getexpsources
 00479DC4 eliminduct
 */
-void *graphtail; // TODO: fix type
+struct Graphnode *graphtail;
 
 /*
 00439188 procinit
@@ -681,7 +681,7 @@ void *graphtail; // TODO: fix type
 0047CDA4 extendstat
 0047E3BC binopwithconst
 */
-void *curgraphnode; // TODO: fix type
+struct Graphnode *curgraphnode;
 
 /*
 0042F6CC controlflow
@@ -702,7 +702,7 @@ void *curgraphnode; // TODO: fix type
 004713E8 loopunroll
 004761D0 tail_recursion
 */
-int curstaticno;
+unsigned int curstaticno;
 
 /*
 00448C94 find_ix_loadstores
@@ -716,7 +716,7 @@ int curloopno;
 004761D0 tail_recursion
 0047CDA4 extendstat
 */
-void *stathead; // TODO: fix type (0x34 bytes allocated)
+struct Stat *stathead;
 
 /*
 00439188 procinit
@@ -735,7 +735,7 @@ void *stathead; // TODO: fix type (0x34 bytes allocated)
 004761D0 tail_recursion
 0047CDA4 extendstat
 */
-void *stattail; // TODO: same as above
+struct Stat *stattail;
 
 /*
 0043A0A8 func_0043A0A8

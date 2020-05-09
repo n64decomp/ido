@@ -907,7 +907,7 @@ void procinit(void) {
     staticlinkloc = 0;
     rewrite(&strp, strpname, 1024, 0);
     outofmem = false;
-    lastcopiedu.Opc = Unop;
+    lastcopiedu.Ucode.Opc = Unop;
     has_exc_handler = false;
     can_elim_tail = true;
     use_c_semantics = false;
