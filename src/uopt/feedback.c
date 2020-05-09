@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "libxmalloc/xmalloc.h"
+#include "common.h"
 
 __asm__(R""(
 .macro glabel label
@@ -24,20 +25,6 @@ RO_1000A10C:
     # 0040BCA0 path_blockno
     .asciz "symbol table anomaly isym (%d) not referred to by external\n"
 
-.data
-# 1000FD30
-glabel sym_file_updated
-    # 0040C0C0 local_in_reg
-    # 00439B60 write_updated_st
-    .byte 0x00
-    .type sym_file_updated, @object
-    .size sym_file_updated, .-sym_file_updated # 1
-
-
-.set noat      # allow manual use of $at
-.set noreorder # don't insert nops after branches
-
-.text
 )"");
 
 // See /usr/include/cmplrs/feedback.h for feedback structure
@@ -53,6 +40,12 @@ unsigned char *feedback; // TODO: pointer to a feedback struct
 0042EB10 incorp_feedback
 */
 unsigned char *feedback_end; // TODO: pointer to a feedback struct
+
+/*
+0040C0C0 local_in_reg
+00439B60 write_updated_st
+*/
+bool sym_file_updated = false;
 
 extern char **__Argv;
 
@@ -122,6 +115,7 @@ void read_feedback_file(const char *path) {
 }
 
 __asm__(R""(
+.set noat
 .set noreorder
 
     .type func_0040BAE0, @function

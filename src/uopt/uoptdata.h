@@ -32,6 +32,49 @@ struct optabrec {
     bool unk0, unk1, unk2; // TODO what are these?
 };
 
+struct UstackEntry {
+    void *unk0;
+    int unk4;
+    int unk8;
+    struct UstackEntry *next;
+};
+
+struct ParstackEntry {
+    void *unk0;
+    int unk4;
+    struct ParstackEntry *next;
+};
+
+struct RealstoreData {
+    char c[256];
+    struct RealstoreData *next;
+};
+
+struct Proc {
+    int unk0;
+    void *unk4;
+    bool unk8; // bool or char?
+    char pad9, padA;
+    bool unkB; // set to lang == 5
+    bool o3opt; // written to allcallersave in procinit
+    bool unkD; // set to lang == 5
+    bool unkE; // bool or char?
+    bool unkF; // bool or char?
+    bool unk10;
+    unsigned short num_bbs; // 0x12
+    bool unk14; // bool or char?
+    bool unk15;
+    int unk18;
+    int unk1C;
+    int bvsize; // 0x20
+    bool *unk24; // something with regstaken / parregs
+    void *unk28; // sent to searchlab
+    struct Proc *unk2C;
+    struct Proc *next;
+    void *unk34;
+    void *unk38;
+};
+
 extern struct Bcrec u;
 extern char *ustrptr;
 extern struct PascalFile list;
@@ -48,10 +91,10 @@ extern struct AllocBlock *heapptr;
 extern struct optabrec optab[0x9C];
 extern bool endblock;
 extern void *table[9113]; // TODO: fix type
-extern int *ustackbot; // TODO: fix type
-extern int *ustack; // TODO: fix type
-extern int *parstackbot; // TODO: fix type
-extern int *parstack; // TODO: fix type
+extern struct UstackEntry *ustackbot;
+extern struct UstackEntry *ustack;
+extern struct ParstackEntry *parstackbot;
+extern struct ParstackEntry *parstack;
 extern int tempdisp;
 extern void *templochead; // TODO: fix type (0x14 bytes allocated)
 extern void *temploctail; // TODO: fix type
@@ -59,8 +102,8 @@ extern bool curlevel;
 extern int curblk;
 extern char entnam0[1024];
 extern size_t entnam0len;
-extern void *realstore; // TODO: fix type (some linked list of 256 bytes data + 4 byte next ptr)
-extern void *currealpool; // TODO: same as above
+extern struct RealstoreData *realstore;
+extern struct RealstoreData *currealpool;
 extern int realdispdiv;
 extern unsigned char realdispmod;
 extern int strpdisplace;
@@ -137,12 +180,12 @@ extern int regsinclass[2];
 extern int highesterreg[2];
 extern int highesteereg[2];
 extern int regsinclass1;
-extern int seterregs[4]; // likely two 64-bit words
-extern int seteeregs[4]; // likely two 64-bit words
-extern int setregs[4]; // likely two 64-bit words
-extern int usedeeregs[2][2]; // likely two 64-bit words
-extern int dftregsused[2];
-extern int regscantpass[2]; // likely 64-bit word
+extern long long int seterregs[2];
+extern long long int seteeregs[2];
+extern long long int setregs[2];
+extern long long int usedeeregs[2];
+extern long long int dftregsused;
+extern long long int regscantpass;
 extern int ugen_saved_eeregs;
 extern float movcostused;
 extern bool passedbyfp;
@@ -231,9 +274,9 @@ extern int unroll_times;
 extern int unroll_limit;
 extern int sizethreshold;
 extern void *ldatab[3113]; // TODO: fix type (0x10 bytes allocated)
-extern void *curproc; // TODO: fix type
-extern void *indirprocs; // TODO: fix type (0x3c bytes allocated, see prepass)
-extern void *ciaprocs; // TODO: same as above
+extern struct Proc *curproc;
+extern struct Proc *indirprocs;
+extern struct Proc *ciaprocs;
 extern void *gsptr; // TODO: fix type (0x34 bytes allocated)
 
 #endif

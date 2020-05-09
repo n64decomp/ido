@@ -340,7 +340,7 @@ void *table[9113]; // TODO: fix type
 0043CFCC readnxtinst
 00456A2C oneproc
 */
-int *ustackbot; // TODO: fix type
+struct UstackEntry *ustackbot;
 
 /*
 0043771C optinit
@@ -353,14 +353,14 @@ int *ustackbot; // TODO: fix type
 0043CFCC readnxtinst
 00456A2C oneproc
 */
-int *ustack; // TODO: fix type
+struct UstackEntry *ustack;
 
 /*
 0043771C optinit
 00439188 procinit
 0043CFCC readnxtinst
 */
-int *parstackbot; // TODO: fix type
+struct ParstackEntry *parstackbot;
 
 /*
 0043771C optinit
@@ -368,7 +368,7 @@ int *parstackbot; // TODO: fix type
 0043B2B8 func_0043B2B8
 0043CFCC readnxtinst
 */
-int *parstack; // TODO: fix type
+struct ParstackEntry *parstack;
 
 /*
 0041FC80 genloadaddr
@@ -517,7 +517,7 @@ size_t entnam0len;
 0043B084 func_0043B084
 0047F8E4 getfloatval
 */
-void *realstore; // TODO: fix type (some linked list of 256 bytes data + 4 byte next ptr)
+struct RealstoreData *realstore;
 
 /*
 00439188 procinit
@@ -525,7 +525,7 @@ void *realstore; // TODO: fix type (some linked list of 256 bytes data + 4 byte 
 0043C56C func_0043C56C
 0043CFCC readnxtinst
 */
-void *currealpool; // TODO: same as above
+struct RealstoreData *currealpool;
 
 /*
 00439188 procinit
@@ -1417,7 +1417,7 @@ int regsinclass1;
 0043771C optinit
 004394FC procinit_regs
 */
-int seterregs[4]; // likely two 64-bit words
+long long int seterregs[2];
 
 /*
 00420A3C prolog
@@ -1425,7 +1425,7 @@ int seterregs[4]; // likely two 64-bit words
 0043771C optinit
 004394FC procinit_regs
 */
-int seteeregs[4]; // likely two 64-bit words
+long long int seteeregs[2];
 
 /*
 0043771C optinit
@@ -1433,27 +1433,27 @@ int seteeregs[4]; // likely two 64-bit words
 00467C34 needsplit
 00467F04 split
 */
-int setregs[4]; // likely two 64-bit words
+long long int setregs[2];
 
 /*
 00420A3C prolog
 004394FC procinit_regs
 00469280 globalcolor
 */
-int usedeeregs[2][2]; // likely two 64-bit words
+long long int usedeeregs[2];
 
 /*
 004394FC procinit_regs
 00461AAC makelivranges
 */
-int dftregsused[2];
+long long int dftregsused;
 
 /*
 004394FC procinit_regs
 00468A14 cupcosts
 00469280 globalcolor
 */
-int regscantpass[2]; // likely 64-bit word
+long long int regscantpass;
 
 /*
 00420A3C prolog
@@ -2343,6 +2343,13 @@ int unroll_limit;
 int sizethreshold;
 
 /*
+00459FB0 insertlda
+0045BF44 checkforvreg
+0045C150 prepass
+*/
+void *ldatab[3113]; // TODO: fix type (0x10 bytes allocated)
+
+/*
 00410204 codemotion
 0041550C func_0041550C
 004175BC copypropagate
@@ -2377,7 +2384,7 @@ int sizethreshold;
 0047D838 entervregveqv
 0047FF7C skipproc
 */
-void *ldatab[3113]; // TODO: fix type (0x10 bytes allocated)
+struct Proc *curproc;
 
 /*
 004175BC copypropagate
@@ -2398,21 +2405,14 @@ void *ldatab[3113]; // TODO: fix type (0x10 bytes allocated)
 0045D208 patchvectors
 004638C0 regdataflow
 */
-void *curproc; // TODO: fix type
+struct Proc *indirprocs;
 
 /*
 0043CFCC readnxtinst
 0045C150 prepass
 00469280 globalcolor
 */
-void *indirprocs; // TODO: fix type (0x3c bytes allocated, see prepass)
-
-/*
-0043CFCC readnxtinst
-0045C150 prepass
-00469280 globalcolor
-*/
-void *ciaprocs; // TODO: same as above
+struct Proc *ciaprocs;
 
 /*
 004175BC copypropagate
