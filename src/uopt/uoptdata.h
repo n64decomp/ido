@@ -8,6 +8,12 @@
 
 #include "bitvector.h"
 
+struct StrList {
+    char str[1024];
+    int len;
+    struct StrList *next;
+};
+
 struct livbb {
     int unk0;
     int unk4;
@@ -169,7 +175,7 @@ extern bool doscm;
 extern bool docm;
 extern char proc_to_print[1024];
 extern bool at_proc_to_print;
-extern void *ctrl_head; // TODO: fix type (1032 bytes allocated)
+extern struct StrList *ctrl_head;
 extern int dbugno;
 extern bool genbbnum;
 extern bool doingcopy;
@@ -219,7 +225,7 @@ extern bool stack_reversed;
 extern bool strictieee;
 extern bool fp32reg;
 extern bool multibbunroll;
-extern bool warn_flag;
+extern unsigned char warn_flag;
 extern unsigned char entflag;
 extern int unroll_times;
 extern int unroll_limit;

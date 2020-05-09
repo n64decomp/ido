@@ -1774,7 +1774,7 @@ bool at_proc_to_print;
 0045B508 oneprocprepass
 0045C804 proc_suppressed
 */
-void *ctrl_head; // TODO: fix type (1032 bytes allocated)
+struct StrList *ctrl_head;
 
 /*
 00410204 codemotion
@@ -2310,7 +2310,7 @@ bool multibbunroll;
 0047B51C ovfwwarning
 0047FF7C skipproc
 */
-bool warn_flag;
+unsigned char warn_flag;
 
 /*
 004175BC copypropagate

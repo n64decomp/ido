@@ -5,4 +5,6 @@
 
 void *alloc_realloc(void *old_ptr, ssize_t old_size_16_byte_blocks, ssize_t new_size_16_byte_blocks, struct AllocBlock **heap);
 
+void getoption(int uopt_option, int n);
+
 #endif

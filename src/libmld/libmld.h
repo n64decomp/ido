@@ -3,4 +3,7 @@
 
 extern char *st_errname;
 
+// stio.c
+int st_readbinary(const char filename[128], char how);
+
 #endif

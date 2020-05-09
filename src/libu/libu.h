@@ -27,5 +27,8 @@ int ugetint(void);
 int ugeteof(void);
 void ugetclose(void);
 
+// uini.c
+void uini(void);
+
 
 #endif
