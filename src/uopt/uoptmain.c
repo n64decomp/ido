@@ -33,7 +33,7 @@
 */
 static void func_00456310(bool *sp4F) { // originally embedded func
     enum Uopcode op;
-    struct Stat *statpos;
+    struct Var *statpos;
     struct GraphnodeList *graphnode_list;
 
     if (filteringout || *sp4F) {
@@ -84,7 +84,7 @@ static void func_00456310(bool *sp4F) { // originally embedded func
             if (op == Ulab) {
                 graphtail->staticno = (unsigned short)curstaticno++;
                 extendstat(0x60); // Unop?
-                curgraphnode->stat = stattail;
+                curgraphnode->stat20 = stattail;
                 init_node_vectors(curgraphnode);
             }
         }
@@ -173,7 +173,7 @@ static void func_00456310(bool *sp4F) { // originally embedded func
         if (outofmem) {
             return;
         }
-        curgraphnode->stat = stattail;
+        curgraphnode->stat20 = stattail;
         codeimage();
     }
 }
@@ -233,7 +233,7 @@ void oneproc(void) {
                 curgraphnode = graphtail;
                 graphtail->staticno = 0;
                 extendstat(0x60);
-                curgraphnode->stat = curgraphnode->stat1C;
+                curgraphnode->stat20 = curgraphnode->stat1C;
                 init_node_vectors(curgraphnode);
                 curstaticno = 1;
             }
@@ -469,8 +469,8 @@ void oneproc(void) {
 int main1(int argc, char *argv[]) {
     timer = getclock();
     optinit();
-    if (suppressopt != 0) {
-        if (o0o1specified == 0 && warn_flag != 2) {
+    if (suppressopt) {
+        if (!o0o1specified && warn_flag != 2) {
             writeln(err.c_file);
             write_string(err.c_file, "uopt: Warning: file not optimized; use -g3 if both optimization and debug wanted", 0x50, 0x50);
             writeln(err.c_file);
@@ -502,13 +502,13 @@ int main1(int argc, char *argv[]) {
             getop();
         }
     }
-    if (verbose != 0) {
+    if (verbose) {
         writeln(err.c_file);
     }
     uputclose();
     write_updated_st();
     timer = (getclock() - timer);
-    if (listwritten != 0) {
+    if (listwritten) {
         write_string(list.c_file, " * * ", 5, 5);
         write_integer(list.c_file, timer / 1000, 4, 10);
         write_char(list.c_file, '.', 1);
@@ -516,10 +516,10 @@ int main1(int argc, char *argv[]) {
         write_string(list.c_file, " SECONDS IN WHOLE UCODE TO UCODE OPTIMIZATION", 0x2D, 0x2D);
         writeln(list.c_file);
     }
-    if (listwritten != 0) {
+    if (listwritten) {
         printstat();
     }
-    if (warned != 0 && warn_flag == 2) {
+    if (warned && warn_flag == 2) {
         exit(1);
     }
     return 0;

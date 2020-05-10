@@ -427,7 +427,7 @@ void *temploctail; // TODO: fix type
 00473D84 func_00473D84
 0047CE98 blktolev
 */
-bool curlevel;
+int curlevel;
 
 /*
 0041550C func_0041550C
@@ -716,7 +716,7 @@ int curloopno;
 004761D0 tail_recursion
 0047CDA4 extendstat
 */
-struct Stat *stathead;
+struct Var *stathead;
 
 /*
 00439188 procinit
@@ -735,7 +735,7 @@ struct Stat *stathead;
 004761D0 tail_recursion
 0047CDA4 extendstat
 */
-struct Stat *stattail;
+struct Var *stattail;
 
 /*
 0043A0A8 func_0043A0A8
@@ -1173,7 +1173,7 @@ struct BitVector workbvect;
 00479DC4 eliminduct
 0047CF0C newbit
 */
-void *bittab; // TODO: fix type
+struct BittabItem *bittab;
 
 /*
 00439188 procinit

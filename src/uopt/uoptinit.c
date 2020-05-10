@@ -302,7 +302,7 @@ void processargs(void) {
             } else if (arg[1] == 'g' && arg[2] == '0' && arg[3] == ' ') {
                 // nothing
             } else if (arg[1] == 'g' && arg[2] == '3' && arg[3] == ' ') {
-                    update_sym_file = true;
+                update_sym_file = true;
             } else if (arg[1] == 'w') {
                 if (arg[2] == ' ') {
                     warn_flag = 1;

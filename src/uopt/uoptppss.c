@@ -1,3 +1,6 @@
+#include "uoptdata.h"
+#include "uoptppss.h"
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -798,28 +801,21 @@ glabel updatelab
     .size updatelab, .-updatelab
     .end updatelab
 
-glabel searchlab
-    .ent searchlab
-    # 00439C40 getop
-/* 00459530 8CA20000 */  lw    $v0, ($a1)
-/* 00459534 10820009 */  beq   $a0, $v0, .L0045955C
-/* 00459538 0082082B */   sltu  $at, $a0, $v0
-.L0045953C:
-/* 0045953C 50200004 */  beql  $at, $zero, .L00459550
-/* 00459540 8CA50010 */   lw    $a1, 0x10($a1)
-/* 00459544 10000002 */  b     .L00459550
-/* 00459548 8CA5000C */   lw    $a1, 0xc($a1)
-/* 0045954C 8CA50010 */  lw    $a1, 0x10($a1)
-.L00459550:
-/* 00459550 8CA20000 */  lw    $v0, ($a1)
-/* 00459554 5482FFF9 */  bnel  $a0, $v0, .L0045953C
-/* 00459558 0082082B */   sltu  $at, $a0, $v0
-.L0045955C:
-/* 0045955C 03E00008 */  jr    $ra
-/* 00459560 00A01025 */   move  $v0, $a1
-    .type searchlab, @function
-    .size searchlab, .-searchlab
-    .end searchlab
+)"");
+
+/*
+00439C40 getop
+*/
+struct Label *searchlab(int arg0, struct Label *list) {
+    while (arg0 != list->unk0) {
+        list = arg0 < list->unk0 ? list->prev : list->next;
+    }
+    return list;
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel update_veqv_in_table
     .ent update_veqv_in_table

@@ -32,6 +32,15 @@ struct optabrec {
     bool unk0, unk1, unk2; // TODO what are these?
 };
 
+struct Label {
+    unsigned int unk0; // identifier?
+    int len;
+    bool unk8; // or unsigned char?
+    bool branched_back;
+    struct Label *prev;
+    struct Label *next;
+};
+
 struct UstackEntry {
     void *unk0;
     int unk4;
@@ -50,6 +59,16 @@ struct RealstoreData {
     struct RealstoreData *next;
 };
 
+struct Var;
+
+struct VarList {
+    struct VarList *prev; // towards head
+    struct VarList *next; // towards tail
+    bool unk8; // or unsigned char?
+    unsigned char unk9; // some enum
+    struct Var *var;
+};
+
 struct Graphnode;
 struct GraphnodeList {
     struct Graphnode *graphnode;
@@ -65,9 +84,11 @@ struct Graphnode {
     int unk10;
     struct GraphnodeList *unk14;
     struct GraphnodeList *unk18;
-    struct Stat *stat1C; // 0x1C
-    struct Stat *stat; // 0x20
-    int unk[(0x174 - 0x24) / 4]; // 0x24
+    struct Var *stat1C; // 0x1C
+    struct Var *stat20; // 0x20
+    struct VarList *varlisthead; // 0x24
+    struct VarList *varlisttail; // 0x28
+    int unk[(0x174 - 0x2C) / 4]; // 0x2C
 };
 
 struct Proc {
@@ -88,27 +109,34 @@ struct Proc {
     int unk1C;
     int bvsize; // 0x20
     bool *unk24; // something with regstaken / parregs
-    void *unk28; // sent to searchlab
+    struct Label *labels; // sent to searchlab
     struct Proc *unk2C;
     struct Proc *next;
     void *unk34;
     void *unk38;
 };
 
-struct Stat {
+struct Var {
     unsigned char unk0;
     int unk4;
-    struct Stat *next; // 0x8, towards tail
-    struct Stat *prev; // 0xC, towards head
+    struct Var *next; // 0x8, towards tail
+    struct Var *prev; // 0xC, towards head
     void *graphnode; // 0x10
-    int unk14;
-    int unk18;
+    unsigned char dtype; // 0x14
+    unsigned char unk15;
+    unsigned char unk16; // variable size?
+    struct VarList *varlist; // 0x18
     int unk1C;
     void *unk20;
     int unk24;
     int unk28;
     int unk2C;
     int unk30;
+};
+
+struct BittabItem {
+    void *unk0; // a pointer returned by appendichain
+    int unk4;
 };
 
 extern union Bcode u;
@@ -134,7 +162,7 @@ extern struct ParstackEntry *parstack;
 extern int tempdisp;
 extern void *templochead; // TODO: fix type (0x14 bytes allocated)
 extern void *temploctail; // TODO: fix type
-extern bool curlevel;
+extern int curlevel;
 extern int curblk;
 extern char entnam0[1024];
 extern size_t entnam0len;
@@ -152,8 +180,8 @@ extern struct Graphnode *graphtail;
 extern struct Graphnode *curgraphnode;
 extern unsigned int curstaticno;
 extern int curloopno;
-extern struct Stat *stathead;
-extern struct Stat *stattail;
+extern struct Var *stathead;
+extern struct Var *stattail;
 extern int blklev[128];
 extern int staticlinkloc;
 extern void *nocopy; // TODO: fix type (0x40 bytes allocated)
@@ -192,7 +220,7 @@ extern struct BitVector iscolored[2];
 extern struct BitVector old;
 extern struct BitVector workbvect;
 
-extern void *bittab; // TODO: fix type
+extern struct BittabItem *bittab; // dynamically allocated array
 extern int bittabsize;
 extern void *pdeftab; // TODO: fix type
 extern int pdeftabsize;
