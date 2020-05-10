@@ -2768,8 +2768,8 @@ void extendstat(unsigned char unk0) {
         stattail->next = var;
     }
     stattail = var;
-    if (curgraphnode != NULL && curgraphnode->stat1C == NULL) {
-        curgraphnode->stat1C = stattail;
+    if (curgraphnode != NULL && curgraphnode->stat_head == NULL) {
+        curgraphnode->stat_head = stattail;
     }
 }
 

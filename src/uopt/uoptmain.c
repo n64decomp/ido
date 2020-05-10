@@ -84,7 +84,7 @@ static void func_00456310(bool *sp4F) { // originally embedded func
             if (op == Ulab) {
                 graphtail->staticno = (unsigned short)curstaticno++;
                 extendstat(0x60); // Unop?
-                curgraphnode->stat20 = stattail;
+                curgraphnode->stat_tail = stattail;
                 init_node_vectors(curgraphnode);
             }
         }
@@ -173,7 +173,7 @@ static void func_00456310(bool *sp4F) { // originally embedded func
         if (outofmem) {
             return;
         }
-        curgraphnode->stat20 = stattail;
+        curgraphnode->stat_tail = stattail;
         codeimage();
     }
 }
@@ -233,7 +233,7 @@ void oneproc(void) {
                 curgraphnode = graphtail;
                 graphtail->staticno = 0;
                 extendstat(0x60);
-                curgraphnode->stat20 = curgraphnode->stat1C;
+                curgraphnode->stat_tail = curgraphnode->stat_head;
                 init_node_vectors(curgraphnode);
                 curstaticno = 1;
             }

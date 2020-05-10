@@ -1,3 +1,6 @@
+#include "libxmalloc/xmalloc.h"
+#include "uoptdata.h"
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -687,44 +690,39 @@ glabel ingraph
     .size ingraph, .-ingraph
     .end ingraph
 
-glabel init_graphnode
-    .ent init_graphnode
-    # 0042F424 appendgraph
-    # 0046FA20 new_header_node
-    # 004713E8 loopunroll
-    # 004761D0 tail_recursion
-/* 0042F374 3C1C0FBF */  .cpload $t9
-/* 0042F378 279CAF1C */  
-/* 0042F37C 0399E021 */  
-/* 0042F380 908E000B */  lbu   $t6, 0xb($a0)
-/* 0042F384 8F888A44 */  lw     $t0, %got(curlocln)($gp)
-/* 0042F388 2401FFBF */  li    $at, -65
-/* 0042F38C 31CFFF7F */  andi  $t7, $t6, 0xff7f
-/* 0042F390 31F800FF */  andi  $t8, $t7, 0xff
-/* 0042F394 A08F000B */  sb    $t7, 0xb($a0)
-/* 0042F398 0301C824 */  and   $t9, $t8, $at
-/* 0042F39C AC800000 */  sw    $zero, ($a0)
-/* 0042F3A0 AC800014 */  sw    $zero, 0x14($a0)
-/* 0042F3A4 AC800018 */  sw    $zero, 0x18($a0)
-/* 0042F3A8 AC80000C */  sw    $zero, 0xc($a0)
-/* 0042F3AC A0800006 */  sb    $zero, 6($a0)
-/* 0042F3B0 A0800007 */  sb    $zero, 7($a0)
-/* 0042F3B4 A0800004 */  sb    $zero, 4($a0)
-/* 0042F3B8 A0800005 */  sb    $zero, 5($a0)
-/* 0042F3BC A099000B */  sb    $t9, 0xb($a0)
-/* 0042F3C0 AC80001C */  sw    $zero, 0x1c($a0)
-/* 0042F3C4 AC800020 */  sw    $zero, 0x20($a0)
-/* 0042F3C8 AC800024 */  sw    $zero, 0x24($a0)
-/* 0042F3CC AC800028 */  sw    $zero, 0x28($a0)
-/* 0042F3D0 AC800030 */  sw    $zero, 0x30($a0)
-/* 0042F3D4 AC8000EC */  sw    $zero, 0xec($a0)
-/* 0042F3D8 AC8000F0 */  sw    $zero, 0xf0($a0)
-/* 0042F3DC 8D080000 */  lw    $t0, ($t0)
-/* 0042F3E0 03E00008 */  jr    $ra
-/* 0042F3E4 AC880134 */   sw    $t0, 0x134($a0)
-    .type init_graphnode, @function
-    .size init_graphnode, .-init_graphnode
-    .end init_graphnode
+)"");
+
+/*
+0042F424 appendgraph
+0046FA20 new_header_node
+004713E8 loopunroll
+004761D0 tail_recursion
+*/
+void init_graphnode(struct Graphnode *node) {
+    node->unkBb8 = 0;
+    node->unk0 = 0;
+    node->unk14 = NULL;
+    node->unk18 = NULL;
+    node->next = NULL;
+    node->unk6 = 0;
+    node->unk7 = 0;
+    node->unk4 = 0;
+    node->unk5 = 0;
+    node->unkBb4 = 0;
+    node->stat_head = 0;
+    node->stat_tail = 0;
+    node->varlisthead = 0;
+    node->varlisttail = 0;
+    node->unk30 = 0;
+    node->unkEC = 0;
+    node->unkF0 = 0;
+    node->line = curlocln;
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
+.text
 
 glabel init_node_vectors
     .ent init_node_vectors
@@ -753,65 +751,35 @@ glabel init_node_vectors
     .size init_node_vectors, .-init_node_vectors
     .end init_node_vectors
 
-glabel appendgraph
-    .ent appendgraph
-    # 0043CA8C func_0043CA8C
-    # 0043CFCC readnxtinst
-    # 00456310 func_00456310
-    # 00456A2C oneproc
-/* 0042F424 3C1C0FBF */  .cpload $t9
-/* 0042F428 279CAE6C */  
-/* 0042F42C 0399E021 */  
-/* 0042F430 8F8389AC */  lw     $v1, %got(graphhead)($gp)
-/* 0042F434 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0042F438 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0042F43C 8C6E0000 */  lw    $t6, ($v1)
-/* 0042F440 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0042F444 15C0000C */  bnez  $t6, .L0042F478
-/* 0042F448 00000000 */   nop   
-/* 0042F44C 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0042F450 24040174 */  li    $a0, 372
-/* 0042F454 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 0042F458 0320F809 */  jalr  $t9
-/* 0042F45C 00000000 */   nop   
-/* 0042F460 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0042F464 8F8389AC */  lw     $v1, %got(graphhead)($gp)
-/* 0042F468 8F8589B0 */  lw     $a1, %got(graphtail)($gp)
-/* 0042F46C AC620000 */  sw    $v0, ($v1)
-/* 0042F470 1000000B */  b     .L0042F4A0
-/* 0042F474 ACA20000 */   sw    $v0, ($a1)
-.L0042F478:
-/* 0042F478 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0042F47C 24040174 */  li    $a0, 372
-/* 0042F480 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 0042F484 0320F809 */  jalr  $t9
-/* 0042F488 00000000 */   nop   
-/* 0042F48C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0042F490 8F8589B0 */  lw     $a1, %got(graphtail)($gp)
-/* 0042F494 8CB80000 */  lw    $t8, ($a1)
-/* 0042F498 AF02000C */  sw    $v0, 0xc($t8)
-/* 0042F49C ACA20000 */  sw    $v0, ($a1)
-.L0042F4A0:
-/* 0042F4A0 8CA40000 */  lw    $a0, ($a1)
-/* 0042F4A4 14800005 */  bnez  $a0, .L0042F4BC
-/* 0042F4A8 00000000 */   nop   
-/* 0042F4AC 8F818B20 */  lw     $at, %got(outofmem)($gp)
-/* 0042F4B0 24190001 */  li    $t9, 1
-/* 0042F4B4 10000005 */  b     .L0042F4CC
-/* 0042F4B8 A0390000 */   sb    $t9, ($at)
-.L0042F4BC:
-/* 0042F4BC 8F9982C8 */  lw    $t9, %call16(init_graphnode)($gp)
-/* 0042F4C0 0320F809 */  jalr  $t9
-/* 0042F4C4 00000000 */   nop   
-/* 0042F4C8 8FBC0018 */  lw    $gp, 0x18($sp)
-.L0042F4CC:
-/* 0042F4CC 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0042F4D0 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0042F4D4 03E00008 */  jr    $ra
-/* 0042F4D8 00000000 */   nop   
-    .type appendgraph, @function
-    .size appendgraph, .-appendgraph
-    .end appendgraph
+)"");
+
+/*
+0043CA8C func_0043CA8C
+0043CFCC readnxtinst
+00456310 func_00456310
+00456A2C oneproc
+*/
+void appendgraph(void) {
+    struct Graphnode *node;
+
+    if (graphhead == NULL) {
+        node = (struct Graphnode *)alloc_new(sizeof(struct Graphnode), &perm_heap);
+        graphhead = node;
+    } else {
+        node = (struct Graphnode *)alloc_new(sizeof(struct Graphnode), &perm_heap);
+        graphtail->next = node;
+    }
+    graphtail = node;
+    if (graphtail == NULL) {
+        outofmem = true;
+        return;
+    }
+    init_graphnode(graphtail);
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_0042F4DC, @function
 func_0042F4DC:

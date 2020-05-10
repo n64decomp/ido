@@ -395,14 +395,14 @@ int tempdisp;
 00476AA0 findbbtemps
 00476CA0 gettemp
 */
-void *templochead; // TODO: fix type (0x14 bytes allocated)
+struct Temploc *templochead; // TODO: fix type (0x14 bytes allocated)
 
 /*
 00439188 procinit
 00465E50 spilltemps
 00476CA0 gettemp
 */
-void *temploctail; // TODO: fix type
+struct Temploc *temploctail; // TODO: fix type
 
 /*
 004175BC copypropagate

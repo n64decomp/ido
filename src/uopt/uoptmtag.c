@@ -1,3 +1,7 @@
+#include "libu/libu.h"
+#include "ucode.h"
+#include "uoptdata.h"
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -6,14 +10,6 @@ __asm__(R""(
 .endm
 
 .rdata
-RO_1000D1B0:
-    # 00458678 mtagwarning
-    .ascii " memory tags in "
-
-RO_1000D1C0:
-    # 00458678 mtagwarning
-    .ascii "uopt: Warning: used up all "
-
 RO_1000D1DB:
     # 00458B88 assign_mtag
     .asciz "uoptmtag.p"
@@ -29,276 +25,129 @@ jtbl_1000D1E8:
     .gpword .L00458D80
     .gpword .L00458D74
 
-
-.bss
-# 10013188
-glabel mtagtab
-    # 004584D0 init_mtagtab
-    # 00458B88 assign_mtag
-    .space 1676
-    .size mtagtab, 1676
-    .type mtagtab, @object
-
-# 10013814
-glabel mtagno_anything
-    # 004584D0 init_mtagtab
-    # 00458B88 assign_mtag
-    .space 4
-    .size mtagno_anything, 4
-    .type mtagno_anything, @object
-
-# 10013818
-glabel mtagno_heap
-    # 004584D0 init_mtagtab
-    # 00458B88 assign_mtag
-    .space 4
-    .size mtagno_heap, 4
-    .type mtagno_heap, @object
-
-# 1001381C
-glabel mtagno_readonly
-    # 004584D0 init_mtagtab
-    # 00458B88 assign_mtag
-    .space 4
-    .size mtagno_readonly, 4
-    .type mtagno_readonly, @object
-
-# 10013820
-glabel mtagno_non_local
-    # 004584D0 init_mtagtab
-    # 00458B88 assign_mtag
-    .space 4
-    .size mtagno_non_local, 4
-    .type mtagno_non_local, @object
-
-# 10013824
-glabel next_mtagno
-    # 004584D0 init_mtagtab
-    # 0045877C searchmtag_parm
-    # 00458998 func_00458998
-    # 00458B88 assign_mtag
-    .space 4
-    .size next_mtagno, 4
-    .type next_mtagno, @object
-
-# 10013828
-glabel f77_parm_mtag_head
-    # 004584D0 init_mtagtab
-    # 0045877C searchmtag_parm
-    .space 4
-    .size f77_parm_mtag_head, 4
-    .type f77_parm_mtag_head, @object
-    .space 4
-
-# 10013830
-glabel uu
-    # 004584D0 init_mtagtab
-    # 0045877C searchmtag_parm
-    # 0045889C func_0045889C
-    # 00458998 func_00458998
-    # 00458B88 assign_mtag
-    .space 32
-    .size uu, 32
-    .type uu, @object
-    .space 40
-
-
-
-.set noat      # allow manual use of $at
-.set noreorder # don't insert nops after branches
-
+.set noat
+.set noreorder
 .text
+)"");
 
-glabel init_mtagtab
-    .ent init_mtagtab
-    # 00456A2C oneproc
-/* 004584D0 3C1C0FBC */  .cpload $t9
-/* 004584D4 279C1DC0 */  
-/* 004584D8 0399E021 */  
-/* 004584DC 8F8E8ACC */  lw     $t6, %got(domtag)($gp)
-/* 004584E0 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 004584E4 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 004584E8 91CE0000 */  lbu   $t6, ($t6)
-/* 004584EC AFBC0018 */  sw    $gp, 0x18($sp)
-/* 004584F0 AFB00014 */  sw    $s0, 0x14($sp)
-/* 004584F4 11C0005B */  beqz  $t6, .L00458664
-/* 004584F8 240501A3 */   li    $a1, 419
-/* 004584FC 30A60003 */  andi  $a2, $a1, 3
-/* 00458500 10C0000B */  beqz  $a2, .L00458530
-/* 00458504 00001825 */   move  $v1, $zero
-/* 00458508 8F988918 */  lw     $t8, %got(mtagtab)($gp)
-/* 0045850C 00007880 */  sll   $t7, $zero, 2
-/* 00458510 00C02025 */  move  $a0, $a2
-/* 00458514 01F81021 */  addu  $v0, $t7, $t8
-.L00458518:
-/* 00458518 24630001 */  addiu $v1, $v1, 1
-/* 0045851C AC400000 */  sw    $zero, ($v0)
-/* 00458520 1483FFFD */  bne   $a0, $v1, .L00458518
-/* 00458524 24420004 */   addiu $v0, $v0, 4
-/* 00458528 1065000C */  beq   $v1, $a1, .L0045855C
-/* 0045852C 00000000 */   nop   
-.L00458530:
-/* 00458530 8F888918 */  lw     $t0, %got(mtagtab)($gp)
-/* 00458534 0003C880 */  sll   $t9, $v1, 2
-/* 00458538 00054880 */  sll   $t1, $a1, 2
-/* 0045853C 01282021 */  addu  $a0, $t1, $t0
-/* 00458540 03281021 */  addu  $v0, $t9, $t0
-.L00458544:
-/* 00458544 24420010 */  addiu $v0, $v0, 0x10
-/* 00458548 AC40FFF0 */  sw    $zero, -0x10($v0)
-/* 0045854C AC40FFF4 */  sw    $zero, -0xc($v0)
-/* 00458550 AC40FFF8 */  sw    $zero, -8($v0)
-/* 00458554 1444FFFB */  bne   $v0, $a0, .L00458544
-/* 00458558 AC40FFFC */   sw    $zero, -4($v0)
-.L0045855C:
-/* 0045855C 8F8A8B6C */  lw     $t2, %got(curproc)($gp)
-/* 00458560 8F818930 */  lw     $at, %got(f77_parm_mtag_head)($gp)
-/* 00458564 8F908934 */  lw     $s0, %got(uu)($gp)
-/* 00458568 8D4A0000 */  lw    $t2, ($t2)
-/* 0045856C AC200000 */  sw    $zero, ($at)
-/* 00458570 8F82891C */  lw     $v0, %got(mtagno_anything)($gp)
-/* 00458574 8D4B0038 */  lw    $t3, 0x38($t2)
-/* 00458578 240D008F */  li    $t5, 143
-/* 0045857C A20D0000 */  sb    $t5, ($s0)
-/* 00458580 256C0001 */  addiu $t4, $t3, 1
-/* 00458584 AE0C0004 */  sw    $t4, 4($s0)
-/* 00458588 A6000002 */  sh    $zero, 2($s0)
-/* 0045858C AC4C0000 */  sw    $t4, ($v0)
-/* 00458590 8F998740 */  lw    $t9, %call16(uwrite)($gp)
-/* 00458594 02002025 */  move  $a0, $s0
-/* 00458598 0320F809 */  jalr  $t9
-/* 0045859C 00000000 */   nop   
-/* 004585A0 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004585A4 24080001 */  li    $t0, 1
-/* 004585A8 02002025 */  move  $a0, $s0
-/* 004585AC 8F8F8B6C */  lw     $t7, %got(curproc)($gp)
-/* 004585B0 8F828920 */  lw     $v0, %got(mtagno_heap)($gp)
-/* 004585B4 8DEF0000 */  lw    $t7, ($t7)
-/* 004585B8 8DF80038 */  lw    $t8, 0x38($t7)
-/* 004585BC A6080002 */  sh    $t0, 2($s0)
-/* 004585C0 27190002 */  addiu $t9, $t8, 2
-/* 004585C4 AE190004 */  sw    $t9, 4($s0)
-/* 004585C8 AC590000 */  sw    $t9, ($v0)
-/* 004585CC 8F998740 */  lw    $t9, %call16(uwrite)($gp)
-/* 004585D0 0320F809 */  jalr  $t9
-/* 004585D4 00000000 */   nop   
-/* 004585D8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004585DC 240E0002 */  li    $t6, 2
-/* 004585E0 02002025 */  move  $a0, $s0
-/* 004585E4 8F8A8B6C */  lw     $t2, %got(curproc)($gp)
-/* 004585E8 8F828924 */  lw     $v0, %got(mtagno_readonly)($gp)
-/* 004585EC 8D4A0000 */  lw    $t2, ($t2)
-/* 004585F0 8D4B0038 */  lw    $t3, 0x38($t2)
-/* 004585F4 A60E0002 */  sh    $t6, 2($s0)
-/* 004585F8 256C0003 */  addiu $t4, $t3, 3
-/* 004585FC AE0C0004 */  sw    $t4, 4($s0)
-/* 00458600 AC4C0000 */  sw    $t4, ($v0)
-/* 00458604 8F998740 */  lw    $t9, %call16(uwrite)($gp)
-/* 00458608 0320F809 */  jalr  $t9
-/* 0045860C 00000000 */   nop   
-/* 00458610 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00458614 24080003 */  li    $t0, 3
-/* 00458618 02002025 */  move  $a0, $s0
-/* 0045861C 8F8F8B6C */  lw     $t7, %got(curproc)($gp)
-/* 00458620 8F828928 */  lw     $v0, %got(mtagno_non_local)($gp)
-/* 00458624 8DEF0000 */  lw    $t7, ($t7)
-/* 00458628 8DF80038 */  lw    $t8, 0x38($t7)
-/* 0045862C A6080002 */  sh    $t0, 2($s0)
-/* 00458630 27190004 */  addiu $t9, $t8, 4
-/* 00458634 AE190004 */  sw    $t9, 4($s0)
-/* 00458638 AC590000 */  sw    $t9, ($v0)
-/* 0045863C 8F998740 */  lw    $t9, %call16(uwrite)($gp)
-/* 00458640 0320F809 */  jalr  $t9
-/* 00458644 00000000 */   nop   
-/* 00458648 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0045864C 8F8A8B6C */  lw     $t2, %got(curproc)($gp)
-/* 00458650 8F81892C */  lw     $at, %got(next_mtagno)($gp)
-/* 00458654 8D4A0000 */  lw    $t2, ($t2)
-/* 00458658 8D4B0038 */  lw    $t3, 0x38($t2)
-/* 0045865C 256C0005 */  addiu $t4, $t3, 5
-/* 00458660 AC2C0000 */  sw    $t4, ($at)
-.L00458664:
-/* 00458664 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 00458668 8FB00014 */  lw    $s0, 0x14($sp)
-/* 0045866C 27BD0020 */  addiu $sp, $sp, 0x20
-/* 00458670 03E00008 */  jr    $ra
-/* 00458674 00000000 */   nop   
-    .type init_mtagtab, @function
-    .size init_mtagtab, .-init_mtagtab
-    .end init_mtagtab
+/*
+004584D0 init_mtagtab
+00458B88 assign_mtag
+*/
+void *mtagtab[419];
 
-glabel mtagwarning
-    .ent mtagwarning
-    # 0045877C searchmtag_parm
-/* 00458678 3C1C0FBC */  .cpload $t9
-/* 0045867C 279C1C18 */  
-/* 00458680 0399E021 */  
-/* 00458684 8F8E8B58 */  lw     $t6, %got(warn_flag)($gp)
-/* 00458688 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0045868C 24020001 */  li    $v0, 1
-/* 00458690 91CE0000 */  lbu   $t6, ($t6)
-/* 00458694 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 00458698 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0045869C 104E0032 */  beq   $v0, $t6, .L00458768
-/* 004586A0 AFB00014 */   sw    $s0, 0x14($sp)
-/* 004586A4 8F818B08 */  lw     $at, %got(warned)($gp)
-/* 004586A8 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 004586AC 8F908908 */  lw     $s0, %got(err)($gp)
-/* 004586B0 A0220000 */  sb    $v0, ($at)
-/* 004586B4 0320F809 */  jalr  $t9
-/* 004586B8 8E040000 */   lw    $a0, ($s0)
-/* 004586BC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004586C0 8E040000 */  lw    $a0, ($s0)
-/* 004586C4 2406001B */  li    $a2, 27
-/* 004586C8 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 004586CC 8F858044 */  lw    $a1, %got(RO_1000D1C0)($gp)
-/* 004586D0 2407001B */  li    $a3, 27
-/* 004586D4 0320F809 */  jalr  $t9
-/* 004586D8 24A5D1C0 */   addiu $a1, %lo(RO_1000D1C0) # addiu $a1, $a1, -0x2e40
-/* 004586DC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004586E0 8E040000 */  lw    $a0, ($s0)
-/* 004586E4 24053FFF */  li    $a1, 16383
-/* 004586E8 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 004586EC 00003025 */  move  $a2, $zero
-/* 004586F0 2407000A */  li    $a3, 10
-/* 004586F4 0320F809 */  jalr  $t9
-/* 004586F8 00000000 */   nop   
-/* 004586FC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00458700 8E040000 */  lw    $a0, ($s0)
-/* 00458704 24060010 */  li    $a2, 16
-/* 00458708 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0045870C 8F858044 */  lw    $a1, %got(RO_1000D1B0)($gp)
-/* 00458710 24070010 */  li    $a3, 16
-/* 00458714 0320F809 */  jalr  $t9
-/* 00458718 24A5D1B0 */   addiu $a1, %lo(RO_1000D1B0) # addiu $a1, $a1, -0x2e50
-/* 0045871C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00458720 8E040000 */  lw    $a0, ($s0)
-/* 00458724 24060400 */  li    $a2, 1024
-/* 00458728 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0045872C 8F878984 */  lw     $a3, %got(entnam0len)($gp)
-/* 00458730 8F858DE4 */  lw     $a1, %got(entnam0)($gp)
-/* 00458734 0320F809 */  jalr  $t9
-/* 00458738 8CE70000 */   lw    $a3, ($a3)
-/* 0045873C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00458740 8E040000 */  lw    $a0, ($s0)
-/* 00458744 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 00458748 0320F809 */  jalr  $t9
-/* 0045874C 00000000 */   nop   
-/* 00458750 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00458754 8E040000 */  lw    $a0, ($s0)
-/* 00458758 8F9980A0 */  lw    $t9, %call16(fflush)($gp)
-/* 0045875C 0320F809 */  jalr  $t9
-/* 00458760 00000000 */   nop   
-/* 00458764 8FBC0018 */  lw    $gp, 0x18($sp)
-.L00458768:
-/* 00458768 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0045876C 8FB00014 */  lw    $s0, 0x14($sp)
-/* 00458770 27BD0020 */  addiu $sp, $sp, 0x20
-/* 00458774 03E00008 */  jr    $ra
-/* 00458778 00000000 */   nop   
-    .type mtagwarning, @function
-    .size mtagwarning, .-mtagwarning
-    .end mtagwarning
+/*
+004584D0 init_mtagtab
+00458B88 assign_mtag
+*/
+int mtagno_anything;
+
+/*
+004584D0 init_mtagtab
+00458B88 assign_mtag
+*/
+int mtagno_heap;
+
+/*
+004584D0 init_mtagtab
+00458B88 assign_mtag
+*/
+int mtagno_readonly;
+
+/*
+004584D0 init_mtagtab
+00458B88 assign_mtag
+*/
+int mtagno_non_local;
+
+/*
+004584D0 init_mtagtab
+0045877C searchmtag_parm
+00458998 func_00458998
+00458B88 assign_mtag
+*/
+int next_mtagno;
+
+/*
+004584D0 init_mtagtab
+0045877C searchmtag_parm
+*/
+void *f77_parm_mtag_head;
+
+/*
+004584D0 init_mtagtab
+0045877C searchmtag_parm
+0045889C func_0045889C
+00458998 func_00458998
+00458B88 assign_mtag
+*/
+struct Bcrec uu;
+
+/*
+00456A2C oneproc
+*/
+void init_mtagtab(void) {
+    int i;
+    int tagno;
+
+    if (!domtag) {
+        return;
+    }
+
+    for (i = 0; i < sizeof(mtagtab) / sizeof(mtagtab[0]); i++) {
+        mtagtab[i] = NULL;
+    }
+
+    f77_parm_mtag_head = NULL;
+
+    uu.Opc = Umtag;
+    tagno = curproc->unk38 + 1;
+    uu.I1 = tagno;
+    uu.Lexlev = 0;
+    mtagno_anything = tagno;
+    uwrite(&uu);
+
+    uu.Lexlev = 1;
+    tagno = curproc->unk38 + 2;
+    uu.I1 = tagno;
+    mtagno_heap = tagno;
+    uwrite(&uu);
+
+    uu.Lexlev = 2;
+    tagno = curproc->unk38 + 3;
+    uu.I1 = tagno;
+    mtagno_readonly = tagno;
+    uwrite(&uu);
+
+    uu.Lexlev = 3;
+    tagno = curproc->unk38 + 4;
+    uu.I1 = tagno;
+    mtagno_non_local = tagno;
+    uwrite(&uu);
+
+    next_mtagno = curproc->unk38 + 5;
+}
+
+/*
+0045877C searchmtag_parm
+*/
+void mtagwarning(void) {
+    if (warn_flag != 1) {
+        warned = true;
+        writeln(err.c_file);
+        write_string(err.c_file, "uopt: Warning: used up all ", 27, 27);
+        write_integer(err.c_file, 0x3FFF, 0, 10); // was this a macro/define?
+        write_string(err.c_file, " memory tags in ", 16, 16);
+        write_string(err.c_file, entnam0, 1024, entnam0len);
+        writeln(err.c_file);
+        fflush(err.c_file);
+    }
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
+.text
 
 glabel searchmtag_parm
     .ent searchmtag_parm

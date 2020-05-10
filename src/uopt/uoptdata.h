@@ -66,7 +66,7 @@ struct VarList {
     struct VarList *next; // towards tail
     bool unk8; // or unsigned char?
     unsigned char unk9; // some enum
-    struct Var *var;
+    struct Var *var; // 0xC
 };
 
 struct Graphnode;
@@ -77,18 +77,30 @@ struct GraphnodeList {
 
 struct Graphnode {
     int unk0;
-    int unk4;
-    unsigned short staticno;
-    unsigned short padA;
-    struct Graphnode *next;
+    unsigned char unk4;
+    unsigned char unk5;
+    unsigned char unk6;
+    unsigned char unk7;
+    unsigned short staticno; // 0x8
+    unsigned char padA;
+    unsigned char unkBb8: 1;
+    unsigned char unkBb4: 1;
+    struct Graphnode *next; // 0xC
     int unk10;
     struct GraphnodeList *unk14;
     struct GraphnodeList *unk18;
-    struct Var *stat1C; // 0x1C
-    struct Var *stat20; // 0x20
+    struct Var *stat_head; // 0x1C
+    struct Var *stat_tail; // 0x20
     struct VarList *varlisthead; // 0x24
     struct VarList *varlisttail; // 0x28
-    int unk[(0x174 - 0x2C) / 4]; // 0x2C
+    int unk2C;
+    int unk30;
+    int unk34[(0xEC - 0x34) / 4];
+    int unkEC;
+    int unkF0;
+    int unkF4[(0x134 - 0xF4) / 4];
+    int line; // 0x134 set to curlocln in init_graphnode
+    int unk138[(0x174 - 0x138) / 4];
 };
 
 struct Proc {
@@ -113,7 +125,7 @@ struct Proc {
     struct Proc *unk2C;
     struct Proc *next;
     void *unk34;
-    void *unk38;
+    int unk38; // mtag uses this
 };
 
 struct Var {
@@ -121,8 +133,8 @@ struct Var {
     int unk4;
     struct Var *next; // 0x8, towards tail
     struct Var *prev; // 0xC, towards head
-    void *graphnode; // 0x10
-    unsigned char dtype; // 0x14
+    struct Graphnode *graphnode; // 0x10
+    unsigned char dtype; // 0x14, this seems wrong, should be block index (see tail_recursion)
     unsigned char unk15;
     unsigned char unk16; // variable size?
     struct VarList *varlist; // 0x18
@@ -132,6 +144,14 @@ struct Var {
     int unk28;
     int unk2C;
     int unk30;
+};
+
+struct Temploc {
+    int index;
+    int disp; // start offset (leftmost) in stack frame
+    int size;
+    bool not_spilled;
+    struct Temploc *next;
 };
 
 struct BittabItem {
@@ -160,8 +180,8 @@ extern struct UstackEntry *ustack;
 extern struct ParstackEntry *parstackbot;
 extern struct ParstackEntry *parstack;
 extern int tempdisp;
-extern void *templochead; // TODO: fix type (0x14 bytes allocated)
-extern void *temploctail; // TODO: fix type
+extern struct Temploc *templochead;
+extern struct Temploc *temploctail;
 extern int curlevel;
 extern int curblk;
 extern char entnam0[1024];
