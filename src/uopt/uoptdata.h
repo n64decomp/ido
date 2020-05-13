@@ -41,6 +41,23 @@ struct Label {
     struct Label *next;
 };
 
+// See insertvar
+struct VariableInner {
+    int unk0; // can be negative
+    int unk4bFFFFF800: 21;
+    int unk4b700: 3;
+    int pad4bff: 8;
+};
+struct Variable {
+    bool unk0;
+    bool unk1;
+    bool unk2;
+    struct VariableInner inner;
+
+    struct Variable *prev; // 0x10
+    struct Variable *next; // 0x14
+};
+
 struct UstackEntry {
     void *unk0;
     int unk4;
@@ -75,52 +92,159 @@ struct GraphnodeList {
     struct GraphnodeList *next;
 };
 
+// See put_in_fallthru_bb and put_in_jump_bb
+struct JumpFallthroughBB {
+    bool unk0;
+    bool unk1;
+    void *unk4; // Taken from unk44 array in Graphnode
+    struct JumpFallthroughBB *next;
+};
+
 struct Graphnode {
     int unk0;
     unsigned char unk4;
-    unsigned char unk5;
+    unsigned char unk5; // enum: notloopfirstbb, loopfirstbb, canunroll (see printregs)
     unsigned char unk6;
     unsigned char unk7;
-    unsigned short staticno; // 0x8
-    unsigned char padA;
+    unsigned short num; // 0x8
+    unsigned char loopdepth; // 0xA
     unsigned char unkBb8: 1;
     unsigned char unkBb4: 1;
     struct Graphnode *next; // 0xC
     int unk10;
-    struct GraphnodeList *unk14;
-    struct GraphnodeList *unk18;
+    struct GraphnodeList *unk14; // head
+    struct GraphnodeList *unk18; // tail
     struct Var *stat_head; // 0x1C
     struct Var *stat_tail; // 0x20
     struct VarList *varlisthead; // 0x24
     struct VarList *varlisttail; // 0x28
     int unk2C;
     int unk30;
-    int unk34[(0xEC - 0x34) / 4];
-    int unkEC;
-    int unkF0;
-    int unkF4[(0x134 - 0xF4) / 4];
-    int line; // 0x134 set to curlocln in init_graphnode
-    int unk138[(0x174 - 0x138) / 4];
+    int regsused[2][2]; // 0x34, should be two 64-bit values, but then alignment fails
+    void *unk44[35]; // see printregs
+    int unkD0[(0xEC - 0xD0) / 4];
+    struct JumpFallthroughBB *fallthrough_bbs; // 0xEC
+    struct JumpFallthroughBB *jump_bbs; // 0xF0
+
+    struct BitVector indiracc; // 0xF4
+    struct BitVector hoistedexp; // 0xFC
+    union {
+        struct {
+            int unk104[(0x134 - 0x104) / 4];
+            int line; // 0x134
+        } init;
+        struct {
+            struct BitVector antlocs; // 0x104
+            struct BitVector alters; // 0x10C
+            struct BitVector avlocs; // 0x114
+            struct BitVector absalters; // 0x11C
+            union {
+                struct {
+                    struct BitVector pavlocs; // 0x124
+                    struct BitVector expoccur; // 0x12C
+                    struct BitVector unk134; // 0x134
+                    struct BitVector unk13C; // 0x13C
+                    struct BitVector avin; // 0x144
+                    struct BitVector avout; // 0x14C
+                    struct BitVector antin; // 0x154
+                    struct BitVector antout; // 0x15C
+                    struct BitVector pavin; // 0x164
+                    struct BitVector pavout; // 0x16C
+                } precm;
+                struct {
+                    struct BitVector delete; // 0x124
+                    struct BitVector ppin; // 0x12C
+                    struct BitVector iv; // 0x134
+                    struct BitVector cand; // 0x13C
+                    struct BitVector subdelete; // 0x144
+                    struct BitVector subinsert; // 0x14C
+                    struct BitVector antin; // 0x154
+                    struct BitVector antout; // 0x15C
+                    struct BitVector insert; // 0x164
+                    struct BitVector ppout; // 0x16C
+                } cm;
+                struct {
+                    struct BitVector unk124; // 0x124
+                    struct BitVector unk12C; // 0x12C
+                    struct BitVector sink; // 0x134
+                    struct BitVector unk13C; // 0x13C
+                    struct BitVector unk144; // 0x144
+                    struct BitVector unk14C; // 0x14C
+                    struct BitVector source; // 0x154
+                    struct BitVector region; // 0x15C
+                    struct BitVector unk164; // 0x164
+                    struct BitVector unk16C; // 0x16C
+                } scm;
+            };
+        } stage1;
+        struct {
+            struct BitVector appear; // 0x104
+            struct BitVector locdef; // 0x10C
+            struct BitVector loclive; // 0x114
+            struct BitVector unk11C; // 0x11C
+            struct BitVector unk124; // 0x124
+            struct BitVector ppin; // 0x12C
+            struct BitVector active; // 0x134
+            struct BitVector unk13C; // 0x13C
+            struct BitVector liveout; // 0x144
+            struct BitVector unk14C; // 0x14C
+            struct BitVector unk154; // 0x154
+            struct BitVector unk15C; // 0x15C
+            struct BitVector unk164; // 0x164
+            struct BitVector unk16C; // 0x16C
+        } stage2;
+        struct {
+            int app; // 0x104
+            int av; // 0x108
+            int ant; // 0x10C
+            int eeantin; // 0x110
+            int eeantout; // 0x114
+            int unk118;
+            int strinsertin; // 0x11C
+            int lodinsertout; // 0x120
+            int unk124;
+            int eeavin; // 0x128
+            int unk12C;
+            int eeavout; // 0x130
+            int unk134[(0x174 - 0x134) / 4];
+        } stage3;
+    } bvs;
+};
+
+// Derived from printinterproc
+struct RegstakenParregs {
+    bool regstaken[36]; // might be smaller
+    int parregs[36]; // might be other size
+    // might be more fields here
+};
+
+struct Proc;
+
+// Sorted list by unk0 in Proc
+struct ProcList {
+    struct Proc *proc;
+    struct ProcList *next;
 };
 
 struct Proc {
     int unk0;
-    void *unk4;
+    struct Variable *unk4;
     bool unk8; // bool or char?
-    char pad9, padA;
+    unsigned char unk9; // bool or char?
+    unsigned char unkA; // bool or char?
     bool unkB; // set to lang == 5
     bool o3opt; // written to allcallersave in procinit
     bool unkD; // set to lang == 5
     bool unkE; // bool or char?
     bool unkF; // bool or char?
-    bool unk10;
+    unsigned char unk10; // initialized to 2 in prepass
     unsigned short num_bbs; // 0x12
     bool unk14; // bool or char?
     bool unk15;
-    int unk18;
+    struct ProcList *callees; // linked list of Procs (see oneprocprepass, insertcallee)
     int unk1C;
     int bvsize; // 0x20
-    bool *unk24; // something with regstaken / parregs
+    struct RegstakenParregs *regstaken_parregs; // 0x24
     struct Label *labels; // sent to searchlab
     struct Proc *unk2C;
     struct Proc *next;
@@ -128,6 +252,7 @@ struct Proc {
     int unk38; // mtag uses this
 };
 
+// Not sure what this really is
 struct Var {
     unsigned char unk0;
     int unk4;

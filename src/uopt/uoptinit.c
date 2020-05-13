@@ -924,12 +924,12 @@ void procinit_regs(void) {
                    BIT(regsinclass1) | BIT(13);
 
     if (allcallersave) {
-        curproc->unk24[firsterreg[0] - 1] = true;
-        curproc->unk24[firsterreg[0]] = true;
-        curproc->unk24[firsterreg[1] - 1] = true;
-        curproc->unk24[firsterreg[1]] = true;
-        curproc->unk24[13 - 1] = true;
-        curproc->unk24[regsinclass1 - 1] = true;
+        curproc->regstaken_parregs->regstaken[firsterreg[0] - 1] = true;
+        curproc->regstaken_parregs->regstaken[firsterreg[0]] = true;
+        curproc->regstaken_parregs->regstaken[firsterreg[1] - 1] = true;
+        curproc->regstaken_parregs->regstaken[firsterreg[1]] = true;
+        curproc->regstaken_parregs->regstaken[13 - 1] = true;
+        curproc->regstaken_parregs->regstaken[regsinclass1 - 1] = true;
     }
 
     if (someusefp) {
@@ -943,7 +943,7 @@ void procinit_regs(void) {
             regsinclass[0] = regsinclass1 - 2;
             numoferregs[0] = 11;
             if (allcallersave) {
-                curproc->unk24[12 - 1] = true;
+                curproc->regstaken_parregs->regstaken[12 - 1] = true;
             }
         } else {
             regsinclass[0] = regsinclass1 - 1;

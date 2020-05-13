@@ -709,14 +709,14 @@ void init_graphnode(struct Graphnode *node) {
     node->unk4 = 0;
     node->unk5 = 0;
     node->unkBb4 = 0;
-    node->stat_head = 0;
-    node->stat_tail = 0;
-    node->varlisthead = 0;
-    node->varlisttail = 0;
+    node->stat_head = NULL;
+    node->stat_tail = NULL;
+    node->varlisthead = NULL;
+    node->varlisttail = NULL;
     node->unk30 = 0;
-    node->unkEC = 0;
-    node->unkF0 = 0;
-    node->line = curlocln;
+    node->fallthrough_bbs = NULL;
+    node->jump_bbs = NULL;
+    node->bvs.init.line = curlocln;
 }
 
 __asm__(R""(

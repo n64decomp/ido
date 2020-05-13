@@ -82,7 +82,7 @@ static void func_00456310(bool *sp4F) { // originally embedded func
             }
             curgraphnode = graphtail;
             if (op == Ulab) {
-                graphtail->staticno = (unsigned short)curstaticno++;
+                graphtail->num = (unsigned short)curstaticno++;
                 extendstat(0x60); // Unop?
                 curgraphnode->stat_tail = stattail;
                 init_node_vectors(curgraphnode);
@@ -96,7 +96,7 @@ static void func_00456310(bool *sp4F) { // originally embedded func
         }
         op = u.Ucode.Opc; // this can be removed if readnxtinst doesn't change u
         if (!(op == Uaent || op == Ulab)) {
-            curgraphnode->staticno = (unsigned short)curstaticno++;
+            curgraphnode->num = (unsigned short)curstaticno++;
         }
         switch (op) {
             case Ucia:
@@ -231,7 +231,7 @@ void oneproc(void) {
                     return;
                 }
                 curgraphnode = graphtail;
-                graphtail->staticno = 0;
+                graphtail->num = 0;
                 extendstat(0x60);
                 curgraphnode->stat_tail = curgraphnode->stat_head;
                 init_node_vectors(curgraphnode);
