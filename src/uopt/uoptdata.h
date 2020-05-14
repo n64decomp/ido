@@ -312,7 +312,9 @@ typedef unsigned char TableEntryType;
 struct TableEntry {
     TableEntryType type;
     Datatype datatype;
-    int unk4;
+    unsigned short unk2;
+    unsigned short unk4;
+    unsigned short unk6; // some counter, see exprdelete
     unsigned short int table_index; // 0x8
     int chain_index; // 0xC
     int unk10; // 32-bit integer used as bool?
@@ -343,7 +345,7 @@ struct TableEntry {
             struct VariableInner var_data; // 0x28
             struct TableEntry *unk30;
             struct TableEntry *unk34;
-            void* unk38; // pointer to struct Var?
+            struct Var* unk38; // a bit unsure about this type, see delentry
             int unk3C;
         } isvar_issvar;
         struct {
