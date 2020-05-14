@@ -170,7 +170,17 @@
       Sdt,                              /* set                               */
       Wdt,                              /* 64 bit wide pointer               */
       Xdt,                              /* extended precision                */
-      Zdt};                             /* undefined                         */
+      Zdt}                              /* undefined                         */
+#ifdef __GNUC__
+__attribute__((packed))
+#endif
+;
+
+#ifdef __GNUC__
+typedef enum Datatype Datatype;
+#else
+typedef unsigned char Datatype;
+#endif
 
 
 enum
@@ -236,7 +246,7 @@ enum
         Ualia,  Uildi,  Uisti,  Uirld,  Uirst,  Uldrc,  Umsym,  Urcuf,
         Uksym,  Uosym,  Uirlv,  Uirsv}
 #ifdef __GNUC__
-__attribute__((packed));
+__attribute__((packed))
 #endif
 ;
 /* The following opcodes are only used internally in UOPT: MOVV, ILDV, ISTV. */

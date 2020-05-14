@@ -55,8 +55,8 @@ struct Variable {
     struct VariableInner inner;
     int unkC; // some index/idendifier?
 
-    struct Variable *prev; // 0x10
-    struct Variable *next; // 0x14
+    struct Variable *left; // 0x10
+    struct Variable *right; // 0x14
 };
 
 struct UstackEntry {
@@ -229,7 +229,7 @@ struct ProcList {
 
 struct Proc {
     int unk0;
-    struct Variable *unk4;
+    struct Variable *vartree;
     bool unk8; // bool or char?
     unsigned char unk9; // bool or char?
     unsigned char unkA; // bool or char?
@@ -309,22 +309,49 @@ typedef unsigned char TableEntryType;
 
 struct TableEntry {
     TableEntryType type;
+    Datatype datatype;
     int unk4;
-    int table_index; // 0x8
+    unsigned short int table_index; // 0x8
     int chain_index; // 0xC
     int unk10; // 32-bit integer used as bool?
-    int unk14;
+    void *unk14;
     int unk18;
     struct TableEntry *next; // 0x1C
 
     union {
         struct {
-            int const_number;
+            int unk20;
+            int unk24;
+            int unk28;
+            struct VariableInner var_data; // 0x2C
+            // maybe same struct as isilda?
+        } islda;
+        struct {
+            union {
+                int intval;
+                long long int longval;
+            } number;
+            int size; // in bytes
         } isconst_isrconst;
         struct {
-            Uopcode opc;
-            struct TableEntry *op1;
-            struct TableEntry *op2;
+            unsigned char unk20;
+            bool unk21;
+            bool unk22;
+            struct TableEntry *unk24;
+            struct VariableInner var_data; // 0x28
+            struct TableEntry *unk30;
+            struct TableEntry *unk34;
+            void* unk38; // pointer to struct Var?
+            int unk3C;
+        } isvar_issvar;
+        struct {
+            Uopcode opc; // 0x20
+            struct TableEntry *op1; // 0x24
+            struct TableEntry *op2; // 0x28
+            int unk2C;
+            int unk30;
+            int unk34;
+            Datatype cvtfrom; // if opc == Ucvt
         } isop;
         struct {
             int unk20;
@@ -333,18 +360,7 @@ struct TableEntry {
             int unk2C;
             int unk30;
             struct TableEntry *unk34;
-        } ilda;
-        struct {
-            unsigned char unk20;
-            unsigned char unk21;
-            unsigned char unk22;
-            struct TableEntry *unk24;
-            struct VariableInner var_data;
-            struct TableEntry *unk30;
-            struct TableEntry *unk34;
-            int unk38;
-            int unk3C;
-        } isvar_issvar;
+        } isilda;
     } data; // 0x20
 };
 
