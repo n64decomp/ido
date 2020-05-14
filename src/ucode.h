@@ -234,10 +234,20 @@ enum
         Utpeq,  Utpge,  Utpgt,  Utple,  Utplt,  Utpne,  Utyp,   Uubd,
         Uujp,   Uunal,  Uuni,   Uvreg,  Uxjp,   Uxor,   Uxpar,  Umtag,
         Ualia,  Uildi,  Uisti,  Uirld,  Uirst,  Uldrc,  Umsym,  Urcuf,
-        Uksym,  Uosym,  Uirlv,  Uirsv};
+        Uksym,  Uosym,  Uirlv,  Uirsv}
+#ifdef __GNUC__
+__attribute__((packed));
+#endif
+;
 /* The following opcodes are only used internally in UOPT: MOVV, ILDV, ISTV. */
 /* The following opcodes are only used internally in UGEN: CG1, CG2. */
 /* Warning: Add ucodes at the end only */
+
+#ifdef __GNUC__
+typedef enum Uopcode Uopcode;
+#else
+typedef unsigned char Uopcode;
+#endif
 
 struct Bcrec   {
           unsigned int  Opc :8;

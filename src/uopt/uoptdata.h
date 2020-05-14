@@ -45,14 +45,15 @@ struct Label {
 struct VariableInner {
     int unk0; // can be negative
     int unk4bFFFFF800: 21;
-    int unk4b700: 3;
-    int pad4bff: 8;
+    int memtype: 3;
+    int pad4bFF: 8;
 };
 struct Variable {
     bool unk0;
     bool unk1;
     bool unk2;
     struct VariableInner inner;
+    int unkC; // some index/idendifier?
 
     struct Variable *prev; // 0x10
     struct Variable *next; // 0x14
@@ -284,6 +285,69 @@ struct BittabItem {
     int unk4;
 };
 
+enum TableEntryType {
+    empty,
+    islda,
+    isconst,
+    isvar,
+    isop,
+    isilda,
+    issvar,
+    dumped,
+    isrconst
+}
+#ifdef __GNUC__
+__attribute__((packed));
+#endif
+;
+
+#ifdef __GNUC__
+typedef enum TableEntryType TableEntryType;
+#else
+typedef unsigned char TableEntryType;
+#endif
+
+struct TableEntry {
+    TableEntryType type;
+    int unk4;
+    int table_index; // 0x8
+    int chain_index; // 0xC
+    int unk10; // 32-bit integer used as bool?
+    int unk14;
+    int unk18;
+    struct TableEntry *next; // 0x1C
+
+    union {
+        struct {
+            int const_number;
+        } isconst_isrconst;
+        struct {
+            Uopcode opc;
+            struct TableEntry *op1;
+            struct TableEntry *op2;
+        } isop;
+        struct {
+            int unk20;
+            int unk24;
+            int unk28;
+            int unk2C;
+            int unk30;
+            struct TableEntry *unk34;
+        } ilda;
+        struct {
+            unsigned char unk20;
+            unsigned char unk21;
+            unsigned char unk22;
+            struct TableEntry *unk24;
+            struct VariableInner var_data;
+            struct TableEntry *unk30;
+            struct TableEntry *unk34;
+            int unk38;
+            int unk3C;
+        } isvar_issvar;
+    } data; // 0x20
+};
+
 extern union Bcode u;
 extern char *ustrptr;
 extern struct PascalFile list;
@@ -299,7 +363,7 @@ extern struct AllocBlock *perm_heap;
 extern struct AllocBlock *heapptr;
 extern struct optabrec optab[0x9C];
 extern bool endblock;
-extern void *table[9113]; // TODO: fix type
+extern struct TableEntry *table[9113]; // hash table of all values used in one proc
 extern struct UstackEntry *ustackbot;
 extern struct UstackEntry *ustack;
 extern struct ParstackEntry *parstackbot;

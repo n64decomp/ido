@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <string.h>
 #include "ucode.h"
 #include "uoptutil.h"
@@ -11,26 +12,6 @@ __asm__(R""(
 .endm
 
 .rdata
-RO_1000DE50:
-    # 0047B320 stackerror
-    .ascii ": stack error"
-
-RO_1000DE5D:
-    # 0047B320 stackerror
-    .ascii "uopt: Internal: "
-
-RO_1000DE6D:
-    # 0047B3F8 boundswarning
-    .ascii ": bounds error"
-
-RO_1000DE7B:
-    # 0047B3F8 boundswarning
-    .ascii " line "
-
-RO_1000DE81:
-    # 0047B3F8 boundswarning
-    .ascii "uopt: Warning: "
-
 RO_1000DE90:
     # 0047B51C ovfwwarning
     .ascii "Constant evaluation left to run time for this case."
@@ -264,14 +245,6 @@ jtbl_1000E190:
     .gpword .L0047BB44
     .gpword .L0047BB44
     .gpword .L0047BA04
-
-RO_1000E1A0:
-    # 0047BDF8 dbgerror
-    .ascii ": code: "
-
-RO_1000E1A8:
-    # 0047BDF8 dbgerror
-    .ascii "uopt: Internal: "
 
 RO_1000E1B8:
     # 0047BFEC findsimilar
@@ -648,200 +621,73 @@ D_10011888:
 .set noreorder # don't insert nops after branches
 
 .text
-glabel addreq
-    .ent addreq
-    # 004137DC func_004137DC
-    # 00417480 func_00417480
-    # 0041F22C base_noalias
-    # 0042020C gen_static_link
-    # 00425618 func_00425618
-    # 00439FA4 formal_parm_vreg
-    # 0043B334 func_0043B334
-    # 0043B504 func_0043B504
-    # 0043CBFC func_0043CBFC
-    # 00444A84 isearchloop
-    # 004496F0 slkilled
-    # 0044A5C8 smkilled
-    # 0044AAD0 sskilled
-    # 0044EDF8 ilodfold
-    # 00459564 update_veqv_in_table
-    # 0045FBB4 func_0045FBB4
-    # 0046C710 unroll_searchloop
-    # 00473504 func_00473504
-    # 00473D84 func_00473D84
-    # 0047BFEC findsimilar
-    # 0047D610 searchvar
-    # 0047E24C enter_lda
-    # 0047E938 checkincre
-/* 0047B2D0 00861026 */  xor   $v0, $a0, $a2
-/* 0047B2D4 2C430001 */  sltiu $v1, $v0, 1
-/* 0047B2D8 AFA40000 */  sw    $a0, ($sp)
-/* 0047B2DC AFA50004 */  sw    $a1, 4($sp)
-/* 0047B2E0 AFA60008 */  sw    $a2, 8($sp)
-/* 0047B2E4 1060000C */  beqz  $v1, .L0047B318
-/* 0047B2E8 AFA7000C */   sw    $a3, 0xc($sp)
-/* 0047B2EC 93B8000E */  lbu   $t8, 0xe($sp)
-/* 0047B2F0 93A80006 */  lbu   $t0, 6($sp)
-/* 0047B2F4 00075AC2 */  srl   $t3, $a3, 0xb
-/* 0047B2F8 33190007 */  andi  $t9, $t8, 7
-/* 0047B2FC 31090007 */  andi  $t1, $t0, 7
-/* 0047B300 03291826 */  xor   $v1, $t9, $t1
-/* 0047B304 2C630001 */  sltiu $v1, $v1, 1
-/* 0047B308 10600003 */  beqz  $v1, .L0047B318
-/* 0047B30C 00056AC2 */   srl   $t5, $a1, 0xb
-/* 0047B310 016D1826 */  xor   $v1, $t3, $t5
-/* 0047B314 2C630001 */  sltiu $v1, $v1, 1
-.L0047B318:
-/* 0047B318 03E00008 */  jr    $ra
-/* 0047B31C 00601025 */   move  $v0, $v1
-    .type addreq, @function
-    .size addreq, .-addreq
-    .end addreq
+)"");
 
-glabel stackerror
-    .ent stackerror
-    # 00456A2C oneproc
-/* 0047B320 3C1C0FBA */  .cpload $t9
-/* 0047B324 279CEF70 */  
-/* 0047B328 0399E021 */  
-/* 0047B32C 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0047B330 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 0047B334 AFB00014 */  sw    $s0, 0x14($sp)
-/* 0047B338 8F908908 */  lw     $s0, %got(err)($gp)
-/* 0047B33C AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047B340 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047B344 0320F809 */  jalr  $t9
-/* 0047B348 8E040000 */   lw    $a0, ($s0)
-/* 0047B34C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B350 8E040000 */  lw    $a0, ($s0)
-/* 0047B354 24060010 */  li    $a2, 16
-/* 0047B358 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0047B35C 8F858044 */  lw    $a1, %got(RO_1000DE5D)($gp)
-/* 0047B360 24070010 */  li    $a3, 16
-/* 0047B364 0320F809 */  jalr  $t9
-/* 0047B368 24A5DE5D */   addiu $a1, %lo(RO_1000DE5D) # addiu $a1, $a1, -0x21a3
-/* 0047B36C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B370 8E040000 */  lw    $a0, ($s0)
-/* 0047B374 24060400 */  li    $a2, 1024
-/* 0047B378 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0047B37C 8F878984 */  lw     $a3, %got(entnam0len)($gp)
-/* 0047B380 8F858DE4 */  lw     $a1, %got(entnam0)($gp)
-/* 0047B384 0320F809 */  jalr  $t9
-/* 0047B388 8CE70000 */   lw    $a3, ($a3)
-/* 0047B38C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B390 8E040000 */  lw    $a0, ($s0)
-/* 0047B394 2406000D */  li    $a2, 13
-/* 0047B398 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0047B39C 8F858044 */  lw    $a1, %got(RO_1000DE50)($gp)
-/* 0047B3A0 2407000D */  li    $a3, 13
-/* 0047B3A4 0320F809 */  jalr  $t9
-/* 0047B3A8 24A5DE50 */   addiu $a1, %lo(RO_1000DE50) # addiu $a1, $a1, -0x21b0
-/* 0047B3AC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B3B0 8E040000 */  lw    $a0, ($s0)
-/* 0047B3B4 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 0047B3B8 0320F809 */  jalr  $t9
-/* 0047B3BC 00000000 */   nop   
-/* 0047B3C0 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B3C4 8E040000 */  lw    $a0, ($s0)
-/* 0047B3C8 8F9980A0 */  lw    $t9, %call16(fflush)($gp)
-/* 0047B3CC 0320F809 */  jalr  $t9
-/* 0047B3D0 00000000 */   nop   
-/* 0047B3D4 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B3D8 8F998728 */  lw    $t9, %call16(abort)($gp)
-/* 0047B3DC 0320F809 */  jalr  $t9
-/* 0047B3E0 00000000 */   nop   
-/* 0047B3E4 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047B3E8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B3EC 8FB00014 */  lw    $s0, 0x14($sp)
-/* 0047B3F0 03E00008 */  jr    $ra
-/* 0047B3F4 27BD0020 */   addiu $sp, $sp, 0x20
-    .type stackerror, @function
-    .size stackerror, .-stackerror
-    .end stackerror
+/*
+004137DC func_004137DC
+00417480 func_00417480
+0041F22C base_noalias
+0042020C gen_static_link
+00425618 func_00425618
+00439FA4 formal_parm_vreg
+0043B334 func_0043B334
+0043B504 func_0043B504
+0043CBFC func_0043CBFC
+00444A84 isearchloop
+004496F0 slkilled
+0044A5C8 smkilled
+0044AAD0 sskilled
+0044EDF8 ilodfold
+00459564 update_veqv_in_table
+0045FBB4 func_0045FBB4
+0046C710 unroll_searchloop
+00473504 func_00473504
+00473D84 func_00473D84
+0047BFEC findsimilar
+0047D610 searchvar
+0047E24C enter_lda
+0047E938 checkincre
+*/
+int addreq(struct VariableInner a, struct VariableInner b) {
+    return a.unk0 == b.unk0 && a.memtype == b.memtype && a.unk4bFFFFF800 == b.unk4bFFFFF800;
+}
 
-glabel boundswarning
-    .ent boundswarning
-    # 00425618 func_00425618
-    # 0042BF08 reemit
-    # 0044F3C0 unaryfold
-    # 00452DAC constarith
-/* 0047B3F8 3C1C0FBA */  .cpload $t9
-/* 0047B3FC 279CEE98 */  
-/* 0047B400 0399E021 */  
-/* 0047B404 8F8E8B58 */  lw     $t6, %got(warn_flag)($gp)
-/* 0047B408 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0047B40C 24020001 */  li    $v0, 1
-/* 0047B410 91CE0000 */  lbu   $t6, ($t6)
-/* 0047B414 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047B418 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047B41C 104E003A */  beq   $v0, $t6, .L0047B508
-/* 0047B420 AFB00014 */   sw    $s0, 0x14($sp)
-/* 0047B424 8F818B08 */  lw     $at, %got(warned)($gp)
-/* 0047B428 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 0047B42C 8F908908 */  lw     $s0, %got(err)($gp)
-/* 0047B430 A0220000 */  sb    $v0, ($at)
-/* 0047B434 0320F809 */  jalr  $t9
-/* 0047B438 8E040000 */   lw    $a0, ($s0)
-/* 0047B43C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B440 8E040000 */  lw    $a0, ($s0)
-/* 0047B444 2406000F */  li    $a2, 15
-/* 0047B448 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0047B44C 8F858044 */  lw    $a1, %got(RO_1000DE81)($gp)
-/* 0047B450 2407000F */  li    $a3, 15
-/* 0047B454 0320F809 */  jalr  $t9
-/* 0047B458 24A5DE81 */   addiu $a1, %lo(RO_1000DE81) # addiu $a1, $a1, -0x217f
-/* 0047B45C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B460 8E040000 */  lw    $a0, ($s0)
-/* 0047B464 24060400 */  li    $a2, 1024
-/* 0047B468 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0047B46C 8F878984 */  lw     $a3, %got(entnam0len)($gp)
-/* 0047B470 8F858DE4 */  lw     $a1, %got(entnam0)($gp)
-/* 0047B474 0320F809 */  jalr  $t9
-/* 0047B478 8CE70000 */   lw    $a3, ($a3)
-/* 0047B47C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B480 8E040000 */  lw    $a0, ($s0)
-/* 0047B484 24060006 */  li    $a2, 6
-/* 0047B488 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0047B48C 8F858044 */  lw    $a1, %got(RO_1000DE7B)($gp)
-/* 0047B490 24070006 */  li    $a3, 6
-/* 0047B494 0320F809 */  jalr  $t9
-/* 0047B498 24A5DE7B */   addiu $a1, %lo(RO_1000DE7B) # addiu $a1, $a1, -0x2185
-/* 0047B49C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B4A0 8E040000 */  lw    $a0, ($s0)
-/* 0047B4A4 00003025 */  move  $a2, $zero
-/* 0047B4A8 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0047B4AC 8F858A44 */  lw     $a1, %got(curlocln)($gp)
-/* 0047B4B0 2407000A */  li    $a3, 10
-/* 0047B4B4 0320F809 */  jalr  $t9
-/* 0047B4B8 8CA50000 */   lw    $a1, ($a1)
-/* 0047B4BC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B4C0 8E040000 */  lw    $a0, ($s0)
-/* 0047B4C4 2406000E */  li    $a2, 14
-/* 0047B4C8 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0047B4CC 8F858044 */  lw    $a1, %got(RO_1000DE6D)($gp)
-/* 0047B4D0 2407000E */  li    $a3, 14
-/* 0047B4D4 0320F809 */  jalr  $t9
-/* 0047B4D8 24A5DE6D */   addiu $a1, %lo(RO_1000DE6D) # addiu $a1, $a1, -0x2193
-/* 0047B4DC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B4E0 8E040000 */  lw    $a0, ($s0)
-/* 0047B4E4 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 0047B4E8 0320F809 */  jalr  $t9
-/* 0047B4EC 00000000 */   nop   
-/* 0047B4F0 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047B4F4 8E040000 */  lw    $a0, ($s0)
-/* 0047B4F8 8F9980A0 */  lw    $t9, %call16(fflush)($gp)
-/* 0047B4FC 0320F809 */  jalr  $t9
-/* 0047B500 00000000 */   nop   
-/* 0047B504 8FBC0018 */  lw    $gp, 0x18($sp)
-.L0047B508:
-/* 0047B508 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047B50C 8FB00014 */  lw    $s0, 0x14($sp)
-/* 0047B510 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0047B514 03E00008 */  jr    $ra
-/* 0047B518 00000000 */   nop   
-    .type boundswarning, @function
-    .size boundswarning, .-boundswarning
-    .end boundswarning
+/*
+00456A2C oneproc
+*/
+void stackerror(void) {
+    writeln(err.c_file);
+    write_string(err.c_file, "uopt: Internal: ", 16, 16);
+    write_string(err.c_file, entnam0, 1024, entnam0len);
+    write_string(err.c_file, ": stack error", 13, 13);
+    writeln(err.c_file);
+    fflush(err.c_file);
+    abort();
+}
+
+/*
+00425618 func_00425618
+0042BF08 reemit
+0044F3C0 unaryfold
+00452DAC constarith
+*/
+void boundswarning(void) {
+    if (warn_flag != 1) {
+        warned = true;
+        writeln(err.c_file);
+        write_string(err.c_file, "uopt: Warning: ", 15, 15);
+        write_string(err.c_file, entnam0, 1024, entnam0len);
+        write_string(err.c_file, " line ", 6, 6);
+        write_integer(err.c_file, curlocln, 0, 10);
+        write_string(err.c_file, ": bounds error", 14, 14);
+        writeln(err.c_file);
+        fflush(err.c_file);
+    }
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel ovfwwarning
     .ent ovfwwarning
@@ -1463,200 +1309,118 @@ glabel ovfwwarning
     .type ovfwwarning, @function
     .size ovfwwarning, .-ovfwwarning
     .end ovfwwarning
+)"");
 
-glabel dbgerror
-    .ent dbgerror
-    # 00410204 codemotion
-    # 0041550C func_0041550C
-    # 0041FD3C genloadnum
-    # 004230F0 func_004230F0
-    # 00424FFC func_00424FFC
-    # 00425618 func_00425618
-    # 00426DE8 func_00426DE8
-    # 0042BF08 reemit
-    # 0043ABD0 incroccurrence
-    # 0043CFCC readnxtinst
-    # 00445E44 exprimage
-    # 004471AC codeimage
-    # 0044821C expr_has_direct_usage
-    # 0044D8C4 strlkilled
-    # 0045CB3C expinalter
-    # 00461778 func_00461778
-    # 00464BFC localcolor
-    # 00467F04 split
-    # 00469280 globalcolor
-    # 00477118 func_00477118
-    # 00477854 func_00477854
-    # 00477B0C func_00477B0C
-    # 00478820 func_00478820
-    # 00479778 func_00479778
-/* 0047BDF8 3C1C0FBA */  .cpload $t9
-/* 0047BDFC 279CE498 */  
-/* 0047BE00 0399E021 */  
-/* 0047BE04 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0047BE08 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 0047BE0C AFB00014 */  sw    $s0, 0x14($sp)
-/* 0047BE10 8F908908 */  lw     $s0, %got(err)($gp)
-/* 0047BE14 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047BE18 AFA40020 */  sw    $a0, 0x20($sp)
-/* 0047BE1C AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047BE20 0320F809 */  jalr  $t9
-/* 0047BE24 8E040000 */   lw    $a0, ($s0)
-/* 0047BE28 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047BE2C 8E040000 */  lw    $a0, ($s0)
-/* 0047BE30 24060010 */  li    $a2, 16
-/* 0047BE34 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0047BE38 8F858044 */  lw    $a1, %got(RO_1000E1A8)($gp)
-/* 0047BE3C 24070010 */  li    $a3, 16
-/* 0047BE40 0320F809 */  jalr  $t9
-/* 0047BE44 24A5E1A8 */   addiu $a1, %lo(RO_1000E1A8) # addiu $a1, $a1, -0x1e58
-/* 0047BE48 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047BE4C 8E040000 */  lw    $a0, ($s0)
-/* 0047BE50 24060400 */  li    $a2, 1024
-/* 0047BE54 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0047BE58 8F878984 */  lw     $a3, %got(entnam0len)($gp)
-/* 0047BE5C 8F858DE4 */  lw     $a1, %got(entnam0)($gp)
-/* 0047BE60 0320F809 */  jalr  $t9
-/* 0047BE64 8CE70000 */   lw    $a3, ($a3)
-/* 0047BE68 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047BE6C 8E040000 */  lw    $a0, ($s0)
-/* 0047BE70 24060008 */  li    $a2, 8
-/* 0047BE74 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0047BE78 8F858044 */  lw    $a1, %got(RO_1000E1A0)($gp)
-/* 0047BE7C 24070008 */  li    $a3, 8
-/* 0047BE80 0320F809 */  jalr  $t9
-/* 0047BE84 24A5E1A0 */   addiu $a1, %lo(RO_1000E1A0) # addiu $a1, $a1, -0x1e60
-/* 0047BE88 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047BE8C 8E040000 */  lw    $a0, ($s0)
-/* 0047BE90 8FA50020 */  lw    $a1, 0x20($sp)
-/* 0047BE94 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0047BE98 2406000C */  li    $a2, 12
-/* 0047BE9C 2407000A */  li    $a3, 10
-/* 0047BEA0 0320F809 */  jalr  $t9
-/* 0047BEA4 00000000 */   nop   
-/* 0047BEA8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047BEAC 8E040000 */  lw    $a0, ($s0)
-/* 0047BEB0 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 0047BEB4 0320F809 */  jalr  $t9
-/* 0047BEB8 00000000 */   nop   
-/* 0047BEBC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047BEC0 8E040000 */  lw    $a0, ($s0)
-/* 0047BEC4 8F9980A0 */  lw    $t9, %call16(fflush)($gp)
-/* 0047BEC8 0320F809 */  jalr  $t9
-/* 0047BECC 00000000 */   nop   
-/* 0047BED0 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047BED4 8F998728 */  lw    $t9, %call16(abort)($gp)
-/* 0047BED8 0320F809 */  jalr  $t9
-/* 0047BEDC 00000000 */   nop   
-/* 0047BEE0 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047BEE4 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047BEE8 8FB00014 */  lw    $s0, 0x14($sp)
-/* 0047BEEC 03E00008 */  jr    $ra
-/* 0047BEF0 27BD0020 */   addiu $sp, $sp, 0x20
-    .type dbgerror, @function
-    .size dbgerror, .-dbgerror
-    .end dbgerror
+/*
+00410204 codemotion
+0041550C func_0041550C
+0041FD3C genloadnum
+004230F0 func_004230F0
+00424FFC func_00424FFC
+00425618 func_00425618
+00426DE8 func_00426DE8
+0042BF08 reemit
+0043ABD0 incroccurrence
+0043CFCC readnxtinst
+00445E44 exprimage
+004471AC codeimage
+0044821C expr_has_direct_usage
+0044D8C4 strlkilled
+0045CB3C expinalter
+00461778 func_00461778
+00464BFC localcolor
+00467F04 split
+00469280 globalcolor
+00477118 func_00477118
+00477854 func_00477854
+00477B0C func_00477B0C
+00478820 func_00478820
+00479778 func_00479778
+*/
+void dbgerror(int code) {
+    writeln(err.c_file);
+    write_string(err.c_file, "uopt: Internal: ", 16, 16);
+    write_string(err.c_file, entnam0, 1024, entnam0len);
+    write_string(err.c_file, ": code: ", 8, 8);
+    write_integer(err.c_file, code, 12, 10);
+    writeln(err.c_file);
+    fflush(err.c_file);
+    abort();
+}
 
-glabel appendchain
-    .ent appendchain
-    # 004137DC func_004137DC
-    # 004150E4 func_004150E4
-    # 0043B334 func_0043B334
-    # 0043B504 func_0043B504
-    # 0043CBFC func_0043CBFC
-    # 0043CFCC readnxtinst
-    # 0044EDF8 ilodfold
-    # 0044F1B8 istrfold
-    # 0044FF6C mergeconst
-    # 004510A0 distrlaw
-    # 0046BA10 change_to_const_eq
-    # 0046BD90 change_to_var_eq
-    # 0046C710 unroll_searchloop
-    # 0046E77C oneloopblockstmt
-    # 0047090C form_bop
-    # 00470AAC form_rem
-    # 00470DD8 form_neq0
-    # 00470F88 form_neg
-    # 004710F0 str_to_temporary
-    # 00473504 func_00473504
-    # 004737E0 par_to_str
-    # 00473D84 func_00473D84
-    # 0047C53C fixcorr
-    # 0047D610 searchvar
-    # 0047E100 enter_const
-    # 0047E24C enter_lda
-    # 0047E3BC binopwithconst
-/* 0047BEF4 3C1C0FBA */  .cpload $t9
-/* 0047BEF8 279CE39C */  
-/* 0047BEFC 0399E021 */  
-/* 0047BF00 27BDFFC8 */  addiu $sp, $sp, -0x38
-/* 0047BF04 AFA40038 */  sw    $a0, 0x38($sp)
-/* 0047BF08 97AE003A */  lhu   $t6, 0x3a($sp)
-/* 0047BF0C 8F988DF8 */  lw     $t8, %got(table)($gp)
-/* 0047BF10 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047BF14 000E7880 */  sll   $t7, $t6, 2
-/* 0047BF18 01F83021 */  addu  $a2, $t7, $t8
-/* 0047BF1C 8CC50000 */  lw    $a1, ($a2)
-/* 0047BF20 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047BF24 54A0000D */  bnezl $a1, .L0047BF5C
-/* 0047BF28 8CA2001C */   lw    $v0, 0x1c($a1)
-/* 0047BF2C 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0047BF30 24040040 */  li    $a0, 64
-/* 0047BF34 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 0047BF38 0320F809 */  jalr  $t9
-/* 0047BF3C AFA60020 */   sw    $a2, 0x20($sp)
-/* 0047BF40 8FA60020 */  lw    $a2, 0x20($sp)
-/* 0047BF44 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047BF48 00401825 */  move  $v1, $v0
-/* 0047BF4C 00002025 */  move  $a0, $zero
-/* 0047BF50 10000014 */  b     .L0047BFA4
-/* 0047BF54 ACC20000 */   sw    $v0, ($a2)
-/* 0047BF58 8CA2001C */  lw    $v0, 0x1c($a1)
-.L0047BF5C:
-/* 0047BF5C 00A01825 */  move  $v1, $a1
-/* 0047BF60 10400005 */  beqz  $v0, .L0047BF78
-/* 0047BF64 00000000 */   nop   
-/* 0047BF68 00401825 */  move  $v1, $v0
-.L0047BF6C:
-/* 0047BF6C 8C42001C */  lw    $v0, 0x1c($v0)
-/* 0047BF70 5440FFFE */  bnezl $v0, .L0047BF6C
-/* 0047BF74 00401825 */   move  $v1, $v0
-.L0047BF78:
-/* 0047BF78 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0047BF7C 24040040 */  li    $a0, 64
-/* 0047BF80 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 0047BF84 0320F809 */  jalr  $t9
-/* 0047BF88 AFA30030 */   sw    $v1, 0x30($sp)
-/* 0047BF8C 8FA30030 */  lw    $v1, 0x30($sp)
-/* 0047BF90 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047BF94 8C64000C */  lw    $a0, 0xc($v1)
-/* 0047BF98 AC62001C */  sw    $v0, 0x1c($v1)
-/* 0047BF9C 00401825 */  move  $v1, $v0
-/* 0047BFA0 24840001 */  addiu $a0, $a0, 1
-.L0047BFA4:
-/* 0047BFA4 54400007 */  bnezl $v0, .L0047BFC4
-/* 0047BFA8 97A8003A */   lhu   $t0, 0x3a($sp)
-/* 0047BFAC 8F818B20 */  lw     $at, %got(outofmem)($gp)
-/* 0047BFB0 24190001 */  li    $t9, 1
-/* 0047BFB4 8FA20034 */  lw    $v0, 0x34($sp)
-/* 0047BFB8 10000008 */  b     .L0047BFDC
-/* 0047BFBC A0390000 */   sb    $t9, ($at)
-/* 0047BFC0 97A8003A */  lhu   $t0, 0x3a($sp)
-.L0047BFC4:
-/* 0047BFC4 A0600000 */  sb    $zero, ($v1)
-/* 0047BFC8 AC600014 */  sw    $zero, 0x14($v1)
-/* 0047BFCC AC64000C */  sw    $a0, 0xc($v1)
-/* 0047BFD0 AC60001C */  sw    $zero, 0x1c($v1)
-/* 0047BFD4 00601025 */  move  $v0, $v1
-/* 0047BFD8 A4680008 */  sh    $t0, 8($v1)
-.L0047BFDC:
-/* 0047BFDC 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047BFE0 27BD0038 */  addiu $sp, $sp, 0x38
-/* 0047BFE4 03E00008 */  jr    $ra
-/* 0047BFE8 00000000 */   nop   
-    .type appendchain, @function
-    .size appendchain, .-appendchain
-    .end appendchain
+/*
+004137DC func_004137DC
+004150E4 func_004150E4
+0043B334 func_0043B334
+0043B504 func_0043B504
+0043CBFC func_0043CBFC
+0043CFCC readnxtinst
+0044EDF8 ilodfold
+0044F1B8 istrfold
+0044FF6C mergeconst
+004510A0 distrlaw
+0046BA10 change_to_const_eq
+0046BD90 change_to_var_eq
+0046C710 unroll_searchloop
+0046E77C oneloopblockstmt
+0047090C form_bop
+00470AAC form_rem
+00470DD8 form_neq0
+00470F88 form_neg
+004710F0 str_to_temporary
+00473504 func_00473504
+004737E0 par_to_str
+00473D84 func_00473D84
+0047C53C fixcorr
+0047D610 searchvar
+0047E100 enter_const
+0047E24C enter_lda
+0047E3BC binopwithconst
+*/
+struct TableEntry *appendchain(unsigned short table_index) {
+    void *sp30;
+    void *sp20;
+    void *temp_a2;
+    void *temp_ret;
+    void *temp_ret_2;
+    void *temp_v0;
+    void *temp_v1;
+    void *phi_v0;
+    struct TableEntry *pos;
+    struct TableEntry *new_entry;
+    void *phi_v1_2;
+    int chain_index;
+
+    pos = table[table_index];
+    if (pos == NULL) {
+        sp20 = temp_a2;
+        new_entry = (struct TableEntry *)alloc_new(sizeof(struct TableEntry), &perm_heap);
+        pos = new_entry;
+        table[table_index] = new_entry;
+        chain_index = 0;
+    } else {
+        while (pos->next != NULL) {
+            pos = pos->next;
+        }
+        new_entry = (struct TableEntry *)alloc_new(sizeof(struct TableEntry), &perm_heap);
+        pos->next = new_entry;
+        chain_index = pos->chain_index + 1;
+    }
+    if (new_entry == NULL) {
+        outofmem = true;
+        return NULL; // originally some unused stack slot value was returned
+    }
+    new_entry->type = empty;
+    new_entry->unk14 = 0;
+    new_entry->chain_index = chain_index;
+    new_entry->next = NULL;
+    new_entry->table_index = table_index;
+    return new_entry;
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel findsimilar
     .ent findsimilar
@@ -2578,9 +2342,8 @@ int realhash(int len) {
 0047D768 vartreeinfo
 0047E24C enter_lda
 */
-int isvarhash(unsigned int a0, unsigned int a1) {
-    // Maybe struct with bitfields as argument
-    int hash = (((((a1 >> 8) & 7) << 6) + (a1 >> 11) + a0) << 4) % 9113;
+int isvarhash(struct VariableInner var) {
+    int hash = (((var.memtype << 6) + var.unk4bFFFFF800 + var.unk0) << 4) % 9113;
     return hash < 0 ? hash + 9113 : hash;
 }
 

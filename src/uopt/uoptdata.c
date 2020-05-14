@@ -331,7 +331,7 @@ bool endblock;
 0047E24C enter_lda
 0047E3BC binopwithconst
 */
-void *table[9113]; // TODO: fix type
+struct TableEntry *table[9113];
 
 /*
 0043771C optinit
