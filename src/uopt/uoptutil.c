@@ -1378,22 +1378,12 @@ void dbgerror(int code) {
 0047E3BC binopwithconst
 */
 struct TableEntry *appendchain(unsigned short table_index) {
-    void *sp30;
-    void *sp20;
-    void *temp_a2;
-    void *temp_ret;
-    void *temp_ret_2;
-    void *temp_v0;
-    void *temp_v1;
-    void *phi_v0;
     struct TableEntry *pos;
     struct TableEntry *new_entry;
-    void *phi_v1_2;
     int chain_index;
 
     pos = table[table_index];
     if (pos == NULL) {
-        sp20 = temp_a2;
         new_entry = (struct TableEntry *)alloc_new(sizeof(struct TableEntry), &perm_heap);
         pos = new_entry;
         table[table_index] = new_entry;
