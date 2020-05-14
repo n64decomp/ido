@@ -4218,7 +4218,7 @@ bool checkincre(struct TableEntry *entry, struct TableEntry *entry2, int *result
             }
             return false;
         case isop:
-            if (optab[entry->data.isop.opc].unk2) {
+            if (optab[entry->data.isop.opc].is_binary_op) {
                 if (entry->data.isop.opc == Uadd || entry->data.isop.opc == Usub) {
                     if (checkincre(entry->data.isop.op1, entry2, &result1) && checkincre(entry->data.isop.op2, entry2, &result2)) {
                         *result = entry->data.isop.opc == Uadd ? result1 + result2 : result1 - result2;
@@ -4270,7 +4270,7 @@ int findincre(struct TableEntry *entry) {
             return 0;
 
         case isop:
-            if (optab[entry->data.isop.opc].unk2) {
+            if (optab[entry->data.isop.opc].is_binary_op) {
                 result1 = findincre(entry->data.isop.op1);
                 result2 = findincre(entry->data.isop.op2);
                 return entry->data.isop.opc == Uadd ? result1 + result2 : result1 - result2;

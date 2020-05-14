@@ -29,7 +29,9 @@ struct livbb {
 };
 
 struct optabrec {
-    bool unk0, unk1, unk2; // TODO what are these?
+    bool unk0; // seems to be set if a BB ends with this instruction and for Uaent
+    bool unk1;
+    bool is_binary_op;
 };
 
 struct Label {
