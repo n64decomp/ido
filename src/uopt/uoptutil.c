@@ -419,33 +419,6 @@ jtbl_1000E370:
     .gpword .L0047E840
     .gpword .L0047E820
 
-RO_1000E3AC:
-    # 0047EBB0 findincre
-    .ascii "uoptutil.p"
-
-RO_1000E3B6:
-    # 0047EBB0 findincre
-    .ascii "uoptutil.p"
-
-    .balign 4
-jtbl_1000E3C0:
-    # 0047EBB0 findincre
-    .gpword .L0047ECC0
-    .gpword .L0047ED44
-    .gpword .L0047ECD8
-
-    .balign 4
-jtbl_1000E3CC:
-    # 0047EBB0 findincre
-    .gpword .L0047EC08
-    .gpword .L0047EBFC
-    .gpword .L0047EC08
-    .gpword .L0047EC10
-    .gpword .L0047EC08
-    .gpword .L0047EC08
-    .gpword .L0047ED68
-    .gpword .L0047EC08
-
 RO_1000E3EC:
     # 0047ED9C countvars
     .asciz "uoptutil.p"
@@ -581,10 +554,6 @@ D_10011844:
 D_10011854:
     # 0047D878 deccount
     .byte 0x00,0x03,0x9e,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x10,0x20
-
-D_10011864:
-    # 0047E938 checkincre
-    .byte 0x00,0x00,0x00,0x20,0x00,0x00,0x01,0x00,0x00,0x00,0x00,0x02
 
 D_10011870:
     # 0047EF74 has_volt_ovfw
@@ -4279,157 +4248,56 @@ bool checkincre(struct TableEntry *entry, struct TableEntry *entry2, int *result
     }
 }
 
+/*
+00430680 func_00430680
+004313E4 func_004313E4
+00455518 func_00455518
+0047EBB0 findincre
+*/
+int findincre(struct TableEntry *entry) {
+    int result1;
+    int result2;
+
+    switch (entry->type) {
+        case isconst:
+            return entry->data.isconst_isrconst.number.intval;
+
+        case islda:
+        case isvar:
+        case isilda:
+        case issvar:
+        case isrconst:
+            return 0;
+
+        case isop:
+            if (optab[entry->data.isop.opc].unk2) {
+                result1 = findincre(entry->data.isop.op1);
+                result2 = findincre(entry->data.isop.op2);
+                return entry->data.isop.opc == Uadd ? result1 + result2 : result1 - result2;
+            }
+            result1 = findincre(entry->data.isop.op1);
+            switch (entry->data.isop.opc) {
+                case Uneg:
+                    return -result1;
+                case Ucvt:
+                    return result1;
+                case Uinc:
+                    return result1 + entry->data.isop.unk2C;
+                case Udec:
+                    return result1 + entry->data.isop.unk2C;
+                default:
+                    caseerror(1, 1251, "uoptutil.p", 10);
+                    return 0; // originally an uninitialized stack value was returned
+            }
+        default:
+            caseerror(1, 1238, "uoptutil.p", 10);
+            return 0; // originally an uninitialized stack value was returned
+    }
+}
+
 __asm__(R""(
 .set noat
 .set noreorder
-
-glabel findincre
-    .ent findincre
-    # 00430680 func_00430680
-    # 004313E4 func_004313E4
-    # 00455518 func_00455518
-    # 0047EBB0 findincre
-/* 0047EBB0 3C1C0FBA */  .cpload $t9
-/* 0047EBB4 279CB6E0 */
-/* 0047EBB8 0399E021 */
-/* 0047EBBC 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0047EBC0 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047EBC4 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047EBC8 90820000 */  lbu   $v0, ($a0)
-/* 0047EBCC 00802825 */  move  $a1, $a0
-/* 0047EBD0 244EFFFF */  addiu $t6, $v0, -1
-/* 0047EBD4 2DC10008 */  sltiu $at, $t6, 8
-/* 0047EBD8 10200063 */  beqz  $at, .L0047ED68
-/* 0047EBDC 00000000 */   nop
-/* 0047EBE0 8F818044 */  lw    $at, %got(jtbl_1000E3CC)($gp)
-/* 0047EBE4 000E7080 */  sll   $t6, $t6, 2
-/* 0047EBE8 002E0821 */  addu  $at, $at, $t6
-/* 0047EBEC 8C2EE3CC */  lw    $t6, %lo(jtbl_1000E3CC)($at)
-/* 0047EBF0 01DC7021 */  addu  $t6, $t6, $gp
-/* 0047EBF4 01C00008 */  jr    $t6
-/* 0047EBF8 00000000 */   nop
-.L0047EBFC:
-/* 0047EBFC 8CAF0020 */  lw    $t7, 0x20($a1)
-/* 0047EC00 10000061 */  b     .L0047ED88
-/* 0047EC04 AFAF0024 */   sw    $t7, 0x24($sp)
-.L0047EC08:
-/* 0047EC08 1000005F */  b     .L0047ED88
-/* 0047EC0C AFA00024 */   sw    $zero, 0x24($sp)
-.L0047EC10:
-/* 0047EC10 90B80020 */  lbu   $t8, 0x20($a1)
-/* 0047EC14 8F888DBC */  lw     $t0, %got(optab)($gp)
-/* 0047EC18 0018C880 */  sll   $t9, $t8, 2
-/* 0047EC1C 0338C823 */  subu  $t9, $t9, $t8
-/* 0047EC20 03284821 */  addu  $t1, $t9, $t0
-/* 0047EC24 912A0002 */  lbu   $t2, 2($t1)
-/* 0047EC28 11400019 */  beqz  $t2, .L0047EC90
-/* 0047EC2C 00000000 */   nop
-/* 0047EC30 8F9986D0 */  lw    $t9, %call16(findincre)($gp)
-/* 0047EC34 8CA40024 */  lw    $a0, 0x24($a1)
-/* 0047EC38 AFA50028 */  sw    $a1, 0x28($sp)
-/* 0047EC3C 0320F809 */  jalr  $t9
-/* 0047EC40 00000000 */   nop
-/* 0047EC44 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047EC48 8FA50028 */  lw    $a1, 0x28($sp)
-/* 0047EC4C AFA20020 */  sw    $v0, 0x20($sp)
-/* 0047EC50 8F9986D0 */  lw    $t9, %call16(findincre)($gp)
-/* 0047EC54 8CA40028 */  lw    $a0, 0x28($a1)
-/* 0047EC58 0320F809 */  jalr  $t9
-/* 0047EC5C 00000000 */   nop
-/* 0047EC60 8FA50028 */  lw    $a1, 0x28($sp)
-/* 0047EC64 8FA30020 */  lw    $v1, 0x20($sp)
-/* 0047EC68 24010001 */  li    $at, 1
-/* 0047EC6C 90AB0020 */  lbu   $t3, 0x20($a1)
-/* 0047EC70 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047EC74 00626021 */  addu  $t4, $v1, $v0
-/* 0047EC78 15610003 */  bne   $t3, $at, .L0047EC88
-/* 0047EC7C 00626823 */   subu  $t5, $v1, $v0
-/* 0047EC80 10000041 */  b     .L0047ED88
-/* 0047EC84 AFAC0024 */   sw    $t4, 0x24($sp)
-.L0047EC88:
-/* 0047EC88 1000003F */  b     .L0047ED88
-/* 0047EC8C AFAD0024 */   sw    $t5, 0x24($sp)
-.L0047EC90:
-/* 0047EC90 8F9986D0 */  lw    $t9, %call16(findincre)($gp)
-/* 0047EC94 8CA40024 */  lw    $a0, 0x24($a1)
-/* 0047EC98 AFA50028 */  sw    $a1, 0x28($sp)
-/* 0047EC9C 0320F809 */  jalr  $t9
-/* 0047ECA0 00000000 */   nop
-/* 0047ECA4 8FA50028 */  lw    $a1, 0x28($sp)
-/* 0047ECA8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047ECAC 1000000E */  b     .L0047ECE8
-/* 0047ECB0 90A30020 */   lbu   $v1, 0x20($a1)
-/* 0047ECB4 00027023 */  negu  $t6, $v0
-.L0047ECB8:
-/* 0047ECB8 10000033 */  b     .L0047ED88
-/* 0047ECBC AFAE0024 */   sw    $t6, 0x24($sp)
-.L0047ECC0:
-/* 0047ECC0 10000031 */  b     .L0047ED88
-/* 0047ECC4 AFA20024 */   sw    $v0, 0x24($sp)
-/* 0047ECC8 8CAF002C */  lw    $t7, 0x2c($a1)
-.L0047ECCC:
-/* 0047ECCC 004FC021 */  addu  $t8, $v0, $t7
-/* 0047ECD0 1000002D */  b     .L0047ED88
-/* 0047ECD4 AFB80024 */   sw    $t8, 0x24($sp)
-.L0047ECD8:
-/* 0047ECD8 8CB9002C */  lw    $t9, 0x2c($a1)
-/* 0047ECDC 00594023 */  subu  $t0, $v0, $t9
-/* 0047ECE0 10000029 */  b     .L0047ED88
-/* 0047ECE4 AFA80024 */   sw    $t0, 0x24($sp)
-.L0047ECE8:
-/* 0047ECE8 2C610038 */  sltiu $at, $v1, 0x38
-/* 0047ECEC 14200005 */  bnez  $at, .L0047ED04
-/* 0047ECF0 2401005E */   li    $at, 94
-/* 0047ECF4 5061FFF0 */  beql  $v1, $at, .L0047ECB8
-/* 0047ECF8 00027023 */   negu  $t6, $v0
-/* 0047ECFC 10000011 */  b     .L0047ED44
-/* 0047ED00 00000000 */   nop
-.L0047ED04:
-/* 0047ED04 2C61001B */  sltiu $at, $v1, 0x1b
-/* 0047ED08 1020000B */  beqz  $at, .L0047ED38
-/* 0047ED0C 2469FFE8 */   addiu $t1, $v1, -0x18
-/* 0047ED10 2D210003 */  sltiu $at, $t1, 3
-/* 0047ED14 1020000B */  beqz  $at, .L0047ED44
-/* 0047ED18 00000000 */   nop
-/* 0047ED1C 8F818044 */  lw    $at, %got(jtbl_1000E3C0)($gp)
-/* 0047ED20 00094880 */  sll   $t1, $t1, 2
-/* 0047ED24 00290821 */  addu  $at, $at, $t1
-/* 0047ED28 8C29E3C0 */  lw    $t1, %lo(jtbl_1000E3C0)($at)
-/* 0047ED2C 013C4821 */  addu  $t1, $t1, $gp
-/* 0047ED30 01200008 */  jr    $t1
-/* 0047ED34 00000000 */   nop
-.L0047ED38:
-/* 0047ED38 24010037 */  li    $at, 55
-/* 0047ED3C 5061FFE3 */  beql  $v1, $at, .L0047ECCC
-/* 0047ED40 8CAF002C */   lw    $t7, 0x2c($a1)
-.L0047ED44:
-/* 0047ED44 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0047ED48 8F868044 */  lw    $a2, %got(RO_1000E3B6)($gp)
-/* 0047ED4C 24040001 */  li    $a0, 1
-/* 0047ED50 240504E3 */  li    $a1, 1251
-/* 0047ED54 2407000A */  li    $a3, 10
-/* 0047ED58 0320F809 */  jalr  $t9
-/* 0047ED5C 24C6E3B6 */   addiu $a2, %lo(RO_1000E3B6) # addiu $a2, $a2, -0x1c4a
-/* 0047ED60 10000009 */  b     .L0047ED88
-/* 0047ED64 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0047ED68:
-/* 0047ED68 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0047ED6C 8F868044 */  lw    $a2, %got(RO_1000E3AC)($gp)
-/* 0047ED70 24040001 */  li    $a0, 1
-/* 0047ED74 240504D6 */  li    $a1, 1238
-/* 0047ED78 2407000A */  li    $a3, 10
-/* 0047ED7C 0320F809 */  jalr  $t9
-/* 0047ED80 24C6E3AC */   addiu $a2, %lo(RO_1000E3AC) # addiu $a2, $a2, -0x1c54
-/* 0047ED84 8FBC0018 */  lw    $gp, 0x18($sp)
-.L0047ED88:
-/* 0047ED88 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047ED8C 8FA20024 */  lw    $v0, 0x24($sp)
-/* 0047ED90 27BD0028 */  addiu $sp, $sp, 0x28
-/* 0047ED94 03E00008 */  jr    $ra
-/* 0047ED98 00000000 */   nop
-    .type findincre, @function
-    .size findincre, .-findincre
-    .end findincre
 
 glabel countvars
     .ent countvars

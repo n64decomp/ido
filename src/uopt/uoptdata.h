@@ -348,7 +348,7 @@ struct TableEntry {
             Uopcode opc; // 0x20
             struct TableEntry *op1; // 0x24
             struct TableEntry *op2; // 0x28
-            int unk2C;
+            int unk2C; // calculated result?
             int unk30;
             int unk34;
             Datatype cvtfrom; // if opc == Ucvt
