@@ -35,30 +35,36 @@ struct optabrec {
 };
 
 struct Label {
-    unsigned int unk0; // identifier?
+    unsigned int addr;
     int len;
     bool unk8; // or unsigned char?
     bool branched_back;
-    struct Label *prev;
-    struct Label *next;
+    struct Label *left;
+    struct Label *right;
 };
 
 // See insertvar
 struct VariableInner {
-    int unk0; // can be negative
-    int unk4bFFFFF800: 21;
-    int memtype: 3;
+    int addr; // can be negative, stack offset?
+    unsigned int unk4bFFFFF800: 21;
+    unsigned int memtype: 3;
     int pad4bFF: 8;
 };
 struct Variable {
-    bool unk0;
+    unsigned char unk0;
     bool unk1;
     bool unk2;
     struct VariableInner inner;
-    int unkC; // some index/idendifier?
+    int size;
 
     struct Variable *left; // 0x10
     struct Variable *right; // 0x14
+};
+
+struct LdatabEntry {
+    struct VariableInner var;
+    int size;
+    struct LdatabEntry *next;
 };
 
 struct UstackEntry {
@@ -223,14 +229,20 @@ struct RegstakenParregs {
 
 struct Proc;
 
-// Sorted list by unk0 in Proc
+// Sorted list by id in Proc
 struct ProcList {
     struct Proc *proc;
     struct ProcList *next;
 };
 
+struct IjpLabel {
+    int num;
+    struct IjpLabel *left;
+    struct IjpLabel *right;
+};
+
 struct Proc {
-    int unk0;
+    int id;
     struct Variable *vartree;
     bool unk8; // bool or char?
     unsigned char unk9; // bool or char?
@@ -245,12 +257,12 @@ struct Proc {
     bool unk14; // bool or char?
     bool unk15;
     struct ProcList *callees; // linked list of Procs (see oneprocprepass, insertcallee)
-    int unk1C;
+    struct IjpLabel *ijp_labels; // 0x1C, sorted tree
     int bvsize; // 0x20
     struct RegstakenParregs *regstaken_parregs; // 0x24
     struct Label *labels; // sent to searchlab
-    struct Proc *unk2C;
-    struct Proc *next;
+    struct Proc *left; // binary search tree left (root is prochead)
+    struct Proc *right; // binary search tree right (root is prochead)
     void *unk34;
     int unk38; // mtag uses this
 };
@@ -338,7 +350,7 @@ struct TableEntry {
             int size; // in bytes
         } isconst_isrconst;
         struct {
-            unsigned char unk20;
+            unsigned char size;
             bool unk21;
             bool unk22;
             struct TableEntry *unk24;
@@ -566,7 +578,7 @@ extern unsigned char entflag;
 extern int unroll_times;
 extern int unroll_limit;
 extern int sizethreshold;
-extern void *ldatab[3113]; // TODO: fix type (0x10 bytes allocated)
+extern struct LdatabEntry *ldatab[3113];
 extern struct Proc *curproc;
 extern struct Proc *indirprocs;
 extern struct Proc *ciaprocs;

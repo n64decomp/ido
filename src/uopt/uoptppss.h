@@ -5,7 +5,7 @@
 #include "uoptdata.h"
 
 struct Proc *getproc(int unk);
-struct Label *searchlab(int arg0, struct Label *list);
+struct Label *searchlab(unsigned int addr, struct Label *tree);
 void prepass(void);
 bool proc_suppressed(void);
 

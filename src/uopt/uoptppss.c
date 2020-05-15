@@ -1,5 +1,15 @@
+#include "libp/libp.h"
+#include "libxmalloc/xmalloc.h"
 #include "uoptdata.h"
 #include "uoptppss.h"
+#include "uoptutil.h"
+#include "uoptkill.h"
+
+// Linked list, sorted by num
+struct NumLinkedList {
+    int num;
+    struct NumLinkedList *next;
+};
 
 __asm__(R""(
 .macro glabel label
@@ -9,39 +19,6 @@ __asm__(R""(
 .endm
 
 .rdata
-RO_1000D210:
-    # 00459698 make_subloc_veqv
-    .asciz "uoptppss.p"
-
-    .balign 4
-jtbl_1000D21C:
-    # 00459698 make_subloc_veqv
-    .gpword .L0045974C
-    .gpword .L004597CC
-    .gpword .L00459808
-
-RO_1000D228:
-    # 00459828 insertvar
-    .asciz "uoptppss.p"
-
-    .balign 4
-jtbl_1000D234:
-    # 00459828 insertvar
-    .gpword .L0045997C
-    .gpword .L00459914
-    .gpword .L00459948
-
-RO_1000D240:
-    # 00459FB0 insertlda
-    .asciz "uoptppss.p"
-
-    .balign 4
-jtbl_1000D24C:
-    # 00459FB0 insertlda
-    .gpword .L0045A0F8
-    .gpword .L0045A0F8
-    .gpword .L0045A0BC
-
 RO_1000D258:
     # 0045A480 oneinstruction
     .ascii "uopt: Warning: optimization level lowered from O3 to O2 due to presence of calls in inline assembler text"
@@ -174,36 +151,22 @@ RO_1000D484:
     # 0045C150 prepass
     .ascii "uopt: Error: unexpected EOF in input ucode; giving up....."
 
-RO_1000D4BE:
-    # 0045C540 varintree
-    .ascii "uoptppss.p"
-
-    .balign 4
-jtbl_1000D4C8:
-    # 0045C540 varintree
-    .gpword .L0045C5C8
-    .gpword .L0045C5D0
-    .gpword .L0045C5D8
-
 .data
-# 10010D00
-glabel lda_heap
-    # 00459FB0 insertlda
-    # 0045C150 prepass
-    .byte 0x00,0x00,0x00,0x00
-    .type lda_heap, @object
-    .size lda_heap, .-lda_heap # 4
+)"");
 
-# 10010D04
-glabel var_heap
-    # 00459828 insertvar
-    .byte 0x00,0x00,0x00,0x00
-    .type var_heap, @object
-    .size var_heap, .-var_heap # 4
+/*
+00459FB0 insertlda
+0045C150 prepass
+*/
+struct AllocBlock *lda_heap = NULL;
 
-D_10010D08:
-    # 00459400 updatelab
-    .byte 0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01
+/*
+00459828 insertvar
+*/
+struct AllocBlock *var_heap = NULL;
+
+__asm__(R""(
+.data
 
 D_10010D14:
     # 0045A480 oneinstruction
@@ -217,21 +180,19 @@ D_10010D2C:
     # 0045C150 prepass
     .ascii " \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00 \x00\x00\x00\x00\x00\x00\x00\x00"
 
+)"");
 
+/*
+004590C8 searchproc
+00459300 getproc
+0045A480 oneinstruction
+0045BE98 processcallgraph
+0045C150 prepass
+*/
+struct Proc *prochead;
 
+__asm__(R""(
 .bss
-    .balign 4
-# 1001C614
-glabel prochead
-    # 004590C8 searchproc
-    # 00459300 getproc
-    # 0045A480 oneinstruction
-    # 0045BE98 processcallgraph
-    # 0045C150 prepass
-    .space 4
-    .size prochead, 4
-    .type prochead, @object
-
     .balign 4
 # 1001C618
 glabel lab_just_defined
@@ -257,1632 +218,660 @@ glabel in_exception_frame
     .space 4
     .size in_exception_frame, 4
     .type in_exception_frame, @object
-
-    .balign 16
-# 1001D1F0
-glabel fsymtab
-    # 00459C9C enterfsymtab
-    # 00459DC8 del_fsymtab
-    # 0045C150 prepass
-    # 0045C6F4 in_fsym
-    .space 644
-    .size fsymtab, 644
-    .type fsymtab, @object
-
-    .balign 16
-# 1001D478
-glabel gp_rel_tab
-    # 00459E84 enter_gp_rel_tab
-    # 0045C150 prepass
-    # 0045C77C is_gp_relative
-    .space 644
-    .size gp_rel_tab, 644
-    .type gp_rel_tab, @object
-
-
-.set noat      # allow manual use of $at
-.set noreorder # don't insert nops after branches
-
-.text
-
-glabel compareloc
-    .ent compareloc
-    # 00459698 make_subloc_veqv
-    # 00459828 insertvar
-    # 00459FB0 insertlda
-    # 0045BF44 checkforvreg
-/* 00458ED0 3C1C0FBC */  .cpload $t9
-/* 00458ED4 279C13C0 */  
-/* 00458ED8 0399E021 */  
-/* 00458EDC 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 00458EE0 AFA5002C */  sw    $a1, 0x2c($sp)
-/* 00458EE4 AFA70034 */  sw    $a3, 0x34($sp)
-/* 00458EE8 93B80036 */  lbu   $t8, 0x36($sp)
-/* 00458EEC 93AE002E */  lbu   $t6, 0x2e($sp)
-/* 00458EF0 AFBF0024 */  sw    $ra, 0x24($sp)
-/* 00458EF4 33190007 */  andi  $t9, $t8, 7
-/* 00458EF8 31CF0007 */  andi  $t7, $t6, 7
-/* 00458EFC 01F9082B */  sltu  $at, $t7, $t9
-/* 00458F00 AFBC0020 */  sw    $gp, 0x20($sp)
-/* 00458F04 AFA40028 */  sw    $a0, 0x28($sp)
-/* 00458F08 10200003 */  beqz  $at, .L00458F18
-/* 00458F0C AFA60030 */   sw    $a2, 0x30($sp)
-/* 00458F10 10000036 */  b     .L00458FEC
-/* 00458F14 24030001 */   li    $v1, 1
-.L00458F18:
-/* 00458F18 93A80036 */  lbu   $t0, 0x36($sp)
-/* 00458F1C 93AA002E */  lbu   $t2, 0x2e($sp)
-/* 00458F20 8FAC002C */  lw    $t4, 0x2c($sp)
-/* 00458F24 31090007 */  andi  $t1, $t0, 7
-/* 00458F28 314B0007 */  andi  $t3, $t2, 7
-/* 00458F2C 012B082B */  sltu  $at, $t1, $t3
-/* 00458F30 10200003 */  beqz  $at, .L00458F40
-/* 00458F34 8FAE0034 */   lw    $t6, 0x34($sp)
-/* 00458F38 1000002C */  b     .L00458FEC
-/* 00458F3C 24030002 */   li    $v1, 2
-.L00458F40:
-/* 00458F40 000C6AC2 */  srl   $t5, $t4, 0xb
-/* 00458F44 000EC2C2 */  srl   $t8, $t6, 0xb
-/* 00458F48 01B8082B */  sltu  $at, $t5, $t8
-/* 00458F4C 10200003 */  beqz  $at, .L00458F5C
-/* 00458F50 8FAF0034 */   lw    $t7, 0x34($sp)
-/* 00458F54 10000025 */  b     .L00458FEC
-/* 00458F58 24030001 */   li    $v1, 1
-.L00458F5C:
-/* 00458F5C 8FA8002C */  lw    $t0, 0x2c($sp)
-/* 00458F60 000FCAC2 */  srl   $t9, $t7, 0xb
-/* 00458F64 27A90028 */  addiu $t1, $sp, 0x28
-/* 00458F68 000852C2 */  srl   $t2, $t0, 0xb
-/* 00458F6C 032A082B */  sltu  $at, $t9, $t2
-/* 00458F70 50200004 */  beql  $at, $zero, .L00458F84
-/* 00458F74 8D240000 */   lw    $a0, ($t1)
-/* 00458F78 1000001C */  b     .L00458FEC
-/* 00458F7C 24030002 */   li    $v1, 2
-/* 00458F80 8D240000 */  lw    $a0, ($t1)
-.L00458F84:
-/* 00458F84 27AE0030 */  addiu $t6, $sp, 0x30
-/* 00458F88 8F998380 */  lw    $t9, %call16(overlapping)($gp)
-/* 00458F8C AFA40000 */  sw    $a0, ($sp)
-/* 00458F90 8D250004 */  lw    $a1, 4($t1)
-/* 00458F94 8FAF0038 */  lw    $t7, 0x38($sp)
-/* 00458F98 8FA8003C */  lw    $t0, 0x3c($sp)
-/* 00458F9C AFA50004 */  sw    $a1, 4($sp)
-/* 00458FA0 8DC60000 */  lw    $a2, ($t6)
-/* 00458FA4 AFA60008 */  sw    $a2, 8($sp)
-/* 00458FA8 8DC70004 */  lw    $a3, 4($t6)
-/* 00458FAC AFAF0010 */  sw    $t7, 0x10($sp)
-/* 00458FB0 AFA80014 */  sw    $t0, 0x14($sp)
-/* 00458FB4 0320F809 */  jalr  $t9
-/* 00458FB8 AFA7000C */   sw    $a3, 0xc($sp)
-/* 00458FBC 10400003 */  beqz  $v0, .L00458FCC
-/* 00458FC0 8FBC0020 */   lw    $gp, 0x20($sp)
-/* 00458FC4 10000009 */  b     .L00458FEC
-/* 00458FC8 00001825 */   move  $v1, $zero
-.L00458FCC:
-/* 00458FCC 8FB90028 */  lw    $t9, 0x28($sp)
-/* 00458FD0 8FAA0030 */  lw    $t2, 0x30($sp)
-/* 00458FD4 24030002 */  li    $v1, 2
-/* 00458FD8 032A082A */  slt   $at, $t9, $t2
-/* 00458FDC 10200003 */  beqz  $at, .L00458FEC
-/* 00458FE0 00000000 */   nop   
-/* 00458FE4 10000001 */  b     .L00458FEC
-/* 00458FE8 24030001 */   li    $v1, 1
-.L00458FEC:
-/* 00458FEC 8FBF0024 */  lw    $ra, 0x24($sp)
-/* 00458FF0 27BD0028 */  addiu $sp, $sp, 0x28
-/* 00458FF4 00601025 */  move  $v0, $v1
-/* 00458FF8 03E00008 */  jr    $ra
-/* 00458FFC 00000000 */   nop   
-    .type compareloc, @function
-    .size compareloc, .-compareloc
-    .end compareloc
-
-glabel compareaddr
-    .ent compareaddr
-    # 0045C540 varintree
-    # 004736E0 func_004736E0
-/* 00459000 AFA50004 */  sw    $a1, 4($sp)
-/* 00459004 AFA7000C */  sw    $a3, 0xc($sp)
-/* 00459008 93B8000E */  lbu   $t8, 0xe($sp)
-/* 0045900C 93AE0006 */  lbu   $t6, 6($sp)
-/* 00459010 AFA40000 */  sw    $a0, ($sp)
-/* 00459014 33190007 */  andi  $t9, $t8, 7
-/* 00459018 31CF0007 */  andi  $t7, $t6, 7
-/* 0045901C 01F9082B */  sltu  $at, $t7, $t9
-/* 00459020 10200003 */  beqz  $at, .L00459030
-/* 00459024 AFA60008 */   sw    $a2, 8($sp)
-/* 00459028 03E00008 */  jr    $ra
-/* 0045902C 24020001 */   li    $v0, 1
-
-.L00459030:
-/* 00459030 93A8000E */  lbu   $t0, 0xe($sp)
-/* 00459034 93AA0006 */  lbu   $t2, 6($sp)
-/* 00459038 8FAC0004 */  lw    $t4, 4($sp)
-/* 0045903C 31090007 */  andi  $t1, $t0, 7
-/* 00459040 314B0007 */  andi  $t3, $t2, 7
-/* 00459044 012B082B */  sltu  $at, $t1, $t3
-/* 00459048 10200003 */  beqz  $at, .L00459058
-/* 0045904C 8FAE000C */   lw    $t6, 0xc($sp)
-/* 00459050 03E00008 */  jr    $ra
-/* 00459054 24020002 */   li    $v0, 2
-
-.L00459058:
-/* 00459058 000C6AC2 */  srl   $t5, $t4, 0xb
-/* 0045905C 000EC2C2 */  srl   $t8, $t6, 0xb
-/* 00459060 01B8082B */  sltu  $at, $t5, $t8
-/* 00459064 10200003 */  beqz  $at, .L00459074
-/* 00459068 8FAF000C */   lw    $t7, 0xc($sp)
-/* 0045906C 03E00008 */  jr    $ra
-/* 00459070 24020001 */   li    $v0, 1
-
-.L00459074:
-/* 00459074 8FA80004 */  lw    $t0, 4($sp)
-/* 00459078 000FCAC2 */  srl   $t9, $t7, 0xb
-/* 0045907C 8FA20000 */  lw    $v0, ($sp)
-/* 00459080 000852C2 */  srl   $t2, $t0, 0xb
-/* 00459084 032A082B */  sltu  $at, $t9, $t2
-/* 00459088 10200003 */  beqz  $at, .L00459098
-/* 0045908C 8FA30008 */   lw    $v1, 8($sp)
-/* 00459090 03E00008 */  jr    $ra
-/* 00459094 24020002 */   li    $v0, 2
-
-.L00459098:
-/* 00459098 0043082A */  slt   $at, $v0, $v1
-/* 0045909C 50200004 */  beql  $at, $zero, .L004590B0
-/* 004590A0 0062082A */   slt   $at, $v1, $v0
-/* 004590A4 03E00008 */  jr    $ra
-/* 004590A8 24020001 */   li    $v0, 1
-
-/* 004590AC 0062082A */  slt   $at, $v1, $v0
-.L004590B0:
-/* 004590B0 10200003 */  beqz  $at, .L004590C0
-/* 004590B4 00001825 */   move  $v1, $zero
-/* 004590B8 03E00008 */  jr    $ra
-/* 004590BC 24020002 */   li    $v0, 2
-
-.L004590C0:
-/* 004590C0 03E00008 */  jr    $ra
-/* 004590C4 00601025 */   move  $v0, $v1
-    .type compareaddr, @function
-    .size compareaddr, .-compareaddr
-    .end compareaddr
-
-glabel searchproc
-    .ent searchproc
-    # 0045A480 oneinstruction
-    # 0045B508 oneprocprepass
-/* 004590C8 3C1C0FBC */  .cpload $t9
-/* 004590CC 279C11C8 */  
-/* 004590D0 0399E021 */  
-/* 004590D4 8F888C4C */  lw     $t0, %got(prochead)($gp)
-/* 004590D8 27BDFFD0 */  addiu $sp, $sp, -0x30
-/* 004590DC AFB00014 */  sw    $s0, 0x14($sp)
-/* 004590E0 8D030000 */  lw    $v1, ($t0)
-/* 004590E4 00808025 */  move  $s0, $a0
-/* 004590E8 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 004590EC 2C620001 */  sltiu $v0, $v1, 1
-/* 004590F0 304E00FF */  andi  $t6, $v0, 0xff
-/* 004590F4 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 004590F8 AFA50034 */  sw    $a1, 0x34($sp)
-/* 004590FC 00003825 */  move  $a3, $zero
-/* 00459100 15C00019 */  bnez  $t6, .L00459168
-/* 00459104 304600FF */   andi  $a2, $v0, 0xff
-/* 00459108 8C620000 */  lw    $v0, ($v1)
-.L0045910C:
-/* 0045910C 16020003 */  bne   $s0, $v0, .L0045911C
-/* 00459110 0202082A */   slt   $at, $s0, $v0
-/* 00459114 10000010 */  b     .L00459158
-/* 00459118 24070001 */   li    $a3, 1
-.L0045911C:
-/* 0045911C 50200009 */  beql  $at, $zero, .L00459144
-/* 00459120 8C620030 */   lw    $v0, 0x30($v1)
-/* 00459124 8C62002C */  lw    $v0, 0x2c($v1)
-/* 00459128 14400003 */  bnez  $v0, .L00459138
-/* 0045912C 00000000 */   nop   
-/* 00459130 10000009 */  b     .L00459158
-/* 00459134 24060001 */   li    $a2, 1
-.L00459138:
-/* 00459138 10000007 */  b     .L00459158
-/* 0045913C 00401825 */   move  $v1, $v0
-/* 00459140 8C620030 */  lw    $v0, 0x30($v1)
-.L00459144:
-/* 00459144 54400004 */  bnezl $v0, .L00459158
-/* 00459148 00401825 */   move  $v1, $v0
-/* 0045914C 10000002 */  b     .L00459158
-/* 00459150 24060001 */   li    $a2, 1
-/* 00459154 00401825 */  move  $v1, $v0
-.L00459158:
-/* 00459158 14E00003 */  bnez  $a3, .L00459168
-/* 0045915C 00000000 */   nop   
-/* 00459160 50C0FFEA */  beql  $a2, $zero, .L0045910C
-/* 00459164 8C620000 */   lw    $v0, ($v1)
-.L00459168:
-/* 00459168 14E00040 */  bnez  $a3, .L0045926C
-/* 0045916C 8FA90034 */   lw    $t1, 0x34($sp)
-/* 00459170 5460000C */  bnezl $v1, .L004591A4
-/* 00459174 8C6F0000 */   lw    $t7, ($v1)
-/* 00459178 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0045917C 2404003C */  li    $a0, 60
-/* 00459180 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 00459184 0320F809 */  jalr  $t9
-/* 00459188 00000000 */   nop   
-/* 0045918C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00459190 00401825 */  move  $v1, $v0
-/* 00459194 8F888C4C */  lw     $t0, %got(prochead)($gp)
-/* 00459198 10000018 */  b     .L004591FC
-/* 0045919C AD020000 */   sw    $v0, ($t0)
-/* 004591A0 8C6F0000 */  lw    $t7, ($v1)
-.L004591A4:
-/* 004591A4 020F082A */  slt   $at, $s0, $t7
-/* 004591A8 1020000B */  beqz  $at, .L004591D8
-/* 004591AC 00000000 */   nop   
-/* 004591B0 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 004591B4 2404003C */  li    $a0, 60
-/* 004591B8 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 004591BC 0320F809 */  jalr  $t9
-/* 004591C0 AFA30024 */   sw    $v1, 0x24($sp)
-/* 004591C4 8FA30024 */  lw    $v1, 0x24($sp)
-/* 004591C8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004591CC AC62002C */  sw    $v0, 0x2c($v1)
-/* 004591D0 1000000A */  b     .L004591FC
-/* 004591D4 00401825 */   move  $v1, $v0
-.L004591D8:
-/* 004591D8 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 004591DC 2404003C */  li    $a0, 60
-/* 004591E0 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 004591E4 0320F809 */  jalr  $t9
-/* 004591E8 AFA30024 */   sw    $v1, 0x24($sp)
-/* 004591EC 8FA30024 */  lw    $v1, 0x24($sp)
-/* 004591F0 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004591F4 AC620030 */  sw    $v0, 0x30($v1)
-/* 004591F8 00401825 */  move  $v1, $v0
-.L004591FC:
-/* 004591FC 8F828A5C */  lw     $v0, %got(lang)($gp)
-/* 00459200 AC60002C */  sw    $zero, 0x2c($v1)
-/* 00459204 AC600030 */  sw    $zero, 0x30($v1)
-/* 00459208 AC700000 */  sw    $s0, ($v1)
-/* 0045920C AC600004 */  sw    $zero, 4($v1)
-/* 00459210 AC600028 */  sw    $zero, 0x28($v1)
-/* 00459214 AC600018 */  sw    $zero, 0x18($v1)
-/* 00459218 A0600008 */  sb    $zero, 8($v1)
-/* 0045921C 90420000 */  lbu   $v0, ($v0)
-/* 00459220 8F988B00 */  lw     $t8, %got(o3opt)($gp)
-/* 00459224 8FB90034 */  lw    $t9, 0x34($sp)
-/* 00459228 38420005 */  xori  $v0, $v0, 5
-/* 0045922C 2C420001 */  sltiu $v0, $v0, 1
-/* 00459230 A062000B */  sb    $v0, 0xb($v1)
-/* 00459234 93180000 */  lbu   $t8, ($t8)
-/* 00459238 A062000D */  sb    $v0, 0xd($v1)
-/* 0045923C A060000E */  sb    $zero, 0xe($v1)
-/* 00459240 A060000F */  sb    $zero, 0xf($v1)
-/* 00459244 A0600014 */  sb    $zero, 0x14($v1)
-/* 00459248 A0600015 */  sb    $zero, 0x15($v1)
-/* 0045924C A4600012 */  sh    $zero, 0x12($v1)
-/* 00459250 AC60001C */  sw    $zero, 0x1c($v1)
-/* 00459254 AC600020 */  sw    $zero, 0x20($v1)
-/* 00459258 AC600034 */  sw    $zero, 0x34($v1)
-/* 0045925C AC600038 */  sw    $zero, 0x38($v1)
-/* 00459260 A0790010 */  sb    $t9, 0x10($v1)
-/* 00459264 10000009 */  b     .L0045928C
-/* 00459268 A078000C */   sb    $t8, 0xc($v1)
-.L0045926C:
-/* 0045926C 24010002 */  li    $at, 2
-/* 00459270 51210007 */  beql  $t1, $at, .L00459290
-/* 00459274 8FBF001C */   lw    $ra, 0x1c($sp)
-/* 00459278 906A0010 */  lbu   $t2, 0x10($v1)
-/* 0045927C 24010002 */  li    $at, 2
-/* 00459280 55410003 */  bnel  $t2, $at, .L00459290
-/* 00459284 8FBF001C */   lw    $ra, 0x1c($sp)
-/* 00459288 A0690010 */  sb    $t1, 0x10($v1)
-.L0045928C:
-/* 0045928C 8FBF001C */  lw    $ra, 0x1c($sp)
-.L00459290:
-/* 00459290 8FB00014 */  lw    $s0, 0x14($sp)
-/* 00459294 27BD0030 */  addiu $sp, $sp, 0x30
-/* 00459298 03E00008 */  jr    $ra
-/* 0045929C 00601025 */   move  $v0, $v1
-    .type searchproc, @function
-    .size searchproc, .-searchproc
-    .end searchproc
-
-glabel change_to_o2
-    .ent change_to_o2
-    # 004592A0 change_to_o2
-    # 0045A480 oneinstruction
-/* 004592A0 3C1C0FBC */  .cpload $t9
-/* 004592A4 279C0FF0 */  
-/* 004592A8 0399E021 */  
-/* 004592AC 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 004592B0 AFB00014 */  sw    $s0, 0x14($sp)
-/* 004592B4 00808025 */  move  $s0, $a0
-/* 004592B8 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 004592BC AFBC0018 */  sw    $gp, 0x18($sp)
-/* 004592C0 5200000B */  beql  $s0, $zero, .L004592F0
-/* 004592C4 8FBF001C */   lw    $ra, 0x1c($sp)
-.L004592C8:
-/* 004592C8 8F998438 */  lw    $t9, %call16(change_to_o2)($gp)
-/* 004592CC A200000C */  sb    $zero, 0xc($s0)
-/* 004592D0 8E04002C */  lw    $a0, 0x2c($s0)
-/* 004592D4 0320F809 */  jalr  $t9
-/* 004592D8 00000000 */   nop   
-/* 004592DC 8E100030 */  lw    $s0, 0x30($s0)
-/* 004592E0 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004592E4 1600FFF8 */  bnez  $s0, .L004592C8
-/* 004592E8 00000000 */   nop   
-/* 004592EC 8FBF001C */  lw    $ra, 0x1c($sp)
-.L004592F0:
-/* 004592F0 8FB00014 */  lw    $s0, 0x14($sp)
-/* 004592F4 27BD0020 */  addiu $sp, $sp, 0x20
-/* 004592F8 03E00008 */  jr    $ra
-/* 004592FC 00000000 */   nop   
-    .type change_to_o2, @function
-    .size change_to_o2, .-change_to_o2
-    .end change_to_o2
-
-glabel getproc
-    .ent getproc
-    # 004173EC func_004173EC
-    # 0042EB10 incorp_feedback
-    # 0043CFCC readnxtinst
-    # 0044CD14 listplkilled
-    # 0044D4B4 listpskilled
-    # 00456A2C oneproc
-/* 00459300 3C1C0FBC */  .cpload $t9
-/* 00459304 279C0F90 */  
-/* 00459308 0399E021 */  
-/* 0045930C 8F838C4C */  lw     $v1, %got(prochead)($gp)
-/* 00459310 00001025 */  move  $v0, $zero
-/* 00459314 8C630000 */  lw    $v1, ($v1)
-/* 00459318 1060000F */  beqz  $v1, .L00459358
-/* 0045931C 00000000 */   nop   
-/* 00459320 8C650000 */  lw    $a1, ($v1)
-.L00459324:
-/* 00459324 14850003 */  bne   $a0, $a1, .L00459334
-/* 00459328 0085082A */   slt   $at, $a0, $a1
-/* 0045932C 10000006 */  b     .L00459348
-/* 00459330 24020001 */   li    $v0, 1
-.L00459334:
-/* 00459334 50200004 */  beql  $at, $zero, .L00459348
-/* 00459338 8C630030 */   lw    $v1, 0x30($v1)
-/* 0045933C 10000002 */  b     .L00459348
-/* 00459340 8C63002C */   lw    $v1, 0x2c($v1)
-/* 00459344 8C630030 */  lw    $v1, 0x30($v1)
-.L00459348:
-/* 00459348 14400003 */  bnez  $v0, .L00459358
-/* 0045934C 00000000 */   nop   
-/* 00459350 5460FFF4 */  bnezl $v1, .L00459324
-/* 00459354 8C650000 */   lw    $a1, ($v1)
-.L00459358:
-/* 00459358 03E00008 */  jr    $ra
-/* 0045935C 00601025 */   move  $v0, $v1
-    .type getproc, @function
-    .size getproc, .-getproc
-    .end getproc
-
-glabel insertijplab
-    .ent insertijplab
-    # 0045A480 oneinstruction
-/* 00459360 3C1C0FBC */  .cpload $t9
-/* 00459364 279C0F30 */  
-/* 00459368 0399E021 */  
-/* 0045936C 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 00459370 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 00459374 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 00459378 00803025 */  move  $a2, $a0
-/* 0045937C 00A03825 */  move  $a3, $a1
-.L00459380:
-/* 00459380 8CE20000 */  lw    $v0, ($a3)
-/* 00459384 54400010 */  bnezl $v0, .L004593C8
-/* 00459388 8C430000 */   lw    $v1, ($v0)
-/* 0045938C 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 00459390 2404000C */  li    $a0, 12
-/* 00459394 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 00459398 AFA60020 */  sw    $a2, 0x20($sp)
-/* 0045939C 0320F809 */  jalr  $t9
-/* 004593A0 AFA70024 */   sw    $a3, 0x24($sp)
-/* 004593A4 8FA70024 */  lw    $a3, 0x24($sp)
-/* 004593A8 8FA60020 */  lw    $a2, 0x20($sp)
-/* 004593AC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004593B0 ACE20000 */  sw    $v0, ($a3)
-/* 004593B4 AC400004 */  sw    $zero, 4($v0)
-/* 004593B8 AC400008 */  sw    $zero, 8($v0)
-/* 004593BC 1000000C */  b     .L004593F0
-/* 004593C0 AC460000 */   sw    $a2, ($v0)
-/* 004593C4 8C430000 */  lw    $v1, ($v0)
-.L004593C8:
-/* 004593C8 00C3082A */  slt   $at, $a2, $v1
-/* 004593CC 50200004 */  beql  $at, $zero, .L004593E0
-/* 004593D0 0066082A */   slt   $at, $v1, $a2
-/* 004593D4 1000FFEA */  b     .L00459380
-/* 004593D8 24470004 */   addiu $a3, $v0, 4
-/* 004593DC 0066082A */  slt   $at, $v1, $a2
-.L004593E0:
-/* 004593E0 50200004 */  beql  $at, $zero, .L004593F4
-/* 004593E4 8FBF001C */   lw    $ra, 0x1c($sp)
-/* 004593E8 1000FFE5 */  b     .L00459380
-/* 004593EC 24470008 */   addiu $a3, $v0, 8
-.L004593F0:
-/* 004593F0 8FBF001C */  lw    $ra, 0x1c($sp)
-.L004593F4:
-/* 004593F4 27BD0020 */  addiu $sp, $sp, 0x20
-/* 004593F8 03E00008 */  jr    $ra
-/* 004593FC 00000000 */   nop   
-    .type insertijplab, @function
-    .size insertijplab, .-insertijplab
-    .end insertijplab
-
-glabel updatelab
-    .ent updatelab
-    # 0045A480 oneinstruction
-/* 00459400 3C1C0FBC */  .cpload $t9
-/* 00459404 279C0E90 */  
-/* 00459408 0399E021 */  
-/* 0045940C 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 00459410 AFB00014 */  sw    $s0, 0x14($sp)
-/* 00459414 00A08025 */  move  $s0, $a1
-/* 00459418 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0045941C AFBC0018 */  sw    $gp, 0x18($sp)
-/* 00459420 AFA60028 */  sw    $a2, 0x28($sp)
-/* 00459424 00803825 */  move  $a3, $a0
-.L00459428:
-/* 00459428 8E030000 */  lw    $v1, ($s0)
-/* 0045942C 54600014 */  bnezl $v1, .L00459480
-/* 00459430 8C620000 */   lw    $v0, ($v1)
-/* 00459434 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 00459438 24040014 */  li    $a0, 20
-/* 0045943C 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 00459440 A3A6002B */  sb    $a2, 0x2b($sp)
-/* 00459444 0320F809 */  jalr  $t9
-/* 00459448 AFA70020 */   sw    $a3, 0x20($sp)
-/* 0045944C 93A6002B */  lbu   $a2, 0x2b($sp)
-/* 00459450 8FA70020 */  lw    $a3, 0x20($sp)
-/* 00459454 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00459458 AE020000 */  sw    $v0, ($s0)
-/* 0045945C A0400009 */  sb    $zero, 9($v0)
-/* 00459460 AC40000C */  sw    $zero, 0xc($v0)
-/* 00459464 AC400010 */  sw    $zero, 0x10($v0)
-/* 00459468 AC400004 */  sw    $zero, 4($v0)
-/* 0045946C A0460008 */  sb    $a2, 8($v0)
-/* 00459470 AC470000 */  sw    $a3, ($v0)
-/* 00459474 10000029 */  b     .L0045951C
-/* 00459478 8E040000 */   lw    $a0, ($s0)
-/* 0045947C 8C620000 */  lw    $v0, ($v1)
-.L00459480:
-/* 00459480 00E2082B */  sltu  $at, $a3, $v0
-/* 00459484 50200005 */  beql  $at, $zero, .L0045949C
-/* 00459488 0047082B */   sltu  $at, $v0, $a3
-/* 0045948C 2470000C */  addiu $s0, $v1, 0xc
-/* 00459490 1000FFE5 */  b     .L00459428
-/* 00459494 30C600FF */   andi  $a2, $a2, 0xff
-/* 00459498 0047082B */  sltu  $at, $v0, $a3
-.L0045949C:
-/* 0045949C 10200004 */  beqz  $at, .L004594B0
-/* 004594A0 00000000 */   nop   
-/* 004594A4 24700010 */  addiu $s0, $v1, 0x10
-/* 004594A8 1000FFDF */  b     .L00459428
-/* 004594AC 30C600FF */   andi  $a2, $a2, 0xff
-.L004594B0:
-/* 004594B0 50C0001A */  beql  $a2, $zero, .L0045951C
-/* 004594B4 00602025 */   move  $a0, $v1
-/* 004594B8 906E0008 */  lbu   $t6, 8($v1)
-/* 004594BC 55C00014 */  bnezl $t6, .L00459510
-/* 004594C0 24080001 */   li    $t0, 1
-/* 004594C4 8F8F8DA4 */  lw     $t7, %got(u)($gp)
-/* 004594C8 91EF0000 */  lbu   $t7, ($t7)
-/* 004594CC 25F8FFE0 */  addiu $t8, $t7, -0x20
-/* 004594D0 2F190060 */  sltiu $t9, $t8, 0x60
-/* 004594D4 13200009 */  beqz  $t9, .L004594FC
-/* 004594D8 240F0001 */   li    $t7, 1
-/* 004594DC 8F8A8044 */  lw    $t2, %got(D_10010D08)($gp)
-/* 004594E0 00184143 */  sra   $t0, $t8, 5
-/* 004594E4 00084880 */  sll   $t1, $t0, 2
-/* 004594E8 254A0D08 */  addiu $t2, %lo(D_10010D08) # addiu $t2, $t2, 0xd08
-/* 004594EC 01495821 */  addu  $t3, $t2, $t1
-/* 004594F0 8D6C0000 */  lw    $t4, ($t3)
-/* 004594F4 030C6804 */  sllv  $t5, $t4, $t8
-/* 004594F8 29B90000 */  slti  $t9, $t5, 0
-.L004594FC:
-/* 004594FC 53200004 */  beql  $t9, $zero, .L00459510
-/* 00459500 24080001 */   li    $t0, 1
-/* 00459504 A06F0009 */  sb    $t7, 9($v1)
-/* 00459508 8E030000 */  lw    $v1, ($s0)
-/* 0045950C 24080001 */  li    $t0, 1
-.L00459510:
-/* 00459510 A0680008 */  sb    $t0, 8($v1)
-/* 00459514 8E030000 */  lw    $v1, ($s0)
-/* 00459518 00602025 */  move  $a0, $v1
-.L0045951C:
-/* 0045951C 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 00459520 8FB00014 */  lw    $s0, 0x14($sp)
-/* 00459524 27BD0020 */  addiu $sp, $sp, 0x20
-/* 00459528 03E00008 */  jr    $ra
-/* 0045952C 00801025 */   move  $v0, $a0
-    .type updatelab, @function
-    .size updatelab, .-updatelab
-    .end updatelab
-
 )"");
+
+/*
+00459C9C enterfsymtab
+00459DC8 del_fsymtab
+0045C150 prepass
+0045C6F4 in_fsym
+*/
+struct NumLinkedList *fsymtab[161];
+
+/*
+00459E84 enter_gp_rel_tab
+0045C150 prepass
+0045C77C is_gp_relative
+*/
+struct NumLinkedList *gp_rel_tab[161];
+
+/*
+00459698 make_subloc_veqv
+00459828 insertvar
+00459FB0 insertlda
+0045BF44 checkforvreg
+*/
+unsigned char compareloc(struct VariableInner a, struct VariableInner b, int size_a, int size_b) {
+    if (a.memtype < b.memtype) {
+        return 1;
+    }
+    if (a.memtype > b.memtype) {
+        return 2;
+    }
+    if (a.unk4bFFFFF800 < b.unk4bFFFFF800) {
+        return 1;
+    }
+    if (a.unk4bFFFFF800 > b.unk4bFFFFF800) {
+        return 2;
+    }
+    if (overlapping(a, b, size_a, size_b)) {
+        return 0;
+    }
+    return a.addr < b.addr ? 1 : 2;
+}
+
+/*
+0045C540 varintree
+004736E0 func_004736E0
+*/
+int compareaddr(struct VariableInner a, struct VariableInner b) {
+    if (a.memtype < b.memtype) {
+        return 1;
+    }
+    if (a.memtype > b.memtype) {
+        return 2;
+    }
+    if (a.unk4bFFFFF800 < b.unk4bFFFFF800) {
+        return 1;
+    }
+    if (a.unk4bFFFFF800 > b.unk4bFFFFF800) {
+        return 2;
+    }
+    if (a.addr < b.addr) {
+        return 1;
+    }
+    if (a.addr > b.addr) {
+        return 2;
+    }
+    return 0;
+}
+
+/*
+0045A480 oneinstruction
+0045B508 oneprocprepass
+*/
+struct Proc *searchproc(int id, int arg1) {
+    bool notfound;
+    bool found;
+    struct Proc *pos;
+    struct Proc *new_proc;
+
+    notfound = prochead == NULL;
+    found = false;
+    pos = prochead;
+
+    while (!found && !notfound) {
+        if (id == pos->id) {
+            found = true;
+        } else if (id < pos->id) {
+            if (pos->left == NULL) {
+                notfound = true;
+            } else {
+                pos = pos->left;
+            }
+        } else {
+            if (pos->right == NULL) {
+                notfound = true;
+            } else {
+                pos = pos->right;
+            }
+        }
+    }
+
+    if (!found) {
+        if (pos == NULL) {
+            new_proc = (struct Proc *)alloc_new(sizeof(struct Proc), &perm_heap);
+            prochead = new_proc;
+        } else if (id < pos->id) {
+            new_proc = (struct Proc *)alloc_new(sizeof(struct Proc), &perm_heap);
+            pos->left = new_proc;
+        } else {
+            new_proc = (struct Proc *)alloc_new(sizeof(struct Proc), &perm_heap);
+            pos->right = new_proc;
+        }
+        new_proc->left = NULL;
+        new_proc->right = NULL;
+        new_proc->id = id;
+        new_proc->vartree = NULL;
+        new_proc->labels = NULL;
+        new_proc->callees = NULL;
+        new_proc->unk8 = false;
+        new_proc->unkB = lang == 5;
+        new_proc->unkD = lang == 5;
+        new_proc->unkE = 0;
+        new_proc->unkF = 0;
+        new_proc->unk14 = 0;
+        new_proc->unk15 = 0;
+        new_proc->num_bbs = 0;
+        new_proc->ijp_labels = NULL;
+        new_proc->bvsize = 0;
+        new_proc->unk34 = NULL;
+        new_proc->unk38 = 0;
+        new_proc->unk10 = arg1;
+        new_proc->o3opt = o3opt;
+
+        pos = new_proc;
+    } else if (arg1 != 2 && pos->unk10 == 2) {
+        pos->unk10 = arg1;
+    }
+
+    return pos;
+}
+
+/*
+004592A0 change_to_o2
+0045A480 oneinstruction
+*/
+void change_to_o2(struct Proc *proc) {
+    while (proc != NULL) {
+        proc->o3opt = false;
+        change_to_o2(proc->left);
+        proc = proc->right;
+    }
+}
+
+/*
+004173EC func_004173EC
+0042EB10 incorp_feedback
+0043CFCC readnxtinst
+0044CD14 listplkilled
+0044D4B4 listpskilled
+00456A2C oneproc
+*/
+struct Proc *getproc(int id) {
+    struct Proc *pos = prochead;
+    bool found = false;
+
+    while (!found && pos != NULL) {
+        if (id == pos->id) {
+            found = true;
+        } else if (id < pos->id) {
+            pos = pos->left;
+        } else {
+            pos = pos->right;
+        }
+    }
+
+    return pos;
+}
+
+/*
+0045A480 oneinstruction
+*/
+void insertijplab(int num, struct IjpLabel **pos) {
+    struct IjpLabel *label;
+
+    for (;;) {
+        label = *pos;
+        if (label == NULL) {
+            label = (struct IjpLabel *)alloc_new(sizeof(struct IjpLabel), &perm_heap);
+            *pos = label;
+            label->left = NULL;
+            label->right = NULL;
+            label->num = num;
+            break;
+        }
+        if (num < label->num) {
+            pos = &label->left;
+        } else if (num > label->num) {
+            pos = &label->right;
+        } else {
+            break;
+        }
+    }
+}
+
+/*
+0045A480 oneinstruction
+*/
+struct Label *updatelab(unsigned int addr, struct Label **pos, bool arg2) {
+    struct Label *label;
+
+    for (;;) {
+        label = *pos;
+        if (label == NULL) {
+            label = (struct Label *)alloc_new(sizeof(struct Label), &perm_heap);
+            *pos = label;
+            label->branched_back = false;
+            label->left = NULL;
+            label->right = NULL;
+            label->len = 0;
+            label->unk8 = arg2;
+            label->addr = addr;
+            break;
+        }
+        if (addr < label->addr) {
+            pos = &label->left;
+        } else if (addr > label->addr) {
+            pos = &label->right;
+        } else {
+            if (arg2) {
+                if (!label->unk8 && (u.Ucode.Opc == Ufjp || u.Ucode.Opc == Utjp)) {
+                    label->branched_back = true;
+                }
+                label->unk8 = true;
+            }
+            break;
+        }
+    }
+
+    return *pos;
+}
 
 /*
 00439C40 getop
 */
-struct Label *searchlab(int arg0, struct Label *list) {
-    while (arg0 != list->unk0) {
-        list = arg0 < list->unk0 ? list->prev : list->next;
+struct Label *searchlab(unsigned int addr, struct Label *tree) {
+    while (addr != tree->addr) {
+        tree = addr < tree->addr ? tree->left : tree->right;
     }
-    return list;
+    return tree;
+}
+
+/*
+00459698 make_subloc_veqv
+00459828 insertvar
+*/
+void update_veqv_in_table(struct Variable *var) {
+    struct TableEntry *entry;
+    unsigned short hash;
+    bool found;
+
+    hash = isvarhash(var->inner);
+    entry = table[hash];
+    found = false;
+
+    while (entry != NULL) {
+        if (entry->type == isvar || entry->type == issvar) {
+            if (addreq(entry->data.isvar_issvar.var_data, var->inner)) {
+                entry->data.isvar_issvar.unk21 = true;
+                found = true;
+            }
+        }
+        entry = entry->next;
+    }
+
+    if (!found) {
+        entry = searchvar(hash, &var->inner);
+        entry->unk10 = 0;
+        entry->data.isvar_issvar.size = (unsigned char)var->size;
+        entry->data.isvar_issvar.unk22 = var->unk2;
+        entry->data.isvar_issvar.unk21 = var->unk1;
+    }
+}
+
+/*
+00459698 make_subloc_veqv
+00459828 insertvar
+*/
+void make_subloc_veqv(struct VariableInner var, int size, struct Variable **pos) {
+    while (*pos != NULL) {
+        switch (compareloc(var, (*pos)->inner, size, (*pos)->size)) {
+            case 0:
+                if (!(*pos)->unk1) {
+                    (*pos)->unk1 = true;
+                    (*pos)->unk2 = false;
+                    if (inlopt) {
+                        update_veqv_in_table(*pos);
+                    }
+                }
+                make_subloc_veqv(var, size, &(*pos)->left);
+                var = var; // why self assignment, tail recursion?
+                pos = &(*pos)->right;
+                break;
+
+            case 1:
+                var = var; // why self assignment, tail recursion?
+                pos = &(*pos)->left;
+                break;
+
+            case 2:
+                return;
+
+            default:
+                caseerror(1, 306, "uoptppss.p", 10);
+                return;
+        }
+    }
+}
+
+/*
+0044EDF8 ilodfold
+0044F1B8 istrfold
+0045A480 oneinstruction
+0045B508 oneprocprepass
+*/
+struct Variable *insertvar(struct VariableInner var, int size, unsigned char arg3, struct Variable **pos, bool arg5_unused, bool arg6, bool arg7) {
+    struct Variable *v = *pos;
+    bool done = false;
+    bool updated_size;
+
+    if (v == NULL) {
+        v = (struct Variable *)alloc_new(sizeof(struct Variable), &var_heap);
+        *pos = v;
+        done = true;
+    }
+
+    while (!done) {
+        switch (compareloc(var, v->inner, size, v->size)) {
+            case 1:
+                if (v->left == NULL) {
+                    v->left = (struct Variable *)alloc_new(sizeof(struct Variable), &var_heap);
+                    done = true;
+                }
+                v = v->left;
+                break;
+
+            case 2:
+                if (v->right == NULL) {
+                    v->right = (struct Variable *)alloc_new(sizeof(struct Variable), &var_heap);
+                    done = true;
+                }
+                v = v->right;
+                break;
+
+            case 0:
+                if ((var.addr == v->inner.addr && size == v->size) || var.memtype == Rmt) {
+                    if ((arg3 == 12 || arg3 == 13) == (v->unk0 == 12 || v->unk0 == 13)) {
+                        if (arg6 && !v->unk2 && !v->unk1) {
+                            v->unk1 = true;
+                            if (inlopt) {
+                                update_veqv_in_table(v);
+                            }
+                        }
+                        if (arg7) {
+                            v->unk2 = true;
+                            v->unk1 = false;
+                        }
+                    } else {
+                        v->unk1 = true;
+                        if (inlopt) {
+                            update_veqv_in_table(v);
+                        }
+                    }
+                    return v;
+                } else {
+                    updated_size = false;
+                    if (!v->unk1) {
+                        v->unk1 = true;
+                        if (inlopt) {
+                            update_veqv_in_table(v);
+                        }
+                    }
+
+                    if (v->inner.addr + v->size < var.addr + size) {
+                        v->size = var.addr + size - v->inner.addr;
+                        updated_size = true;
+                    }
+                    if (v->inner.addr >= var.addr && updated_size) {
+                        make_subloc_veqv(var, size, &v->right);
+                    }
+
+                    if (v->inner.addr > var.addr) {
+                        arg6 = true;
+                        arg7 = false;
+                        if (v->left == NULL) {
+                            v->left = (struct Variable *)alloc_new(sizeof(struct Variable), &var_heap);
+                            done = true;
+                        }
+                        v = v->left;
+                    } else if (v->inner.addr < var.addr) {
+                        arg6 = true;
+                        arg7 = false;
+                        if (v->right == NULL) {
+                            v->right = (struct Variable *)alloc_new(sizeof(struct Variable), &var_heap);
+                            done = true;
+                        }
+                        v = v->right;
+                    } else {
+                        return v;
+                    }
+                }
+                break;
+
+            default:
+                caseerror(1, 336, "uoptppss.p", 10);
+                break;
+        }
+    }
+
+    v->inner = var;
+    v->unk1 = arg6 && !arg7;
+    v->size = size;
+    v->left = NULL;
+    v->right = NULL;
+    v->unk2 = arg7;
+    v->unk0 = arg3;
+    return v;
+}
+
+/*
+0045A480 oneinstruction
+*/
+void enterfsymtab(int num) {
+    struct NumLinkedList *entry;
+    struct NumLinkedList *next;
+    int index;
+
+    index = num % 161;
+    if (index < 0) {
+        index += 161;
+    }
+
+    entry = fsymtab[index];
+
+    if (entry == NULL) {
+        entry = (struct NumLinkedList *)alloc_new(sizeof(struct NumLinkedList), &perm_heap);
+        fsymtab[index] = entry;
+        entry->next = NULL;
+        entry->num = num;
+        return;
+    }
+
+    while (entry->num < num && entry->next != NULL) {
+        entry = entry->next;
+    }
+
+    next = entry->next;
+    entry->next = (struct NumLinkedList *)alloc_new(sizeof(struct NumLinkedList), &perm_heap);
+    entry->next->next = next;
+    if (entry->num >= num) {
+        entry->next->num = entry->num;
+        entry->num = num;
+    } else {
+        entry->next->num = num;
+    }
+}
+
+/*
+0045A480 oneinstruction
+*/
+void del_fsymtab(int num) {
+    struct NumLinkedList *entry;
+    int index;
+
+    index = num % 161;
+    if (index < 0) {
+        index += 161;
+    }
+
+    entry = fsymtab[index];
+
+    if (entry != NULL) {
+        if (num == entry->num) {
+            fsymtab[index] = entry->next;
+            // Note: no free
+        } else {
+            while (entry->next != NULL && entry->next->num < num) {
+                entry = entry->next;
+            }
+            if (entry->next != NULL && entry->next->num == num) {
+                entry->next = entry->next->next;
+                // Note: no free
+            }
+        }
+    }
+}
+
+/*
+0045A3DC check_gp_relative
+0045A480 oneinstruction
+*/
+void enter_gp_rel_tab(int num) {
+    struct NumLinkedList *entry;
+    struct NumLinkedList *next;
+    int index;
+
+    index = num % 161;
+    if (index < 0) {
+        index += 161;
+    }
+
+    entry = gp_rel_tab[index];
+
+    if (entry == NULL) {
+        entry = (struct NumLinkedList *)alloc_new(sizeof(struct NumLinkedList), &perm_heap);
+        gp_rel_tab[index] = entry;
+        entry->next = NULL;
+        entry->num = num;
+        return;
+    }
+
+    while (entry->num < num && entry->next != NULL) {
+        entry = entry->next;
+    }
+
+    next = entry->next;
+    entry->next = (struct NumLinkedList *)alloc_new(sizeof(struct NumLinkedList), &perm_heap);
+    entry->next->next = next;
+    if (entry->num >= num) {
+        entry->next->num = entry->num;
+        entry->num = num;
+    } else {
+        entry->next->num = num;
+    }
+}
+
+/*
+0045A480 oneinstruction
+*/
+void insertlda(struct VariableInner var, int size) {
+    struct LdatabEntry *entry;
+    struct LdatabEntry *new_entry;
+    struct LdatabEntry *prev_entry;
+    int hash;
+    int cmp;
+
+    hash = var.unk4bFFFFF800 % 3113;
+    if (hash < 0) {
+        // never happens (var.unk4bFFFFF800 is unsigned)
+        hash += 3113;
+    }
+
+    entry = ldatab[hash];
+
+    if (entry == NULL) {
+        new_entry = (struct LdatabEntry *)alloc_new(sizeof(struct LdatabEntry), &lda_heap);
+        ldatab[hash] = new_entry;
+        new_entry->var = var;
+        new_entry->size = size;
+        new_entry->next = NULL;
+        return;
+    }
+
+    cmp = compareloc(var, entry->var, size, entry->size);
+    switch (cmp) {
+        case 2:
+            new_entry = (struct LdatabEntry *)alloc_new(sizeof(struct LdatabEntry), &lda_heap);
+            new_entry->var = var;
+            new_entry->size = size;
+            new_entry->next = entry;
+            ldatab[hash] = new_entry;
+            return;
+        case 1:
+            do {
+                prev_entry = entry;
+                entry = entry->next;
+                if (entry == NULL) {
+                    cmp = 2;
+                } else {
+                    cmp = compareloc(var, entry->var, size, entry->size);
+                }
+            } while (cmp == 1);
+            break;
+        case 0:
+            break;
+        default:
+            caseerror(1, 532, "uoptppss.p", 10);
+            return;
+    }
+
+    if (cmp != 0) {
+        new_entry = (struct LdatabEntry *)alloc_new(sizeof(struct LdatabEntry), &lda_heap);
+        prev_entry->next = new_entry;
+        new_entry->var = var;
+        new_entry->size = size;
+        new_entry->next = entry;
+        return;
+    }
+    if (size == 0x7FFFFFFF) {
+        entry->size = 0x7FFFFFFF;
+    } else if (entry->size != 0x7FFFFFFF) {
+        if (entry->var.addr + entry->size < var.addr + size) {
+            entry->size = var.addr + size - entry->var.addr;
+        }
+    }
+    if (var.addr < entry->var.addr) {
+        entry->var.addr = var.addr;
+        entry->size = entry->var.addr + entry->size - var.addr;
+    }
+}
+
+/*
+0045A480 oneinstruction
+*/
+bool insertcallee(struct Proc *proc, struct ProcList **callee_list) {
+    struct ProcList *entry;
+    struct ProcList *current;
+    struct ProcList *next;
+
+    if (*callee_list == NULL) {
+        *callee_list = (struct ProcList *)alloc_new(sizeof(struct ProcList), &perm_heap);
+        (*callee_list)->next = NULL;
+        (*callee_list)->proc = proc;
+        return true;
+    }
+
+    if (proc->id < (*callee_list)->proc->id) {
+        entry = (struct ProcList *)alloc_new(sizeof(struct ProcList), &perm_heap);
+        entry->proc = proc;
+        entry->next = *callee_list;
+        *callee_list = entry;
+        return true;
+    }
+
+    if (proc->id > (*callee_list)->proc->id) {
+        current = *callee_list;
+        next = current->next;
+        while (next != NULL && next->proc->id < proc->id) {
+            current = current->next;
+            next = next->next;
+        }
+        if (next == NULL || proc->id < next->proc->id) {
+            entry = (struct ProcList *)alloc_new(sizeof(struct ProcList), &perm_heap);
+            entry->next = next;
+            entry->proc = proc;
+            current->next = entry;
+            return true;
+        }
+    }
+
+    return false; // already in list
 }
 
 __asm__(R""(
 .set noat
 .set noreorder
-
-glabel update_veqv_in_table
-    .ent update_veqv_in_table
-    # 00459698 make_subloc_veqv
-    # 00459828 insertvar
-/* 00459564 3C1C0FBC */  .cpload $t9
-/* 00459568 279C0D2C */  
-/* 0045956C 0399E021 */  
-/* 00459570 27BDFFC8 */  addiu $sp, $sp, -0x38
-/* 00459574 AFB30024 */  sw    $s3, 0x24($sp)
-/* 00459578 AFBF002C */  sw    $ra, 0x2c($sp)
-/* 0045957C AFBC0028 */  sw    $gp, 0x28($sp)
-/* 00459580 AFB20020 */  sw    $s2, 0x20($sp)
-/* 00459584 AFB1001C */  sw    $s1, 0x1c($sp)
-/* 00459588 AFB00018 */  sw    $s0, 0x18($sp)
-/* 0045958C AFA40038 */  sw    $a0, 0x38($sp)
-/* 00459590 24930004 */  addiu $s3, $a0, 4
-/* 00459594 8E640000 */  lw    $a0, ($s3)
-/* 00459598 8F99864C */  lw    $t9, %call16(isvarhash)($gp)
-/* 0045959C AFA40000 */  sw    $a0, ($sp)
-/* 004595A0 8E650004 */  lw    $a1, 4($s3)
-/* 004595A4 0320F809 */  jalr  $t9
-/* 004595A8 AFA50004 */   sw    $a1, 4($sp)
-/* 004595AC 8FBC0028 */  lw    $gp, 0x28($sp)
-/* 004595B0 3058FFFF */  andi  $t8, $v0, 0xffff
-/* 004595B4 0018C880 */  sll   $t9, $t8, 2
-/* 004595B8 8F888DF8 */  lw     $t0, %got(table)($gp)
-/* 004595BC A7A20034 */  sh    $v0, 0x34($sp)
-/* 004595C0 00009025 */  move  $s2, $zero
-/* 004595C4 03284821 */  addu  $t1, $t9, $t0
-/* 004595C8 8D300000 */  lw    $s0, ($t1)
-/* 004595CC 24110001 */  li    $s1, 1
-/* 004595D0 1200001A */  beqz  $s0, .L0045963C
-/* 004595D4 00000000 */   nop   
-/* 004595D8 920A0000 */  lbu   $t2, ($s0)
-.L004595DC:
-/* 004595DC 3C011200 */  lui   $at, 0x1200
-/* 004595E0 2D4B0020 */  sltiu $t3, $t2, 0x20
-/* 004595E4 000B6023 */  negu  $t4, $t3
-/* 004595E8 01816824 */  and   $t5, $t4, $at
-/* 004595EC 014D7004 */  sllv  $t6, $t5, $t2
-/* 004595F0 05C30010 */  bgezl $t6, .L00459634
-/* 004595F4 8E10001C */   lw    $s0, 0x1c($s0)
-/* 004595F8 8E040028 */  lw    $a0, 0x28($s0)
-/* 004595FC 8E05002C */  lw    $a1, 0x2c($s0)
-/* 00459600 8F99860C */  lw    $t9, %call16(addreq)($gp)
-/* 00459604 AFA40000 */  sw    $a0, ($sp)
-/* 00459608 AFA50004 */  sw    $a1, 4($sp)
-/* 0045960C 8E660000 */  lw    $a2, ($s3)
-/* 00459610 AFA60008 */  sw    $a2, 8($sp)
-/* 00459614 8E670004 */  lw    $a3, 4($s3)
-/* 00459618 0320F809 */  jalr  $t9
-/* 0045961C AFA7000C */   sw    $a3, 0xc($sp)
-/* 00459620 10400003 */  beqz  $v0, .L00459630
-/* 00459624 8FBC0028 */   lw    $gp, 0x28($sp)
-/* 00459628 A2110021 */  sb    $s1, 0x21($s0)
-/* 0045962C 323200FF */  andi  $s2, $s1, 0xff
-.L00459630:
-/* 00459630 8E10001C */  lw    $s0, 0x1c($s0)
-.L00459634:
-/* 00459634 5600FFE9 */  bnezl $s0, .L004595DC
-/* 00459638 920A0000 */   lbu   $t2, ($s0)
-.L0045963C:
-/* 0045963C 56400010 */  bnezl $s2, .L00459680
-/* 00459640 8FBF002C */   lw    $ra, 0x2c($sp)
-/* 00459644 8F998694 */  lw    $t9, %call16(searchvar)($gp)
-/* 00459648 97A40034 */  lhu   $a0, 0x34($sp)
-/* 0045964C 02602825 */  move  $a1, $s3
-/* 00459650 0320F809 */  jalr  $t9
-/* 00459654 00000000 */   nop   
-/* 00459658 8FA30038 */  lw    $v1, 0x38($sp)
-/* 0045965C 8FBC0028 */  lw    $gp, 0x28($sp)
-/* 00459660 8C69000C */  lw    $t1, 0xc($v1)
-/* 00459664 AC400010 */  sw    $zero, 0x10($v0)
-/* 00459668 A0490020 */  sb    $t1, 0x20($v0)
-/* 0045966C 906B0002 */  lbu   $t3, 2($v1)
-/* 00459670 A04B0022 */  sb    $t3, 0x22($v0)
-/* 00459674 906C0001 */  lbu   $t4, 1($v1)
-/* 00459678 A04C0021 */  sb    $t4, 0x21($v0)
-/* 0045967C 8FBF002C */  lw    $ra, 0x2c($sp)
-.L00459680:
-/* 00459680 8FB00018 */  lw    $s0, 0x18($sp)
-/* 00459684 8FB1001C */  lw    $s1, 0x1c($sp)
-/* 00459688 8FB20020 */  lw    $s2, 0x20($sp)
-/* 0045968C 8FB30024 */  lw    $s3, 0x24($sp)
-/* 00459690 03E00008 */  jr    $ra
-/* 00459694 27BD0038 */   addiu $sp, $sp, 0x38
-    .type update_veqv_in_table, @function
-    .size update_veqv_in_table, .-update_veqv_in_table
-    .end update_veqv_in_table
-
-glabel make_subloc_veqv
-    .ent make_subloc_veqv
-    # 00459698 make_subloc_veqv
-    # 00459828 insertvar
-/* 00459698 3C1C0FBC */  .cpload $t9
-/* 0045969C 279C0BF8 */  
-/* 004596A0 0399E021 */  
-/* 004596A4 27BDFFC8 */  addiu $sp, $sp, -0x38
-/* 004596A8 AFB4002C */  sw    $s4, 0x2c($sp)
-/* 004596AC AFB30028 */  sw    $s3, 0x28($sp)
-/* 004596B0 AFB20024 */  sw    $s2, 0x24($sp)
-/* 004596B4 AFB10020 */  sw    $s1, 0x20($sp)
-/* 004596B8 AFB0001C */  sw    $s0, 0x1c($sp)
-/* 004596BC 00E08025 */  move  $s0, $a3
-/* 004596C0 00C08825 */  move  $s1, $a2
-/* 004596C4 27B20038 */  addiu $s2, $sp, 0x38
-/* 004596C8 24130001 */  li    $s3, 1
-/* 004596CC 8F948A60 */  lw     $s4, %got(inlopt)($gp)
-/* 004596D0 AFBF0034 */  sw    $ra, 0x34($sp)
-/* 004596D4 AFBC0030 */  sw    $gp, 0x30($sp)
-/* 004596D8 AFA40038 */  sw    $a0, 0x38($sp)
-/* 004596DC AFA5003C */  sw    $a1, 0x3c($sp)
-.L004596E0:
-/* 004596E0 8E020000 */  lw    $v0, ($s0)
-/* 004596E4 50400049 */  beql  $v0, $zero, .L0045980C
-/* 004596E8 8FBF0034 */   lw    $ra, 0x34($sp)
-/* 004596EC 8E440000 */  lw    $a0, ($s2)
-/* 004596F0 8F99842C */  lw    $t9, %call16(compareloc)($gp)
-/* 004596F4 8C48000C */  lw    $t0, 0xc($v0)
-/* 004596F8 AFA40000 */  sw    $a0, ($sp)
-/* 004596FC 8E450004 */  lw    $a1, 4($s2)
-/* 00459700 AFA80014 */  sw    $t0, 0x14($sp)
-/* 00459704 AFA50004 */  sw    $a1, 4($sp)
-/* 00459708 8C460004 */  lw    $a2, 4($v0)
-/* 0045970C AFA60008 */  sw    $a2, 8($sp)
-/* 00459710 8C470008 */  lw    $a3, 8($v0)
-/* 00459714 AFB10010 */  sw    $s1, 0x10($sp)
-/* 00459718 0320F809 */  jalr  $t9
-/* 0045971C AFA7000C */   sw    $a3, 0xc($sp)
-/* 00459720 304300FF */  andi  $v1, $v0, 0xff
-/* 00459724 2C610003 */  sltiu $at, $v1, 3
-/* 00459728 1020002F */  beqz  $at, .L004597E8
-/* 0045972C 8FBC0030 */   lw    $gp, 0x30($sp)
-/* 00459730 8F818044 */  lw    $at, %got(jtbl_1000D21C)($gp)
-/* 00459734 00034880 */  sll   $t1, $v1, 2
-/* 00459738 00290821 */  addu  $at, $at, $t1
-/* 0045973C 8C29D21C */  lw    $t1, %lo(jtbl_1000D21C)($at)
-/* 00459740 013C4821 */  addu  $t1, $t1, $gp
-/* 00459744 01200008 */  jr    $t1
-/* 00459748 00000000 */   nop   
-.L0045974C:
-/* 0045974C 8E020000 */  lw    $v0, ($s0)
-/* 00459750 904A0001 */  lbu   $t2, 1($v0)
-/* 00459754 5540000D */  bnezl $t2, .L0045978C
-/* 00459758 8E440000 */   lw    $a0, ($s2)
-/* 0045975C A0530001 */  sb    $s3, 1($v0)
-/* 00459760 8E0B0000 */  lw    $t3, ($s0)
-/* 00459764 A1600002 */  sb    $zero, 2($t3)
-/* 00459768 928C0000 */  lbu   $t4, ($s4)
-/* 0045976C 51800007 */  beql  $t4, $zero, .L0045978C
-/* 00459770 8E440000 */   lw    $a0, ($s2)
-/* 00459774 8F99844C */  lw    $t9, %call16(update_veqv_in_table)($gp)
-/* 00459778 8E040000 */  lw    $a0, ($s0)
-/* 0045977C 0320F809 */  jalr  $t9
-/* 00459780 00000000 */   nop   
-/* 00459784 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 00459788 8E440000 */  lw    $a0, ($s2)
-.L0045978C:
-/* 0045978C 8F998450 */  lw    $t9, %call16(make_subloc_veqv)($gp)
-/* 00459790 02203025 */  move  $a2, $s1
-/* 00459794 AFA40000 */  sw    $a0, ($sp)
-/* 00459798 8E450004 */  lw    $a1, 4($s2)
-/* 0045979C AFA50004 */  sw    $a1, 4($sp)
-/* 004597A0 8E070000 */  lw    $a3, ($s0)
-/* 004597A4 0320F809 */  jalr  $t9
-/* 004597A8 24E70010 */   addiu $a3, $a3, 0x10
-/* 004597AC 8E580000 */  lw    $t8, ($s2)
-/* 004597B0 8E4F0004 */  lw    $t7, 4($s2)
-/* 004597B4 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 004597B8 AE580000 */  sw    $t8, ($s2)
-/* 004597BC AE4F0004 */  sw    $t7, 4($s2)
-/* 004597C0 8E100000 */  lw    $s0, ($s0)
-/* 004597C4 1000FFC6 */  b     .L004596E0
-/* 004597C8 26100014 */   addiu $s0, $s0, 0x14
-.L004597CC:
-/* 004597CC 8E480000 */  lw    $t0, ($s2)
-/* 004597D0 8E590004 */  lw    $t9, 4($s2)
-/* 004597D4 AE480000 */  sw    $t0, ($s2)
-/* 004597D8 AE590004 */  sw    $t9, 4($s2)
-/* 004597DC 8E100000 */  lw    $s0, ($s0)
-/* 004597E0 1000FFBF */  b     .L004596E0
-/* 004597E4 26100010 */   addiu $s0, $s0, 0x10
-.L004597E8:
-/* 004597E8 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 004597EC 8F868044 */  lw    $a2, %got(RO_1000D210)($gp)
-/* 004597F0 24040001 */  li    $a0, 1
-/* 004597F4 24050132 */  li    $a1, 306
-/* 004597F8 2407000A */  li    $a3, 10
-/* 004597FC 0320F809 */  jalr  $t9
-/* 00459800 24C6D210 */   addiu $a2, %lo(RO_1000D210) # addiu $a2, $a2, -0x2df0
-/* 00459804 8FBC0030 */  lw    $gp, 0x30($sp)
-.L00459808:
-/* 00459808 8FBF0034 */  lw    $ra, 0x34($sp)
-.L0045980C:
-/* 0045980C 8FB0001C */  lw    $s0, 0x1c($sp)
-/* 00459810 8FB10020 */  lw    $s1, 0x20($sp)
-/* 00459814 8FB20024 */  lw    $s2, 0x24($sp)
-/* 00459818 8FB30028 */  lw    $s3, 0x28($sp)
-/* 0045981C 8FB4002C */  lw    $s4, 0x2c($sp)
-/* 00459820 03E00008 */  jr    $ra
-/* 00459824 27BD0038 */   addiu $sp, $sp, 0x38
-    .type make_subloc_veqv, @function
-    .size make_subloc_veqv, .-make_subloc_veqv
-    .end make_subloc_veqv
-
-glabel insertvar
-    .ent insertvar
-    # 0044EDF8 ilodfold
-    # 0044F1B8 istrfold
-    # 0045A480 oneinstruction
-    # 0045B508 oneprocprepass
-/* 00459828 3C1C0FBC */  .cpload $t9
-/* 0045982C 279C0A68 */  
-/* 00459830 0399E021 */  
-/* 00459834 27BDFF98 */  addiu $sp, $sp, -0x68
-/* 00459838 AFB00020 */  sw    $s0, 0x20($sp)
-/* 0045983C 8FB00078 */  lw    $s0, 0x78($sp)
-/* 00459840 AFBF003C */  sw    $ra, 0x3c($sp)
-/* 00459844 AFBC0038 */  sw    $gp, 0x38($sp)
-/* 00459848 AFB50034 */  sw    $s5, 0x34($sp)
-/* 0045984C AFB40030 */  sw    $s4, 0x30($sp)
-/* 00459850 AFB3002C */  sw    $s3, 0x2c($sp)
-/* 00459854 AFB20028 */  sw    $s2, 0x28($sp)
-/* 00459858 AFB10024 */  sw    $s1, 0x24($sp)
-/* 0045985C AFA40068 */  sw    $a0, 0x68($sp)
-/* 00459860 AFA5006C */  sw    $a1, 0x6c($sp)
-/* 00459864 AFA70074 */  sw    $a3, 0x74($sp)
-/* 00459868 8E030000 */  lw    $v1, ($s0)
-/* 0045986C 00C09825 */  move  $s3, $a2
-/* 00459870 00008825 */  move  $s1, $zero
-/* 00459874 1460000A */  bnez  $v1, .L004598A0
-/* 00459878 00000000 */   nop   
-/* 0045987C 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 00459880 8F8588EC */  lw     $a1, %got(var_heap)($gp)
-/* 00459884 24040018 */  li    $a0, 24
-/* 00459888 0320F809 */  jalr  $t9
-/* 0045988C 00000000 */   nop   
-/* 00459890 8FBC0038 */  lw    $gp, 0x38($sp)
-/* 00459894 AE020000 */  sw    $v0, ($s0)
-/* 00459898 24110001 */  li    $s1, 1
-/* 0045989C 00401825 */  move  $v1, $v0
-.L004598A0:
-/* 004598A0 8F9288EC */  lw     $s2, %got(var_heap)($gp)
-/* 004598A4 162000E1 */  bnez  $s1, .L00459C2C
-/* 004598A8 00608025 */   move  $s0, $v1
-/* 004598AC 27B50068 */  addiu $s5, $sp, 0x68
-/* 004598B0 8EA40000 */  lw    $a0, ($s5)
-.L004598B4:
-/* 004598B4 8F99842C */  lw    $t9, %call16(compareloc)($gp)
-/* 004598B8 8E08000C */  lw    $t0, 0xc($s0)
-/* 004598BC AFA40000 */  sw    $a0, ($sp)
-/* 004598C0 8EA50004 */  lw    $a1, 4($s5)
-/* 004598C4 AFA80014 */  sw    $t0, 0x14($sp)
-/* 004598C8 AFA50004 */  sw    $a1, 4($sp)
-/* 004598CC 8E060004 */  lw    $a2, 4($s0)
-/* 004598D0 AFA60008 */  sw    $a2, 8($sp)
-/* 004598D4 8E070008 */  lw    $a3, 8($s0)
-/* 004598D8 AFB30010 */  sw    $s3, 0x10($sp)
-/* 004598DC 0320F809 */  jalr  $t9
-/* 004598E0 AFA7000C */   sw    $a3, 0xc($sp)
-/* 004598E4 304300FF */  andi  $v1, $v0, 0xff
-/* 004598E8 2C610003 */  sltiu $at, $v1, 3
-/* 004598EC 8FBC0038 */  lw    $gp, 0x38($sp)
-/* 004598F0 102000C4 */  beqz  $at, .L00459C04
-/* 004598F4 8FB40068 */   lw    $s4, 0x68($sp)
-/* 004598F8 8F818044 */  lw    $at, %got(jtbl_1000D234)($gp)
-/* 004598FC 00034880 */  sll   $t1, $v1, 2
-/* 00459900 00290821 */  addu  $at, $at, $t1
-/* 00459904 8C29D234 */  lw    $t1, %lo(jtbl_1000D234)($at)
-/* 00459908 013C4821 */  addu  $t1, $t1, $gp
-/* 0045990C 01200008 */  jr    $t1
-/* 00459910 00000000 */   nop   
-.L00459914:
-/* 00459914 8E030010 */  lw    $v1, 0x10($s0)
-/* 00459918 14600009 */  bnez  $v1, .L00459940
-/* 0045991C 00000000 */   nop   
-/* 00459920 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 00459924 24040018 */  li    $a0, 24
-/* 00459928 02402825 */  move  $a1, $s2
-/* 0045992C 0320F809 */  jalr  $t9
-/* 00459930 24110001 */   li    $s1, 1
-/* 00459934 8FBC0038 */  lw    $gp, 0x38($sp)
-/* 00459938 AE020010 */  sw    $v0, 0x10($s0)
-/* 0045993C 00401825 */  move  $v1, $v0
-.L00459940:
-/* 00459940 100000B8 */  b     .L00459C24
-/* 00459944 00608025 */   move  $s0, $v1
-.L00459948:
-/* 00459948 8E030014 */  lw    $v1, 0x14($s0)
-/* 0045994C 14600009 */  bnez  $v1, .L00459974
-/* 00459950 00000000 */   nop   
-/* 00459954 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 00459958 24040018 */  li    $a0, 24
-/* 0045995C 02402825 */  move  $a1, $s2
-/* 00459960 0320F809 */  jalr  $t9
-/* 00459964 24110001 */   li    $s1, 1
-/* 00459968 8FBC0038 */  lw    $gp, 0x38($sp)
-/* 0045996C AE020014 */  sw    $v0, 0x14($s0)
-/* 00459970 00401825 */  move  $v1, $v0
-.L00459974:
-/* 00459974 100000AB */  b     .L00459C24
-/* 00459978 00608025 */   move  $s0, $v1
-.L0045997C:
-/* 0045997C 8E0A0004 */  lw    $t2, 4($s0)
-/* 00459980 93AC006E */  lbu   $t4, 0x6e($sp)
-/* 00459984 24010003 */  li    $at, 3
-/* 00459988 168A0004 */  bne   $s4, $t2, .L0045999C
-/* 0045998C 318D0007 */   andi  $t5, $t4, 7
-/* 00459990 8E0B000C */  lw    $t3, 0xc($s0)
-/* 00459994 526B0004 */  beql  $s3, $t3, .L004599A8
-/* 00459998 93AE0077 */   lbu   $t6, 0x77($sp)
-.L0045999C:
-/* 0045999C 55A10048 */  bnel  $t5, $at, .L00459AC0
-/* 004599A0 920D0001 */   lbu   $t5, 1($s0)
-/* 004599A4 93AE0077 */  lbu   $t6, 0x77($sp)
-.L004599A8:
-/* 004599A8 3C01000C */  lui   $at, 0xc
-/* 004599AC 2DCF0020 */  sltiu $t7, $t6, 0x20
-/* 004599B0 000FC023 */  negu  $t8, $t7
-/* 004599B4 0301C824 */  and   $t9, $t8, $at
-/* 004599B8 01D94004 */  sllv  $t0, $t9, $t6
-/* 004599BC 05010008 */  bgez  $t0, .L004599E0
-/* 004599C0 93AF0077 */   lbu   $t7, 0x77($sp)
-/* 004599C4 92090000 */  lbu   $t1, ($s0)
-/* 004599C8 3C01000C */  lui   $at, 0xc
-/* 004599CC 2D2A0020 */  sltiu $t2, $t1, 0x20
-/* 004599D0 000A5823 */  negu  $t3, $t2
-/* 004599D4 01616024 */  and   $t4, $t3, $at
-/* 004599D8 012C6804 */  sllv  $t5, $t4, $t1
-/* 004599DC 05A1000F */  bgez  $t5, .L00459A1C
-.L004599E0:
-/* 004599E0 2DF80020 */   sltiu $t8, $t7, 0x20
-/* 004599E4 0018C823 */  negu  $t9, $t8
-/* 004599E8 3C01000C */  lui   $at, 0xc
-/* 004599EC 03217024 */  and   $t6, $t9, $at
-/* 004599F0 01EE4004 */  sllv  $t0, $t6, $t7
-/* 004599F4 05000016 */  bltz  $t0, .L00459A50
-/* 004599F8 93AE0083 */   lbu   $t6, 0x83($sp)
-/* 004599FC 920A0000 */  lbu   $t2, ($s0)
-/* 00459A00 3C01000C */  lui   $at, 0xc
-/* 00459A04 2D4B0020 */  sltiu $t3, $t2, 0x20
-/* 00459A08 000B6023 */  negu  $t4, $t3
-/* 00459A0C 01814824 */  and   $t1, $t4, $at
-/* 00459A10 01496804 */  sllv  $t5, $t1, $t2
-/* 00459A14 05A1000E */  bgez  $t5, .L00459A50
-/* 00459A18 00000000 */   nop   
-.L00459A1C:
-/* 00459A1C 8F998A60 */  lw     $t9, %got(inlopt)($gp)
-/* 00459A20 24180001 */  li    $t8, 1
-/* 00459A24 A2180001 */  sb    $t8, 1($s0)
-/* 00459A28 93390000 */  lbu   $t9, ($t9)
-/* 00459A2C 13200021 */  beqz  $t9, .L00459AB4
-/* 00459A30 00000000 */   nop   
-/* 00459A34 8F99844C */  lw    $t9, %call16(update_veqv_in_table)($gp)
-/* 00459A38 02002025 */  move  $a0, $s0
-/* 00459A3C 0320F809 */  jalr  $t9
-/* 00459A40 00000000 */   nop   
-/* 00459A44 8FBC0038 */  lw    $gp, 0x38($sp)
-/* 00459A48 1000008B */  b     .L00459C78
-/* 00459A4C 02001025 */   move  $v0, $s0
-.L00459A50:
-/* 00459A50 51C00013 */  beql  $t6, $zero, .L00459AA0
-/* 00459A54 93A90087 */   lbu   $t1, 0x87($sp)
-/* 00459A58 920F0002 */  lbu   $t7, 2($s0)
-/* 00459A5C 55E00010 */  bnezl $t7, .L00459AA0
-/* 00459A60 93A90087 */   lbu   $t1, 0x87($sp)
-/* 00459A64 92080001 */  lbu   $t0, 1($s0)
-/* 00459A68 5500000D */  bnezl $t0, .L00459AA0
-/* 00459A6C 93A90087 */   lbu   $t1, 0x87($sp)
-/* 00459A70 8F8C8A60 */  lw     $t4, %got(inlopt)($gp)
-/* 00459A74 240B0001 */  li    $t3, 1
-/* 00459A78 A20B0001 */  sb    $t3, 1($s0)
-/* 00459A7C 918C0000 */  lbu   $t4, ($t4)
-/* 00459A80 51800007 */  beql  $t4, $zero, .L00459AA0
-/* 00459A84 93A90087 */   lbu   $t1, 0x87($sp)
-/* 00459A88 8F99844C */  lw    $t9, %call16(update_veqv_in_table)($gp)
-/* 00459A8C 02002025 */  move  $a0, $s0
-/* 00459A90 0320F809 */  jalr  $t9
-/* 00459A94 00000000 */   nop   
-/* 00459A98 8FBC0038 */  lw    $gp, 0x38($sp)
-/* 00459A9C 93A90087 */  lbu   $t1, 0x87($sp)
-.L00459AA0:
-/* 00459AA0 240A0001 */  li    $t2, 1
-/* 00459AA4 11200003 */  beqz  $t1, .L00459AB4
-/* 00459AA8 00000000 */   nop   
-/* 00459AAC A20A0002 */  sb    $t2, 2($s0)
-/* 00459AB0 A2000001 */  sb    $zero, 1($s0)
-.L00459AB4:
-/* 00459AB4 10000070 */  b     .L00459C78
-/* 00459AB8 02001025 */   move  $v0, $s0
-/* 00459ABC 920D0001 */  lbu   $t5, 1($s0)
-.L00459AC0:
-/* 00459AC0 00001825 */  move  $v1, $zero
-/* 00459AC4 02932821 */  addu  $a1, $s4, $s3
-/* 00459AC8 55A00010 */  bnezl $t5, .L00459B0C
-/* 00459ACC 8E020004 */   lw    $v0, 4($s0)
-/* 00459AD0 8F998A60 */  lw     $t9, %got(inlopt)($gp)
-/* 00459AD4 24180001 */  li    $t8, 1
-/* 00459AD8 A2180001 */  sb    $t8, 1($s0)
-/* 00459ADC 93390000 */  lbu   $t9, ($t9)
-/* 00459AE0 5320000A */  beql  $t9, $zero, .L00459B0C
-/* 00459AE4 8E020004 */   lw    $v0, 4($s0)
-/* 00459AE8 8F99844C */  lw    $t9, %call16(update_veqv_in_table)($gp)
-/* 00459AEC 02002025 */  move  $a0, $s0
-/* 00459AF0 A3A0005E */  sb    $zero, 0x5e($sp)
-/* 00459AF4 0320F809 */  jalr  $t9
-/* 00459AF8 AFA50040 */   sw    $a1, 0x40($sp)
-/* 00459AFC 8FBC0038 */  lw    $gp, 0x38($sp)
-/* 00459B00 93A3005E */  lbu   $v1, 0x5e($sp)
-/* 00459B04 8FA50040 */  lw    $a1, 0x40($sp)
-/* 00459B08 8E020004 */  lw    $v0, 4($s0)
-.L00459B0C:
-/* 00459B0C 8E0E000C */  lw    $t6, 0xc($s0)
-/* 00459B10 00A24023 */  subu  $t0, $a1, $v0
-/* 00459B14 004E7821 */  addu  $t7, $v0, $t6
-/* 00459B18 01E5082A */  slt   $at, $t7, $a1
-/* 00459B1C 50200004 */  beql  $at, $zero, .L00459B30
-/* 00459B20 0054082A */   slt   $at, $v0, $s4
-/* 00459B24 AE08000C */  sw    $t0, 0xc($s0)
-/* 00459B28 24030001 */  li    $v1, 1
-/* 00459B2C 0054082A */  slt   $at, $v0, $s4
-.L00459B30:
-/* 00459B30 5420000F */  bnezl $at, .L00459B70
-/* 00459B34 0282082A */   slt   $at, $s4, $v0
-/* 00459B38 5060000D */  beql  $v1, $zero, .L00459B70
-/* 00459B3C 0282082A */   slt   $at, $s4, $v0
-/* 00459B40 8EA40000 */  lw    $a0, ($s5)
-/* 00459B44 8F998450 */  lw    $t9, %call16(make_subloc_veqv)($gp)
-/* 00459B48 02603025 */  move  $a2, $s3
-/* 00459B4C AFA40000 */  sw    $a0, ($sp)
-/* 00459B50 8EA50004 */  lw    $a1, 4($s5)
-/* 00459B54 26070014 */  addiu $a3, $s0, 0x14
-/* 00459B58 0320F809 */  jalr  $t9
-/* 00459B5C AFA50004 */   sw    $a1, 4($sp)
-/* 00459B60 8FBC0038 */  lw    $gp, 0x38($sp)
-/* 00459B64 8FB40068 */  lw    $s4, 0x68($sp)
-/* 00459B68 8E020004 */  lw    $v0, 4($s0)
-/* 00459B6C 0282082A */  slt   $at, $s4, $v0
-.L00459B70:
-/* 00459B70 50200011 */  beql  $at, $zero, .L00459BB8
-/* 00459B74 0054082A */   slt   $at, $v0, $s4
-/* 00459B78 8E030010 */  lw    $v1, 0x10($s0)
-/* 00459B7C 24090001 */  li    $t1, 1
-/* 00459B80 A3A90083 */  sb    $t1, 0x83($sp)
-/* 00459B84 14600009 */  bnez  $v1, .L00459BAC
-/* 00459B88 A3A00087 */   sb    $zero, 0x87($sp)
-/* 00459B8C 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 00459B90 24040018 */  li    $a0, 24
-/* 00459B94 02402825 */  move  $a1, $s2
-/* 00459B98 0320F809 */  jalr  $t9
-/* 00459B9C 24110001 */   li    $s1, 1
-/* 00459BA0 8FBC0038 */  lw    $gp, 0x38($sp)
-/* 00459BA4 AE020010 */  sw    $v0, 0x10($s0)
-/* 00459BA8 00401825 */  move  $v1, $v0
-.L00459BAC:
-/* 00459BAC 1000001D */  b     .L00459C24
-/* 00459BB0 00608025 */   move  $s0, $v1
-/* 00459BB4 0054082A */  slt   $at, $v0, $s4
-.L00459BB8:
-/* 00459BB8 10200010 */  beqz  $at, .L00459BFC
-/* 00459BBC 00000000 */   nop   
-/* 00459BC0 8E030014 */  lw    $v1, 0x14($s0)
-/* 00459BC4 240A0001 */  li    $t2, 1
-/* 00459BC8 A3AA0083 */  sb    $t2, 0x83($sp)
-/* 00459BCC 14600009 */  bnez  $v1, .L00459BF4
-/* 00459BD0 A3A00087 */   sb    $zero, 0x87($sp)
-/* 00459BD4 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 00459BD8 24040018 */  li    $a0, 24
-/* 00459BDC 02402825 */  move  $a1, $s2
-/* 00459BE0 0320F809 */  jalr  $t9
-/* 00459BE4 24110001 */   li    $s1, 1
-/* 00459BE8 8FBC0038 */  lw    $gp, 0x38($sp)
-/* 00459BEC AE020014 */  sw    $v0, 0x14($s0)
-/* 00459BF0 00401825 */  move  $v1, $v0
-.L00459BF4:
-/* 00459BF4 1000000B */  b     .L00459C24
-/* 00459BF8 00608025 */   move  $s0, $v1
-.L00459BFC:
-/* 00459BFC 1000001E */  b     .L00459C78
-/* 00459C00 02001025 */   move  $v0, $s0
-.L00459C04:
-/* 00459C04 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 00459C08 8F868044 */  lw    $a2, %got(RO_1000D228)($gp)
-/* 00459C0C 24040001 */  li    $a0, 1
-/* 00459C10 24050150 */  li    $a1, 336
-/* 00459C14 2407000A */  li    $a3, 10
-/* 00459C18 0320F809 */  jalr  $t9
-/* 00459C1C 24C6D228 */   addiu $a2, %lo(RO_1000D228) # addiu $a2, $a2, -0x2dd8
-/* 00459C20 8FBC0038 */  lw    $gp, 0x38($sp)
-.L00459C24:
-/* 00459C24 5220FF23 */  beql  $s1, $zero, .L004598B4
-/* 00459C28 8EA40000 */   lw    $a0, ($s5)
-.L00459C2C:
-/* 00459C2C 27B50068 */  addiu $s5, $sp, 0x68
-/* 00459C30 93B90083 */  lbu   $t9, 0x83($sp)
-/* 00459C34 8EB80000 */  lw    $t8, ($s5)
-/* 00459C38 8EAD0004 */  lw    $t5, 4($s5)
-/* 00459C3C 03201825 */  move  $v1, $t9
-/* 00459C40 AE180004 */  sw    $t8, 4($s0)
-/* 00459C44 13200003 */  beqz  $t9, .L00459C54
-/* 00459C48 AE0D0008 */   sw    $t5, 8($s0)
-/* 00459C4C 83A30087 */  lb    $v1, 0x87($sp)
-/* 00459C50 2C630001 */  sltiu $v1, $v1, 1
-.L00459C54:
-/* 00459C54 93AE0087 */  lbu   $t6, 0x87($sp)
-/* 00459C58 93AF0077 */  lbu   $t7, 0x77($sp)
-/* 00459C5C A2030001 */  sb    $v1, 1($s0)
-/* 00459C60 AE13000C */  sw    $s3, 0xc($s0)
-/* 00459C64 AE000010 */  sw    $zero, 0x10($s0)
-/* 00459C68 AE000014 */  sw    $zero, 0x14($s0)
-/* 00459C6C 02001025 */  move  $v0, $s0
-/* 00459C70 A20E0002 */  sb    $t6, 2($s0)
-/* 00459C74 A20F0000 */  sb    $t7, ($s0)
-.L00459C78:
-/* 00459C78 8FBF003C */  lw    $ra, 0x3c($sp)
-/* 00459C7C 8FB00020 */  lw    $s0, 0x20($sp)
-/* 00459C80 8FB10024 */  lw    $s1, 0x24($sp)
-/* 00459C84 8FB20028 */  lw    $s2, 0x28($sp)
-/* 00459C88 8FB3002C */  lw    $s3, 0x2c($sp)
-/* 00459C8C 8FB40030 */  lw    $s4, 0x30($sp)
-/* 00459C90 8FB50034 */  lw    $s5, 0x34($sp)
-/* 00459C94 03E00008 */  jr    $ra
-/* 00459C98 27BD0068 */   addiu $sp, $sp, 0x68
-    .type insertvar, @function
-    .size insertvar, .-insertvar
-    .end insertvar
-
-glabel enterfsymtab
-    .ent enterfsymtab
-    # 0045A480 oneinstruction
-/* 00459C9C 3C1C0FBC */  .cpload $t9
-/* 00459CA0 279C05F4 */  
-/* 00459CA4 0399E021 */  
-/* 00459CA8 240100A1 */  li    $at, 161
-/* 00459CAC 0081001A */  div   $zero, $a0, $at
-/* 00459CB0 27BDFFC8 */  addiu $sp, $sp, -0x38
-/* 00459CB4 00007010 */  mfhi  $t6
-/* 00459CB8 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 00459CBC AFBC0018 */  sw    $gp, 0x18($sp)
-/* 00459CC0 05C10002 */  bgez  $t6, .L00459CCC
-/* 00459CC4 00803025 */   move  $a2, $a0
-/* 00459CC8 21CE00A1 */  addi  $t6, $t6, 0xa1
-.L00459CCC:
-/* 00459CCC 8F988DC8 */  lw     $t8, %got(fsymtab)($gp)
-/* 00459CD0 000E7880 */  sll   $t7, $t6, 2
-/* 00459CD4 24040008 */  li    $a0, 8
-/* 00459CD8 01F81821 */  addu  $v1, $t7, $t8
-/* 00459CDC 8C620000 */  lw    $v0, ($v1)
-/* 00459CE0 5440000E */  bnezl $v0, .L00459D1C
-/* 00459CE4 8C590000 */   lw    $t9, ($v0)
-/* 00459CE8 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 00459CEC 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 00459CF0 AFA30024 */  sw    $v1, 0x24($sp)
-/* 00459CF4 0320F809 */  jalr  $t9
-/* 00459CF8 AFA60038 */   sw    $a2, 0x38($sp)
-/* 00459CFC 8FA30024 */  lw    $v1, 0x24($sp)
-/* 00459D00 8FA60038 */  lw    $a2, 0x38($sp)
-/* 00459D04 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00459D08 AC620000 */  sw    $v0, ($v1)
-/* 00459D0C AC400004 */  sw    $zero, 4($v0)
-/* 00459D10 10000029 */  b     .L00459DB8
-/* 00459D14 AC460000 */   sw    $a2, ($v0)
-/* 00459D18 8C590000 */  lw    $t9, ($v0)
-.L00459D1C:
-/* 00459D1C 00401825 */  move  $v1, $v0
-/* 00459D20 24040008 */  li    $a0, 8
-/* 00459D24 0326082A */  slt   $at, $t9, $a2
-/* 00459D28 1020000C */  beqz  $at, .L00459D5C
-/* 00459D2C 00000000 */   nop   
-/* 00459D30 8C420004 */  lw    $v0, 4($v0)
-/* 00459D34 10400009 */  beqz  $v0, .L00459D5C
-/* 00459D38 00000000 */   nop   
-/* 00459D3C 8C480000 */  lw    $t0, ($v0)
-.L00459D40:
-/* 00459D40 00401825 */  move  $v1, $v0
-/* 00459D44 0106082A */  slt   $at, $t0, $a2
-/* 00459D48 10200004 */  beqz  $at, .L00459D5C
-/* 00459D4C 00000000 */   nop   
-/* 00459D50 8C420004 */  lw    $v0, 4($v0)
-/* 00459D54 5440FFFA */  bnezl $v0, .L00459D40
-/* 00459D58 8C480000 */   lw    $t0, ($v0)
-.L00459D5C:
-/* 00459D5C 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 00459D60 8C690004 */  lw    $t1, 4($v1)
-/* 00459D64 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 00459D68 AFA30030 */  sw    $v1, 0x30($sp)
-/* 00459D6C AFA60038 */  sw    $a2, 0x38($sp)
-/* 00459D70 0320F809 */  jalr  $t9
-/* 00459D74 AFA9002C */   sw    $t1, 0x2c($sp)
-/* 00459D78 8FA30030 */  lw    $v1, 0x30($sp)
-/* 00459D7C 8FAA002C */  lw    $t2, 0x2c($sp)
-/* 00459D80 8FA60038 */  lw    $a2, 0x38($sp)
-/* 00459D84 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00459D88 AC620004 */  sw    $v0, 4($v1)
-/* 00459D8C AC4A0004 */  sw    $t2, 4($v0)
-/* 00459D90 8C640000 */  lw    $a0, ($v1)
-/* 00459D94 0086082A */  slt   $at, $a0, $a2
-/* 00459D98 54200006 */  bnezl $at, .L00459DB4
-/* 00459D9C 8C6C0004 */   lw    $t4, 4($v1)
-/* 00459DA0 8C6B0004 */  lw    $t3, 4($v1)
-/* 00459DA4 AD640000 */  sw    $a0, ($t3)
-/* 00459DA8 10000003 */  b     .L00459DB8
-/* 00459DAC AC660000 */   sw    $a2, ($v1)
-/* 00459DB0 8C6C0004 */  lw    $t4, 4($v1)
-.L00459DB4:
-/* 00459DB4 AD860000 */  sw    $a2, ($t4)
-.L00459DB8:
-/* 00459DB8 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 00459DBC 27BD0038 */  addiu $sp, $sp, 0x38
-/* 00459DC0 03E00008 */  jr    $ra
-/* 00459DC4 00000000 */   nop   
-    .type enterfsymtab, @function
-    .size enterfsymtab, .-enterfsymtab
-    .end enterfsymtab
-
-glabel del_fsymtab
-    .ent del_fsymtab
-    # 0045A480 oneinstruction
-/* 00459DC8 3C1C0FBC */  .cpload $t9
-/* 00459DCC 279C04C8 */  
-/* 00459DD0 0399E021 */  
-/* 00459DD4 240100A1 */  li    $at, 161
-/* 00459DD8 0081001A */  div   $zero, $a0, $at
-/* 00459DDC 00007010 */  mfhi  $t6
-/* 00459DE0 05C10002 */  bgez  $t6, .L00459DEC
-/* 00459DE4 00000000 */   nop   
-/* 00459DE8 21CE00A1 */  addi  $t6, $t6, 0xa1
-.L00459DEC:
-/* 00459DEC 8F988DC8 */  lw     $t8, %got(fsymtab)($gp)
-/* 00459DF0 000E7880 */  sll   $t7, $t6, 2
-/* 00459DF4 01F81021 */  addu  $v0, $t7, $t8
-/* 00459DF8 8C430000 */  lw    $v1, ($v0)
-/* 00459DFC 1060001F */  beqz  $v1, .L00459E7C
-/* 00459E00 00000000 */   nop   
-/* 00459E04 8C790000 */  lw    $t9, ($v1)
-/* 00459E08 00602825 */  move  $a1, $v1
-/* 00459E0C 54990005 */  bnel  $a0, $t9, .L00459E24
-/* 00459E10 00A01025 */   move  $v0, $a1
-/* 00459E14 8C680004 */  lw    $t0, 4($v1)
-/* 00459E18 03E00008 */  jr    $ra
-/* 00459E1C AC480000 */   sw    $t0, ($v0)
-
-/* 00459E20 00A01025 */  move  $v0, $a1
-.L00459E24:
-/* 00459E24 8CA50004 */  lw    $a1, 4($a1)
-/* 00459E28 10A0000D */  beqz  $a1, .L00459E60
-/* 00459E2C 00000000 */   nop   
-/* 00459E30 8CA90000 */  lw    $t1, ($a1)
-/* 00459E34 0124082A */  slt   $at, $t1, $a0
-/* 00459E38 10200009 */  beqz  $at, .L00459E60
-/* 00459E3C 00000000 */   nop   
-/* 00459E40 00A01025 */  move  $v0, $a1
-.L00459E44:
-/* 00459E44 8CA50004 */  lw    $a1, 4($a1)
-/* 00459E48 10A00005 */  beqz  $a1, .L00459E60
-/* 00459E4C 00000000 */   nop   
-/* 00459E50 8CAA0000 */  lw    $t2, ($a1)
-/* 00459E54 0144082A */  slt   $at, $t2, $a0
-/* 00459E58 5420FFFA */  bnezl $at, .L00459E44
-/* 00459E5C 00A01025 */   move  $v0, $a1
-.L00459E60:
-/* 00459E60 10A00006 */  beqz  $a1, .L00459E7C
-/* 00459E64 00000000 */   nop   
-/* 00459E68 8CAB0000 */  lw    $t3, ($a1)
-/* 00459E6C 148B0003 */  bne   $a0, $t3, .L00459E7C
-/* 00459E70 00000000 */   nop   
-/* 00459E74 8CAC0004 */  lw    $t4, 4($a1)
-/* 00459E78 AC4C0004 */  sw    $t4, 4($v0)
-.L00459E7C:
-/* 00459E7C 03E00008 */  jr    $ra
-/* 00459E80 00000000 */   nop   
-    .type del_fsymtab, @function
-    .size del_fsymtab, .-del_fsymtab
-    .end del_fsymtab
-
-glabel enter_gp_rel_tab
-    .ent enter_gp_rel_tab
-    # 0045A3DC check_gp_relative
-    # 0045A480 oneinstruction
-/* 00459E84 3C1C0FBC */  .cpload $t9
-/* 00459E88 279C040C */  
-/* 00459E8C 0399E021 */  
-/* 00459E90 240100A1 */  li    $at, 161
-/* 00459E94 0081001A */  div   $zero, $a0, $at
-/* 00459E98 27BDFFC8 */  addiu $sp, $sp, -0x38
-/* 00459E9C 00007010 */  mfhi  $t6
-/* 00459EA0 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 00459EA4 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 00459EA8 05C10002 */  bgez  $t6, .L00459EB4
-/* 00459EAC 00803025 */   move  $a2, $a0
-/* 00459EB0 21CE00A1 */  addi  $t6, $t6, 0xa1
-.L00459EB4:
-/* 00459EB4 8F988DCC */  lw     $t8, %got(gp_rel_tab)($gp)
-/* 00459EB8 000E7880 */  sll   $t7, $t6, 2
-/* 00459EBC 24040008 */  li    $a0, 8
-/* 00459EC0 01F81821 */  addu  $v1, $t7, $t8
-/* 00459EC4 8C620000 */  lw    $v0, ($v1)
-/* 00459EC8 5440000E */  bnezl $v0, .L00459F04
-/* 00459ECC 8C590000 */   lw    $t9, ($v0)
-/* 00459ED0 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 00459ED4 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 00459ED8 AFA30024 */  sw    $v1, 0x24($sp)
-/* 00459EDC 0320F809 */  jalr  $t9
-/* 00459EE0 AFA60038 */   sw    $a2, 0x38($sp)
-/* 00459EE4 8FA30024 */  lw    $v1, 0x24($sp)
-/* 00459EE8 8FA60038 */  lw    $a2, 0x38($sp)
-/* 00459EEC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00459EF0 AC620000 */  sw    $v0, ($v1)
-/* 00459EF4 AC400004 */  sw    $zero, 4($v0)
-/* 00459EF8 10000029 */  b     .L00459FA0
-/* 00459EFC AC460000 */   sw    $a2, ($v0)
-/* 00459F00 8C590000 */  lw    $t9, ($v0)
-.L00459F04:
-/* 00459F04 00401825 */  move  $v1, $v0
-/* 00459F08 24040008 */  li    $a0, 8
-/* 00459F0C 0326082A */  slt   $at, $t9, $a2
-/* 00459F10 1020000C */  beqz  $at, .L00459F44
-/* 00459F14 00000000 */   nop   
-/* 00459F18 8C420004 */  lw    $v0, 4($v0)
-/* 00459F1C 10400009 */  beqz  $v0, .L00459F44
-/* 00459F20 00000000 */   nop   
-/* 00459F24 8C480000 */  lw    $t0, ($v0)
-.L00459F28:
-/* 00459F28 00401825 */  move  $v1, $v0
-/* 00459F2C 0106082A */  slt   $at, $t0, $a2
-/* 00459F30 10200004 */  beqz  $at, .L00459F44
-/* 00459F34 00000000 */   nop   
-/* 00459F38 8C420004 */  lw    $v0, 4($v0)
-/* 00459F3C 5440FFFA */  bnezl $v0, .L00459F28
-/* 00459F40 8C480000 */   lw    $t0, ($v0)
-.L00459F44:
-/* 00459F44 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 00459F48 8C690004 */  lw    $t1, 4($v1)
-/* 00459F4C 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 00459F50 AFA30030 */  sw    $v1, 0x30($sp)
-/* 00459F54 AFA60038 */  sw    $a2, 0x38($sp)
-/* 00459F58 0320F809 */  jalr  $t9
-/* 00459F5C AFA9002C */   sw    $t1, 0x2c($sp)
-/* 00459F60 8FA30030 */  lw    $v1, 0x30($sp)
-/* 00459F64 8FAA002C */  lw    $t2, 0x2c($sp)
-/* 00459F68 8FA60038 */  lw    $a2, 0x38($sp)
-/* 00459F6C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00459F70 AC620004 */  sw    $v0, 4($v1)
-/* 00459F74 AC4A0004 */  sw    $t2, 4($v0)
-/* 00459F78 8C640000 */  lw    $a0, ($v1)
-/* 00459F7C 0086082A */  slt   $at, $a0, $a2
-/* 00459F80 54200006 */  bnezl $at, .L00459F9C
-/* 00459F84 8C6C0004 */   lw    $t4, 4($v1)
-/* 00459F88 8C6B0004 */  lw    $t3, 4($v1)
-/* 00459F8C AD640000 */  sw    $a0, ($t3)
-/* 00459F90 10000003 */  b     .L00459FA0
-/* 00459F94 AC660000 */   sw    $a2, ($v1)
-/* 00459F98 8C6C0004 */  lw    $t4, 4($v1)
-.L00459F9C:
-/* 00459F9C AD860000 */  sw    $a2, ($t4)
-.L00459FA0:
-/* 00459FA0 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 00459FA4 27BD0038 */  addiu $sp, $sp, 0x38
-/* 00459FA8 03E00008 */  jr    $ra
-/* 00459FAC 00000000 */   nop   
-    .type enter_gp_rel_tab, @function
-    .size enter_gp_rel_tab, .-enter_gp_rel_tab
-    .end enter_gp_rel_tab
-
-glabel insertlda
-    .ent insertlda
-    # 0045A480 oneinstruction
-/* 00459FB0 3C1C0FBC */  .cpload $t9
-/* 00459FB4 279C02E0 */  
-/* 00459FB8 0399E021 */  
-/* 00459FBC 00057AC2 */  srl   $t7, $a1, 0xb
-/* 00459FC0 24010C29 */  li    $at, 3113
-/* 00459FC4 01E1001A */  div   $zero, $t7, $at
-/* 00459FC8 27BDFFB8 */  addiu $sp, $sp, -0x48
-/* 00459FCC AFB30028 */  sw    $s3, 0x28($sp)
-/* 00459FD0 0000C010 */  mfhi  $t8
-/* 00459FD4 00C09825 */  move  $s3, $a2
-/* 00459FD8 AFBF0034 */  sw    $ra, 0x34($sp)
-/* 00459FDC AFBC0030 */  sw    $gp, 0x30($sp)
-/* 00459FE0 AFB4002C */  sw    $s4, 0x2c($sp)
-/* 00459FE4 AFB20024 */  sw    $s2, 0x24($sp)
-/* 00459FE8 AFB10020 */  sw    $s1, 0x20($sp)
-/* 00459FEC AFB0001C */  sw    $s0, 0x1c($sp)
-/* 00459FF0 AFA40048 */  sw    $a0, 0x48($sp)
-/* 00459FF4 07010002 */  bgez  $t8, .L0045A000
-/* 00459FF8 AFA5004C */   sw    $a1, 0x4c($sp)
-/* 00459FFC 23180C29 */  addi  $t8, $t8, 0xc29
-.L0045A000:
-/* 0045A000 8F888DF4 */  lw     $t0, %got(ldatab)($gp)
-/* 0045A004 0018C880 */  sll   $t9, $t8, 2
-/* 0045A008 27B40048 */  addiu $s4, $sp, 0x48
-/* 0045A00C 03289021 */  addu  $s2, $t9, $t0
-/* 0045A010 8E420000 */  lw    $v0, ($s2)
-/* 0045A014 54400011 */  bnezl $v0, .L0045A05C
-/* 0045A018 8E840000 */   lw    $a0, ($s4)
-/* 0045A01C 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0045A020 24040010 */  li    $a0, 16
-/* 0045A024 8F8588E8 */  lw     $a1, %got(lda_heap)($gp)
-/* 0045A028 0320F809 */  jalr  $t9
-/* 0045A02C 00000000 */   nop   
-/* 0045A030 27B40048 */  addiu $s4, $sp, 0x48
-/* 0045A034 8E8A0000 */  lw    $t2, ($s4)
-/* 0045A038 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0045A03C AE420000 */  sw    $v0, ($s2)
-/* 0045A040 AC4A0000 */  sw    $t2, ($v0)
-/* 0045A044 8E890004 */  lw    $t1, 4($s4)
-/* 0045A048 AC530008 */  sw    $s3, 8($v0)
-/* 0045A04C AC40000C */  sw    $zero, 0xc($v0)
-/* 0045A050 1000007A */  b     .L0045A23C
-/* 0045A054 AC490004 */   sw    $t1, 4($v0)
-/* 0045A058 8E840000 */  lw    $a0, ($s4)
-.L0045A05C:
-/* 0045A05C 8F99842C */  lw    $t9, %call16(compareloc)($gp)
-/* 0045A060 8C4F0008 */  lw    $t7, 8($v0)
-/* 0045A064 AFA40000 */  sw    $a0, ($sp)
-/* 0045A068 8E850004 */  lw    $a1, 4($s4)
-/* 0045A06C AFAF0014 */  sw    $t7, 0x14($sp)
-/* 0045A070 AFA50004 */  sw    $a1, 4($sp)
-/* 0045A074 8C460000 */  lw    $a2, ($v0)
-/* 0045A078 AFA60008 */  sw    $a2, 8($sp)
-/* 0045A07C 8C470004 */  lw    $a3, 4($v0)
-/* 0045A080 AFB30010 */  sw    $s3, 0x10($sp)
-/* 0045A084 0320F809 */  jalr  $t9
-/* 0045A088 AFA7000C */   sw    $a3, 0xc($sp)
-/* 0045A08C 304400FF */  andi  $a0, $v0, 0xff
-/* 0045A090 2C810003 */  sltiu $at, $a0, 3
-/* 0045A094 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0045A098 10200060 */  beqz  $at, .L0045A21C
-/* 0045A09C 304300FF */   andi  $v1, $v0, 0xff
-/* 0045A0A0 8F818044 */  lw    $at, %got(jtbl_1000D24C)($gp)
-/* 0045A0A4 0004C080 */  sll   $t8, $a0, 2
-/* 0045A0A8 00380821 */  addu  $at, $at, $t8
-/* 0045A0AC 8C38D24C */  lw    $t8, %lo(jtbl_1000D24C)($at)
-/* 0045A0B0 031CC021 */  addu  $t8, $t8, $gp
-/* 0045A0B4 03000008 */  jr    $t8
-/* 0045A0B8 00000000 */   nop   
-.L0045A0BC:
-/* 0045A0BC 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0045A0C0 24040010 */  li    $a0, 16
-/* 0045A0C4 8F8588E8 */  lw     $a1, %got(lda_heap)($gp)
-/* 0045A0C8 0320F809 */  jalr  $t9
-/* 0045A0CC 00000000 */   nop   
-/* 0045A0D0 8E880000 */  lw    $t0, ($s4)
-/* 0045A0D4 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0045A0D8 AC480000 */  sw    $t0, ($v0)
-/* 0045A0DC 8E990004 */  lw    $t9, 4($s4)
-/* 0045A0E0 AC530008 */  sw    $s3, 8($v0)
-/* 0045A0E4 AC590004 */  sw    $t9, 4($v0)
-/* 0045A0E8 8E490000 */  lw    $t1, ($s2)
-/* 0045A0EC AC49000C */  sw    $t1, 0xc($v0)
-/* 0045A0F0 10000052 */  b     .L0045A23C
-/* 0045A0F4 AE420000 */   sw    $v0, ($s2)
-.L0045A0F8:
-/* 0045A0F8 24110001 */  li    $s1, 1
-/* 0045A0FC 304A00FF */  andi  $t2, $v0, 0xff
-/* 0045A100 15510019 */  bne   $t2, $s1, .L0045A168
-/* 0045A104 8E500000 */   lw    $s0, ($s2)
-/* 0045A108 02009025 */  move  $s2, $s0
-.L0045A10C:
-/* 0045A10C 8E10000C */  lw    $s0, 0xc($s0)
-/* 0045A110 56000004 */  bnezl $s0, .L0045A124
-/* 0045A114 8E840000 */   lw    $a0, ($s4)
-/* 0045A118 10000010 */  b     .L0045A15C
-/* 0045A11C 24030002 */   li    $v1, 2
-/* 0045A120 8E840000 */  lw    $a0, ($s4)
-.L0045A124:
-/* 0045A124 8F99842C */  lw    $t9, %call16(compareloc)($gp)
-/* 0045A128 8E060000 */  lw    $a2, ($s0)
-/* 0045A12C AFA40000 */  sw    $a0, ($sp)
-/* 0045A130 8E850004 */  lw    $a1, 4($s4)
-/* 0045A134 8E070004 */  lw    $a3, 4($s0)
-/* 0045A138 8E0F0008 */  lw    $t7, 8($s0)
-/* 0045A13C AFB30010 */  sw    $s3, 0x10($sp)
-/* 0045A140 AFA60008 */  sw    $a2, 8($sp)
-/* 0045A144 AFA50004 */  sw    $a1, 4($sp)
-/* 0045A148 AFA7000C */  sw    $a3, 0xc($sp)
-/* 0045A14C 0320F809 */  jalr  $t9
-/* 0045A150 AFAF0014 */   sw    $t7, 0x14($sp)
-/* 0045A154 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0045A158 304300FF */  andi  $v1, $v0, 0xff
-.L0045A15C:
-/* 0045A15C 5071FFEB */  beql  $v1, $s1, .L0045A10C
-/* 0045A160 02009025 */   move  $s2, $s0
-/* 0045A164 AFB2003C */  sw    $s2, 0x3c($sp)
-.L0045A168:
-/* 0045A168 1460001E */  bnez  $v1, .L0045A1E4
-/* 0045A16C 8FB2003C */   lw    $s2, 0x3c($sp)
-/* 0045A170 3C027FFF */  lui   $v0, 0x7fff
-/* 0045A174 3442FFFF */  ori   $v0, $v0, 0xffff
-/* 0045A178 56620004 */  bnel  $s3, $v0, .L0045A18C
-/* 0045A17C 8E030008 */   lw    $v1, 8($s0)
-/* 0045A180 1000000D */  b     .L0045A1B8
-/* 0045A184 AE020008 */   sw    $v0, 8($s0)
-/* 0045A188 8E030008 */  lw    $v1, 8($s0)
-.L0045A18C:
-/* 0045A18C 8FA50048 */  lw    $a1, 0x48($sp)
-/* 0045A190 5043000A */  beql  $v0, $v1, .L0045A1BC
-/* 0045A194 8FA50048 */   lw    $a1, 0x48($sp)
-/* 0045A198 8E020000 */  lw    $v0, ($s0)
-/* 0045A19C 00B32021 */  addu  $a0, $a1, $s3
-/* 0045A1A0 0043C021 */  addu  $t8, $v0, $v1
-/* 0045A1A4 0304082A */  slt   $at, $t8, $a0
-/* 0045A1A8 50200004 */  beql  $at, $zero, .L0045A1BC
-/* 0045A1AC 8FA50048 */   lw    $a1, 0x48($sp)
-/* 0045A1B0 0082C823 */  subu  $t9, $a0, $v0
-/* 0045A1B4 AE190008 */  sw    $t9, 8($s0)
-.L0045A1B8:
-/* 0045A1B8 8FA50048 */  lw    $a1, 0x48($sp)
-.L0045A1BC:
-/* 0045A1BC 8E020000 */  lw    $v0, ($s0)
-/* 0045A1C0 00A2082A */  slt   $at, $a1, $v0
-/* 0045A1C4 5020001E */  beql  $at, $zero, .L0045A240
-/* 0045A1C8 8FBF0034 */   lw    $ra, 0x34($sp)
-/* 0045A1CC 8E080008 */  lw    $t0, 8($s0)
-/* 0045A1D0 AE050000 */  sw    $a1, ($s0)
-/* 0045A1D4 01024821 */  addu  $t1, $t0, $v0
-/* 0045A1D8 01255023 */  subu  $t2, $t1, $a1
-/* 0045A1DC 10000017 */  b     .L0045A23C
-/* 0045A1E0 AE0A0008 */   sw    $t2, 8($s0)
-.L0045A1E4:
-/* 0045A1E4 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0045A1E8 24040010 */  li    $a0, 16
-/* 0045A1EC 8F8588E8 */  lw     $a1, %got(lda_heap)($gp)
-/* 0045A1F0 0320F809 */  jalr  $t9
-/* 0045A1F4 00000000 */   nop   
-/* 0045A1F8 8E8C0000 */  lw    $t4, ($s4)
-/* 0045A1FC 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0045A200 AE42000C */  sw    $v0, 0xc($s2)
-/* 0045A204 AC4C0000 */  sw    $t4, ($v0)
-/* 0045A208 8E8B0004 */  lw    $t3, 4($s4)
-/* 0045A20C AC530008 */  sw    $s3, 8($v0)
-/* 0045A210 AC50000C */  sw    $s0, 0xc($v0)
-/* 0045A214 10000009 */  b     .L0045A23C
-/* 0045A218 AC4B0004 */   sw    $t3, 4($v0)
-.L0045A21C:
-/* 0045A21C 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0045A220 8F868044 */  lw    $a2, %got(RO_1000D240)($gp)
-/* 0045A224 24040001 */  li    $a0, 1
-/* 0045A228 24050214 */  li    $a1, 532
-/* 0045A22C 2407000A */  li    $a3, 10
-/* 0045A230 0320F809 */  jalr  $t9
-/* 0045A234 24C6D240 */   addiu $a2, %lo(RO_1000D240) # addiu $a2, $a2, -0x2dc0
-/* 0045A238 8FBC0030 */  lw    $gp, 0x30($sp)
-.L0045A23C:
-/* 0045A23C 8FBF0034 */  lw    $ra, 0x34($sp)
-.L0045A240:
-/* 0045A240 8FB0001C */  lw    $s0, 0x1c($sp)
-/* 0045A244 8FB10020 */  lw    $s1, 0x20($sp)
-/* 0045A248 8FB20024 */  lw    $s2, 0x24($sp)
-/* 0045A24C 8FB30028 */  lw    $s3, 0x28($sp)
-/* 0045A250 8FB4002C */  lw    $s4, 0x2c($sp)
-/* 0045A254 03E00008 */  jr    $ra
-/* 0045A258 27BD0048 */   addiu $sp, $sp, 0x48
-    .type insertlda, @function
-    .size insertlda, .-insertlda
-    .end insertlda
-
-glabel insertcallee
-    .ent insertcallee
-    # 0045A480 oneinstruction
-/* 0045A25C 3C1C0FBC */  .cpload $t9
-/* 0045A260 279C0034 */  
-/* 0045A264 0399E021 */  
-/* 0045A268 27BDFFD0 */  addiu $sp, $sp, -0x30
-/* 0045A26C AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0045A270 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0045A274 AFA40030 */  sw    $a0, 0x30($sp)
-/* 0045A278 8CA70000 */  lw    $a3, ($a1)
-/* 0045A27C 00A03025 */  move  $a2, $a1
-/* 0045A280 8FB80030 */  lw    $t8, 0x30($sp)
-/* 0045A284 54E00010 */  bnezl $a3, .L0045A2C8
-/* 0045A288 8CF90000 */   lw    $t9, ($a3)
-/* 0045A28C 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0045A290 24040008 */  li    $a0, 8
-/* 0045A294 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 0045A298 0320F809 */  jalr  $t9
-/* 0045A29C AFA60034 */   sw    $a2, 0x34($sp)
-/* 0045A2A0 8FA60034 */  lw    $a2, 0x34($sp)
-/* 0045A2A4 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0045A2A8 24040001 */  li    $a0, 1
-/* 0045A2AC ACC20000 */  sw    $v0, ($a2)
-/* 0045A2B0 AC400004 */  sw    $zero, 4($v0)
-/* 0045A2B4 8FAE0030 */  lw    $t6, 0x30($sp)
-/* 0045A2B8 8CCF0000 */  lw    $t7, ($a2)
-/* 0045A2BC 10000042 */  b     .L0045A3C8
-/* 0045A2C0 ADEE0000 */   sw    $t6, ($t7)
-/* 0045A2C4 8CF90000 */  lw    $t9, ($a3)
-.L0045A2C8:
-/* 0045A2C8 8F020000 */  lw    $v0, ($t8)
-/* 0045A2CC 8F230000 */  lw    $v1, ($t9)
-/* 0045A2D0 0043082A */  slt   $at, $v0, $v1
-/* 0045A2D4 50200010 */  beql  $at, $zero, .L0045A318
-/* 0045A2D8 0062082A */   slt   $at, $v1, $v0
-/* 0045A2DC 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0045A2E0 24040008 */  li    $a0, 8
-/* 0045A2E4 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 0045A2E8 0320F809 */  jalr  $t9
-/* 0045A2EC AFA60034 */   sw    $a2, 0x34($sp)
-/* 0045A2F0 8FA80030 */  lw    $t0, 0x30($sp)
-/* 0045A2F4 8FA60034 */  lw    $a2, 0x34($sp)
-/* 0045A2F8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0045A2FC AC480000 */  sw    $t0, ($v0)
-/* 0045A300 8CC90000 */  lw    $t1, ($a2)
-/* 0045A304 24040001 */  li    $a0, 1
-/* 0045A308 AC490004 */  sw    $t1, 4($v0)
-/* 0045A30C 1000002E */  b     .L0045A3C8
-/* 0045A310 ACC20000 */   sw    $v0, ($a2)
-/* 0045A314 0062082A */  slt   $at, $v1, $v0
-.L0045A318:
-/* 0045A318 1020002B */  beqz  $at, .L0045A3C8
-/* 0045A31C 00002025 */   move  $a0, $zero
-/* 0045A320 8CE30004 */  lw    $v1, 4($a3)
-/* 0045A324 00E03025 */  move  $a2, $a3
-/* 0045A328 24040008 */  li    $a0, 8
-/* 0045A32C 1060000F */  beqz  $v1, .L0045A36C
-/* 0045A330 00000000 */   nop   
-/* 0045A334 8C6A0000 */  lw    $t2, ($v1)
-/* 0045A338 8D4B0000 */  lw    $t3, ($t2)
-/* 0045A33C 0162082A */  slt   $at, $t3, $v0
-/* 0045A340 1020000A */  beqz  $at, .L0045A36C
-/* 0045A344 00000000 */   nop   
-/* 0045A348 8C630004 */  lw    $v1, 4($v1)
-.L0045A34C:
-/* 0045A34C 8CC60004 */  lw    $a2, 4($a2)
-/* 0045A350 10600006 */  beqz  $v1, .L0045A36C
-/* 0045A354 00000000 */   nop   
-/* 0045A358 8C6C0000 */  lw    $t4, ($v1)
-/* 0045A35C 8D8D0000 */  lw    $t5, ($t4)
-/* 0045A360 01A2082A */  slt   $at, $t5, $v0
-/* 0045A364 5420FFF9 */  bnezl $at, .L0045A34C
-/* 0045A368 8C630004 */   lw    $v1, 4($v1)
-.L0045A36C:
-/* 0045A36C 10600006 */  beqz  $v1, .L0045A388
-/* 0045A370 00000000 */   nop   
-/* 0045A374 8C6E0000 */  lw    $t6, ($v1)
-/* 0045A378 8DCF0000 */  lw    $t7, ($t6)
-/* 0045A37C 004F082A */  slt   $at, $v0, $t7
-/* 0045A380 1020000F */  beqz  $at, .L0045A3C0
-/* 0045A384 00000000 */   nop   
-.L0045A388:
-/* 0045A388 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0045A38C 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 0045A390 AFA30028 */  sw    $v1, 0x28($sp)
-/* 0045A394 0320F809 */  jalr  $t9
-/* 0045A398 AFA60024 */   sw    $a2, 0x24($sp)
-/* 0045A39C 8FA30028 */  lw    $v1, 0x28($sp)
-/* 0045A3A0 8FA60024 */  lw    $a2, 0x24($sp)
-/* 0045A3A4 8FB80030 */  lw    $t8, 0x30($sp)
-/* 0045A3A8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0045A3AC AC430004 */  sw    $v1, 4($v0)
-/* 0045A3B0 AC580000 */  sw    $t8, ($v0)
-/* 0045A3B4 24040001 */  li    $a0, 1
-/* 0045A3B8 10000003 */  b     .L0045A3C8
-/* 0045A3BC ACC20004 */   sw    $v0, 4($a2)
-.L0045A3C0:
-/* 0045A3C0 10000001 */  b     .L0045A3C8
-/* 0045A3C4 00002025 */   move  $a0, $zero
-.L0045A3C8:
-/* 0045A3C8 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0045A3CC 27BD0030 */  addiu $sp, $sp, 0x30
-/* 0045A3D0 00801025 */  move  $v0, $a0
-/* 0045A3D4 03E00008 */  jr    $ra
-/* 0045A3D8 00000000 */   nop   
-    .type insertcallee, @function
-    .size insertcallee, .-insertcallee
-    .end insertcallee
 
 glabel check_gp_relative
     .ent check_gp_relative
@@ -3404,127 +2393,71 @@ glabel oneprocprepass
     .size oneprocprepass, .-oneprocprepass
     .end oneprocprepass
 
-glabel mergecallees
-    .ent mergecallees
-    # 0045BBEC func_0045BBEC
-/* 0045B978 3C1C0FBC */  .cpload $t9
-/* 0045B97C 279CE918 */  
-/* 0045B980 0399E021 */  
-/* 0045B984 27BDFFD0 */  addiu $sp, $sp, -0x30
-/* 0045B988 AFBF002C */  sw    $ra, 0x2c($sp)
-/* 0045B98C AFBC0028 */  sw    $gp, 0x28($sp)
-/* 0045B990 AFB40024 */  sw    $s4, 0x24($sp)
-/* 0045B994 AFB30020 */  sw    $s3, 0x20($sp)
-/* 0045B998 AFB2001C */  sw    $s2, 0x1c($sp)
-/* 0045B99C AFB10018 */  sw    $s1, 0x18($sp)
-/* 0045B9A0 AFB00014 */  sw    $s0, 0x14($sp)
-/* 0045B9A4 8C830000 */  lw    $v1, ($a0)
-/* 0045B9A8 8CAE0000 */  lw    $t6, ($a1)
-/* 0045B9AC 00803025 */  move  $a2, $a0
-/* 0045B9B0 8C6F0000 */  lw    $t7, ($v1)
-/* 0045B9B4 8DC20000 */  lw    $v0, ($t6)
-/* 0045B9B8 00A08025 */  move  $s0, $a1
-/* 0045B9BC 8DE70000 */  lw    $a3, ($t7)
-/* 0045B9C0 0000A025 */  move  $s4, $zero
-/* 0045B9C4 24040008 */  li    $a0, 8
-/* 0045B9C8 0047082A */  slt   $at, $v0, $a3
-/* 0045B9CC 10200012 */  beqz  $at, .L0045BA18
-/* 0045B9D0 00000000 */   nop   
-/* 0045B9D4 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0045B9D8 8F938954 */  lw     $s3, %got(perm_heap)($gp)
-/* 0045B9DC 24140001 */  li    $s4, 1
-/* 0045B9E0 AFA60030 */  sw    $a2, 0x30($sp)
-/* 0045B9E4 0320F809 */  jalr  $t9
-/* 0045B9E8 02602825 */   move  $a1, $s3
-/* 0045B9EC 8E180000 */  lw    $t8, ($s0)
-/* 0045B9F0 8FA60030 */  lw    $a2, 0x30($sp)
-/* 0045B9F4 8FBC0028 */  lw    $gp, 0x28($sp)
-/* 0045B9F8 AC580000 */  sw    $t8, ($v0)
-/* 0045B9FC 8CD90000 */  lw    $t9, ($a2)
-/* 0045BA00 00409025 */  move  $s2, $v0
-/* 0045BA04 AC590004 */  sw    $t9, 4($v0)
-/* 0045BA08 8CD10000 */  lw    $s1, ($a2)
-/* 0045BA0C 8E100004 */  lw    $s0, 4($s0)
-/* 0045BA10 10000006 */  b     .L0045BA2C
-/* 0045BA14 ACC20000 */   sw    $v0, ($a2)
-.L0045BA18:
-/* 0045BA18 14E20002 */  bne   $a3, $v0, .L0045BA24
-/* 0045BA1C 00609025 */   move  $s2, $v1
-/* 0045BA20 8E100004 */  lw    $s0, 4($s0)
-.L0045BA24:
-/* 0045BA24 8C710004 */  lw    $s1, 4($v1)
-/* 0045BA28 8F938954 */  lw     $s3, %got(perm_heap)($gp)
-.L0045BA2C:
-/* 0045BA2C 1200001F */  beqz  $s0, .L0045BAAC
-/* 0045BA30 00000000 */   nop   
-/* 0045BA34 1220001D */  beqz  $s1, .L0045BAAC
-/* 0045BA38 00000000 */   nop   
-/* 0045BA3C 8E080000 */  lw    $t0, ($s0)
-.L0045BA40:
-/* 0045BA40 8E290000 */  lw    $t1, ($s1)
-/* 0045BA44 8D020000 */  lw    $v0, ($t0)
-/* 0045BA48 8D230000 */  lw    $v1, ($t1)
-/* 0045BA4C 0043082A */  slt   $at, $v0, $v1
-/* 0045BA50 14200006 */  bnez  $at, .L0045BA6C
-/* 0045BA54 00000000 */   nop   
-/* 0045BA58 14620002 */  bne   $v1, $v0, .L0045BA64
-/* 0045BA5C 02209025 */   move  $s2, $s1
-/* 0045BA60 8E100004 */  lw    $s0, 4($s0)
-.L0045BA64:
-/* 0045BA64 1000000D */  b     .L0045BA9C
-/* 0045BA68 8E310004 */   lw    $s1, 4($s1)
-.L0045BA6C:
-/* 0045BA6C 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0045BA70 24140001 */  li    $s4, 1
-/* 0045BA74 24040008 */  li    $a0, 8
-/* 0045BA78 0320F809 */  jalr  $t9
-/* 0045BA7C 02602825 */   move  $a1, $s3
-/* 0045BA80 AE420004 */  sw    $v0, 4($s2)
-/* 0045BA84 8E0A0000 */  lw    $t2, ($s0)
-/* 0045BA88 8FBC0028 */  lw    $gp, 0x28($sp)
-/* 0045BA8C AC510004 */  sw    $s1, 4($v0)
-/* 0045BA90 AC4A0000 */  sw    $t2, ($v0)
-/* 0045BA94 00409025 */  move  $s2, $v0
-/* 0045BA98 8E100004 */  lw    $s0, 4($s0)
-.L0045BA9C:
-/* 0045BA9C 12000003 */  beqz  $s0, .L0045BAAC
-/* 0045BAA0 00000000 */   nop   
-/* 0045BAA4 5620FFE6 */  bnezl $s1, .L0045BA40
-/* 0045BAA8 8E080000 */   lw    $t0, ($s0)
-.L0045BAAC:
-/* 0045BAAC 56200013 */  bnezl $s1, .L0045BAFC
-/* 0045BAB0 8FBF002C */   lw    $ra, 0x2c($sp)
-/* 0045BAB4 52000011 */  beql  $s0, $zero, .L0045BAFC
-/* 0045BAB8 8FBF002C */   lw    $ra, 0x2c($sp)
-/* 0045BABC 24140001 */  li    $s4, 1
-.L0045BAC0:
-/* 0045BAC0 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0045BAC4 24040008 */  li    $a0, 8
-/* 0045BAC8 02602825 */  move  $a1, $s3
-/* 0045BACC 0320F809 */  jalr  $t9
-/* 0045BAD0 00000000 */   nop   
-/* 0045BAD4 AE420004 */  sw    $v0, 4($s2)
-/* 0045BAD8 8E0B0000 */  lw    $t3, ($s0)
-/* 0045BADC 8FBC0028 */  lw    $gp, 0x28($sp)
-/* 0045BAE0 00409025 */  move  $s2, $v0
-/* 0045BAE4 AC4B0000 */  sw    $t3, ($v0)
-/* 0045BAE8 8E100004 */  lw    $s0, 4($s0)
-/* 0045BAEC 1600FFF4 */  bnez  $s0, .L0045BAC0
-/* 0045BAF0 00000000 */   nop   
-/* 0045BAF4 AC400004 */  sw    $zero, 4($v0)
-/* 0045BAF8 8FBF002C */  lw    $ra, 0x2c($sp)
-.L0045BAFC:
-/* 0045BAFC 02801025 */  move  $v0, $s4
-/* 0045BB00 8FB40024 */  lw    $s4, 0x24($sp)
-/* 0045BB04 8FB00014 */  lw    $s0, 0x14($sp)
-/* 0045BB08 8FB10018 */  lw    $s1, 0x18($sp)
-/* 0045BB0C 8FB2001C */  lw    $s2, 0x1c($sp)
-/* 0045BB10 8FB30020 */  lw    $s3, 0x20($sp)
-/* 0045BB14 03E00008 */  jr    $ra
-/* 0045BB18 27BD0030 */   addiu $sp, $sp, 0x30
-    .type mergecallees, @function
-    .size mergecallees, .-mergecallees
-    .end mergecallees
+)"");
+
+/*
+0045BBEC func_0045BBEC
+*/
+bool mergecallees(struct ProcList **dest, struct ProcList *src) {
+    struct ProcList *prev;
+    struct ProcList *next;
+    struct ProcList *new_entry;
+    bool ret;
+
+    if (src->proc->id < (*dest)->proc->id) {
+        new_entry = (struct ProcList *)alloc_new(sizeof(struct ProcList), &perm_heap);
+        new_entry->proc = src->proc;
+        new_entry->next = *dest;
+        next = *dest;
+        *dest = new_entry;
+        src = src->next;
+        prev = new_entry;
+        ret = true;
+    } else {
+        if (src->proc->id == (*dest)->proc->id) {
+            src = src->next;
+        }
+        next = (*dest)->next;
+        prev = *dest;
+        ret = false;
+    }
+
+    while (src != NULL && next != NULL) {
+        if (src->proc->id >= next->proc->id) {
+            if (src->proc->id == next->proc->id) {
+                src = src->next;
+            }
+            prev = next;
+            next = next->next;
+        } else {
+            new_entry = (struct ProcList *)alloc_new(sizeof(struct ProcList), &perm_heap);
+            prev->next = new_entry;
+            new_entry->next = next;
+            new_entry->proc = src->proc;
+            src = src->next;
+            prev = new_entry;
+            ret = true;
+        }
+    }
+
+    if (next == NULL && src != NULL) {
+        do {
+            new_entry = (struct ProcList *)alloc_new(sizeof(struct ProcList), &perm_heap);
+            prev->next = new_entry;
+            new_entry->proc = src->proc;
+            src = src->next;
+            prev = new_entry;
+        } while (src != NULL);
+        new_entry->next = NULL;
+        ret = true;
+    }
+
+    return ret;
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_0045BB1C, @function
 func_0045BB1C:
@@ -4273,78 +3206,35 @@ glabel prepass
     .size prepass, .-prepass
     .end prepass
 
-glabel varintree
-    .ent varintree
-    # 0044B4F4 clkilled
-    # 0044BDFC cskilled
-    # 0045C620 furthervarintree
-/* 0045C540 3C1C0FBC */  .cpload $t9
-/* 0045C544 279CDD50 */  
-/* 0045C548 0399E021 */  
-/* 0045C54C 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0045C550 AFB00018 */  sw    $s0, 0x18($sp)
-/* 0045C554 00C08025 */  move  $s0, $a2
-/* 0045C558 AFBF0024 */  sw    $ra, 0x24($sp)
-/* 0045C55C AFBC0020 */  sw    $gp, 0x20($sp)
-/* 0045C560 AFB1001C */  sw    $s1, 0x1c($sp)
-/* 0045C564 AFA40028 */  sw    $a0, 0x28($sp)
-/* 0045C568 10C00027 */  beqz  $a2, .L0045C608
-/* 0045C56C AFA5002C */   sw    $a1, 0x2c($sp)
-/* 0045C570 27B10028 */  addiu $s1, $sp, 0x28
-/* 0045C574 8E240000 */  lw    $a0, ($s1)
-.L0045C578:
-/* 0045C578 8F998430 */  lw    $t9, %call16(compareaddr)($gp)
-/* 0045C57C AFA40000 */  sw    $a0, ($sp)
-/* 0045C580 8E250004 */  lw    $a1, 4($s1)
-/* 0045C584 AFA50004 */  sw    $a1, 4($sp)
-/* 0045C588 8E060004 */  lw    $a2, 4($s0)
-/* 0045C58C AFA60008 */  sw    $a2, 8($sp)
-/* 0045C590 8E070008 */  lw    $a3, 8($s0)
-/* 0045C594 0320F809 */  jalr  $t9
-/* 0045C598 AFA7000C */   sw    $a3, 0xc($sp)
-/* 0045C59C 304300FF */  andi  $v1, $v0, 0xff
-/* 0045C5A0 2C610003 */  sltiu $at, $v1, 3
-/* 0045C5A4 1020000E */  beqz  $at, .L0045C5E0
-/* 0045C5A8 8FBC0020 */   lw    $gp, 0x20($sp)
-/* 0045C5AC 8F818044 */  lw    $at, %got(jtbl_1000D4C8)($gp)
-/* 0045C5B0 00034080 */  sll   $t0, $v1, 2
-/* 0045C5B4 00280821 */  addu  $at, $at, $t0
-/* 0045C5B8 8C28D4C8 */  lw    $t0, %lo(jtbl_1000D4C8)($at)
-/* 0045C5BC 011C4021 */  addu  $t0, $t0, $gp
-/* 0045C5C0 01000008 */  jr    $t0
-/* 0045C5C4 00000000 */   nop   
-.L0045C5C8:
-/* 0045C5C8 10000010 */  b     .L0045C60C
-/* 0045C5CC 24020001 */   li    $v0, 1
-.L0045C5D0:
-/* 0045C5D0 1000000B */  b     .L0045C600
-/* 0045C5D4 8E100010 */   lw    $s0, 0x10($s0)
-.L0045C5D8:
-/* 0045C5D8 10000009 */  b     .L0045C600
-/* 0045C5DC 8E100014 */   lw    $s0, 0x14($s0)
-.L0045C5E0:
-/* 0045C5E0 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0045C5E4 8F868044 */  lw    $a2, %got(RO_1000D4BE)($gp)
-/* 0045C5E8 24040001 */  li    $a0, 1
-/* 0045C5EC 240504F1 */  li    $a1, 1265
-/* 0045C5F0 2407000A */  li    $a3, 10
-/* 0045C5F4 0320F809 */  jalr  $t9
-/* 0045C5F8 24C6D4BE */   addiu $a2, %lo(RO_1000D4BE) # addiu $a2, $a2, -0x2b42
-/* 0045C5FC 8FBC0020 */  lw    $gp, 0x20($sp)
-.L0045C600:
-/* 0045C600 5600FFDD */  bnezl $s0, .L0045C578
-/* 0045C604 8E240000 */   lw    $a0, ($s1)
-.L0045C608:
-/* 0045C608 00001025 */  move  $v0, $zero
-.L0045C60C:
-/* 0045C60C 8FBF0024 */  lw    $ra, 0x24($sp)
-/* 0045C610 8FB00018 */  lw    $s0, 0x18($sp)
-/* 0045C614 8FB1001C */  lw    $s1, 0x1c($sp)
-/* 0045C618 03E00008 */  jr    $ra
-/* 0045C61C 27BD0028 */   addiu $sp, $sp, 0x28
-    .type varintree, @function
-    .size varintree, .-varintree
-    .end varintree
+)"");
+
+/*
+0044B4F4 clkilled
+0044BDFC cskilled
+0045C620 furthervarintree
+*/
+bool varintree(struct VariableInner var, struct Variable *tree) {
+    while (tree != NULL) {
+        switch (compareaddr(var, tree->inner)) {
+            case 0:
+                return true;
+            case 1:
+                tree = tree->left;
+                break;
+            case 2:
+                tree = tree->right;
+                break;
+            default:
+                caseerror(1, 1265, "uoptppss.p", 10);
+                break;
+        }
+    }
+    return false;
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel furthervarintree
     .ent furthervarintree

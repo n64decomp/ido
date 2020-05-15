@@ -594,7 +594,7 @@ D_10011888:
 0047E938 checkincre
 */
 bool addreq(struct VariableInner a, struct VariableInner b) {
-    return a.unk0 == b.unk0 && a.memtype == b.memtype && a.unk4bFFFFF800 == b.unk4bFFFFF800;
+    return a.addr == b.addr && a.memtype == b.memtype && a.unk4bFFFFF800 == b.unk4bFFFFF800;
 }
 
 /*
@@ -2244,7 +2244,7 @@ int realhash(int len) {
 0047E24C enter_lda
 */
 int isvarhash(struct VariableInner var) {
-    int hash = (((var.memtype << 6) + var.unk4bFFFFF800 + var.unk0) << 4) % 9113;
+    int hash = (((var.memtype << 6) + var.unk4bFFFFF800 + var.addr) << 4) % 9113;
     return hash < 0 ? hash + 9113 : hash;
 }
 
@@ -2912,7 +2912,7 @@ void vartreeinfo(struct Variable *var) {
         if (var->unk2 || var->unk1) {
             entry = searchvar(isvarhash(var->inner), &var->inner);
             entry->unk10 = 0;
-            entry->data.isvar_issvar.unk20 = (unsigned char)var->unkC;
+            entry->data.isvar_issvar.size = (unsigned char)var->size;
             entry->data.isvar_issvar.unk22 = var->unk2;
             entry->data.isvar_issvar.unk21 = var->unk1;
         }

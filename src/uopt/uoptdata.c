@@ -2347,7 +2347,7 @@ int sizethreshold;
 0045BF44 checkforvreg
 0045C150 prepass
 */
-void *ldatab[3113]; // TODO: fix type (0x10 bytes allocated)
+struct LdatabEntry *ldatab[3113];
 
 /*
 00410204 codemotion
