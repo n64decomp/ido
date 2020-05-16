@@ -48,7 +48,7 @@ struct VariableInner {
     int addr; // can be negative, stack offset?
     unsigned int unk4bFFFFF800: 21;
     unsigned int memtype: 3;
-    int pad4bFF: 8;
+    unsigned int level: 8; // see furthervarintree
 };
 struct Variable {
     Datatype dtype;
@@ -222,9 +222,8 @@ struct Graphnode {
 
 // Derived from printinterproc
 struct RegstakenParregs {
-    bool regstaken[36]; // might be smaller
-    int parregs[36]; // might be other size
-    // might be more fields here
+    bool regstaken[35];
+    int parregs[35];
 };
 
 struct Proc;
@@ -252,7 +251,7 @@ struct Proc {
     bool unkD; // set to lang == 5
     bool unkE; // bool or char?
     bool unkF; // bool or char?
-    unsigned char unk10; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass
+    unsigned char level; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass
     unsigned short num_bbs; // 0x12
     bool unk14; // bool or char?
     bool unk15;
