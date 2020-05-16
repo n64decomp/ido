@@ -36,7 +36,7 @@ struct optabrec {
 
 struct Label {
     unsigned int addr;
-    int len;
+    int len; // should probably be endaddr and not len
     bool unk8; // or unsigned char?
     bool branched_back;
     struct Label *left;
@@ -51,7 +51,7 @@ struct VariableInner {
     int pad4bFF: 8;
 };
 struct Variable {
-    unsigned char unk0;
+    Datatype dtype;
     bool unk1;
     bool unk2;
     struct VariableInner inner;
@@ -252,7 +252,7 @@ struct Proc {
     bool unkD; // set to lang == 5
     bool unkE; // bool or char?
     bool unkF; // bool or char?
-    unsigned char unk10; // initialized to 2 in prepass
+    unsigned char unk10; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass
     unsigned short num_bbs; // 0x12
     bool unk14; // bool or char?
     bool unk15;
