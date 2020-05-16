@@ -45,6 +45,15 @@
 #define COBOL_SOURCE            6
 #define RESERVED1_SOURCE        7
 
+/* Defines for the lang variable */
+#define LANG_PASCAL             0
+#define LANG_FORTRAN            1
+#define LANG_C                  2
+#define LANG_ADA                3
+#define LANG_PL1                4
+#define LANG_COBOL              5
+#define LANG_RESERVED1          6
+
 /* uopt options */
 #define UCO_ZMARK       401
 #define UCO_ZVREF       402

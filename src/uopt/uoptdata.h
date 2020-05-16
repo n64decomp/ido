@@ -246,9 +246,9 @@ struct Proc {
     bool unk8; // bool or char?
     bool unk9; // bool or char?
     bool unkA; // bool or char?
-    bool unkB; // set to lang == 5
+    bool unkB; // set to lang == LANG_COBOL
     bool o3opt; // written to allcallersave in procinit
-    bool unkD; // set to lang == 5
+    bool unkD; // set to lang == LANG_COBOL
     bool unkE; // bool or char?
     bool unkF; // bool or char?
     unsigned char level; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass

@@ -681,7 +681,7 @@ void optinit(void) {
     filteringout = false;
     suppressopt = false;
     o0o1specified = false;
-    lang = 2;
+    lang = LANG_C;
     doingcopy = false;
     doassoc = false;
     dowhyuncolor = false;

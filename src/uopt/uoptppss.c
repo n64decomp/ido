@@ -168,8 +168,8 @@ struct Proc *searchproc(int id, int level) {
         new_proc->labels = NULL;
         new_proc->callees = NULL;
         new_proc->unk8 = false;
-        new_proc->unkB = lang == 5;
-        new_proc->unkD = lang == 5;
+        new_proc->unkB = lang == LANG_COBOL;
+        new_proc->unkD = lang == LANG_COBOL;
         new_proc->unkE = 0;
         new_proc->unkF = 0;
         new_proc->unk14 = 0;
@@ -741,27 +741,27 @@ void oneinstruction(void) {
                 insertvar(var, 8000, Ldt, &curproc->vartree, false, true, false);
                 curproc->unkB = true;
             } else if (u.Ucode.I1 == 0 && !fortran_lang) {
-                switch (u.intarray[2] - 1) {
-                    case 0:
-                        lang = 0;
+                switch (u.intarray[2]) {
+                    case PASCAL_SOURCE:
+                        lang = LANG_PASCAL;
                         break;
-                    case 1:
-                        lang = 1;
+                    case FORTRAN_SOURCE:
+                        lang = LANG_FORTRAN;
                         break;
-                    case 2:
-                        lang = 2;
+                    case C_SOURCE:
+                        lang = LANG_C;
                         break;
-                    case 3:
-                        lang = 3;
+                    case ADA_SOURCE:
+                        lang = LANG_ADA;
                         break;
-                    case 4:
-                        lang = 4;
+                    case PL1_SOURCE:
+                        lang = LANG_PL1;
                         break;
-                    case 5:
-                        lang = 5;
+                    case COBOL_SOURCE:
+                        lang = LANG_COBOL;
                         break;
-                    case 6:
-                        lang = 6;
+                    case RESERVED1_SOURCE:
+                        lang = LANG_RESERVED1;
                         break;
                     default:
                         caseerror(1, 659, "uoptppss.p", 10);
@@ -774,7 +774,7 @@ void oneinstruction(void) {
             var.memtype = Smt;
             var.unk4bFFFFF800 = u.Ucode.I1;
             var.addr = 0;
-            if (lang == 1 || (lang == 0 && nopalias)) {
+            if (lang == LANG_FORTRAN || (lang == LANG_PASCAL && nopalias)) {
                 if (!nof77alias) {
                     insertlda(var, u.intarray[2]);
                 }
@@ -857,7 +857,7 @@ void oneinstruction(void) {
             if (var.memtype == Rmt) {
                 var.unk4bFFFFF800 = 0;
             }
-            if (lang == 3 && u.intarray[2] == -1) {
+            if (lang == LANG_ADA && u.intarray[2] == -1) {
                 if (var.memtype == Mmt) {
                     u.intarray[2] = -4 - u.intarray[3];
                     var.addr = u.intarray[3];
@@ -874,7 +874,7 @@ void oneinstruction(void) {
             if (!proc->unk8 || proc == curproc) {
                 proc->o3opt = false;
             }
-            if ((u.intarray[3] & NOSIDEEFFECT_ATTR) && (lang == 1 || lang == 2 || lang == 4 || lang == 5)) {
+            if ((u.intarray[3] & NOSIDEEFFECT_ATTR) && (lang == LANG_FORTRAN || lang == LANG_C || lang == LANG_PL1 || lang == LANG_COBOL)) {
                 proc->unkE = true;
             }
             if (u.intarray[3] & GOTO_ATTR) {
@@ -891,7 +891,7 @@ void oneinstruction(void) {
 
         case Ucia:
             curproc->num_bbs++;
-            if (lang == 3 && o3opt && (u.Ucode.Lexlev & 1)) {
+            if (lang == LANG_ADA && o3opt && (u.Ucode.Lexlev & 1)) {
                 o3opt = false;
                 change_to_o2(prochead);
                 if (warn_flag != 1) {
@@ -923,7 +923,7 @@ void oneinstruction(void) {
                 proc = searchproc(u.Ucode.Uopcde.uiequ1.uop2.uinit.initval.swpart.Ival, 2);
                 proc->unkB = true;
                 proc->unkD = true;
-                if (lang == 1) {
+                if (lang == LANG_FORTRAN) {
                     del_fsymtab(u.Ucode.Uopcde.uiequ1.uop2.uinit.initval.swpart.Ival);
                 }
             }
@@ -951,16 +951,16 @@ void oneinstruction(void) {
                 } else {
                     lab_just_defined = u.Ucode.I1;
                 }
-                if ((lang == 3 || lang == 2) && (u.Ucode.Lexlev & EXCEPTION_ATTR)) {
+                if ((lang == LANG_ADA || lang == LANG_C) && (u.Ucode.Lexlev & EXCEPTION_ATTR)) {
                     in_exception_block++;
                 }
-                if ((lang == 3 || lang == 2) && (u.Ucode.Lexlev & EXCEPTION_END_ATTR)) {
+                if ((lang == LANG_ADA || lang == LANG_C) && (u.Ucode.Lexlev & EXCEPTION_END_ATTR)) {
                     in_exception_block--;
                 }
-                if (lang == 2 && (u.Ucode.Lexlev & 0x80)) {
+                if (lang == LANG_C && (u.Ucode.Lexlev & 0x80)) {
                     in_exception_frame++;
                 }
-                if (lang == 2 && (u.Ucode.Lexlev & 0x100)) {
+                if (lang == LANG_C && (u.Ucode.Lexlev & 0x100)) {
                     in_exception_frame--;
                 }
             } else if (u.Ucode.Opc == Uldef) {
@@ -1042,7 +1042,7 @@ void oneprocprepass(void) {
         someusefp = IS_FRAMEPTR_ATTR(u.Ucode.Uopcde.uent.Extrnal);
     }
     in_exception_block = 0;
-    if ((lang == 3 || lang == 4 || lang == 5) && !IS_EXTERNAL_ATTR(u.Ucode.Uopcde.uent.Extrnal)) {
+    if ((lang == LANG_ADA || lang == LANG_PL1 || lang == LANG_COBOL) && !IS_EXTERNAL_ATTR(u.Ucode.Uopcde.uent.Extrnal)) {
         var.memtype = Mmt;
         var.unk4bFFFFF800 = u.Ucode.I1;
         var.addr = -4;
@@ -1238,7 +1238,7 @@ static void func_0045BCA8(struct Proc *proc, int *regs_counter) { // originally 
             }
         }
 
-        if (lang == 0) {
+        if (lang == LANG_PASCAL) {
             stop = proc->unkF;
             callee = proc->callees;
             while (!stop && callee != NULL) {
@@ -1262,7 +1262,7 @@ void processcallgraph(void) {
     bool merge_callees_result;
     int regs_counter;
 
-    if (lang == 3) {
+    if (lang == LANG_ADA) {
         func_0045BB1C(prochead);
     }
     do {
