@@ -906,7 +906,7 @@ void oneinstruction(void) {
             if (!proc->unk8 || proc == curproc) {
                 proc->o3opt = false;
             }
-            if ((u.intarray[3] & NOSIDEEFFECT_ATTR) && (lang == 1 || lang == 2 || lang == lang == 4 || lang == 5)) {
+            if ((u.intarray[3] & NOSIDEEFFECT_ATTR) && (lang == 1 || lang == 2 || lang == 4 || lang == 5)) {
                 proc->unkE = true;
             }
             if (u.intarray[3] & GOTO_ATTR) {
