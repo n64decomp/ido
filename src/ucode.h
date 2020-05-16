@@ -54,7 +54,7 @@
 #define NO_INLINE_ATTR     32   /* disable inlining */
 #define VARSIZE_LOCAL_ATTR 64   /* some local var with relocatable sizes */
 #define VARARG_SUB_ATTR   128   /* the function is a variable argument rtn */
-#define IS_VARARG_SUB_ATTR(x) (bitand(x, VARARG_SUB_ATTR) <> 0)
+#define IS_VARARG_SUB_ATTR(x) (((x) & VARARG_SUB_ATTR) != 0)
 #define THUNK_ENT_ATTR    256   /* A thunk function */
 #define RA_OFFSET_ATTR    512   /* offset to save/restore return address */
 
@@ -110,46 +110,46 @@
                                         /* 2;                                */
 
 /* macros to test and set attributes */
-#define IS_INLINE_ATTR(x) (x & INLINE_ATTR)
-#define SET_INLINE_ATTR(x) x = (x | INLINE_ATTR)
-#define IS_VOLATILE_ATTR(x) (x & VOLATILE_ATTR)
-#define SET_VOLATILE_ATTR(x) x = (x | VOLATILE_ATTR)
-#define IS_FRAMEPTR_ATTR(x) (x & FRAMEPTR_ATTR)
-#define SET_FRAMEPTR_ATTR(x) x = (x | FRAMEPTR_ATTR)
-#define IS_EXTERNAL_ATTR(x) (x & EXTERNAL_ATTR)
-#define IS_OVERFLOW_ATTR(x) (x & OVERFLOW_ATTR)
-#define SET_OVERFLOW_ATTR(x) x = (x | OVERFLOW_ATTR)
-#define IS_PRESERVE_STACK_ATTR(x) (x & PRESERVE_STACK_ATTR)
-#define SET_PRESERVE_STACK_ATTR(x) x = (x | PRESERVE_STACK_ATTR)
-#define IS_EXCEPTION_ATTR(x) (x & EXCEPTION_ATTR)
-#define SET_EXCEPTION_ATTR(x) x = (x | EXCEPTION_ATTR)
-#define IS_EXCEPTION_END_ATTR(x) (x & EXCEPTION_END_ATTR)
-#define SET_EXCEPTION_END_ATTR(x) x = (x | EXCEPTION_END_ATTR)
-#define IS_EXTERN_LAB_ATTR(x) (x & EXTERN_LAB_ATTR)
-#define SET_EXTERN_LAB_ATTR(x) x = (x | EXTERN_LAB_ATTR)
-#define IS_STACK_OVERFLOW_ATTR(x) (x & STACK_OVERFLOW_ATTR)
-#define SET_STACK_OVERFLOW_ATTR(x)  x = (x |  STACK_OVERFLOW_ATTR)
-#define        IS_LOAD_STACKLIMIT_ON_ENTRY_ATTR(x) (x & LOAD_STACKLIMIT_ON_ENTRY_ATTR)
-#define SET_LOAD_STACKLIMIT_ON_ENTRY_ATTR(x) x = (x | LOAD_STACKLIMIT_ON_ENTRY_ATTR)
-#define SET_NO_INLINE_ATTR(x) x = (x | NO_INLINE_ATTR)
-#define IS_NO_INLINE_ATTR(x) (x & NO_INLINE_ATTR)
-#define IS_REALLOC_ARG_ATTR(x) (x & REALLOC_ARG_ATTR)
-#define SET_REALLOC_ARG_ATTR(x) x = (x | REALLOC_ARG_ATTR)
+#define IS_INLINE_ATTR(x) (((x) & INLINE_ATTR) != 0)
+#define SET_INLINE_ATTR(x) x = ((x) | INLINE_ATTR)
+#define IS_VOLATILE_ATTR(x) (((x) & VOLATILE_ATTR) != 0)
+#define SET_VOLATILE_ATTR(x) x = ((x) | VOLATILE_ATTR)
+#define IS_FRAMEPTR_ATTR(x) (((x) & FRAMEPTR_ATTR) != 0)
+#define SET_FRAMEPTR_ATTR(x) x = ((x) | FRAMEPTR_ATTR)
+#define IS_EXTERNAL_ATTR(x) (((x) & EXTERNAL_ATTR) != 0)
+#define IS_OVERFLOW_ATTR(x) (((x) & OVERFLOW_ATTR) != 0)
+#define SET_OVERFLOW_ATTR(x) x = ((x) | OVERFLOW_ATTR)
+#define IS_PRESERVE_STACK_ATTR(x) (((x) & PRESERVE_STACK_ATTR) != 0)
+#define SET_PRESERVE_STACK_ATTR(x) x = ((x) | PRESERVE_STACK_ATTR)
+#define IS_EXCEPTION_ATTR(x) (((x) & EXCEPTION_ATTR) != 0)
+#define SET_EXCEPTION_ATTR(x) x = ((x) | EXCEPTION_ATTR)
+#define IS_EXCEPTION_END_ATTR(x) (((x) & EXCEPTION_END_ATTR) != 0)
+#define SET_EXCEPTION_END_ATTR(x) x = ((x) | EXCEPTION_END_ATTR)
+#define IS_EXTERN_LAB_ATTR(x) (((x) & EXTERN_LAB_ATTR) != 0)
+#define SET_EXTERN_LAB_ATTR(x) x = ((x) | EXTERN_LAB_ATTR)
+#define IS_STACK_OVERFLOW_ATTR(x) (((x) & STACK_OVERFLOW_ATTR) != 0)
+#define SET_STACK_OVERFLOW_ATTR(x)  x = ((x) |  STACK_OVERFLOW_ATTR)
+#define IS_LOAD_STACKLIMIT_ON_ENTRY_ATTR(x) (((x) & LOAD_STACKLIMIT_ON_ENTRY_ATTR) != 0)
+#define SET_LOAD_STACKLIMIT_ON_ENTRY_ATTR(x) x = ((x) | LOAD_STACKLIMIT_ON_ENTRY_ATTR)
+#define SET_NO_INLINE_ATTR(x) x = ((x) | NO_INLINE_ATTR)
+#define IS_NO_INLINE_ATTR(x) (((x) & NO_INLINE_ATTR) != 0)
+#define IS_REALLOC_ARG_ATTR(x) (((x) & REALLOC_ARG_ATTR) != 0)
+#define SET_REALLOC_ARG_ATTR(x) x = ((x) | REALLOC_ARG_ATTR)
 
-#define SET_DATA_AREA(x,v) x = ((x & ~DATA_AREA_MASK)|(v << DATA_AREA_BIT_OFS))
-#define GET_DATA_AREA(x) ((x & DATA_AREA_MASK) >> DATA_AREA_BIT_OFS)
-#define IS_RETURN_ATTR(x) (x & RETURN_ATTR)
-#define SET_RETURN_ATTR(x) x = (x | RETURN_ATTR)
-#define IS_NOSIDEEFFECT_ATTR(x) (x & NOSIDEEFFECT_ATTR)
-#define SET_NOSIDEEFFECT_ATTR(x) x = (x | NOSIDEEFFECT_ATTR)
-#define IS_GOTO_ATTR(x) (x & GOTO_ATTR)
-#define SET_GOTO_ATTR(x) x = (x | GOTO_ATTR)
-#define IS_COMPOSITE_CALL_ATTR(x) (x & COMPOSITE_CALL_ATTR)
-#define SET_COMPOSITE_CALL_ATTR(x) x = (x | COMPOSITE_CALL_ATTR)
-#define SET_STDARGS_NUM(x,v) x = ((x & ~STDARGS_NUM_MASK)|(v << STDARGS_NUM_BIT_OFS))
-#define GET_STDARGS_NUM(x) ((x & STDARGS_NUM_MASK) >> STDARGS_NUM_BIT_OFS)
-#define IS_TEMP_REGISTERS_INTACT_ATTR(x) (x & TEMP_REGISTERS_INTACT_ATTR)
-#define SET_TEMP_REGISTERS_INTACT_ATTR(x)  x = (x | TEMP_REGISTERS_INTACT_ATTR)
+#define SET_DATA_AREA(x,v) x = (((x) & ~DATA_AREA_MASK)|((v) << DATA_AREA_BIT_OFS))
+#define GET_DATA_AREA(x) (((x) & DATA_AREA_MASK) >> DATA_AREA_BIT_OFS)
+#define IS_RETURN_ATTR(x) (((x) & RETURN_ATTR) != 0)
+#define SET_RETURN_ATTR(x) x = ((x) | RETURN_ATTR)
+#define IS_NOSIDEEFFECT_ATTR(x) (((x) & NOSIDEEFFECT_ATTR) != 0)
+#define SET_NOSIDEEFFECT_ATTR(x) x = ((x) | NOSIDEEFFECT_ATTR)
+#define IS_GOTO_ATTR(x) (((x) & GOTO_ATTR) != 0)
+#define SET_GOTO_ATTR(x) x = ((x) | GOTO_ATTR)
+#define IS_COMPOSITE_CALL_ATTR(x) (((x) & COMPOSITE_CALL_ATTR) != 0)
+#define SET_COMPOSITE_CALL_ATTR(x) x = ((x) | COMPOSITE_CALL_ATTR)
+#define SET_STDARGS_NUM(x,v) x = (((x) & ~STDARGS_NUM_MASK)|((v) << STDARGS_NUM_BIT_OFS))
+#define GET_STDARGS_NUM(x) (((x) & STDARGS_NUM_MASK) >> STDARGS_NUM_BIT_OFS)
+#define IS_TEMP_REGISTERS_INTACT_ATTR(x) (((x) & TEMP_REGISTERS_INTACT_ATTR) != 0)
+#define SET_TEMP_REGISTERS_INTACT_ATTR(x)  x = ((x) | TEMP_REGISTERS_INTACT_ATTR)
 
 
   enum
@@ -271,7 +271,8 @@ struct Bcrec   {
               enum Datatype Dtype2:8; unsigned :24;
             }secondty;
             struct {
-               unsigned int Pop :8, Push :8, Extrnal :32;
+               unsigned int Pop :8, Push :8;
+               unsigned int Extrnal;
             }uent;
             struct {
               int Length;
