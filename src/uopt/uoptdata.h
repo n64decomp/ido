@@ -257,7 +257,7 @@ struct Proc {
     bool unk15;
     struct ProcList *callees; // linked list of Procs (see oneprocprepass, insertcallee)
     struct IjpLabel *ijp_labels; // 0x1C, sorted tree
-    int bvsize; // 0x20
+    unsigned int bvsize; // 0x20
     struct RegstakenParregs *regstaken_parregs; // 0x24
     struct Label *labels; // sent to searchlab
     struct Proc *left; // binary search tree left (root is prochead)
@@ -296,6 +296,16 @@ struct Temploc {
 struct BittabItem {
     void *unk0; // a pointer returned by appendichain
     int unk4;
+};
+
+struct PdefEntry {
+    Uopcode opc;
+    Datatype dtype;
+    bool unk2; // lexlev & 2
+    bool unk3;
+    bool unk4; // lexlev & 1
+    int unk8; // from u.intarray[3]
+    int unkC; // from u.intarray[2]
 };
 
 enum TableEntryType {
@@ -462,7 +472,7 @@ extern struct BitVector workbvect;
 
 extern struct BittabItem *bittab; // dynamically allocated array
 extern int bittabsize;
-extern void *pdeftab; // TODO: fix type
+extern struct PdefEntry *pdeftab; // dynamically allocated array
 extern int pdeftabsize;
 extern int highestmdef;
 extern int pdefmax;
@@ -495,7 +505,7 @@ extern float movcostused;
 extern bool passedbyfp;
 extern int offsetpassedbyint;
 extern int tempcount;
-extern void *aentptr; // TODO: fix type (some struct ptr)
+extern struct Var *aentptr;
 extern void *curmst; // TODO: fix type (some struct ptr)
 extern int parnumber; // unused
 extern int numintval;

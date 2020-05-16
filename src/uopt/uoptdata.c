@@ -1191,7 +1191,7 @@ int bittabsize;
 004761D0 tail_recursion
 0047DBB4 getoption
 */
-void *pdeftab; // TODO: fix type
+struct PdefEntry *pdeftab;
 
 /*
 00439188 procinit
@@ -1503,7 +1503,7 @@ int tempcount;
 0044B4F4 clkilled
 0044BDFC cskilled
 */
-void *aentptr; // TODO: fix type (some struct ptr)
+struct Var *aentptr;
 
 /*
 0042269C gen_outparcode

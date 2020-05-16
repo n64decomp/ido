@@ -3,6 +3,7 @@
 #include "libp/libp.h"
 #include "libxmalloc/xmalloc.h"
 #include "libu/libu.h"
+#include "uoptions.h"
 #include "uoptdata.h"
 #include "uoptppss.h"
 #include "uoptutil.h"
@@ -1059,6 +1060,7 @@ void oneprocprepass(void) {
     for (i = 0; i < len; i++) {
         entnam0[i] = ustrptr[i];
     }
+    entnam0len = len;
     while (entnam0[len - 1] == ' ') {
         entnam0len = --len;
     }

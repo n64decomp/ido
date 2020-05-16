@@ -2,6 +2,13 @@
 #define COMMON_H
 
 #ifdef __sgi
+#define TRAP_IF(cond)
+#else
+#include <assert.h>
+#define TRAP_IF(cond) assert(!(cond))
+#endif
+
+#ifdef __sgi
 typedef unsigned char bool;
 #define true 1
 #define false 0
