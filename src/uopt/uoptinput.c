@@ -555,7 +555,7 @@ void getop(void) {
     enum Uopcode op;
     int temp;
 restart:
-    readuinstr(&u.Ucode, ustrptr);
+    readuinstr(&u, ustrptr);
     op = u.Ucode.Opc;
     if (op == Ubsub) {
         u.Ucode.Opc = Usub;

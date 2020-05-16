@@ -81,7 +81,7 @@ void *f77_parm_mtag_head;
 00458998 func_00458998
 00458B88 assign_mtag
 */
-struct Bcrec uu;
+union Bcode uu;
 
 /*
 00456A2C oneproc
@@ -100,28 +100,28 @@ void init_mtagtab(void) {
 
     f77_parm_mtag_head = NULL;
 
-    uu.Opc = Umtag;
+    uu.Ucode.Opc = Umtag;
     tagno = curproc->unk38 + 1;
-    uu.I1 = tagno;
-    uu.Lexlev = 0;
+    uu.Ucode.I1 = tagno;
+    uu.Ucode.Lexlev = 0;
     mtagno_anything = tagno;
     uwrite(&uu);
 
-    uu.Lexlev = 1;
+    uu.Ucode.Lexlev = 1;
     tagno = curproc->unk38 + 2;
-    uu.I1 = tagno;
+    uu.Ucode.I1 = tagno;
     mtagno_heap = tagno;
     uwrite(&uu);
 
-    uu.Lexlev = 2;
+    uu.Ucode.Lexlev = 2;
     tagno = curproc->unk38 + 3;
-    uu.I1 = tagno;
+    uu.Ucode.I1 = tagno;
     mtagno_readonly = tagno;
     uwrite(&uu);
 
-    uu.Lexlev = 3;
+    uu.Ucode.Lexlev = 3;
     tagno = curproc->unk38 + 4;
-    uu.I1 = tagno;
+    uu.Ucode.I1 = tagno;
     mtagno_non_local = tagno;
     uwrite(&uu);
 

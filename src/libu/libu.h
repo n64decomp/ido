@@ -10,12 +10,12 @@ long getclock(void);
 
 // bread.c
 void initur(const char *path);
-void readuinstr(struct Bcrec *uinstr, char *ustr);
+void readuinstr(union Bcode *bcode, char *ustr);
 
 // bwri.c
 extern struct utabrec utab[0x9C];
 void inituwrite(const char *path);
-void uwrite(struct Bcrec *uinstr);
+void uwrite(union Bcode *bcode);
 
 // ucio.c
 void uputinit(const char *path);

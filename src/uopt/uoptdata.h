@@ -245,8 +245,8 @@ struct Proc {
     int id;
     struct Variable *vartree;
     bool unk8; // bool or char?
-    unsigned char unk9; // bool or char?
-    unsigned char unkA; // bool or char?
+    bool unk9; // bool or char?
+    bool unkA; // bool or char?
     bool unkB; // set to lang == 5
     bool o3opt; // written to allcallersave in procinit
     bool unkD; // set to lang == 5

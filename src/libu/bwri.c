@@ -217,8 +217,8 @@ glabel fnamelen
 00486AF4 ucoid
 00486C78 ucofname
 */
-void uwrite(struct Bcrec *uinstr) {
-    union Bcode *bcode = (union Bcode *)uinstr;
+void uwrite(union Bcode *bcode) {
+    struct Bcrec *uinstr = &bcode->Ucode;
     int i;
     int strlength;
     char *str;

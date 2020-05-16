@@ -213,7 +213,7 @@ void oneproc(void) {
                 if (!optab[u.Ucode.Opc].unk1) {
                     copyline();
                 } else if (u.Ucode.Opc == Ulab && (u.Ucode.Lexlev & 4)) {
-                    uwrite(&u.Ucode);
+                    uwrite(&u);
                 }
             } while (u.Ucode.Opc != Uend);
         } else {
@@ -478,14 +478,14 @@ int main1(int argc, char *argv[]) {
             warned = true;
         }
         do {
-            readuinstr(&u.Ucode, ustrptr);
+            readuinstr(&u, ustrptr);
             if (Ueof == u.Ucode.Opc) {
                 write_string(err.c_file, "uopt: Error: unexpected EOF in input ucode; giving up.", 0x36, 0x36);
                 writeln(err.c_file);
                 fflush(err.c_file);
                 abort();
             }
-            uwrite(&u.Ucode);
+            uwrite(&u);
         } while (Ustp != u.Ucode.Opc);
     } else {
         getop();

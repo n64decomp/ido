@@ -122,8 +122,8 @@ static void func_00487994(char *str, int *len) {
 0045C150 prepass
 0047FF7C skipproc
 */
-void readuinstr(struct Bcrec *uinstr, char *ustr) {
-    union Bcode *bcode = (union Bcode *)uinstr;
+void readuinstr(union Bcode *bcode, char *ustr) {
+    struct Bcrec *uinstr = &bcode->Ucode;
     struct utabrec urec;
     int instlength;
     int i;
