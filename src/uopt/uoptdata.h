@@ -67,11 +67,13 @@ struct LdatabEntry {
     struct LdatabEntry *next;
 };
 
+struct Expression;
+
 struct UstackEntry {
-    void *unk0;
+    struct Expression *expr;
     int unk4;
-    int unk8;
-    struct UstackEntry *next;
+    struct UstackEntry *up;
+    struct UstackEntry *down;
 };
 
 struct ParstackEntry {
@@ -86,7 +88,6 @@ struct RealstoreData {
 };
 
 struct Statement;
-struct Expression;
 
 struct VarAccessList {
     struct VarAccessList *prev; // towards head

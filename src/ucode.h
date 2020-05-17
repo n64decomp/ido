@@ -260,10 +260,10 @@ typedef unsigned char Uopcode;
 #endif
 
 struct Bcrec   {
-          unsigned int  Opc :8;
-          unsigned int  Mtype :3;
-          unsigned int  Dtype :5;
-          unsigned int  Lexlev :16;
+          Uopcode Opc;
+          unsigned char  Mtype :3;
+          unsigned char  Dtype :5;
+          unsigned short  Lexlev;
           int  I1;
           /* ------- 2 words ------- */
           union {

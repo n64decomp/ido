@@ -670,8 +670,8 @@ void optinit(void) {
     perm_heap = NULL;
     ustrptr = alloc_new(0x400, &perm_heap);
     ustackbot = (struct UstackEntry *)alloc_new(sizeof(struct UstackEntry), &perm_heap);
-    ustackbot->unk8 = 0;
-    ustackbot->next = NULL;
+    ustackbot->up = NULL;
+    ustackbot->down = NULL;
     ustack = ustackbot;
     parstackbot = (struct ParstackEntry *)alloc_new(sizeof(struct ParstackEntry), &perm_heap);
     parstackbot->unk4 = 0;
@@ -822,7 +822,7 @@ void procinit(void) {
     graphtail = NULL;
     curgraphnode = NULL;
     ustack = ustackbot;
-    ustackbot->unk8 = 0;
+    ustackbot->up = NULL;
     parstack = parstackbot;
     parstackbot->unk4 = 0;
     curmst = NULL;

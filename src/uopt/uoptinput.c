@@ -16,23 +16,6 @@ __asm__(R""(
 .endm
 
 .rdata
-/*
-RO_1000C246:
-    # 0043ABD0 incroccurrence
-    .asciz "uoptinput.p"
-
-    .balign 4
-jtbl_1000C254:
-    # 0043ABD0 incroccurrence
-    .gpword .L0043AD64
-    .gpword .L0043AD64
-    .gpword .L0043AD64
-    .gpword .L0043AD7C
-    .gpword .L0043AD64
-    .gpword .L0043AD64
-    .gpword .L0043ADCC
-    .gpword .L0043AD64
-*/
 RO_1000C274:
     # 0043B504 func_0043B504
     .asciz "uoptinput.p"
@@ -433,10 +416,6 @@ D_10010830:
 D_10010844:
     # 00439C40 getop
     .byte 0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x80,0x00,0x00
-
-D_10010868:
-    # 0043ABD0 incroccurrence
-    .byte 0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x10
 
 D_10010874:
     # 0043B504 func_0043B504
@@ -1045,151 +1024,71 @@ void incroccurrence(struct Expression **entry) {
     }
 }
 
+/*
+0043AEC4 bigtree
+0043CFCC readnxtinst
+*/
+bool bigtree(struct Expression *expr, int levels) {
+    if (levels == 0) {
+        return true;
+    }
+    if (expr->type != isop) {
+        return false;
+    }
+    return bigtree(expr->data.isop.op1, levels - 1);
+}
+
+/*
+0043AF30 treekilled
+0043CE64 func_0043CE64
+0043CFCC readnxtinst
+0046D158 unroll_check_istr_propcopy
+0046D2C0 unroll_check_irst_propcopy
+*/
+bool treekilled(struct Expression *expr) {
+    bool result;
+
+    switch (expr->type) {
+        case isvar:
+        case issvar:
+            return expr->unk2;
+
+        case islda:
+        case isconst:
+        case isilda:
+        case isrconst:
+            return false;
+
+        default:
+            result = treekilled(expr->data.isop.op1);
+            if (expr->data.isop.opc == Uildv || expr->data.isop.opc == Uilod) {
+                if (!result) {
+                    result = expr->unk2;
+                }
+            } else if (optab[expr->data.isop.opc].is_binary_op) {
+                if (!result) {
+                    result = treekilled(expr->data.isop.op2);
+                }
+                switch (expr->data.isop.opc) {
+                    case Uiequ:
+                    case Uigeq:
+                    case Uigrt:
+                    case Uileq:
+                    case Uiles:
+                    case Uineq:
+                        if (!result) {
+                            result = expr->unk2;
+                        }
+                        break;
+                }
+            }
+            return result;
+    }
+}
+
 __asm__(R""(
 .set noat
 .set noreorder
-
-glabel bigtree
-    .ent bigtree
-    # 0043AEC4 bigtree
-    # 0043CFCC readnxtinst
-/* 0043AEC4 3C1C0FBE */  .cpload $t9
-/* 0043AEC8 279CF3CC */  
-/* 0043AECC 0399E021 */  
-/* 0043AED0 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0043AED4 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0043AED8 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0043AEDC 00803825 */  move  $a3, $a0
-/* 0043AEE0 14A00003 */  bnez  $a1, .L0043AEF0
-/* 0043AEE4 00A03025 */   move  $a2, $a1
-/* 0043AEE8 1000000D */  b     .L0043AF20
-/* 0043AEEC 24020001 */   li    $v0, 1
-.L0043AEF0:
-/* 0043AEF0 90EE0000 */  lbu   $t6, ($a3)
-/* 0043AEF4 24010004 */  li    $at, 4
-/* 0043AEF8 11C10003 */  beq   $t6, $at, .L0043AF08
-/* 0043AEFC 00000000 */   nop   
-/* 0043AF00 10000007 */  b     .L0043AF20
-/* 0043AF04 00001025 */   move  $v0, $zero
-.L0043AF08:
-/* 0043AF08 8F998324 */  lw    $t9, %call16(bigtree)($gp)
-/* 0043AF0C 8CE40024 */  lw    $a0, 0x24($a3)
-/* 0043AF10 24C5FFFF */  addiu $a1, $a2, -1
-/* 0043AF14 0320F809 */  jalr  $t9
-/* 0043AF18 00000000 */   nop   
-/* 0043AF1C 8FBC0018 */  lw    $gp, 0x18($sp)
-.L0043AF20:
-/* 0043AF20 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0043AF24 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0043AF28 03E00008 */  jr    $ra
-/* 0043AF2C 00000000 */   nop   
-    .type bigtree, @function
-    .size bigtree, .-bigtree
-    .end bigtree
-
-glabel treekilled
-    .ent treekilled
-    # 0043AF30 treekilled
-    # 0043CE64 func_0043CE64
-    # 0043CFCC readnxtinst
-    # 0046D158 unroll_check_istr_propcopy
-    # 0046D2C0 unroll_check_irst_propcopy
-/* 0043AF30 3C1C0FBE */  .cpload $t9
-/* 0043AF34 279CF360 */  
-/* 0043AF38 0399E021 */  
-/* 0043AF3C 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0043AF40 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0043AF44 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0043AF48 90820000 */  lbu   $v0, ($a0)
-/* 0043AF4C 3C011200 */  lui   $at, 0x1200
-/* 0043AF50 00803025 */  move  $a2, $a0
-/* 0043AF54 2C4E0020 */  sltiu $t6, $v0, 0x20
-/* 0043AF58 000E7823 */  negu  $t7, $t6
-/* 0043AF5C 01E1C024 */  and   $t8, $t7, $at
-/* 0043AF60 0058C804 */  sllv  $t9, $t8, $v0
-/* 0043AF64 07210003 */  bgez  $t9, .L0043AF74
-/* 0043AF68 2C480020 */   sltiu $t0, $v0, 0x20
-/* 0043AF6C 10000040 */  b     .L0043B070
-/* 0043AF70 90830002 */   lbu   $v1, 2($a0)
-.L0043AF74:
-/* 0043AF74 00084823 */  negu  $t1, $t0
-/* 0043AF78 3C016480 */  lui   $at, 0x6480
-/* 0043AF7C 01215024 */  and   $t2, $t1, $at
-/* 0043AF80 004A5804 */  sllv  $t3, $t2, $v0
-/* 0043AF84 05610003 */  bgez  $t3, .L0043AF94
-/* 0043AF88 00000000 */   nop   
-/* 0043AF8C 10000038 */  b     .L0043B070
-/* 0043AF90 00001825 */   move  $v1, $zero
-.L0043AF94:
-/* 0043AF94 8F998328 */  lw    $t9, %call16(treekilled)($gp)
-/* 0043AF98 8CC40024 */  lw    $a0, 0x24($a2)
-/* 0043AF9C AFA60020 */  sw    $a2, 0x20($sp)
-/* 0043AFA0 0320F809 */  jalr  $t9
-/* 0043AFA4 00000000 */   nop   
-/* 0043AFA8 8FA60020 */  lw    $a2, 0x20($sp)
-/* 0043AFAC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0043AFB0 304400FF */  andi  $a0, $v0, 0xff
-/* 0043AFB4 90C30020 */  lbu   $v1, 0x20($a2)
-/* 0043AFB8 2465FFE0 */  addiu $a1, $v1, -0x20
-/* 0043AFBC 2CAC0020 */  sltiu $t4, $a1, 0x20
-/* 0043AFC0 000C6823 */  negu  $t5, $t4
-/* 0043AFC4 31AE1200 */  andi  $t6, $t5, 0x1200
-/* 0043AFC8 00AE7804 */  sllv  $t7, $t6, $a1
-/* 0043AFCC 05E10007 */  bgez  $t7, .L0043AFEC
-/* 0043AFD0 00000000 */   nop   
-/* 0043AFD4 304300FF */  andi  $v1, $v0, 0xff
-/* 0043AFD8 14600002 */  bnez  $v1, .L0043AFE4
-/* 0043AFDC 00000000 */   nop   
-/* 0043AFE0 90C30002 */  lbu   $v1, 2($a2)
-.L0043AFE4:
-/* 0043AFE4 10000021 */  b     .L0043B06C
-/* 0043AFE8 306400FF */   andi  $a0, $v1, 0xff
-.L0043AFEC:
-/* 0043AFEC 8F998DBC */  lw     $t9, %got(optab)($gp)
-/* 0043AFF0 0003C080 */  sll   $t8, $v1, 2
-/* 0043AFF4 0303C023 */  subu  $t8, $t8, $v1
-/* 0043AFF8 03194021 */  addu  $t0, $t8, $t9
-/* 0043AFFC 91090002 */  lbu   $t1, 2($t0)
-/* 0043B000 304300FF */  andi  $v1, $v0, 0xff
-/* 0043B004 5120001A */  beql  $t1, $zero, .L0043B070
-/* 0043B008 308300FF */   andi  $v1, $a0, 0xff
-/* 0043B00C 5460000C */  bnezl $v1, .L0043B040
-/* 0043B010 2CAA0020 */   sltiu $t2, $a1, 0x20
-/* 0043B014 8F998328 */  lw    $t9, %call16(treekilled)($gp)
-/* 0043B018 8CC40028 */  lw    $a0, 0x28($a2)
-/* 0043B01C AFA60020 */  sw    $a2, 0x20($sp)
-/* 0043B020 0320F809 */  jalr  $t9
-/* 0043B024 00000000 */   nop   
-/* 0043B028 8FA60020 */  lw    $a2, 0x20($sp)
-/* 0043B02C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0043B030 00401825 */  move  $v1, $v0
-/* 0043B034 90C50020 */  lbu   $a1, 0x20($a2)
-/* 0043B038 24A5FFE0 */  addiu $a1, $a1, -0x20
-/* 0043B03C 2CAA0020 */  sltiu $t2, $a1, 0x20
-.L0043B040:
-/* 0043B040 3C010003 */  lui   $at, 3
-/* 0043B044 34218C80 */  ori   $at, $at, 0x8c80
-/* 0043B048 000A5823 */  negu  $t3, $t2
-/* 0043B04C 01616024 */  and   $t4, $t3, $at
-/* 0043B050 00AC6804 */  sllv  $t5, $t4, $a1
-/* 0043B054 05A10005 */  bgez  $t5, .L0043B06C
-/* 0043B058 306400FF */   andi  $a0, $v1, 0xff
-/* 0043B05C 14800002 */  bnez  $a0, .L0043B068
-/* 0043B060 00801825 */   move  $v1, $a0
-/* 0043B064 90C30002 */  lbu   $v1, 2($a2)
-.L0043B068:
-/* 0043B068 306400FF */  andi  $a0, $v1, 0xff
-.L0043B06C:
-/* 0043B06C 308300FF */  andi  $v1, $a0, 0xff
-.L0043B070:
-/* 0043B070 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0043B074 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0043B078 00601025 */  move  $v0, $v1
-/* 0043B07C 03E00008 */  jr    $ra
-/* 0043B080 00000000 */   nop   
-    .type treekilled, @function
-    .size treekilled, .-treekilled
-    .end treekilled
 
     .type func_0043B084, @function
 func_0043B084:
