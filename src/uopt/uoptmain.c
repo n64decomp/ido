@@ -33,7 +33,7 @@
 */
 static void func_00456310(bool *sp4F) { // originally embedded func
     enum Uopcode op;
-    struct Var *statpos;
+    struct Statement *statpos;
     struct GraphnodeList *graphnode_list;
 
     if (filteringout || *sp4F) {
@@ -64,7 +64,7 @@ static void func_00456310(bool *sp4F) { // originally embedded func
         }
     }
     if (op != Uend) {
-        if (!(op == Uaent || op == Ulab) || (op == Ulab && (stattail->unk0 == 0x26 || stattail->unk0 == 0x7f))) { // stattail->unk0 is Ufjp or Utjp?
+        if (!(op == Uaent || op == Ulab) || (op == Ulab && (stattail->opc == Ufjp || stattail->opc == Utjp))) {
             appendgraph();
             if (outofmem) {
                 return;
@@ -83,7 +83,7 @@ static void func_00456310(bool *sp4F) { // originally embedded func
             curgraphnode = graphtail;
             if (op == Ulab) {
                 graphtail->num = (unsigned short)curstaticno++;
-                extendstat(0x60); // Unop?
+                extendstat(Unop);
                 curgraphnode->stat_tail = stattail;
                 init_node_vectors(curgraphnode);
             }
@@ -232,7 +232,7 @@ void oneproc(void) {
                 }
                 curgraphnode = graphtail;
                 graphtail->num = 0;
-                extendstat(0x60);
+                extendstat(Unop);
                 curgraphnode->stat_tail = curgraphnode->stat_head;
                 init_node_vectors(curgraphnode);
                 curstaticno = 1;

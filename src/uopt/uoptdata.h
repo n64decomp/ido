@@ -85,14 +85,18 @@ struct RealstoreData {
     struct RealstoreData *next;
 };
 
-struct Var;
+struct Statement;
+struct Expression;
 
-struct VarList {
-    struct VarList *prev; // towards head
-    struct VarList *next; // towards tail
+struct VarAccessList {
+    struct VarAccessList *prev; // towards head
+    struct VarAccessList *next; // towards tail
     bool unk8; // or unsigned char?
-    unsigned char unk9; // some enum
-    struct Var *var; // 0xC
+    unsigned char type; // 1: store (Statement), 2: var (Expression)
+    union {
+        struct Statement *store; // 0xC
+        struct Expression *var; // 0xC
+    } data;
 };
 
 struct Graphnode;
@@ -123,10 +127,10 @@ struct Graphnode {
     int unk10;
     struct GraphnodeList *unk14; // head
     struct GraphnodeList *unk18; // tail
-    struct Var *stat_head; // 0x1C
-    struct Var *stat_tail; // 0x20
-    struct VarList *varlisthead; // 0x24
-    struct VarList *varlisttail; // 0x28
+    struct Statement *stat_head; // 0x1C
+    struct Statement *stat_tail; // 0x20
+    struct VarAccessList *varlisthead; // 0x24
+    struct VarAccessList *varlisttail; // 0x28
     int unk2C;
     int unk30;
     int regsused[2][2]; // 0x34, should be two 64-bit values, but then alignment fails
@@ -266,20 +270,35 @@ struct Proc {
     int unk38; // mtag uses this
 };
 
-// Not sure what this really is
-struct Var {
-    unsigned char unk0;
-    int unk4;
-    struct Var *next; // 0x8, towards tail
-    struct Var *prev; // 0xC, towards head
+struct Statement {
+    Uopcode opc;
+    bool unk1; // bool or unsigned char?
+    bool unk2; // bool or unsigned char?
+    bool unk3; // bool or unsigned char?
+    struct Expression *expr;
+    struct Statement *next; // 0x8, towards tail
+    struct Statement *prev; // 0xC, towards head
     struct Graphnode *graphnode; // 0x10
-    unsigned char dtype; // 0x14, this seems wrong, should be block index (see tail_recursion)
-    unsigned char unk15;
-    unsigned char unk16; // variable size?
-    struct VarList *varlist; // 0x18
-    int unk1C;
+    union {
+        struct {
+            Datatype dtype; // 0x14
+            unsigned char unk15;
+            unsigned char unk16; // variable size?
+            unsigned char unk17;
+            int unk18;
+            int unk1C;
+        } var;
+        struct {
+            int bb_index; // 0x14, see tail_recursion
+            struct VarAccessList *var_access_list; // 0x18
+            bool unk1C;
+            bool unk1D;
+            bool unk1E;
+            bool unk1F;
+        } bb;
+    } data;
     void *unk20;
-    int unk24;
+    int unk24; // some flags
     int unk28;
     int unk2C;
     int unk30;
@@ -308,7 +327,7 @@ struct PdefEntry {
     int unkC; // from u.intarray[2]
 };
 
-enum TableEntryType {
+enum ExpressionType {
     empty,
     islda,
     isconst,
@@ -325,23 +344,23 @@ __attribute__((packed));
 ;
 
 #ifdef __GNUC__
-typedef enum TableEntryType TableEntryType;
+typedef enum ExpressionType ExpressionType;
 #else
-typedef unsigned char TableEntryType;
+typedef unsigned char ExpressionType;
 #endif
 
-struct TableEntry {
-    TableEntryType type;
+struct Expression {
+    ExpressionType type;
     Datatype datatype;
-    unsigned short unk2;
+    bool unk2; // bool or unsigned char?
     unsigned short unk4;
     unsigned short unk6; // some counter, see exprdelete
     unsigned short int table_index; // 0x8
     int chain_index; // 0xC
     int unk10; // 32-bit integer used as bool?
     void *unk14;
-    int unk18;
-    struct TableEntry *next; // 0x1C
+    struct VarAccessList *var_access_list; // 0x18
+    struct Expression *next; // 0x1C
 
     union {
         struct {
@@ -362,21 +381,21 @@ struct TableEntry {
             unsigned char size;
             bool unk21;
             bool unk22;
-            struct TableEntry *unk24;
+            struct Expression *unk24;
             struct VariableInner var_data; // 0x28
-            struct TableEntry *unk30;
-            struct TableEntry *unk34;
-            struct Var* unk38; // a bit unsure about this type, see delentry
+            struct Expression *unk30;
+            struct Expression *unk34;
+            struct Statement* unk38; // a bit unsure about this type, see delentry
             int unk3C;
         } isvar_issvar;
         struct {
             Uopcode opc; // 0x20
-            struct TableEntry *op1; // 0x24
-            struct TableEntry *op2; // 0x28
+            struct Expression *op1; // 0x24
+            struct Expression *op2; // 0x28
             int unk2C; // calculated result?
             int unk30;
             int unk34;
-            Datatype cvtfrom; // if opc == Ucvt
+            Datatype cvtfrom; // if opc == Ucvt, seems to be a union here
         } isop;
         struct {
             int unk20;
@@ -384,7 +403,7 @@ struct TableEntry {
             int unk28;
             int unk2C;
             int unk30;
-            struct TableEntry *unk34;
+            struct Expression *unk34;
         } isilda;
     } data; // 0x20
 };
@@ -404,7 +423,7 @@ extern struct AllocBlock *perm_heap;
 extern struct AllocBlock *heapptr;
 extern struct optabrec optab[0x9C];
 extern bool endblock;
-extern struct TableEntry *table[9113]; // hash table of all values used in one proc
+extern struct Expression *table[9113]; // hash table of all values used in one proc
 extern struct UstackEntry *ustackbot;
 extern struct UstackEntry *ustack;
 extern struct ParstackEntry *parstackbot;
@@ -430,8 +449,8 @@ extern struct Graphnode *graphtail;
 extern struct Graphnode *curgraphnode;
 extern unsigned int curstaticno;
 extern int curloopno;
-extern struct Var *stathead;
-extern struct Var *stattail;
+extern struct Statement *stathead;
+extern struct Statement *stattail;
 extern int blklev[128];
 extern int staticlinkloc;
 extern void *nocopy; // TODO: fix type (0x40 bytes allocated)
@@ -505,7 +524,7 @@ extern float movcostused;
 extern bool passedbyfp;
 extern int offsetpassedbyint;
 extern int tempcount;
-extern struct Var *aentptr;
+extern struct Statement *aentptr;
 extern void *curmst; // TODO: fix type (some struct ptr)
 extern int parnumber; // unused
 extern int numintval;

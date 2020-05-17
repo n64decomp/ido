@@ -306,7 +306,7 @@ struct Label *searchlab(unsigned int addr, struct Label *tree) {
 00459828 insertvar
 */
 void update_veqv_in_table(struct Variable *var) {
-    struct TableEntry *entry;
+    struct Expression *entry;
     unsigned short hash;
     bool found;
 
@@ -1442,19 +1442,19 @@ bool varintree(struct VariableInner var, struct Variable *tree) {
 0044B4F4 clkilled
 0044BDFC cskilled
 */
-bool furthervarintree(struct TableEntry *table_entry, struct Proc *proc) {
+bool furthervarintree(struct Expression *expr, struct Proc *proc) {
     struct VariableInner var;
     struct ProcList *callee;
     bool result;
 
-    var = table_entry->data.isvar_issvar.var_data;
+    var = expr->data.isvar_issvar.var_data;
     callee = proc->callees;
     result = false;
 
     while (!result && callee != NULL) {
         if (indirprocs == callee->proc) {
             result = true;
-        } else if (table_entry->data.isvar_issvar.var_data.level < callee->proc->level) {
+        } else if (expr->data.isvar_issvar.var_data.level < callee->proc->level) {
             result = varintree(var, callee->proc->vartree);
         }
         callee = callee->next;

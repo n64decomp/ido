@@ -331,7 +331,7 @@ bool endblock;
 0047E24C enter_lda
 0047E3BC binopwithconst
 */
-struct TableEntry *table[9113];
+struct Expression *table[9113];
 
 /*
 0043771C optinit
@@ -716,7 +716,7 @@ int curloopno;
 004761D0 tail_recursion
 0047CDA4 extendstat
 */
-struct Var *stathead;
+struct Statement *stathead;
 
 /*
 00439188 procinit
@@ -735,7 +735,7 @@ struct Var *stathead;
 004761D0 tail_recursion
 0047CDA4 extendstat
 */
-struct Var *stattail;
+struct Statement *stattail;
 
 /*
 0043A0A8 func_0043A0A8
@@ -1503,7 +1503,7 @@ int tempcount;
 0044B4F4 clkilled
 0044BDFC cskilled
 */
-struct Var *aentptr;
+struct Statement *aentptr;
 
 /*
 0042269C gen_outparcode

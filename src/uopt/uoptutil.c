@@ -1322,14 +1322,14 @@ void dbgerror(int code) {
 0047E24C enter_lda
 0047E3BC binopwithconst
 */
-struct TableEntry *appendchain(unsigned short table_index) {
-    struct TableEntry *pos;
-    struct TableEntry *new_entry;
+struct Expression *appendchain(unsigned short table_index) {
+    struct Expression *pos;
+    struct Expression *new_entry;
     int chain_index;
 
     pos = table[table_index];
     if (pos == NULL) {
-        new_entry = (struct TableEntry *)alloc_new(sizeof(struct TableEntry), &perm_heap);
+        new_entry = (struct Expression *)alloc_new(sizeof(struct Expression), &perm_heap);
         pos = new_entry;
         table[table_index] = new_entry;
         chain_index = 0;
@@ -1337,7 +1337,7 @@ struct TableEntry *appendchain(unsigned short table_index) {
         while (pos->next != NULL) {
             pos = pos->next;
         }
-        new_entry = (struct TableEntry *)alloc_new(sizeof(struct TableEntry), &perm_heap);
+        new_entry = (struct Expression *)alloc_new(sizeof(struct Expression), &perm_heap);
         pos->next = new_entry;
         chain_index = pos->chain_index + 1;
     }
@@ -1857,7 +1857,7 @@ glabel fixcorr
 
 )"");
 
-void fixcorr(struct TableEntry *entry); // TODO: remove when above function has been decompiled
+void fixcorr(struct Expression *entry); // TODO: remove when above function has been decompiled
 
 /*
 00413000 exprdelete
@@ -1868,9 +1868,9 @@ void fixcorr(struct TableEntry *entry); // TODO: remove when above function has 
 0047C6E8 decreasecount
 0047D878 deccount
 */
-void delentry(struct TableEntry *entry) {
+void delentry(struct Expression *entry) {
     if (entry->type == isvar || entry->type == issvar) {
-        if (entry->data.isvar_issvar.unk38 != NULL && entry->data.isvar_issvar.unk38->unk0 != 0x60) {
+        if (entry->data.isvar_issvar.unk38 != NULL && entry->data.isvar_issvar.unk38->opc != Unop) {
             return;
         }
     }
@@ -2412,26 +2412,26 @@ glabel opvalhash
 00473F04 pmov_to_mov
 004761D0 tail_recursion
 */
-void extendstat(unsigned char unk0) {
-    struct Var *var;
+void extendstat(Uopcode opc) {
+    struct Statement *stat;
 
-    var = (struct Var *)alloc_new(sizeof(struct Var), &perm_heap);
-    if (var == 0) {
+    stat = (struct Statement *)alloc_new(sizeof(struct Statement), &perm_heap);
+    if (stat == NULL) {
         outofmem = true;
         return;
     }
-    var->next = NULL;
-    var->unk0 = unk0;
-    var->unk28 = 0;
-    var->graphnode = curgraphnode;
+    stat->next = NULL;
+    stat->opc = opc;
+    stat->unk28 = 0;
+    stat->graphnode = curgraphnode;
     if (stathead == NULL) {
-        stathead = var;
-        var->prev = NULL;
+        stathead = stat;
+        stat->prev = NULL;
     } else {
-        var->prev = stattail;
-        stattail->next = var;
+        stat->prev = stattail;
+        stattail->next = stat;
     }
-    stattail = var;
+    stattail = stat;
     if (curgraphnode != NULL && curgraphnode->stat_head == NULL) {
         curgraphnode->stat_head = stattail;
     }
@@ -2876,8 +2876,8 @@ bool mpyovfw(enum Datatype t, int a, int b) {
 00459564 update_veqv_in_table
 0047D768 vartreeinfo
 */
-struct TableEntry *searchvar(unsigned short table_index, struct VariableInner *var) {
-    struct TableEntry *entry = table[table_index];
+struct Expression *searchvar(unsigned short table_index, struct VariableInner *var) {
+    struct Expression *entry = table[table_index];
     bool found = false;
 
     while (!found && entry != NULL) {
@@ -2906,7 +2906,7 @@ struct TableEntry *searchvar(unsigned short table_index, struct VariableInner *v
 0047D838 entervregveqv
 */
 void vartreeinfo(struct Variable *var) {
-    struct TableEntry *entry;
+    struct Expression *entry;
 
     while (var != NULL) {
         if (var->unk2 || var->unk1) {
@@ -3581,7 +3581,7 @@ glabel cutbits64
 */
 void *enter_const(int num, Datatype datatype, int arg2) {
     unsigned short hash;
-    struct TableEntry *entry;
+    struct Expression *entry;
     bool found;
 
     hash = isconsthash(num);
@@ -3606,7 +3606,7 @@ void *enter_const(int num, Datatype datatype, int arg2) {
             entry->data.isconst_isrconst.number.intval = num;
         }
         entry->data.isconst_isrconst.size = sizeoftyp(datatype);
-        entry->unk18 = 0;
+        entry->var_access_list = NULL;
         entry->unk10 = arg2;
     }
 
@@ -4171,7 +4171,7 @@ glabel in_indmults
 0044F1B8 istrfold
 0047E938 checkincre
 */
-bool checkincre(struct TableEntry *entry, struct TableEntry *entry2, int *result) {
+bool checkincre(struct Expression *entry, struct Expression *entry2, int *result) {
     int result1;
     int result2;
 
@@ -4220,7 +4220,7 @@ bool checkincre(struct TableEntry *entry, struct TableEntry *entry2, int *result
 00455518 func_00455518
 0047EBB0 findincre
 */
-int findincre(struct TableEntry *entry) {
+int findincre(struct Expression *entry) {
     int result1;
     int result2;
 
