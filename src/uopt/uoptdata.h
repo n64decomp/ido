@@ -324,8 +324,8 @@ struct PdefEntry {
     bool unk2; // lexlev & 2
     bool unk3;
     bool unk4; // lexlev & 1
-    int unk8; // from u.intarray[3]
-    int unkC; // from u.intarray[2]
+    int offset; // from u.intarray[3]
+    int size; // from u.intarray[2]
 };
 
 enum ExpressionType {

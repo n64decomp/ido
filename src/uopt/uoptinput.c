@@ -759,8 +759,8 @@ void copyline(void) {
                         pdef_entry->opc = Updef;
                         pdef_entry->dtype = u.Ucode.Dtype;
                         pdef_entry->unk4 = (u.Ucode.Lexlev & 1) != 0;
-                        pdef_entry->unkC = u.intarray[2];
-                        pdef_entry->unk8 = u.intarray[3];
+                        pdef_entry->size = u.intarray[2];
+                        pdef_entry->offset = u.intarray[3];
                         pdef_entry->unk3 = !formal_parm_vreg(u.intarray[3]);
                         if (!allcallersave) {
                             if (u.Ucode.Dtype != Qdt && u.Ucode.Dtype != Rdt) {
