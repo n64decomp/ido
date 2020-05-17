@@ -2086,7 +2086,7 @@ void vartreeinfo(struct Variable *var) {
     while (var != NULL) {
         if (var->unk2 || var->unk1) {
             entry = searchvar(isvarhash(var->inner), &var->inner);
-            entry->unk10 = 0;
+            entry->graphnode = NULL;
             entry->data.isvar_issvar.size = (unsigned char)var->size;
             entry->data.isvar_issvar.unk22 = var->unk2;
             entry->data.isvar_issvar.unk21 = var->unk1;
@@ -2573,7 +2573,7 @@ glabel cutbits64
 00470DD8 form_neq0
 0047E3BC binopwithconst
 */
-void *enter_const(int num, Datatype datatype, int arg2) {
+void *enter_const(int num, Datatype datatype, struct Graphnode *graphnode) {
     unsigned short hash;
     struct Expression *entry;
     bool found;
@@ -2601,7 +2601,7 @@ void *enter_const(int num, Datatype datatype, int arg2) {
         }
         entry->data.isconst_isrconst.size = sizeoftyp(datatype);
         entry->var_access_list = NULL;
-        entry->unk10 = arg2;
+        entry->graphnode = graphnode;
     }
 
     return entry;
@@ -3339,70 +3339,31 @@ glabel countvars
     .size countvars, .-countvars
     .end countvars
 
-glabel hasvolatile
-    .ent hasvolatile
-    # 0043CFCC readnxtinst
-    # 0047EEA4 hasvolatile
-/* 0047EEA4 3C1C0FBA */  .cpload $t9
-/* 0047EEA8 279CB3EC */
-/* 0047EEAC 0399E021 */
-/* 0047EEB0 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0047EEB4 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047EEB8 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047EEBC 90830000 */  lbu   $v1, ($a0)
-/* 0047EEC0 24010004 */  li    $at, 4
-/* 0047EEC4 00802825 */  move  $a1, $a0
-/* 0047EEC8 10610007 */  beq   $v1, $at, .L0047EEE8
-/* 0047EECC 38620003 */   xori  $v0, $v1, 3
-/* 0047EED0 2C420001 */  sltiu $v0, $v0, 1
-/* 0047EED4 10400002 */  beqz  $v0, .L0047EEE0
-/* 0047EED8 00000000 */   nop
-/* 0047EEDC 90820023 */  lbu   $v0, 0x23($a0)
-.L0047EEE0:
-/* 0047EEE0 1000001F */  b     .L0047EF60
-/* 0047EEE4 304300FF */   andi  $v1, $v0, 0xff
-.L0047EEE8:
-/* 0047EEE8 90AE0020 */  lbu   $t6, 0x20($a1)
-/* 0047EEEC 24010033 */  li    $at, 51
-/* 0047EEF0 15C10003 */  bne   $t6, $at, .L0047EF00
-/* 0047EEF4 00000000 */   nop
-/* 0047EEF8 10000019 */  b     .L0047EF60
-/* 0047EEFC 24030001 */   li    $v1, 1
-.L0047EF00:
-/* 0047EF00 8F9986D8 */  lw    $t9, %call16(hasvolatile)($gp)
-/* 0047EF04 8CA40024 */  lw    $a0, 0x24($a1)
-/* 0047EF08 AFA50020 */  sw    $a1, 0x20($sp)
-/* 0047EF0C 0320F809 */  jalr  $t9
-/* 0047EF10 00000000 */   nop
-/* 0047EF14 304400FF */  andi  $a0, $v0, 0xff
-/* 0047EF18 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047EF1C 1480000F */  bnez  $a0, .L0047EF5C
-/* 0047EF20 8FA50020 */   lw    $a1, 0x20($sp)
-/* 0047EF24 90AF0020 */  lbu   $t7, 0x20($a1)
-/* 0047EF28 8F998DBC */  lw     $t9, %got(optab)($gp)
-/* 0047EF2C 000FC080 */  sll   $t8, $t7, 2
-/* 0047EF30 030FC023 */  subu  $t8, $t8, $t7
-/* 0047EF34 03194021 */  addu  $t0, $t8, $t9
-/* 0047EF38 91090002 */  lbu   $t1, 2($t0)
-/* 0047EF3C 51200008 */  beql  $t1, $zero, .L0047EF60
-/* 0047EF40 308300FF */   andi  $v1, $a0, 0xff
-/* 0047EF44 8F9986D8 */  lw    $t9, %call16(hasvolatile)($gp)
-/* 0047EF48 8CA40028 */  lw    $a0, 0x28($a1)
-/* 0047EF4C 0320F809 */  jalr  $t9
-/* 0047EF50 00000000 */   nop
-/* 0047EF54 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047EF58 304400FF */  andi  $a0, $v0, 0xff
-.L0047EF5C:
-/* 0047EF5C 308300FF */  andi  $v1, $a0, 0xff
-.L0047EF60:
-/* 0047EF60 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047EF64 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0047EF68 00601025 */  move  $v0, $v1
-/* 0047EF6C 03E00008 */  jr    $ra
-/* 0047EF70 00000000 */   nop
-    .type hasvolatile, @function
-    .size hasvolatile, .-hasvolatile
-    .end hasvolatile
+)"");
+
+/*
+0043CFCC readnxtinst
+0047EEA4 hasvolatile
+*/
+bool hasvolatile(struct Expression *expr) {
+    if (expr->type != isop) {
+        return expr->type == isvar && expr->data.isvar_issvar.is_volatile;
+    }
+
+    if (expr->data.isop.opc == Uildv) {
+        return true;
+    }
+
+    if (hasvolatile(expr->data.isop.op1)) {
+        return true;
+    }
+
+    return optab[expr->data.isop.opc].is_binary_op && hasvolatile(expr->data.isop.op2);
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel has_volt_ovfw
     .ent has_volt_ovfw

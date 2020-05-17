@@ -358,7 +358,7 @@ struct Expression {
     unsigned short unk6; // some counter, see exprdelete
     unsigned short int table_index; // 0x8
     int chain_index; // 0xC
-    int unk10; // 32-bit integer used as bool?
+    struct Graphnode *graphnode; // 0x10
     void *unk14;
     struct VarAccessList *var_access_list; // 0x18
     struct Expression *next; // 0x1C
@@ -382,6 +382,7 @@ struct Expression {
             unsigned char size;
             bool unk21;
             bool unk22;
+            bool is_volatile; // 0x23
             struct Expression *unk24;
             struct VariableInner var_data; // 0x28
             struct Expression *unk30;

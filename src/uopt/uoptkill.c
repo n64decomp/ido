@@ -1,3 +1,6 @@
+#include "uoptdata.h"
+#include "uoptkill.h"
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -2699,60 +2702,26 @@ glabel strkillprev
     .size strkillprev, .-strkillprev
     .end strkillprev
 
-glabel lodkillprev
-    .ent lodkillprev
-    # 0043ABD0 incroccurrence
-    # 0043CFCC readnxtinst
-    # 0046D428 oneloopblockexpr
-/* 0044B448 3C1C0FBD */  .cpload $t9
-/* 0044B44C 279CEE48 */  
-/* 0044B450 0399E021 */  
-/* 0044B454 8F8E89B4 */  lw     $t6, %got(curgraphnode)($gp)
-/* 0044B458 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0044B45C AFBF0024 */  sw    $ra, 0x24($sp)
-/* 0044B460 8DCE0000 */  lw    $t6, ($t6)
-/* 0044B464 AFBC0020 */  sw    $gp, 0x20($sp)
-/* 0044B468 AFB2001C */  sw    $s2, 0x1c($sp)
-/* 0044B46C AFB10018 */  sw    $s1, 0x18($sp)
-/* 0044B470 AFB00014 */  sw    $s0, 0x14($sp)
-/* 0044B474 8DD00024 */  lw    $s0, 0x24($t6)
-/* 0044B478 00808825 */  move  $s1, $a0
-/* 0044B47C 24120001 */  li    $s2, 1
-/* 0044B480 52000017 */  beql  $s0, $zero, .L0044B4E0
-/* 0044B484 8FBF0024 */   lw    $ra, 0x24($sp)
-/* 0044B488 920F0009 */  lbu   $t7, 9($s0)
-.L0044B48C:
-/* 0044B48C 564F0011 */  bnel  $s2, $t7, .L0044B4D4
-/* 0044B490 8E100004 */   lw    $s0, 4($s0)
-/* 0044B494 92180008 */  lbu   $t8, 8($s0)
-/* 0044B498 5700000E */  bnezl $t8, .L0044B4D4
-/* 0044B49C 8E100004 */   lw    $s0, 4($s0)
-/* 0044B4A0 8E04000C */  lw    $a0, 0xc($s0)
-/* 0044B4A4 9099001D */  lbu   $t9, 0x1d($a0)
-/* 0044B4A8 5320000A */  beql  $t9, $zero, .L0044B4D4
-/* 0044B4AC 8E100004 */   lw    $s0, 4($s0)
-/* 0044B4B0 8F99838C */  lw    $t9, %call16(slkilled)($gp)
-/* 0044B4B4 02202825 */  move  $a1, $s1
-/* 0044B4B8 0320F809 */  jalr  $t9
-/* 0044B4BC 00000000 */   nop   
-/* 0044B4C0 8E09000C */  lw    $t1, 0xc($s0)
-/* 0044B4C4 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0044B4C8 2C480001 */  sltiu $t0, $v0, 1
-/* 0044B4CC A128001D */  sb    $t0, 0x1d($t1)
-/* 0044B4D0 8E100004 */  lw    $s0, 4($s0)
-.L0044B4D4:
-/* 0044B4D4 5600FFED */  bnezl $s0, .L0044B48C
-/* 0044B4D8 920F0009 */   lbu   $t7, 9($s0)
-/* 0044B4DC 8FBF0024 */  lw    $ra, 0x24($sp)
-.L0044B4E0:
-/* 0044B4E0 8FB00014 */  lw    $s0, 0x14($sp)
-/* 0044B4E4 8FB10018 */  lw    $s1, 0x18($sp)
-/* 0044B4E8 8FB2001C */  lw    $s2, 0x1c($sp)
-/* 0044B4EC 03E00008 */  jr    $ra
-/* 0044B4F0 27BD0028 */   addiu $sp, $sp, 0x28
-    .type lodkillprev, @function
-    .size lodkillprev, .-lodkillprev
-    .end lodkillprev
+)"");
+
+/*
+0043ABD0 incroccurrence
+0043CFCC readnxtinst
+0046D428 oneloopblockexpr
+*/
+void lodkillprev(struct Expression *expr) {
+    struct VarAccessList *list;
+
+    for (list = curgraphnode->varlisthead; list != NULL; list = list->next) {
+        if (list->type == 1 && !list->unk8 && list->data.store->data.bb.unk1D) {
+            list->data.store->data.bb.unk1D = !slkilled(list->data.store, expr);
+        }
+    }
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel clkilled
     .ent clkilled

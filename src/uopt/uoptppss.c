@@ -326,7 +326,7 @@ void update_veqv_in_table(struct Variable *var) {
 
     if (!found) {
         entry = searchvar(hash, &var->inner);
-        entry->unk10 = 0;
+        entry->graphnode = NULL;
         entry->data.isvar_issvar.size = (unsigned char)var->size;
         entry->data.isvar_issvar.unk22 = var->unk2;
         entry->data.isvar_issvar.unk21 = var->unk1;

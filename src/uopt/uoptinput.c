@@ -7,6 +7,7 @@
 #include "uoptdata.h"
 #include "uoptutil.h"
 #include "uoptppss.h"
+#include "uoptkill.h"
 
 __asm__(R""(
 .macro glabel label
