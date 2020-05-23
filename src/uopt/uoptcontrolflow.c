@@ -701,12 +701,12 @@ glabel ingraph
 void init_graphnode(struct Graphnode *node) {
     node->unkBb8 = 0;
     node->unk0 = 0;
-    node->unk14 = NULL;
-    node->unk18 = NULL;
+    node->predecessors = NULL;
+    node->successors = NULL;
     node->next = NULL;
     node->unk6 = 0;
     node->unk7 = 0;
-    node->unk4 = 0;
+    node->unk4 = false;
     node->unk5 = 0;
     node->unkBb4 = 0;
     node->stat_head = NULL;

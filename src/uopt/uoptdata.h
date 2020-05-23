@@ -71,7 +71,7 @@ struct Expression;
 
 struct UstackEntry {
     struct Expression *expr;
-    int unk4;
+    int value;
     struct UstackEntry *up;
     struct UstackEntry *down;
 };
@@ -93,7 +93,7 @@ struct VarAccessList {
     struct VarAccessList *prev; // towards head
     struct VarAccessList *next; // towards tail
     bool unk8; // or unsigned char?
-    unsigned char type; // 1: store (Statement), 2: var (Expression)
+    unsigned char type; // 0: none?, 1: store (Statement), 2: var (Expression)
     union {
         struct Statement *store; // 0xC
         struct Expression *var; // 0xC
@@ -116,7 +116,7 @@ struct JumpFallthroughBB {
 
 struct Graphnode {
     int unk0;
-    unsigned char unk4;
+    bool unk4;
     unsigned char unk5; // enum: notloopfirstbb, loopfirstbb, canunroll (see printregs)
     unsigned char unk6;
     unsigned char unk7;
@@ -126,8 +126,8 @@ struct Graphnode {
     unsigned char unkBb4: 1;
     struct Graphnode *next; // 0xC
     int unk10;
-    struct GraphnodeList *unk14; // head
-    struct GraphnodeList *unk18; // tail
+    struct GraphnodeList *predecessors; // 0x14
+    struct GraphnodeList *successors; // 0x18
     struct Statement *stat_head; // 0x1C
     struct Statement *stat_tail; // 0x20
     struct VarAccessList *varlisthead; // 0x24
@@ -273,10 +273,10 @@ struct Proc {
 
 struct Statement {
     Uopcode opc;
-    bool unk1; // bool or unsigned char?
+    bool unk1;
     bool unk2; // bool or unsigned char?
     bool unk3; // bool or unsigned char?
-    struct Expression *expr;
+    struct Expression *expr; // 0x4
     struct Statement *next; // 0x8, towards tail
     struct Statement *prev; // 0xC, towards head
     struct Graphnode *graphnode; // 0x10
@@ -287,19 +287,22 @@ struct Statement {
             unsigned char unk16; // variable size?
             unsigned char unk17;
             int unk18;
-            int unk1C;
+            int addr; // from VariableInner
         } var;
         struct {
             int bb_index; // 0x14, see tail_recursion
             struct VarAccessList *var_access_list; // 0x18
-            bool unk1C;
+            bool unk1C; // not strlkilled
             bool unk1D;
-            bool unk1E;
+            bool unk1E; // not strskilled
             bool unk1F;
         } bb;
+        struct {
+            struct Expression *expr; // 0x14
+        } store;
     } data;
-    void *unk20;
-    int unk24; // some flags
+    struct Statement *unk20; // See Uclab case in readnxtinst
+    unsigned char unk24; // some flags
     int unk28;
     int unk2C;
     int unk30;
@@ -329,15 +332,15 @@ struct PdefEntry {
 };
 
 enum ExpressionType {
-    empty,
-    islda,
-    isconst,
-    isvar,
-    isop,
-    isilda,
-    issvar,
-    dumped,
-    isrconst
+    empty, // 0
+    islda, // 1
+    isconst, // 2
+    isvar, // 3
+    isop, // 4
+    isilda, // 5
+    issvar, // 6
+    dumped, // 7
+    isrconst // 8
 }
 #ifdef __GNUC__
 __attribute__((packed));
@@ -354,7 +357,9 @@ struct Expression {
     ExpressionType type;
     Datatype datatype;
     bool unk2; // bool or unsigned char?
-    unsigned short unk4;
+    bool unk3; // not varkilled
+    bool unk4; // bool or unsigned char?
+    bool unk5; // bool or unsigned char?
     unsigned short unk6; // some counter, see exprdelete
     unsigned short int table_index; // 0x8
     int chain_index; // 0xC
@@ -365,21 +370,32 @@ struct Expression {
 
     union {
         struct {
-            int unk20;
-            int unk24;
-            int unk28;
+            int addr;
+            int size; // 0x24
+            int level; // 0x28
             struct VariableInner var_data; // 0x2C
-            // maybe same struct as isilda?
+            // maybe same struct as isilda? (at least until this point the struct is shared)
+            int unk34;
         } islda;
         struct {
             union {
                 int intval;
                 long long int longval;
-            } number;
-            int size; // in bytes
-        } isconst_isrconst;
+                struct {
+                    unsigned short disp; // index to first character in realdisp data
+                    unsigned short len; // length of the float string
+                } real;
+                struct {
+                    unsigned short disp;
+                    unsigned short len;
+                } string;
+            } number; // 0x20
+            int size; // 0x28, in bytes
+            int real_significand; // 0x2C
+            int real_exponent; // 0x30
+        } isconst;
         struct {
-            unsigned char size;
+            unsigned char size; // 0x20, in bytes
             bool unk21;
             bool unk22;
             bool is_volatile; // 0x23
@@ -392,12 +408,29 @@ struct Expression {
         } isvar_issvar;
         struct {
             Uopcode opc; // 0x20
+            unsigned char pad21;
+            unsigned char pad22;
+            Datatype datatype; // 0x23
             struct Expression *op1; // 0x24
             struct Expression *op2; // 0x28
-            int unk2C; // calculated result?
+            int datasize; // calculated result? seems to also sometimes be size in bits of the datatype
             int unk30;
-            int unk34;
-            Datatype cvtfrom; // if opc == Ucvt, seems to be a union here
+            struct Expression *unk34; // return value from findbaseaddr
+            union {
+                Datatype cvtfrom; // if opc == Ucvt, seems to be a union here
+                int unk38_int;
+                struct Expression *unk38; // return value from findbaseaddr
+            } aux;
+            union {
+                struct {
+                    unsigned short unk3C; // some size, used before createcvtl
+                    bool overflow_attr; // 0x3E
+                    unsigned char unk3F; // see Uildv and Uilod in readnxtinst
+                } v1;
+                struct {
+                    unsigned int unk3C;
+                } v2;
+            } aux2;
         } isop;
         struct {
             int unk20;
@@ -406,7 +439,12 @@ struct Expression {
             int unk2C;
             int unk30;
             struct Expression *unk34;
+            int unk38;
         } isilda;
+        struct {
+            unsigned short unk20;
+            int unk24;
+        } isrconst;
     } data; // 0x20
 };
 
@@ -527,7 +565,7 @@ extern bool passedbyfp;
 extern int offsetpassedbyint;
 extern int tempcount;
 extern struct Statement *aentptr;
-extern void *curmst; // TODO: fix type (some struct ptr)
+extern struct Statement *curmst;
 extern int parnumber; // unused
 extern int numintval;
 extern int noop;

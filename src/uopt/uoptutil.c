@@ -1642,19 +1642,19 @@ int sizeoftyp(Datatype t) {
 0044EDF8 ilodfold
 0044F1B8 istrfold
 */
-int blktolev(int a0) {
+int blktolev(int blk) {
     int lev = curlevel;
     bool stop = false;
 
     while (!stop && lev >= 2) {
-        if (a0 == blklev[lev - 1]) {
+        if (blk == blklev[lev - 1]) {
             stop = true;
         } else {
             lev--;
         }
     }
 
-    return a0 == 0 ? 0 : lev;
+    return blk == 0 ? 0 : lev;
 }
 
 /*
@@ -2583,7 +2583,7 @@ void *enter_const(int num, Datatype datatype, struct Graphnode *graphnode) {
     found = false;
 
     while (!found && entry != NULL) {
-        if (entry->type == isconst && entry->datatype == datatype && entry->data.isconst_isrconst.number.intval == num) {
+        if (entry->type == isconst && entry->datatype == datatype && entry->data.isconst.number.intval == num) {
             found = true;
         } else {
             entry = entry->next;
@@ -2595,11 +2595,11 @@ void *enter_const(int num, Datatype datatype, struct Graphnode *graphnode) {
         entry->type = isconst;
         entry->datatype = datatype;
         if (datatype == Idt || datatype == Kdt) {
-            entry->data.isconst_isrconst.number.longval = num;
+            entry->data.isconst.number.longval = num;
         } else {
-            entry->data.isconst_isrconst.number.intval = num;
+            entry->data.isconst.number.intval = num;
         }
-        entry->data.isconst_isrconst.size = sizeoftyp(datatype);
+        entry->data.isconst.size = sizeoftyp(datatype);
         entry->var_access_list = NULL;
         entry->graphnode = graphnode;
     }
@@ -3188,7 +3188,7 @@ bool checkincre(struct Expression *entry, struct Expression *entry2, int *result
             } else if (entry->data.isop.opc == Udec || entry->data.isop.opc == Uinc || entry->data.isop.opc == Uneg ||
                       (entry->data.isop.opc == Ucvt &&
                         (entry->datatype == Adt || entry->datatype == Hdt || entry->datatype == Jdt || entry->datatype == Ldt) &&
-                        (entry->data.isop.cvtfrom == Adt || entry->data.isop.cvtfrom == Hdt || entry->data.isop.cvtfrom == Jdt || entry->data.isop.cvtfrom == Ldt)))
+                        (entry->data.isop.aux.cvtfrom == Adt || entry->data.isop.aux.cvtfrom == Hdt || entry->data.isop.aux.cvtfrom == Jdt || entry->data.isop.aux.cvtfrom == Ldt)))
             {
                 if (checkincre(entry->data.isop.op1, entry2, &result1)) {
                     *result = entry->data.isop.opc == Uneg ? -result1 : result1;
@@ -3220,7 +3220,7 @@ int findincre(struct Expression *entry) {
 
     switch (entry->type) {
         case isconst:
-            return entry->data.isconst_isrconst.number.intval;
+            return entry->data.isconst.number.intval;
 
         case islda:
         case isvar:
@@ -3242,9 +3242,9 @@ int findincre(struct Expression *entry) {
                 case Ucvt:
                     return result1;
                 case Uinc:
-                    return result1 + entry->data.isop.unk2C;
+                    return result1 + entry->data.isop.datasize;
                 case Udec:
-                    return result1 + entry->data.isop.unk2C;
+                    return result1 + entry->data.isop.datasize;
                 default:
                     caseerror(1, 1251, "uoptutil.p", 10);
                     return 0; // originally an uninitialized stack value was returned
@@ -3866,241 +3866,82 @@ bool is_power5(unsigned int v) {
     return is_power5(v / 5U);
 }
 
+/*
+00414108 func_00414108
+0043CFCC readnxtinst
+*/
+int getfloatval(struct Expression *expr, int *exponent10) {
+    struct RealstoreData *pos;
+    int div;
+    char *str;
+    bool negative;
+    int i;
+    int len;
+    int val;
+    bool in_fraction;
+    int num_decimals;
+    bool e_negative;
+    int e_val;
 
-__asm__(R""(
-.set noat
-.set noreorder
-
-glabel getfloatval
-    .ent getfloatval
-    # 00414108 func_00414108
-    # 0043CFCC readnxtinst
-/* 0047F8E4 3C1C0FBA */  .cpload $t9
-/* 0047F8E8 279CA9AC */
-/* 0047F8EC 0399E021 */
-/* 0047F8F0 94830020 */  lhu   $v1, 0x20($a0)
-/* 0047F8F4 8F828988 */  lw     $v0, %got(realstore)($gp)
-/* 0047F8F8 27BDFFA8 */  addiu $sp, $sp, -0x58
-/* 0047F8FC AFB2000C */  sw    $s2, 0xc($sp)
-/* 0047F900 AFB10008 */  sw    $s1, 8($sp)
-/* 0047F904 AFB00004 */  sw    $s0, 4($sp)
-/* 0047F908 00A03025 */  move  $a2, $a1
-/* 0047F90C 04610003 */  bgez  $v1, .L0047F91C
-/* 0047F910 00033A03 */   sra   $a3, $v1, 8
-/* 0047F914 246100FF */  addiu $at, $v1, 0xff
-/* 0047F918 00013A03 */  sra   $a3, $at, 8
-.L0047F91C:
-/* 0047F91C 306900FF */  andi  $t1, $v1, 0xff
-/* 0047F920 18E00012 */  blez  $a3, .L0047F96C
-/* 0047F924 8C420000 */   lw    $v0, ($v0)
-/* 0047F928 24E40001 */  addiu $a0, $a3, 1
-/* 0047F92C 2487FFFF */  addiu $a3, $a0, -1
-/* 0047F930 30E70003 */  andi  $a3, $a3, 3
-/* 0047F934 10E00007 */  beqz  $a3, .L0047F954
-/* 0047F938 24030001 */   li    $v1, 1
-/* 0047F93C 24E50001 */  addiu $a1, $a3, 1
-.L0047F940:
-/* 0047F940 24630001 */  addiu $v1, $v1, 1
-/* 0047F944 14A3FFFE */  bne   $a1, $v1, .L0047F940
-/* 0047F948 8C420100 */   lw    $v0, 0x100($v0)
-/* 0047F94C 50640008 */  beql  $v1, $a0, .L0047F970
-/* 0047F950 00495821 */   addu  $t3, $v0, $t1
-.L0047F954:
-/* 0047F954 8C420100 */  lw    $v0, 0x100($v0)
-/* 0047F958 24630004 */  addiu $v1, $v1, 4
-/* 0047F95C 8C420100 */  lw    $v0, 0x100($v0)
-/* 0047F960 8C420100 */  lw    $v0, 0x100($v0)
-/* 0047F964 1464FFFB */  bne   $v1, $a0, .L0047F954
-/* 0047F968 8C420100 */   lw    $v0, 0x100($v0)
-.L0047F96C:
-/* 0047F96C 00495821 */  addu  $t3, $v0, $t1
-.L0047F970:
-/* 0047F970 916C0000 */  lbu   $t4, ($t3)
-/* 0047F974 2408002D */  li    $t0, 45
-/* 0047F978 00002825 */  move  $a1, $zero
-/* 0047F97C 010C6826 */  xor   $t5, $t0, $t4
-/* 0047F980 2DAD0001 */  sltiu $t5, $t5, 1
-/* 0047F984 00005025 */  move  $t2, $zero
-/* 0047F988 00002025 */  move  $a0, $zero
-/* 0047F98C 24030001 */  li    $v1, 1
-/* 0047F990 15A00004 */  bnez  $t5, .L0047F9A4
-/* 0047F994 00003825 */   move  $a3, $zero
-/* 0047F998 2401002B */  li    $at, 43
-/* 0047F99C 55810004 */  bnel  $t4, $at, .L0047F9B0
-/* 0047F9A0 01636821 */   addu  $t5, $t3, $v1
-.L0047F9A4:
-/* 0047F9A4 31A700FF */  andi  $a3, $t5, 0xff
-/* 0047F9A8 24030002 */  li    $v1, 2
-/* 0047F9AC 01636821 */  addu  $t5, $t3, $v1
-.L0047F9B0:
-/* 0047F9B0 91B0FFFF */  lbu   $s0, -1($t5)
-/* 0047F9B4 24090065 */  li    $t1, 101
-/* 0047F9B8 11300020 */  beq   $t1, $s0, .L0047FA3C
-/* 0047F9BC 00000000 */   nop
-/* 0047F9C0 8F8B8DA4 */  lw     $t3, %got(u)($gp)
-/* 0047F9C4 3C1105F5 */  lui   $s1, 0x5f5
-/* 0047F9C8 3631E100 */  ori   $s1, $s1, 0xe100
-/* 0047F9CC 8D6B0010 */  lw    $t3, 0x10($t3)
-/* 0047F9D0 2412000A */  li    $s2, 10
-/* 0047F9D4 256B0001 */  addiu $t3, $t3, 1
-/* 0047F9D8 106B0018 */  beq   $v1, $t3, .L0047FA3C
-/* 0047F9DC 00000000 */   nop
-/* 0047F9E0 240C002E */  li    $t4, 46
-.L0047F9E4:
-/* 0047F9E4 1190000D */  beq   $t4, $s0, .L0047FA1C
-/* 0047F9E8 0091082A */   slt   $at, $a0, $s1
-/* 0047F9EC 14200004 */  bnez  $at, .L0047FA00
-/* 0047F9F0 00000000 */   nop
-/* 0047F9F4 3C027FFF */  lui   $v0, 0x7fff
-/* 0047F9F8 10000074 */  b     .L0047FBCC
-/* 0047F9FC 3442FFFF */   ori   $v0, $v0, 0xffff
-.L0047FA00:
-/* 0047FA00 00920019 */  multu $a0, $s2
-/* 0047FA04 00007012 */  mflo  $t6
-/* 0047FA08 01D02021 */  addu  $a0, $t6, $s0
-/* 0047FA0C 11400004 */  beqz  $t2, .L0047FA20
-/* 0047FA10 2484FFD0 */   addiu $a0, $a0, -0x30
-/* 0047FA14 10000002 */  b     .L0047FA20
-/* 0047FA18 24A50001 */   addiu $a1, $a1, 1
-.L0047FA1C:
-/* 0047FA1C 240A0001 */  li    $t2, 1
-.L0047FA20:
-/* 0047FA20 91B00000 */  lbu   $s0, ($t5)
-/* 0047FA24 24630001 */  addiu $v1, $v1, 1
-/* 0047FA28 25AD0001 */  addiu $t5, $t5, 1
-/* 0047FA2C 11300003 */  beq   $t1, $s0, .L0047FA3C
-/* 0047FA30 00000000 */   nop
-/* 0047FA34 146BFFEB */  bne   $v1, $t3, .L0047F9E4
-/* 0047FA38 00000000 */   nop
-.L0047FA3C:
-/* 0047FA3C 8F898DA4 */  lw     $t1, %got(u)($gp)
-/* 0047FA40 3C1105F5 */  lui   $s1, 0x5f5
-/* 0047FA44 3631E100 */  ori   $s1, $s1, 0xe100
-/* 0047FA48 8D290010 */  lw    $t1, 0x10($t1)
-/* 0047FA4C 2412000A */  li    $s2, 10
-/* 0047FA50 0123082A */  slt   $at, $t1, $v1
-/* 0047FA54 5420002C */  bnezl $at, .L0047FB08
-/* 0047FA58 00057023 */   negu  $t6, $a1
-/* 0047FA5C 91B00000 */  lbu   $s0, ($t5)
-/* 0047FA60 24630001 */  addiu $v1, $v1, 1
-/* 0047FA64 25AD0001 */  addiu $t5, $t5, 1
-/* 0047FA68 01107826 */  xor   $t7, $t0, $s0
-/* 0047FA6C 2DEF0001 */  sltiu $t7, $t7, 1
-/* 0047FA70 00005025 */  move  $t2, $zero
-/* 0047FA74 00006025 */  move  $t4, $zero
-/* 0047FA78 AFAF0014 */  sw    $t7, 0x14($sp)
-/* 0047FA7C 01E0C025 */  move  $t8, $t7
-/* 0047FA80 15E00004 */  bnez  $t7, .L0047FA94
-/* 0047FA84 252B0001 */   addiu $t3, $t1, 1
-/* 0047FA88 2401002B */  li    $at, 43
-/* 0047FA8C 16010004 */  bne   $s0, $at, .L0047FAA0
-/* 0047FA90 00000000 */   nop
-.L0047FA94:
-/* 0047FA94 93AC0017 */  lbu   $t4, 0x17($sp)
-/* 0047FA98 24630001 */  addiu $v1, $v1, 1
-/* 0047FA9C 25AD0001 */  addiu $t5, $t5, 1
-.L0047FAA0:
-/* 0047FAA0 106B000F */  beq   $v1, $t3, .L0047FAE0
-/* 0047FAA4 00000000 */   nop
-.L0047FAA8:
-/* 0047FAA8 0151082A */  slt   $at, $t2, $s1
-/* 0047FAAC 14200004 */  bnez  $at, .L0047FAC0
-/* 0047FAB0 00000000 */   nop
-/* 0047FAB4 3C027FFF */  lui   $v0, 0x7fff
-/* 0047FAB8 10000044 */  b     .L0047FBCC
-/* 0047FABC 3442FFFF */   ori   $v0, $v0, 0xffff
-.L0047FAC0:
-/* 0047FAC0 01520019 */  multu $t2, $s2
-/* 0047FAC4 91AEFFFF */  lbu   $t6, -1($t5)
-/* 0047FAC8 24630001 */  addiu $v1, $v1, 1
-/* 0047FACC 25AD0001 */  addiu $t5, $t5, 1
-/* 0047FAD0 0000C812 */  mflo  $t9
-/* 0047FAD4 032E5021 */  addu  $t2, $t9, $t6
-/* 0047FAD8 146BFFF3 */  bne   $v1, $t3, .L0047FAA8
-/* 0047FADC 254AFFD0 */   addiu $t2, $t2, -0x30
-.L0047FAE0:
-/* 0047FAE0 51800006 */  beql  $t4, $zero, .L0047FAFC
-/* 0047FAE4 0145C823 */   subu  $t9, $t2, $a1
-/* 0047FAE8 00057823 */  negu  $t7, $a1
-/* 0047FAEC 01EAC023 */  subu  $t8, $t7, $t2
-/* 0047FAF0 10000006 */  b     .L0047FB0C
-/* 0047FAF4 ACD80000 */   sw    $t8, ($a2)
-/* 0047FAF8 0145C823 */  subu  $t9, $t2, $a1
-.L0047FAFC:
-/* 0047FAFC 10000003 */  b     .L0047FB0C
-/* 0047FB00 ACD90000 */   sw    $t9, ($a2)
-/* 0047FB04 00057023 */  negu  $t6, $a1
-.L0047FB08:
-/* 0047FB08 ACCE0000 */  sw    $t6, ($a2)
-.L0047FB0C:
-/* 0047FB0C 1080002A */  beqz  $a0, .L0047FBB8
-/* 0047FB10 00000000 */   nop
-/* 0047FB14 0092001A */  div   $zero, $a0, $s2
-/* 0047FB18 00007810 */  mfhi  $t7
-/* 0047FB1C 16400002 */  bnez  $s2, .L0047FB28
-/* 0047FB20 00000000 */   nop
-/* 0047FB24 0007000D */  break 7
-.L0047FB28:
-/* 0047FB28 2401FFFF */  li    $at, -1
-/* 0047FB2C 16410004 */  bne   $s2, $at, .L0047FB40
-/* 0047FB30 3C018000 */   lui   $at, 0x8000
-/* 0047FB34 14810002 */  bne   $a0, $at, .L0047FB40
-/* 0047FB38 00000000 */   nop
-/* 0047FB3C 0006000D */  break 6
-.L0047FB40:
-/* 0047FB40 15E0001D */  bnez  $t7, .L0047FBB8
-/* 0047FB44 00000000 */   nop
-.L0047FB48:
-/* 0047FB48 0092001A */  div   $zero, $a0, $s2
-/* 0047FB4C 16400002 */  bnez  $s2, .L0047FB58
-/* 0047FB50 00000000 */   nop
-/* 0047FB54 0007000D */  break 7
-.L0047FB58:
-/* 0047FB58 2401FFFF */  li    $at, -1
-/* 0047FB5C 16410004 */  bne   $s2, $at, .L0047FB70
-/* 0047FB60 3C018000 */   lui   $at, 0x8000
-/* 0047FB64 14810002 */  bne   $a0, $at, .L0047FB70
-/* 0047FB68 00000000 */   nop
-/* 0047FB6C 0006000D */  break 6
-.L0047FB70:
-/* 0047FB70 00002012 */  mflo  $a0
-/* 0047FB74 8CD80000 */  lw    $t8, ($a2)
-/* 0047FB78 00000000 */  nop
-/* 0047FB7C 0092001A */  div   $zero, $a0, $s2
-/* 0047FB80 00007010 */  mfhi  $t6
-/* 0047FB84 27190001 */  addiu $t9, $t8, 1
-/* 0047FB88 ACD90000 */  sw    $t9, ($a2)
-/* 0047FB8C 16400002 */  bnez  $s2, .L0047FB98
-/* 0047FB90 00000000 */   nop
-/* 0047FB94 0007000D */  break 7
-.L0047FB98:
-/* 0047FB98 2401FFFF */  li    $at, -1
-/* 0047FB9C 16410004 */  bne   $s2, $at, .L0047FBB0
-/* 0047FBA0 3C018000 */   lui   $at, 0x8000
-/* 0047FBA4 14810002 */  bne   $a0, $at, .L0047FBB0
-/* 0047FBA8 00000000 */   nop
-/* 0047FBAC 0006000D */  break 6
-.L0047FBB0:
-/* 0047FBB0 11C0FFE5 */  beqz  $t6, .L0047FB48
-/* 0047FBB4 00000000 */   nop
-.L0047FBB8:
-/* 0047FBB8 10E00003 */  beqz  $a3, .L0047FBC8
-/* 0047FBBC 00801825 */   move  $v1, $a0
-/* 0047FBC0 10000001 */  b     .L0047FBC8
-/* 0047FBC4 00041823 */   negu  $v1, $a0
-.L0047FBC8:
-/* 0047FBC8 00601025 */  move  $v0, $v1
-.L0047FBCC:
-/* 0047FBCC 8FB00004 */  lw    $s0, 4($sp)
-/* 0047FBD0 8FB10008 */  lw    $s1, 8($sp)
-/* 0047FBD4 8FB2000C */  lw    $s2, 0xc($sp)
-/* 0047FBD8 03E00008 */  jr    $ra
-/* 0047FBDC 27BD0058 */   addiu $sp, $sp, 0x58
-    .type getfloatval, @function
-    .size getfloatval, .-getfloatval
-    .end getfloatval
-
-)"");
+    div = expr->data.isconst.number.real.disp / 256;
+    pos = realstore;
+    while (div > 0) {
+        pos = pos->next;
+        div--;
+    }
+    str = &pos->c[expr->data.isconst.number.real.disp & 0xff];
+    negative = str[0] == '-';
+    if (negative || str[0] == '+') {
+        i = 1;
+    } else {
+        i = 0;
+    }
+    len = CONSTVAL.swpart.Ival;
+    val = 0;
+    in_fraction = false;
+    num_decimals = 0;
+    for (; str[i] != 'e' && i != len; i++) {
+        if (str[i] != '.') {
+            if (val >= 100000000) {
+                return 0x7FFFFFFF;
+            }
+            val = val * 10 + (str[i] - '0');
+            if (in_fraction) {
+                num_decimals++;
+            }
+        } else {
+            in_fraction = true;
+        }
+    }
+    if (len > i) {
+        i++; // e
+        e_negative = str[i] == '-';
+        if (e_negative || str[i] == '+') {
+            i++;
+        }
+        e_val = 0;
+        for (; i != len; i++) {
+            if (e_val >= 100000000) {
+                return 0x7FFFFFFF;
+            }
+            e_val = e_val * 10 + (str[i] - '0');
+        }
+        if (e_negative) {
+            *exponent10 = -num_decimals - e_val;
+        } else {
+            *exponent10 = e_val - num_decimals;
+        }
+    } else {
+        *exponent10 = -num_decimals;
+    }
+    if (val != 0) {
+        while (val % 10 == 0) {
+            val /= 10;
+            (*exponent10)++;
+        }
+    }
+    return negative ? -val : val;
+}
 
 /*
 0043CFCC readnxtinst

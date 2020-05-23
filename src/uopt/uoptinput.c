@@ -735,7 +735,7 @@ void copyline(void) {
             } else {
                 if (u.Ucode.Opc == Updef) {
                     if (aentptr != NULL) {
-                        aentptr->data.var.unk1C++;
+                        aentptr->data.var.addr++;
                         return;
                     }
                     unk = u.intarray[3] / 4;
@@ -806,9 +806,9 @@ void copyline(void) {
 /*
 0043CFCC readnxtinst
 */
-void createcvtl(int i, int dtype) {
+void createcvtl(int bitsize, int dtype) {
     u.Ucode.Opc = Ucvtl;
-    u.Ucode.I1 = i;
+    u.Ucode.I1 = bitsize;
     u.Ucode.Dtype = dtype;
     u.Ucode.Lexlev = 0;
     readnxtinst();
@@ -817,7 +817,7 @@ void createcvtl(int i, int dtype) {
 /*
 0043CFCC readnxtinst
 */
-void *in_outparlist(int key) {
+struct Expression *in_outparlist(int key) {
     struct ParameterList *pos = outparhead;
 
     while (pos != NULL) {
@@ -833,7 +833,7 @@ void *in_outparlist(int key) {
 /*
 0043CFCC readnxtinst
 */
-void insert_outparlist(int key, void *value) {
+void insert_outparlist(int key, struct Expression *value) {
     struct ParameterList *item = (struct ParameterList *)alloc_new(sizeof(struct ParameterList), &perm_heap);
     item->key = key;
     item->value = value;

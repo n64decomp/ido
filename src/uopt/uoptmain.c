@@ -71,14 +71,14 @@ static void func_00456310(bool *sp4F) { // originally embedded func
             }
             if (curgraphnode != NULL) {
                 graphnode_list = (struct GraphnodeList *)alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                graphtail->unk14 = graphnode_list;
+                graphtail->predecessors = graphnode_list;
                 graphnode_list->graphnode = curgraphnode;
                 graphnode_list->next = NULL;
 
                 graphnode_list = (struct GraphnodeList *)alloc_new(sizeof(struct GraphnodeList), &perm_heap);
                 graphnode_list->graphnode = graphtail;
-                graphnode_list->next = curgraphnode->unk18;
-                curgraphnode->unk18 = graphnode_list;
+                graphnode_list->next = curgraphnode->successors;
+                curgraphnode->successors = graphnode_list;
             }
             curgraphnode = graphtail;
             if (op == Ulab) {

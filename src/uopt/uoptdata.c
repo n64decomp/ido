@@ -1512,7 +1512,7 @@ struct Statement *aentptr;
 00439C40 getop
 0043CFCC readnxtinst
 */
-void *curmst; // TODO: fix type (some struct ptr)
+struct Statement *curmst;
 
 // unused
 int parnumber;

@@ -13,6 +13,7 @@ void decreasecount(struct Expression *expr);
 void increasecount(struct Expression *expr);
 int realhash(int len);
 int isvarhash(struct VariableInner var);
+int blktolev(int blk);
 struct Expression *searchvar(unsigned short table_index, struct VariableInner *var);
 void getoption(int uopt_option, int n);
 void extendstat(Uopcode opc);
