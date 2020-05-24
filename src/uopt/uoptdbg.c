@@ -1902,11 +1902,11 @@ void printlinfo(void) {
             write_string(list.c_file, "alters --", 9U, 9U);
             printbv(&node->bvs.stage1.alters);
             write_string(list.c_file, "pavlocs --", 0xAU, 0xAU);
-            printbv(&node->bvs.stage1.precm.pavlocs);
+            printbv(&node->bvs.stage1.u.precm.pavlocs);
             write_string(list.c_file, "absalters --", 0xCU, 0xCU);
             printbv(&node->bvs.stage1.absalters);
             write_string(list.c_file, "expoccur --", 0xBU, 0xBU);
-            printbv(&node->bvs.stage1.precm.expoccur);
+            printbv(&node->bvs.stage1.u.precm.expoccur);
             write_string(list.c_file, "indiracc --", 0xBU, 0xBU);
             printbv(&node->indiracc);
             node = node->next;
@@ -1946,13 +1946,13 @@ void printhoist(bool show_hoistedexp) {
             write_string(list.c_file, "alters --", 9U, 9U);
             printbv(&node->bvs.stage1.alters);
             write_string(list.c_file, "antin --", 8U, 8U);
-            printbv(&node->bvs.stage1.precm.antin);
+            printbv(&node->bvs.stage1.u.precm.antin);
             write_string(list.c_file, "antout --", 9U, 9U);
-            printbv(&node->bvs.stage1.precm.antout);
+            printbv(&node->bvs.stage1.u.precm.antout);
             write_string(list.c_file, "pavin --", 8U, 8U);
-            printbv(&node->bvs.stage1.precm.pavin);
+            printbv(&node->bvs.stage1.u.precm.pavin);
             write_string(list.c_file, "pavout --", 9U, 9U);
-            printbv(&node->bvs.stage1.precm.pavout);
+            printbv(&node->bvs.stage1.u.precm.pavout);
             if (show_hoistedexp) {
                 write_string(list.c_file, "hoistedexp --", 0xDU, 0xDU);
                 printbv(&node->hoistedexp);
@@ -1982,17 +1982,17 @@ void printprecm(void) {
             write_string(list.c_file, "alters --", 9U, 9U);
             printbv(&node->bvs.stage1.alters);
             write_string(list.c_file, "pavlocs --", 0xAU, 0xAU);
-            printbv(&node->bvs.stage1.precm.pavlocs);
+            printbv(&node->bvs.stage1.u.precm.pavlocs);
             write_string(list.c_file, "absalters --", 0xCU, 0xCU);
             printbv(&node->bvs.stage1.absalters);
             write_string(list.c_file, "avin --", 7U, 7U);
-            printbv(&node->bvs.stage1.precm.avin);
+            printbv(&node->bvs.stage1.u.precm.avin);
             write_string(list.c_file, "avout --", 8U, 8U);
-            printbv(&node->bvs.stage1.precm.avout);
+            printbv(&node->bvs.stage1.u.precm.avout);
             write_string(list.c_file, "pavin --", 8U, 8U);
-            printbv(&node->bvs.stage1.precm.pavin);
+            printbv(&node->bvs.stage1.u.precm.pavin);
             write_string(list.c_file, "pavout --", 9U, 9U);
-            printbv(&node->bvs.stage1.precm.pavout);
+            printbv(&node->bvs.stage1.u.precm.pavout);
             node = node->next;
         }
     }
@@ -2020,29 +2020,29 @@ void printcm(void) {
             write_string(list.c_file, "absalters --", 0xCU, 0xCU);
             printbv(&node->bvs.stage1.absalters);
             write_string(list.c_file, "antin --", 8U, 8U);
-            printbv(&node->bvs.stage1.cm.antin);
+            printbv(&node->bvs.stage1.u.cm.antin);
             write_string(list.c_file, "antout --", 9U, 9U);
-            printbv(&node->bvs.stage1.cm.antout);
+            printbv(&node->bvs.stage1.u.cm.antout);
             write_string(list.c_file, "iv --", 5U, 5U);
-            printbv(&node->bvs.stage1.cm.iv);
+            printbv(&node->bvs.stage1.u.cm.iv);
             write_string(list.c_file, "cand --", 7U, 7U);
-            printbv(&node->bvs.stage1.cm.cand);
+            printbv(&node->bvs.stage1.u.cm.cand);
             write_string(list.c_file, "ppin --", 7U, 7U);
-            printbv(&node->bvs.stage1.cm.ppin);
+            printbv(&node->bvs.stage1.u.cm.ppin);
             write_string(list.c_file, "ppout --", 8U, 8U);
-            printbv(&node->bvs.stage1.cm.ppout);
+            printbv(&node->bvs.stage1.u.cm.ppout);
             if (docodehoist) {
                 write_string(list.c_file, "hoistedexp --", 0xDU, 0xDU);
                 printbv(&node->hoistedexp);
             }
             write_string(list.c_file, "insert --", 9U, 9U);
-            printbv(&node->bvs.stage1.cm.insert);
+            printbv(&node->bvs.stage1.u.cm.insert);
             write_string(list.c_file, "delete --", 9U, 9U);
-            printbv(&node->bvs.stage1.cm.delete);
+            printbv(&node->bvs.stage1.u.cm.delete);
             write_string(list.c_file, "subdelete --", 0xCU, 0xCU);
-            printbv(&node->bvs.stage1.cm.subdelete);
+            printbv(&node->bvs.stage1.u.cm.subdelete);
             write_string(list.c_file, "subinsert --", 0xCU, 0xCU);
-            printbv(&node->bvs.stage1.cm.subinsert);
+            printbv(&node->bvs.stage1.u.cm.subinsert);
             node = node->next;
         }
         write_string(list.c_file, "indmults ****", 0xDU, 0xDU);
@@ -2078,11 +2078,11 @@ void printscm(void) {
             write_string(list.c_file, "absalters --", 0xCU, 0xCU);
             printbv(&node->bvs.stage1.absalters);
             write_string(list.c_file, "source --", 9U, 9U);
-            printbv(&node->bvs.stage1.scm.source);
+            printbv(&node->bvs.stage1.u.scm.source);
             write_string(list.c_file, "sink --", 7U, 7U);
-            printbv(&node->bvs.stage1.scm.sink);
+            printbv(&node->bvs.stage1.u.scm.sink);
             write_string(list.c_file, "region --", 9U, 9U);
-            printbv(&node->bvs.stage1.scm.region);
+            printbv(&node->bvs.stage1.u.scm.region);
             node = node->next;
         }
         write_string(list.c_file, "coloreditems ****", 0x11U, 0x11U);

@@ -735,7 +735,7 @@ void copyline(void) {
             } else {
                 if (u.Ucode.Opc == Updef) {
                     if (aentptr != NULL) {
-                        aentptr->data.var.addr++;
+                        aentptr->u.aent.blockno++;
                         return;
                     }
                     unk = u.intarray[3] / 4;
@@ -915,7 +915,7 @@ void appendstorelist(void) {
     item->type = 1;
     item->unk8 = false;
     item->data.store = stattail;
-    stattail->data.bb.var_access_list = item;
+    stattail->u.store.next = item;
 }
 
 /*
@@ -975,7 +975,7 @@ void incroccurrence(struct Expression **entry) {
                     curblk != stat->expr->data.isvar_issvar.var_data.unk4bFFFFF800) &&
                     !doingcopy && !curproc->unk15)
                 {
-                    stat->data.bb.unk1D = false;
+                    stat->u.store.unk1D = false;
                     done = true;
                     stat->expr->unk6++;
                     switch ((*entry)->type) {

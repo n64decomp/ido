@@ -652,45 +652,26 @@ glabel bb_frequencies
     .size bb_frequencies, .-bb_frequencies
     .end bb_frequencies
 
-glabel ingraph
-    .ent ingraph
-    # 0043CA8C func_0043CA8C
-    # 0043CFCC readnxtinst
-/* 0042F310 3C1C0FBF */  .cpload $t9
-/* 0042F314 279CAF80 */  
-/* 0042F318 0399E021 */  
-/* 0042F31C 8F8289AC */  lw     $v0, %got(graphhead)($gp)
-/* 0042F320 00001825 */  move  $v1, $zero
-/* 0042F324 8C420000 */  lw    $v0, ($v0)
-/* 0042F328 1040000B */  beqz  $v0, .L0042F358
-/* 0042F32C 00000000 */   nop   
-/* 0042F330 8C4E0000 */  lw    $t6, ($v0)
-.L0042F334:
-/* 0042F334 548E0004 */  bnel  $a0, $t6, .L0042F348
-/* 0042F338 8C42000C */   lw    $v0, 0xc($v0)
-/* 0042F33C 10000002 */  b     .L0042F348
-/* 0042F340 24030001 */   li    $v1, 1
-/* 0042F344 8C42000C */  lw    $v0, 0xc($v0)
-.L0042F348:
-/* 0042F348 14600003 */  bnez  $v1, .L0042F358
-/* 0042F34C 00000000 */   nop   
-/* 0042F350 5440FFF8 */  bnezl $v0, .L0042F334
-/* 0042F354 8C4E0000 */   lw    $t6, ($v0)
-.L0042F358:
-/* 0042F358 50600004 */  beql  $v1, $zero, .L0042F36C
-/* 0042F35C 00001825 */   move  $v1, $zero
-/* 0042F360 03E00008 */  jr    $ra
-/* 0042F364 00000000 */   nop   
-
-/* 0042F368 00001825 */  move  $v1, $zero
-.L0042F36C:
-/* 0042F36C 03E00008 */  jr    $ra
-/* 0042F370 00601025 */   move  $v0, $v1
-    .type ingraph, @function
-    .size ingraph, .-ingraph
-    .end ingraph
-
 )"");
+
+/*
+0043CA8C func_0043CA8C
+0043CFCC readnxtinst
+*/
+struct Graphnode *ingraph(int blockno) {
+    struct Graphnode *graphnode = graphhead;
+    bool found = false;
+
+    while (!found && graphnode != NULL) {
+        if (blockno == graphnode->blockno) {
+            found = true;
+        } else {
+            graphnode = graphnode->next;
+        }
+    }
+
+    return found ? graphnode : NULL;
+}
 
 /*
 0042F424 appendgraph
@@ -700,7 +681,7 @@ glabel ingraph
 */
 void init_graphnode(struct Graphnode *node) {
     node->unkBb8 = 0;
-    node->unk0 = 0;
+    node->blockno = 0;
     node->predecessors = NULL;
     node->successors = NULL;
     node->next = NULL;
@@ -719,39 +700,26 @@ void init_graphnode(struct Graphnode *node) {
     node->bvs.init.line = curlocln;
 }
 
-__asm__(R""(
-.set noat
-.set noreorder
-.text
+/*
+0042F6CC controlflow
+004471AC codeimage
+00456310 func_00456310
+00456A2C oneproc
+004713E8 loopunroll
+004761D0 tail_recursion
+*/
+void init_node_vectors(struct Graphnode *graphnode) {
+    struct BitVector empty = {0, NULL};
 
-glabel init_node_vectors
-    .ent init_node_vectors
-    # 0042F6CC controlflow
-    # 004471AC codeimage
-    # 00456310 func_00456310
-    # 00456A2C oneproc
-    # 004713E8 loopunroll
-    # 004761D0 tail_recursion
-/* 0042F3E8 AC80010C */  sw    $zero, 0x10c($a0)
-/* 0042F3EC AC800110 */  sw    $zero, 0x110($a0)
-/* 0042F3F0 AC800104 */  sw    $zero, 0x104($a0)
-/* 0042F3F4 AC800108 */  sw    $zero, 0x108($a0)
-/* 0042F3F8 AC800114 */  sw    $zero, 0x114($a0)
-/* 0042F3FC AC800118 */  sw    $zero, 0x118($a0)
-/* 0042F400 AC80011C */  sw    $zero, 0x11c($a0)
-/* 0042F404 AC800120 */  sw    $zero, 0x120($a0)
-/* 0042F408 AC800124 */  sw    $zero, 0x124($a0)
-/* 0042F40C AC800128 */  sw    $zero, 0x128($a0)
-/* 0042F410 AC80012C */  sw    $zero, 0x12c($a0)
-/* 0042F414 AC800130 */  sw    $zero, 0x130($a0)
-/* 0042F418 AC8000F4 */  sw    $zero, 0xf4($a0)
-/* 0042F41C 03E00008 */  jr    $ra
-/* 0042F420 AC8000F8 */   sw    $zero, 0xf8($a0)
-    .type init_node_vectors, @function
-    .size init_node_vectors, .-init_node_vectors
-    .end init_node_vectors
+    graphnode->bvs.stage1.alters = empty;
+    graphnode->bvs.stage1.antlocs = empty;
+    graphnode->bvs.stage1.avlocs = empty;
+    graphnode->bvs.stage1.absalters = empty;
+    graphnode->bvs.stage1.u.precm.pavlocs = empty;
+    graphnode->bvs.stage1.u.precm.expoccur = empty;
 
-)"");
+    graphnode->indiracc = empty;
+}
 
 /*
 0043CA8C func_0043CA8C

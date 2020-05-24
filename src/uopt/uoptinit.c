@@ -675,7 +675,7 @@ void optinit(void) {
     ustack = ustackbot;
     parstackbot = (struct ParstackEntry *)alloc_new(sizeof(struct ParstackEntry), &perm_heap);
     parstackbot->unk4 = 0;
-    parstackbot->next = NULL;
+    parstackbot->down = NULL;
     parstack = parstackbot;
     curlevel = 0;
     filteringout = false;

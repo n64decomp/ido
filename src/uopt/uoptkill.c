@@ -2713,8 +2713,8 @@ void lodkillprev(struct Expression *expr) {
     struct VarAccessList *list;
 
     for (list = curgraphnode->varlisthead; list != NULL; list = list->next) {
-        if (list->type == 1 && !list->unk8 && list->data.store->data.bb.unk1D) {
-            list->data.store->data.bb.unk1D = !slkilled(list->data.store, expr);
+        if (list->type == 1 && !list->unk8 && list->data.store->u.store.unk1D) {
+            list->data.store->u.store.unk1D = !slkilled(list->data.store, expr);
         }
     }
 }

@@ -1597,7 +1597,7 @@ void extendstat(Uopcode opc) {
     }
     stat->next = NULL;
     stat->opc = opc;
-    stat->unk28 = 0;
+    stat->u.cia.unk28 = NULL; // TODO: why is this specific element set?
     stat->graphnode = curgraphnode;
     if (stathead == NULL) {
         stathead = stat;

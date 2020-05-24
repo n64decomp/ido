@@ -77,9 +77,9 @@ struct UstackEntry {
 };
 
 struct ParstackEntry {
-    void *unk0;
+    struct Statement *unk0;
     int unk4;
-    struct ParstackEntry *next;
+    struct ParstackEntry *down;
 };
 
 struct RealstoreData {
@@ -93,7 +93,7 @@ struct VarAccessList {
     struct VarAccessList *prev; // towards head
     struct VarAccessList *next; // towards tail
     bool unk8; // or unsigned char?
-    unsigned char type; // 0: none?, 1: store (Statement), 2: var (Expression)
+    unsigned char type; // 0: none?, 1: store (Statement), 2: var (Expression), 3: ? (see Upmov in readnxtinst)
     union {
         struct Statement *store; // 0xC
         struct Expression *var; // 0xC
@@ -115,7 +115,7 @@ struct JumpFallthroughBB {
 };
 
 struct Graphnode {
-    int unk0;
+    int blockno;
     bool unk4;
     unsigned char unk5; // enum: notloopfirstbb, loopfirstbb, canunroll (see printregs)
     unsigned char unk6;
@@ -189,7 +189,7 @@ struct Graphnode {
                     struct BitVector unk164; // 0x164
                     struct BitVector unk16C; // 0x16C
                 } scm;
-            };
+            } u;
         } stage1;
         struct {
             struct BitVector appear; // 0x104
@@ -280,32 +280,167 @@ struct Statement {
     struct Statement *next; // 0x8, towards tail
     struct Statement *prev; // 0xC, towards head
     struct Graphnode *graphnode; // 0x10
+
     union {
         struct {
-            Datatype dtype; // 0x14
-            unsigned char unk15;
-            unsigned char unk16; // variable size?
-            unsigned char unk17;
-            int unk18;
-            int addr; // from VariableInner
-        } var;
-        struct {
-            int bb_index; // 0x14, see tail_recursion
-            struct VarAccessList *var_access_list; // 0x18
+            struct Expression *expr; // 0x14
+            struct VarAccessList *next; // 0x18
             bool unk1C; // not strlkilled
             bool unk1D;
             bool unk1E; // not strskilled
             bool unk1F;
-        } bb;
-        struct {
-            struct Expression *expr; // 0x14
+            int size; // 0x20
+            struct Expression *baseaddr; // 0x24
+            int unk28;
+            union {
+                struct {
+                    int unk2C;
+                    int unk30;
+                } str;
+                struct {
+                    Datatype dtype;
+                    unsigned char unk2D; // LEXLEV&~7 or LENGTH*8
+                    unsigned short offset; // 0x2E
+                    int unk30; // IONE+ustack->value
+                } istr; // and istv, irst, irsv, mov, movv
+            } u;
+            struct {
+                unsigned char unk32; // IONE
+                unsigned char unk33; // LEXLEV&~7
+            } mov; // and movv
         } store;
-    } data;
-    struct Statement *unk20; // See Uclab case in readnxtinst
-    unsigned char unk24; // some flags
-    int unk28;
-    int unk2C;
-    int unk30;
+
+        struct {
+            int blockno; // 0x14
+            int length; // 0x18
+            bool unk1C; // 0/1 if matched a reference
+            int unk20;
+            unsigned char flags; // 0x24, LEXLEV
+        } label;
+
+        struct {
+            int unk14; // IONE
+        } lbgn;
+
+        struct {
+            unsigned char unk14; // LEXLEV
+        } lbdy;
+
+        struct {
+            int page; // 0x14
+            int line; // 0x18
+        } loc;
+
+        struct {
+            Datatype dtype; // 0x14
+            int unk18; // IONE
+        } clbd_cubd_step;
+
+        struct {
+            Datatype dtype; // 0x14
+            unsigned char unk15; // LENGTH
+            struct VariableInner var; // 0x18, OFFSET, IONE, MTYPE
+        } ctrl;
+
+        struct {
+            int unk14; // LEXLEV
+            int unk18; // Upar/Uxpar OFFSET+LENGTH if passbyfp
+            int loc; // 0x1C, VariableInner loc
+            struct Proc *proc; // indirprocs/ciaprocs
+        } mst;
+
+        struct {
+            int unk14;
+            int unk18; // initialized to 0
+        } chkt;
+
+        struct {
+            unsigned char mtype; // 0x14
+            int unk18; // LENGTH, tempdisp
+        } def;
+
+        struct {
+            Datatype dtype; // 0x14
+            unsigned char size; // 0x15
+            int index; // 0x18, parcount or OFFSET/4
+            int loc; // 0x1C, OFFSET
+            struct Expression *baseaddr; // 0x20
+        } par; // and xpar
+
+        struct {
+            int unk14;
+            struct VarAccessList *next; // 0x18
+            int unk1C;
+            int size; // 0x20
+            int unk24;
+            int unk28;
+            struct Expression *baseaddr; // 0x2C
+            unsigned short offset; // 0x30, OFFSET
+            unsigned char level; // 0x32, LEXLEV
+        } pmov;
+
+        struct {
+            Datatype dtype; // 0x14
+            unsigned char unk15; // 1 from Uicuf, POP from Uaent
+        } pop;
+
+        struct {
+            struct Expression *expr2; // 0x14, first expr at 0x4
+            int unk18; // initialized to 0
+            int unk20;
+            int unk24;
+            int unk28;
+            Datatype dtype; // 0x2C
+            int num; // 0x30, IONE
+        } trap;
+
+        struct {
+            Datatype dtype; // 0x14
+            int cases_blockno; // 0x18, points to a Uclab graphnode
+            int default_blockno; // 0x1C
+            struct Statement *case_stmts; // 0x20, points to the Uclab statement
+            int lbound_h; // 0x24, can't be 64-bit due to alignment
+            int lbound_l; // 0x28
+            int hbound_h; // 0x2C
+            int hbound_l; // 0x30
+        } xjp;
+
+        struct {
+            int target_blockno; // 0x14
+            int unk18;
+            int unk1C; // initialized to 0 for tjp/fjp
+        } jp; // tjp, fjp, uujp
+
+        struct {
+            struct Proc *proc; // 0x14
+            Datatype dtype; // 0x18
+            unsigned char level; // 0x19
+            unsigned short extrnal_flags; // 0x1A, EXTRNAL
+            unsigned char pop; // 0x1C, POP
+            unsigned char push_flags; // 0x1D, POP (vararg flags)
+            int unk20; // IONE for Urcuf, register number?
+            struct Statement *unk24; // from parstack
+        } call; // cup, icuf, rcuf
+
+        struct {
+            char *strp; // 0x14
+            unsigned char flags; // 0x18, LEXLEV
+            Datatype dtype; // 0x19
+            int unk1C; // LENGTH
+            int unk20; // OFFSET
+            int len; // 0x24, CONSTVAL.swpart.Ival
+            struct Statement *unk28; // from parstack
+        } cia;
+
+        struct {
+            Datatype dtype; // 0x14
+            unsigned char pop; // 0x15, POP
+            unsigned char push; // 0x16, PUSH
+            unsigned char extrnal_flags; // 0x17, EXTRNAL
+            int blockno; // 0x18, IONE
+            int unk1C; // initialized to 0
+        } aent;
+    } u;
 };
 
 struct Temploc {

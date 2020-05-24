@@ -1,3 +1,5 @@
+#include "uoptdata.h"
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -27,14 +29,6 @@ RO_1000DC4C:
     .asciz "TAIL RECURSION ELIMINATION at BB:"
 
 .data
-D_100111D0:
-    # 00475B80 next_stmt_is_ret1
-    .byte 0x00,0x80,0x00,0x10,0x80,0x00,0x00,0x00,0x20,0x00,0x40,0x00,0x80,0x00,0x00,0x00
-
-D_100111E0:
-    # 00475C80 next_stmt_is_ret
-    .byte 0x00,0x80,0x00,0x10,0x80,0x00,0x00,0x00,0x20,0x00,0x40,0x00,0x80,0x00,0x00,0x00
-
 D_100111F0:
     # 004761D0 tail_recursion
     .byte 0x00,0x00,0x40,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x08,0x0a,0x00,0x00,0x10
@@ -46,189 +40,102 @@ D_100111F0:
 .set noreorder # don't insert nops after branches
 
 .text
-glabel next_stmt_is_ret1
-    .ent next_stmt_is_ret1
-    # 00475C80 next_stmt_is_ret
-/* 00475B80 3C1C0FBA */  .cpload $t9
-/* 00475B84 279C4710 */  
-/* 00475B88 0399E021 */  
-/* 00475B8C 240A0002 */  li    $t2, 2
-/* 00475B90 8F898980 */  lw     $t1, %got(curblk)($gp)
-/* 00475B94 24080003 */  li    $t0, 3
-/* 00475B98 2407007B */  li    $a3, 123
-/* 00475B9C 24060088 */  li    $a2, 136
-.L00475BA0:
-/* 00475BA0 8C840008 */  lw    $a0, 8($a0)
-.L00475BA4:
-/* 00475BA4 90820000 */  lbu   $v0, ($a0)
-/* 00475BA8 2C4E0080 */  sltiu $t6, $v0, 0x80
-/* 00475BAC 11C00009 */  beqz  $t6, .L00475BD4
-/* 00475BB0 00000000 */   nop   
-/* 00475BB4 8F998044 */  lw    $t9, %got(D_100111D0)($gp)
-/* 00475BB8 00027943 */  sra   $t7, $v0, 5
-/* 00475BBC 000FC080 */  sll   $t8, $t7, 2
-/* 00475BC0 273911D0 */  addiu $t9, %lo(D_100111D0) # addiu $t9, $t9, 0x11d0
-/* 00475BC4 03385821 */  addu  $t3, $t9, $t8
-/* 00475BC8 8D6C0000 */  lw    $t4, ($t3)
-/* 00475BCC 004C6804 */  sllv  $t5, $t4, $v0
-/* 00475BD0 29AE0000 */  slti  $t6, $t5, 0
-.L00475BD4:
-/* 00475BD4 55C0FFF3 */  bnezl $t6, .L00475BA4
-/* 00475BD8 8C840008 */   lw    $a0, 8($a0)
-/* 00475BDC 14C20006 */  bne   $a2, $v0, .L00475BF8
-/* 00475BE0 00000000 */   nop   
-/* 00475BE4 8C990010 */  lw    $t9, 0x10($a0)
-/* 00475BE8 8F380018 */  lw    $t8, 0x18($t9)
-/* 00475BEC 8F0B0000 */  lw    $t3, ($t8)
-/* 00475BF0 1000FFEB */  b     .L00475BA0
-/* 00475BF4 8D64001C */   lw    $a0, 0x1c($t3)
-.L00475BF8:
-/* 00475BF8 54E2001D */  bnel  $a3, $v0, .L00475C70
-/* 00475BFC 3843006A */   xori  $v1, $v0, 0x6a
-/* 00475C00 8C830004 */  lw    $v1, 4($a0)
-/* 00475C04 8C620034 */  lw    $v0, 0x34($v1)
-/* 00475C08 904C0000 */  lbu   $t4, ($v0)
-/* 00475C0C 150C0009 */  bne   $t0, $t4, .L00475C34
-/* 00475C10 00000000 */   nop   
-/* 00475C14 8C4F002C */  lw    $t7, 0x2c($v0)
-/* 00475C18 8D2D0000 */  lw    $t5, ($t1)
-/* 00475C1C 000F72C2 */  srl   $t6, $t7, 0xb
-/* 00475C20 15AE0004 */  bne   $t5, $t6, .L00475C34
-/* 00475C24 00000000 */   nop   
-/* 00475C28 8C590028 */  lw    $t9, 0x28($v0)
-/* 00475C2C 50B90004 */  beql  $a1, $t9, .L00475C40
-/* 00475C30 90780000 */   lbu   $t8, ($v1)
-.L00475C34:
-/* 00475C34 03E00008 */  jr    $ra
-/* 00475C38 00001025 */   move  $v0, $zero
 
-/* 00475C3C 90780000 */  lbu   $t8, ($v1)
-.L00475C40:
-/* 00475C40 15180008 */  bne   $t0, $t8, .L00475C64
-/* 00475C44 00000000 */   nop   
-/* 00475C48 906B002E */  lbu   $t3, 0x2e($v1)
-/* 00475C4C 316C0007 */  andi  $t4, $t3, 7
-/* 00475C50 150C0004 */  bne   $t0, $t4, .L00475C64
-/* 00475C54 00000000 */   nop   
-/* 00475C58 8C6F0028 */  lw    $t7, 0x28($v1)
-/* 00475C5C 514FFFD1 */  beql  $t2, $t7, .L00475BA4
-/* 00475C60 8C840008 */   lw    $a0, 8($a0)
-.L00475C64:
-/* 00475C64 03E00008 */  jr    $ra
-/* 00475C68 00001025 */   move  $v0, $zero
+)"");
 
-/* 00475C6C 3843006A */  xori  $v1, $v0, 0x6a
-.L00475C70:
-/* 00475C70 2C630001 */  sltiu $v1, $v1, 1
-/* 00475C74 306200FF */  andi  $v0, $v1, 0xff
-/* 00475C78 03E00008 */  jr    $ra
-/* 00475C7C 00000000 */   nop   
-    .type next_stmt_is_ret1, @function
-    .size next_stmt_is_ret1, .-next_stmt_is_ret1
-    .end next_stmt_is_ret1
+/*
+00475C80 next_stmt_is_ret
+*/
+bool next_stmt_is_ret1(struct Statement *stmt, int arg1) {
+    for (;;) {
+        stmt = stmt->next;
+        switch (stmt->opc) {
+            case Ubgnb:
+            case Udef:
+            case Uendb:
+            case Ulab:
+            case Uloc:
+            case Unop:
+                continue;
+        }
+        if (stmt->opc == Uujp) {
+            stmt = stmt->graphnode->successors->graphnode->stat_head;
+            continue;
+        }
+        if (stmt->opc == Ustr) {
+            if (stmt->expr->data.isvar_issvar.unk34->type != isvar) {
+                return false;
+            }
+            if (curblk != stmt->expr->data.isvar_issvar.unk34->data.isvar_issvar.var_data.unk4bFFFFF800) {
+                return false;
+            }
+            if (arg1 != stmt->expr->data.isvar_issvar.unk34->data.isvar_issvar.var_data.addr) {
+                return false;
+            }
+            if (stmt->expr->type == isvar) {
+                if (stmt->expr->data.isvar_issvar.var_data.memtype == Rmt) {
+                    if (stmt->expr->data.isvar_issvar.var_data.addr != 2) {
+                        continue;
+                    }
+                }
+            }
+            return false;
+        }
+        return stmt->opc == Uret;
+    }
+}
 
-glabel next_stmt_is_ret
-    .ent next_stmt_is_ret
-    # 004761D0 tail_recursion
-/* 00475C80 3C1C0FBA */  .cpload $t9
-/* 00475C84 279C4610 */  
-/* 00475C88 0399E021 */  
-/* 00475C8C 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 00475C90 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 00475C94 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 00475C98 2409007B */  li    $t1, 123
-/* 00475C9C 24080088 */  li    $t0, 136
-/* 00475CA0 24070002 */  li    $a3, 2
-/* 00475CA4 24060003 */  li    $a2, 3
-.L00475CA8:
-/* 00475CA8 8C840008 */  lw    $a0, 8($a0)
-.L00475CAC:
-/* 00475CAC 90820000 */  lbu   $v0, ($a0)
-/* 00475CB0 2C4E0080 */  sltiu $t6, $v0, 0x80
-/* 00475CB4 11C00009 */  beqz  $t6, .L00475CDC
-/* 00475CB8 00000000 */   nop   
-/* 00475CBC 8F998044 */  lw    $t9, %got(D_100111E0)($gp)
-/* 00475CC0 00027943 */  sra   $t7, $v0, 5
-/* 00475CC4 000FC080 */  sll   $t8, $t7, 2
-/* 00475CC8 273911E0 */  addiu $t9, %lo(D_100111E0) # addiu $t9, $t9, 0x11e0
-/* 00475CCC 03385021 */  addu  $t2, $t9, $t8
-/* 00475CD0 8D4B0000 */  lw    $t3, ($t2)
-/* 00475CD4 004B6004 */  sllv  $t4, $t3, $v0
-/* 00475CD8 298E0000 */  slti  $t6, $t4, 0
-.L00475CDC:
-/* 00475CDC 55C0FFF3 */  bnezl $t6, .L00475CAC
-/* 00475CE0 8C840008 */   lw    $a0, 8($a0)
-/* 00475CE4 15020006 */  bne   $t0, $v0, .L00475D00
-/* 00475CE8 00000000 */   nop   
-/* 00475CEC 8C8F0010 */  lw    $t7, 0x10($a0)
-/* 00475CF0 8DF90018 */  lw    $t9, 0x18($t7)
-/* 00475CF4 8F380000 */  lw    $t8, ($t9)
-/* 00475CF8 1000FFEB */  b     .L00475CA8
-/* 00475CFC 8F04001C */   lw    $a0, 0x1c($t8)
-.L00475D00:
-/* 00475D00 5522002C */  bnel  $t1, $v0, .L00475DB4
-/* 00475D04 3843006A */   xori  $v1, $v0, 0x6a
-/* 00475D08 8C830004 */  lw    $v1, 4($a0)
-/* 00475D0C 8C620034 */  lw    $v0, 0x34($v1)
-/* 00475D10 904A0000 */  lbu   $t2, ($v0)
-/* 00475D14 14CA0008 */  bne   $a2, $t2, .L00475D38
-/* 00475D18 00000000 */   nop   
-/* 00475D1C 904B002E */  lbu   $t3, 0x2e($v0)
-/* 00475D20 316C0007 */  andi  $t4, $t3, 7
-/* 00475D24 14CC0004 */  bne   $a2, $t4, .L00475D38
-/* 00475D28 00000000 */   nop   
-/* 00475D2C 8C4D0028 */  lw    $t5, 0x28($v0)
-/* 00475D30 50ED0004 */  beql  $a3, $t5, .L00475D44
-/* 00475D34 90650000 */   lbu   $a1, ($v1)
-.L00475D38:
-/* 00475D38 10000021 */  b     .L00475DC0
-/* 00475D3C 00001025 */   move  $v0, $zero
-/* 00475D40 90650000 */  lbu   $a1, ($v1)
-.L00475D44:
-/* 00475D44 00601025 */  move  $v0, $v1
-/* 00475D48 14C50008 */  bne   $a2, $a1, .L00475D6C
-/* 00475D4C 00000000 */   nop   
-/* 00475D50 906E002E */  lbu   $t6, 0x2e($v1)
-/* 00475D54 31CF0007 */  andi  $t7, $t6, 7
-/* 00475D58 14CF0004 */  bne   $a2, $t7, .L00475D6C
-/* 00475D5C 00000000 */   nop   
-/* 00475D60 8C790028 */  lw    $t9, 0x28($v1)
-/* 00475D64 50F9FFD1 */  beql  $a3, $t9, .L00475CAC
-/* 00475D68 8C840008 */   lw    $a0, 8($a0)
-.L00475D6C:
-/* 00475D6C 14C50007 */  bne   $a2, $a1, .L00475D8C
-/* 00475D70 00000000 */   nop   
-/* 00475D74 8F988980 */  lw     $t8, %got(curblk)($gp)
-/* 00475D78 8C4A002C */  lw    $t2, 0x2c($v0)
-/* 00475D7C 8F180000 */  lw    $t8, ($t8)
-/* 00475D80 000A5AC2 */  srl   $t3, $t2, 0xb
-/* 00475D84 130B0003 */  beq   $t8, $t3, .L00475D94
-/* 00475D88 00000000 */   nop   
-.L00475D8C:
-/* 00475D8C 1000000C */  b     .L00475DC0
-/* 00475D90 00001025 */   move  $v0, $zero
-.L00475D94:
-/* 00475D94 8F9985EC */  lw    $t9, %call16(next_stmt_is_ret1)($gp)
-/* 00475D98 8C450028 */  lw    $a1, 0x28($v0)
-/* 00475D9C 0320F809 */  jalr  $t9
-/* 00475DA0 00000000 */   nop   
-/* 00475DA4 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00475DA8 10000004 */  b     .L00475DBC
-/* 00475DAC 304300FF */   andi  $v1, $v0, 0xff
-/* 00475DB0 3843006A */  xori  $v1, $v0, 0x6a
-.L00475DB4:
-/* 00475DB4 2C630001 */  sltiu $v1, $v1, 1
-/* 00475DB8 306300FF */  andi  $v1, $v1, 0xff
-.L00475DBC:
-/* 00475DBC 00601025 */  move  $v0, $v1
-.L00475DC0:
-/* 00475DC0 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 00475DC4 27BD0020 */  addiu $sp, $sp, 0x20
-/* 00475DC8 03E00008 */  jr    $ra
-/* 00475DCC 00000000 */   nop   
-    .type next_stmt_is_ret, @function
-    .size next_stmt_is_ret, .-next_stmt_is_ret
-    .end next_stmt_is_ret
+/*
+004761D0 tail_recursion
+*/
+bool next_stmt_is_ret(struct Statement *stmt) {
+    for (;;) {
+        stmt = stmt->next;
+        switch (stmt->opc) {
+            case Ubgnb:
+            case Udef:
+            case Uendb:
+            case Ulab:
+            case Uloc:
+            case Unop:
+                continue;
+        }
+        if (stmt->opc == Uujp) {
+            stmt = stmt->graphnode->successors->graphnode->stat_head;
+            continue;
+        }
+        if (stmt->opc == Ustr) {
+            if (stmt->expr->data.isvar_issvar.unk34->type != isvar) {
+                return false;
+            }
+            if (stmt->expr->data.isvar_issvar.unk34->data.isvar_issvar.var_data.memtype != Rmt) {
+                return false;
+            }
+            if (stmt->expr->data.isvar_issvar.unk34->data.isvar_issvar.var_data.addr != 2) {
+                return false;
+            }
+            if (stmt->expr->type == isvar) {
+                if (stmt->expr->data.isvar_issvar.var_data.memtype == Rmt) {
+                    if (stmt->expr->data.isvar_issvar.var_data.addr == 2) {
+                        continue;
+                    }
+                }
+            }
+            if (stmt->expr->type != isvar) {
+                return false;
+            }
+            if (curblk != stmt->expr->data.isvar_issvar.var_data.unk4bFFFFF800) {
+                return false;
+            }
+            return next_stmt_is_ret1(stmt, stmt->expr->data.isvar_issvar.var_data.addr);
+        }
+        return stmt->opc == Uret;
+    }
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel no_ref_param
     .ent no_ref_param
