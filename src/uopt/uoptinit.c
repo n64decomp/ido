@@ -446,7 +446,7 @@ void processargs(void) {
                         num = num * 10 + (arg[pos++] - '0');
                     }
                 } else {
-                    if (warn_flag != 0) {
+                    if (warn_flag != 1) {
                         write_string(err.c_file, "uopt: Warning: unrecognized option ", 35, 35);
                         warned = true;
                     }
