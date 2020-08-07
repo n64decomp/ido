@@ -9,18 +9,25 @@ struct UiniShared {
     int fmt_index;
 };
 
-// inner function
+/* inner function
+ * 00480964 uini
+ */
 static void op_name(struct UiniShared *s, Uopcode op, char name[4]) {
     memcpy(utab[op].opcname, name, 4);
     s->fmt_index = 0;
     s->op = op;
 }
 
-// inner function
+/* inner function
+ * 00480964 uini
+ */
 static void op_fmt(struct UiniShared *s, uoperand operand) {
     utab[s->op].format[s->fmt_index++] = operand;
 }
 
+/* 
+ * 00434720 processargs
+ */
 void uini() {
     struct UiniShared s;
 
@@ -514,6 +521,9 @@ void uini() {
     utab[Usign].stack_push = 1;
 }
 
+/*
+ * unused
+ */
 void getutabrec(struct utabrec *rec, Uopcode op) {
     *rec = utab[op];
 }
