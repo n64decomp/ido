@@ -28,8 +28,9 @@ static void op_fmt(struct UiniShared *s, uoperand operand) {
 /* 
  * 00434720 processargs
  */
-void uini() {
+void uini(void) {
     struct UiniShared s;
+    int i;
 
     // The volatile ops are partially undefined, format and name not set
     op_name(&s, Uabs,  "ABS "); op_fmt(&s, Sdtype); op_fmt(&s, Send);
@@ -184,7 +185,7 @@ void uini() {
     op_name(&s, Uosym, "OSYM"); op_fmt(&s, Sblockno); op_fmt(&s, Soffset); op_fmt(&s, Send);
 
     // default initialization for the rest of the fields
-    for (int i = 0; i < sizeof(utab) / sizeof(utab[0]); i++) {
+    for (i = 0; i < sizeof(utab) / sizeof(utab[0]); i++) {
         utab[i].hasattr = false;
         utab[i].hasconst = false;
         utab[i].instlength = 2;
