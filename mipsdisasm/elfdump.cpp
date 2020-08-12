@@ -397,7 +397,7 @@ static range parse_elf(disasm_state *state, unsigned char *data, long file_len, 
       shdr = SECTION(bss_section_index);
       unsigned int size = u32be(shdr->sh_size);
       uint8_t *bss = (uint8_t *)malloc(size);
-      memcpy(bss, data + u32be(shdr->sh_offset), size);
+      //memcpy(bss, data + u32be(shdr->sh_offset), size);
       disasm_bss_set(state, bss, u32be(shdr->sh_addr), size);
    }
 
