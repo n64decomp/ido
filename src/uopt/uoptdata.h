@@ -15,17 +15,17 @@ struct StrList {
 };
 
 struct livbb {
-    int unk0;
-    int unk4;
+    void *unk0; //BittabItemUnk4, previous livbb?
+    struct livbb *next;
     int unk8;
     int unkC;
     unsigned short unk10;
     unsigned char unk12;
     unsigned char unk13;
-    unsigned char unk14;
-    unsigned char unk15;
-    unsigned char unk16;
-    unsigned char unk17;
+    bool firstisstr;
+    bool needreglod;
+    bool needregsave;
+    bool deadout;
 };
 
 struct optabrec {
@@ -451,9 +451,39 @@ struct Temploc {
     struct Temploc *next;
 };
 
+struct IChain
+{
+    char unk0[0x28];
+}; // size 0x28
+
+struct InterfereWith {
+    void *unk0;
+    struct InterfereWith *next;
+};
+
+struct BittabItemUnk4 {
+    /*  0x0 */ void *unk0; // active?
+    /*  0x4 */ int unk4;   // printregs
+    /*  0x8 */ struct livbb *unk8;
+    /*  0xC */ struct BitVector *unkC;
+    /* 0x10 */ int unk10;
+    /* 0x14 */ int unk14;
+    /* 0x18 */ int unk18;
+    /* 0x1C */ int unk1C;
+    /* 0x20 */ short unk20; // printregs
+    /* 0x22 */ bool hasstore; // 0x22
+    /* 0x23 */ bool unk23;
+    /* 0x24 */ int unk24;
+    /* 0x28 */ int unk28;
+    /* 0x2C */ int unk2C;
+    /* 0x30 */ float adjsave; // 0x30
+    /* 0x34 */ struct BittabItemUnk4 *next; // 0x34
+    /* 0x38 */ struct InterfereWith *interfere; //0x38
+}; // size 0x3C
+
 struct BittabItem {
-    void *unk0; // a pointer returned by appendichain
-    int unk4;
+    struct IChain *unk0; // a pointer returned by appendichain
+    struct BittabItemUnk4 *unk4;
 };
 
 struct PdefEntry {
