@@ -671,7 +671,7 @@ void init_graphnode(struct Graphnode *node) {
     node->predecessors = NULL;
     node->successors = NULL;
     node->next = NULL;
-    node->unk6 = 0;
+    node->terminal = false;
     node->unk7 = 0;
     node->unk4 = false;
     node->unk5 = 0;
@@ -755,11 +755,11 @@ static void visit_successors(struct Graphnode *node) { // inner function
 static void visit_predecessors(struct Graphnode *node) { // inner function
     struct GraphnodeList *pred;
 
-    node->unk6 = 1; // 1 = terminal node?
+    node->terminal = true;
     pred = node->predecessors;
 
     while (pred != NULL) {
-        if (pred->graphnode->unk6 == 0) {
+        if (pred->graphnode->terminal == false) {
             visit_predecessors(pred->graphnode);
         }
         pred = pred->next;
@@ -827,7 +827,7 @@ void controlflow() {
         if (curnode->unk4 != false) {
             visit_successors(curnode);
             // unk4_nodelist := GraphnodeList.create(curnode, unk4_nodelist);
-            new_list = new (sizeof(struct GraphnodeList), false);
+            new_list = new(sizeof(struct GraphnodeList), false);
             new_list->graphnode = curnode;
             new_list->next = unk4_nodelist;
             unk4_nodelist = new_list;
@@ -997,7 +997,7 @@ void controlflow() {
             curnode->next->prev = curnode;
         }
 
-        if (curnode->unk6 == 0) {
+        if (curnode->terminal == false) {
             if (curnode->successors == NULL) {
                 visit_predecessors(curnode);
             }

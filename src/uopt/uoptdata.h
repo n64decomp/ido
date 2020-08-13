@@ -118,8 +118,8 @@ struct Graphnode {
     int blockno;
     bool unk4;
     unsigned char unk5; // enum: notloopfirstbb, loopfirstbb, canunroll (see printregs)
-    unsigned char unk6;
-    unsigned char unk7;
+    bool terminal;
+    unsigned char unk7;     // 0 = unseen, 1 = graphhead, 2 = graphtail?
     unsigned short num; // 0x8
     unsigned char loopdepth; // 0xA
     unsigned char unkBb8: 1;
