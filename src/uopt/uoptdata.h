@@ -451,8 +451,7 @@ struct Temploc {
     struct Temploc *next;
 };
 
-struct IChain
-{
+struct IChain {
     char unk0[0x28];
 }; // size 0x28
 

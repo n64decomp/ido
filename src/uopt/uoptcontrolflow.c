@@ -67,8 +67,8 @@ glabel incorp_feedback
     .ent incorp_feedback
     # 0043771C optinit
 /* 0042EB10 3C1C0FBF */  .cpload $t9
-/* 0042EB14 279CB780 */  
-/* 0042EB18 0399E021 */  
+/* 0042EB14 279CB780 */
+/* 0042EB18 0399E021 */
 /* 0042EB1C 8F868948 */  lw     $a2, %got(feedback)($gp)
 /* 0042EB20 27BDFF80 */  addiu $sp, $sp, -0x80
 /* 0042EB24 AFB50028 */  sw    $s5, 0x28($sp)
@@ -133,7 +133,7 @@ glabel incorp_feedback
 /* 0042EC00 8F9988B4 */  lw    $t9, %call16(xmalloc)($gp)
 /* 0042EC04 8DC40008 */  lw    $a0, 8($t6)
 /* 0042EC08 0320F809 */  jalr  $t9
-/* 0042EC0C 00000000 */   nop   
+/* 0042EC0C 00000000 */   nop
 /* 0042EC10 8FAF007C */  lw    $t7, 0x7c($sp)
 /* 0042EC14 AFA20064 */  sw    $v0, 0x64($sp)
 /* 0042EC18 8FBC0030 */  lw    $gp, 0x30($sp)
@@ -155,7 +155,7 @@ glabel incorp_feedback
 /* 0042EC54 00402025 */   move  $a0, $v0
 /* 0042EC58 8F99843C */  lw    $t9, %call16(getproc)($gp)
 /* 0042EC5C 0320F809 */  jalr  $t9
-/* 0042EC60 00000000 */   nop   
+/* 0042EC60 00000000 */   nop
 /* 0042EC64 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042EC68 AE220000 */  sw    $v0, ($s1)
 .L0042EC6C:
@@ -192,7 +192,7 @@ glabel incorp_feedback
 /* 0042ECE0 8E040000 */  lw    $a0, ($s0)
 /* 0042ECE4 8F998864 */  lw    $t9, %call16(writeln)($gp)
 /* 0042ECE8 0320F809 */  jalr  $t9
-/* 0042ECEC 00000000 */   nop   
+/* 0042ECEC 00000000 */   nop
 /* 0042ECF0 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042ECF4 8E040000 */  lw    $a0, ($s0)
 /* 0042ECF8 24060020 */  li    $a2, 32
@@ -208,7 +208,7 @@ glabel incorp_feedback
 /* 0042ED20 24060001 */  li    $a2, 1
 /* 0042ED24 24070010 */  li    $a3, 16
 /* 0042ED28 0320F809 */  jalr  $t9
-/* 0042ED2C 00000000 */   nop   
+/* 0042ED2C 00000000 */   nop
 /* 0042ED30 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042ED34 8E040000 */  lw    $a0, ($s0)
 /* 0042ED38 24060006 */  li    $a2, 6
@@ -224,21 +224,21 @@ glabel incorp_feedback
 /* 0042ED60 24060001 */  li    $a2, 1
 /* 0042ED64 24070010 */  li    $a3, 16
 /* 0042ED68 0320F809 */  jalr  $t9
-/* 0042ED6C 00000000 */   nop   
+/* 0042ED6C 00000000 */   nop
 /* 0042ED70 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042ED74 8E040000 */  lw    $a0, ($s0)
 /* 0042ED78 8F998864 */  lw    $t9, %call16(writeln)($gp)
 /* 0042ED7C 0320F809 */  jalr  $t9
-/* 0042ED80 00000000 */   nop   
+/* 0042ED80 00000000 */   nop
 /* 0042ED84 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042ED88 8E040000 */  lw    $a0, ($s0)
 /* 0042ED8C 8F9980A0 */  lw    $t9, %call16(fflush)($gp)
 /* 0042ED90 0320F809 */  jalr  $t9
-/* 0042ED94 00000000 */   nop   
+/* 0042ED94 00000000 */   nop
 /* 0042ED98 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042ED9C 8F998728 */  lw    $t9, %call16(abort)($gp)
 /* 0042EDA0 0320F809 */  jalr  $t9
-/* 0042EDA4 00000000 */   nop   
+/* 0042EDA4 00000000 */   nop
 /* 0042EDA8 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042EDAC 8E2C0004 */  lw    $t4, 4($s1)
 .L0042EDB0:
@@ -266,7 +266,7 @@ glabel incorp_feedback
 /* 0042EDFC 8D4A0000 */  lw    $t2, ($t2)
 /* 0042EE00 24070047 */  li    $a3, 71
 /* 0042EE04 122A0015 */  beq   $s1, $t2, .L0042EE5C
-/* 0042EE08 00000000 */   nop   
+/* 0042EE08 00000000 */   nop
 /* 0042EE0C 8F99886C */  lw    $t9, %call16(write_string)($gp)
 /* 0042EE10 8F858044 */  lw    $a1, %got(RO_1000B3C0)($gp)
 /* 0042EE14 8E040000 */  lw    $a0, ($s0)
@@ -276,26 +276,26 @@ glabel incorp_feedback
 /* 0042EE24 8E040000 */  lw    $a0, ($s0)
 /* 0042EE28 8F998864 */  lw    $t9, %call16(writeln)($gp)
 /* 0042EE2C 0320F809 */  jalr  $t9
-/* 0042EE30 00000000 */   nop   
+/* 0042EE30 00000000 */   nop
 /* 0042EE34 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042EE38 8E040000 */  lw    $a0, ($s0)
 /* 0042EE3C 8F9980A0 */  lw    $t9, %call16(fflush)($gp)
 /* 0042EE40 0320F809 */  jalr  $t9
-/* 0042EE44 00000000 */   nop   
+/* 0042EE44 00000000 */   nop
 /* 0042EE48 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042EE4C 8F998728 */  lw    $t9, %call16(abort)($gp)
 /* 0042EE50 0320F809 */  jalr  $t9
-/* 0042EE54 00000000 */   nop   
+/* 0042EE54 00000000 */   nop
 /* 0042EE58 8FBC0030 */  lw    $gp, 0x30($sp)
 .L0042EE5C:
 /* 0042EE5C 8F998774 */  lw    $t9, %call16(st_free)($gp)
 /* 0042EE60 0320F809 */  jalr  $t9
-/* 0042EE64 00000000 */   nop   
+/* 0042EE64 00000000 */   nop
 /* 0042EE68 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042EE6C 8FA40064 */  lw    $a0, 0x64($sp)
 /* 0042EE70 8F9988AC */  lw    $t9, %call16(xfree)($gp)
 /* 0042EE74 0320F809 */  jalr  $t9
-/* 0042EE78 00000000 */   nop   
+/* 0042EE78 00000000 */   nop
 /* 0042EE7C 8FBF0034 */  lw    $ra, 0x34($sp)
 /* 0042EE80 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042EE84 8FB00014 */  lw    $s0, 0x14($sp)
@@ -319,7 +319,7 @@ glabel empty_bb
 /* 0042EEAC 904E0000 */  lbu   $t6, ($v0)
 /* 0042EEB0 2DCF0080 */  sltiu $t7, $t6, 0x80
 /* 0042EEB4 11E00009 */  beqz  $t7, .L0042EEDC
-/* 0042EEB8 00000000 */   nop   
+/* 0042EEB8 00000000 */   nop
 /* 0042EEBC 8F888044 */  lw    $t0, %got(D_10010690)($gp)
 /* 0042EEC0 000EC143 */  sra   $t8, $t6, 5
 /* 0042EEC4 0018C880 */  sll   $t9, $t8, 2
@@ -337,7 +337,7 @@ glabel empty_bb
 /* 0042EEEC 8C8D0020 */  lw    $t5, 0x20($a0)
 .L0042EEF0:
 /* 0042EEF0 144D0003 */  bne   $v0, $t5, .L0042EF00
-/* 0042EEF4 00000000 */   nop   
+/* 0042EEF4 00000000 */   nop
 /* 0042EEF8 03E00008 */  jr    $ra
 /* 0042EEFC 24020001 */   li    $v0, 1
 
@@ -345,7 +345,7 @@ glabel empty_bb
 /* 0042EF00 1000FFEA */  b     .L0042EEAC
 /* 0042EF04 8C420008 */   lw    $v0, 8($v0)
 /* 0042EF08 03E00008 */  jr    $ra
-/* 0042EF0C 00000000 */   nop   
+/* 0042EF0C 00000000 */   nop
     .type empty_bb, @function
     .size empty_bb, .-empty_bb
     .end empty_bb
@@ -354,8 +354,8 @@ glabel empty_bb
 func_0042EF10:
     # 0042F0FC bb_frequencies
 /* 0042EF10 3C1C0FBF */  .cpload $t9
-/* 0042EF14 279CB380 */  
-/* 0042EF18 0399E021 */  
+/* 0042EF14 279CB380 */
+/* 0042EF18 0399E021 */
 /* 0042EF1C 27BDFFE0 */  addiu $sp, $sp, -0x20
 /* 0042EF20 AFBF001C */  sw    $ra, 0x1c($sp)
 /* 0042EF24 AFBC0018 */  sw    $gp, 0x18($sp)
@@ -377,7 +377,7 @@ func_0042EF10:
 /* 0042EF64 8E040000 */  lw    $a0, ($s0)
 /* 0042EF68 8F998864 */  lw    $t9, %call16(writeln)($gp)
 /* 0042EF6C 0320F809 */  jalr  $t9
-/* 0042EF70 00000000 */   nop   
+/* 0042EF70 00000000 */   nop
 /* 0042EF74 8FBC0018 */  lw    $gp, 0x18($sp)
 /* 0042EF78 8E040000 */  lw    $a0, ($s0)
 /* 0042EF7C 2406001F */  li    $a2, 31
@@ -414,31 +414,31 @@ func_0042EF10:
 /* 0042EFF8 8E040000 */  lw    $a0, ($s0)
 /* 0042EFFC 8F998864 */  lw    $t9, %call16(writeln)($gp)
 /* 0042F000 0320F809 */  jalr  $t9
-/* 0042F004 00000000 */   nop   
+/* 0042F004 00000000 */   nop
 /* 0042F008 8FBC0018 */  lw    $gp, 0x18($sp)
 /* 0042F00C 8E040000 */  lw    $a0, ($s0)
 /* 0042F010 8F9980A0 */  lw    $t9, %call16(fflush)($gp)
 /* 0042F014 0320F809 */  jalr  $t9
-/* 0042F018 00000000 */   nop   
+/* 0042F018 00000000 */   nop
 /* 0042F01C 8FBC0018 */  lw    $gp, 0x18($sp)
 /* 0042F020 8F998728 */  lw    $t9, %call16(abort)($gp)
 /* 0042F024 0320F809 */  jalr  $t9
-/* 0042F028 00000000 */   nop   
+/* 0042F028 00000000 */   nop
 /* 0042F02C 8FBC0018 */  lw    $gp, 0x18($sp)
 .L0042F030:
 /* 0042F030 8FBF001C */  lw    $ra, 0x1c($sp)
 /* 0042F034 8FB00014 */  lw    $s0, 0x14($sp)
 /* 0042F038 27BD0020 */  addiu $sp, $sp, 0x20
 /* 0042F03C 03E00008 */  jr    $ra
-/* 0042F040 00000000 */   nop   
+/* 0042F040 00000000 */   nop
 
     .type func_0042F044, @function
 func_0042F044:
     # 0042F044 func_0042F044
     # 0042F0FC bb_frequencies
 /* 0042F044 3C1C0FBF */  .cpload $t9
-/* 0042F048 279CB24C */  
-/* 0042F04C 0399E021 */  
+/* 0042F048 279CB24C */
+/* 0042F04C 0399E021 */
 /* 0042F050 27BDFFE0 */  addiu $sp, $sp, -0x20
 /* 0042F054 AFBF001C */  sw    $ra, 0x1c($sp)
 /* 0042F058 AFBC0018 */  sw    $gp, 0x18($sp)
@@ -448,7 +448,7 @@ func_0042F044:
 /* 0042F068 8C630008 */  lw    $v1, 8($v1)
 .L0042F06C:
 /* 0042F06C 10600004 */  beqz  $v1, .L0042F080
-/* 0042F070 00000000 */   nop   
+/* 0042F070 00000000 */   nop
 /* 0042F074 8C6E0010 */  lw    $t6, 0x10($v1)
 /* 0042F078 50AEFFFC */  beql  $a1, $t6, .L0042F06C
 /* 0042F07C 8C630008 */   lw    $v1, 8($v1)
@@ -485,14 +485,14 @@ func_0042F044:
 /* 0042F0EC 8FBF001C */  lw    $ra, 0x1c($sp)
 /* 0042F0F0 27BD0020 */  addiu $sp, $sp, 0x20
 /* 0042F0F4 03E00008 */  jr    $ra
-/* 0042F0F8 00000000 */   nop   
+/* 0042F0F8 00000000 */   nop
 
 glabel bb_frequencies
     .ent bb_frequencies
     # 00456A2C oneproc
 /* 0042F0FC 3C1C0FBF */  .cpload $t9
-/* 0042F100 279CB194 */  
-/* 0042F104 0399E021 */  
+/* 0042F100 279CB194 */
+/* 0042F104 0399E021 */
 /* 0042F108 27BDFFA8 */  addiu $sp, $sp, -0x58
 /* 0042F10C 8F8E8B6C */  lw     $t6, %got(curproc)($gp)
 /* 0042F110 AFBF0034 */  sw    $ra, 0x34($sp)
@@ -519,7 +519,7 @@ glabel bb_frequencies
 .L0042F164:
 /* 0042F164 02002025 */  move  $a0, $s0
 /* 0042F168 1720000A */  bnez  $t9, .L0042F194
-/* 0042F16C 00000000 */   nop   
+/* 0042F16C 00000000 */   nop
 /* 0042F170 8F998020 */  lw    $t9, %got(func_0042F044)($gp)
 /* 0042F174 8E280008 */  lw    $t0, 8($s1)
 /* 0042F178 02401025 */  move  $v0, $s2
@@ -533,7 +533,7 @@ glabel bb_frequencies
 /* 0042F194 8F9982BC */  lw    $t9, %call16(empty_bb)($gp)
 /* 0042F198 02002025 */  move  $a0, $s0
 /* 0042F19C 0320F809 */  jalr  $t9
-/* 0042F1A0 00000000 */   nop   
+/* 0042F1A0 00000000 */   nop
 /* 0042F1A4 10400012 */  beqz  $v0, .L0042F1F0
 /* 0042F1A8 8FBC0030 */   lw    $gp, 0x30($sp)
 /* 0042F1AC 8EC90000 */  lw    $t1, ($s6)
@@ -542,7 +542,7 @@ glabel bb_frequencies
 /* 0042F1B8 8E2A0008 */  lw    $t2, 8($s1)
 /* 0042F1BC 028A082B */  sltu  $at, $s4, $t2
 /* 0042F1C0 10200002 */  beqz  $at, .L0042F1CC
-/* 0042F1C4 00000000 */   nop   
+/* 0042F1C4 00000000 */   nop
 /* 0042F1C8 02805025 */  move  $t2, $s4
 .L0042F1CC:
 /* 0042F1CC 8F998020 */  lw    $t9, %got(func_0042F044)($gp)
@@ -568,7 +568,7 @@ glabel bb_frequencies
 /* 0042F214 02401025 */  move  $v0, $s2
 /* 0042F218 2739EF10 */  addiu $t9, %lo(func_0042EF10) # addiu $t9, $t9, -0x10f0
 /* 0042F21C 0320F809 */  jalr  $t9
-/* 0042F220 00000000 */   nop   
+/* 0042F220 00000000 */   nop
 /* 0042F224 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042F228 2631000C */  addiu $s1, $s1, 0xc
 /* 0042F22C 1000001F */  b     .L0042F2AC
@@ -576,7 +576,7 @@ glabel bb_frequencies
 /* 0042F234 0062082A */  slt   $at, $v1, $v0
 .L0042F238:
 /* 0042F238 1020000A */  beqz  $at, .L0042F264
-/* 0042F23C 00000000 */   nop   
+/* 0042F23C 00000000 */   nop
 /* 0042F240 8F998020 */  lw    $t9, %got(func_0042F044)($gp)
 /* 0042F244 AE14002C */  sw    $s4, 0x2c($s0)
 /* 0042F248 02002025 */  move  $a0, $s0
@@ -592,7 +592,7 @@ glabel bb_frequencies
 /* 0042F26C 02401025 */  move  $v0, $s2
 /* 0042F270 2739EF10 */  addiu $t9, %lo(func_0042EF10) # addiu $t9, $t9, -0x10f0
 /* 0042F274 0320F809 */  jalr  $t9
-/* 0042F278 00000000 */   nop   
+/* 0042F278 00000000 */   nop
 /* 0042F27C 8FBC0030 */  lw    $gp, 0x30($sp)
 /* 0042F280 8E340008 */  lw    $s4, 8($s1)
 /* 0042F284 2631000C */  addiu $s1, $s1, 0xc
@@ -607,7 +607,7 @@ glabel bb_frequencies
 /* 0042F2A8 00408025 */  move  $s0, $v0
 .L0042F2AC:
 /* 0042F2AC 12600003 */  beqz  $s3, .L0042F2BC
-/* 0042F2B0 00000000 */   nop   
+/* 0042F2B0 00000000 */   nop
 /* 0042F2B4 5600FFAB */  bnezl $s0, .L0042F164
 /* 0042F2B8 8E190134 */   lw    $t9, 0x134($s0)
 .L0042F2BC:
@@ -731,10 +731,10 @@ void appendgraph(void) {
     init_graphnode(graphtail);
 }
 
-/* 
+/*
 0042F4DC visit_successors
 0042F6CC controlflow
- */
+*/
 static void visit_successors(struct Graphnode *node) { // inner function
     struct GraphnodeList *succ;
 
@@ -748,10 +748,10 @@ static void visit_successors(struct Graphnode *node) { // inner function
     }
 }
 
-/* 
+/*
 0042F558 visit_predecessors
 0042F6CC controlflow
- */
+*/
 static void visit_predecessors(struct Graphnode *node) { // inner function
     struct GraphnodeList *pred;
 
@@ -766,10 +766,10 @@ static void visit_predecessors(struct Graphnode *node) { // inner function
     }
 }
 
-/* 
+/*
 0042F5D4 place_graphtail
 0042F6CC controlflow
- */
+*/
 static void place_graphtail(struct Graphnode *head) { // inner function
     struct GraphnodeList *succ;
     bool found;
@@ -798,9 +798,9 @@ static void place_graphtail(struct Graphnode *head) { // inner function
     }
 }
 
-/* 
+/*
 00456A2C oneproc
- */
+*/
 void controlflow() {
     struct Graphnode *curnode;
     struct Graphnode *loop_node;
@@ -884,7 +884,7 @@ void controlflow() {
                             if (stat->unk3 == false) {
                                 decreasecount(stat->expr->data.isvar_issvar.unk34);
                             }
-                            if (Uisst == stat->opc) {
+                            if (stat->opc == Uisst) {
                                 decreasecount(stat->u.store.expr);
                             }
                         } else {
@@ -962,11 +962,11 @@ void controlflow() {
         } else {
             if (curnode->blockno != 0 && curnode->stat_head == NULL) {
                 writeln(err.c_file);
-                write_string(err.c_file, "uopt: Internal: ", 0x10U, 0x10U);
-                write_string(err.c_file, entnam0, 0x400U, entnam0len);
-                write_string(err.c_file, ": label L", 9U, 9U);
-                write_cardinal(err.c_file, curnode->blockno, 0, 0xAU);
-                write_string(err.c_file, " undefined.", 0xBU, 0xBU);
+                write_string(err.c_file, "uopt: Internal: ", 16, 16);
+                write_string(err.c_file, entnam0, 1024, entnam0len);
+                write_string(err.c_file, ": label L", 9, 9);
+                write_cardinal(err.c_file, curnode->blockno, 0, 10);
+                write_string(err.c_file, " undefined.", 11, 11);
                 writeln(err.c_file);
                 fflush(err.c_file);
                 abort();
@@ -1005,8 +1005,8 @@ void controlflow() {
 
         // curnode->stat_tail->opc in [Ucia, Ucup, Uicuf]
         if (curnode->stat_tail->opc == Ucia || curnode->stat_tail->opc == Ucup || curnode->stat_tail->opc == Uicuf ) {
-            if (curnode->successors != NULL &&  
-                    curnode->successors->graphnode->blockno != 0 && 
+            if (curnode->successors != NULL &&
+                    curnode->successors->graphnode->blockno != 0 &&
                     curnode->successors->graphnode->predecessors->next != NULL)  {
 
                 new_node = alloc_new(sizeof(struct Graphnode), &perm_heap);
