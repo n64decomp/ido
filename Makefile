@@ -3,7 +3,7 @@ default: all
 SRC_DIRS := . src src/libmld src/libp src/libu src/libxmalloc src/uopt
 
 CC := mips-linux-gnu-gcc
-CFLAGS := -fPIC -I src
+CFLAGS := -fPIC -I src -mips2 -mfp32
 
 BUILD_DIR := build
 ALL_DIRS := $(addprefix $(BUILD_DIR)/,$(SRC_DIRS))
