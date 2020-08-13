@@ -1667,7 +1667,7 @@ int blktolev(int blk) {
 0046123C func_0046123C
 00467F04 split
 */
-int newbit(void *unk0, int unk4) {
+int newbit(void *unk0, void *unk4) {
     int insertpos;
     int newcount;
 

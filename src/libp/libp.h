@@ -45,4 +45,7 @@ void write_cardinal(FILE *file, unsigned int val, int len_to_print, unsigned int
 void write_real(FILE *file, float val, int arg2, int arg3);
 void write_boolean(FILE *file, int val, int len_to_print);
 
+// new.c
+void *new(size_t size, int zero);
+
 #endif

@@ -7,51 +7,51 @@
 /*
 100118F0 D_100118F0
 */
-static int B_10013920[4096];
+static int ugetbuf[4096];
 
 /*
 00487624 ugetbufinit
 00487668 ugetint
 00487848 ugeteof
 */
-static int B_10017920;
+static int ugetpos;
 
 /*
 00487218 uputint
 00487328 uputflush
 */
-static int B_10017928[4096];
+static int uputbuf[4096];
 
 /*
 00487218 uputint
 00487328 uputflush
 */
-static int B_1001B928;
+static int uputpos;
 
 /*
 0048752C ugetinit
 */
-static char B_1001B930[1024 + 8];
+static char ugetpath[1024 + 8];
 
 /*
 00487120 uputinit
 00487458 uputkill
 */
-static char B_1001BD38[1024 + 24];
+static char uputpath[1024 + 24];
 
 
 /*
 00487624 ugetbufinit
 00487668 ugetint
 */
-static int *D_100118F0 = B_10013920;
+static int *ugetbufp = ugetbuf;
 
 /*
 00487624 ugetbufinit
 00487668 ugetint
 00487848 ugeteof
 */
-static int D_100118F4 = -1;
+static int ugetbuflen = -1;
 
 /*
 0048752C ugetinit
@@ -60,7 +60,7 @@ static int D_100118F4 = -1;
 00487668 ugetint
 004878AC ugetclose
 */
-static int D_100118F8 = -1;
+static int ugetfd = -1;
 
 /*
 00487120 uputinit
@@ -70,7 +70,7 @@ static int D_100118F8 = -1;
 00487408 uputclose
 00487458 uputkill
 */
-static int D_100118FC = -1;
+static int uputfd = -1;
 
 /*
 00486690 inituwrite
@@ -78,18 +78,18 @@ static int D_100118FC = -1;
 void uputinit(const char *path) {
     char *pos;
 
-    pos = B_1001BD38;
+    pos = uputpath;
     while (*path != '\0' && *path != ' ') {
         *pos++ = *path++;
-        if (pos >= B_1001BD38 + 1024) {
+        if (pos >= uputpath + 1024) {
             break;
         }
     }
     *pos = '\0';
-    if (B_1001BD38[0] != '\0') {
-        D_100118FC = open(B_1001BD38, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-        if (D_100118FC < 0) {
-            perror(B_1001BD38);
+    if (uputpath[0] != '\0') {
+        uputfd = open(uputpath, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        if (uputfd < 0) {
+            perror(uputpath);
             exit(1);
         }
     }
@@ -97,38 +97,38 @@ void uputinit(const char *path) {
 
 // unused
 void uputinitfd(int fd) {
-    D_100118FC = fd;
+    uputfd = fd;
 }
 
 /*
 00486880 uwrite
 */
 void uputint(int value) {
-    if (D_100118FC < 0) {
+    if (uputfd < 0) {
         fprintf(stderr, "uput: output file not initialized\n");
         fflush(stderr);
         exit(1);
     }
-    if (B_1001B928 >= 0x1000) {
-        if (write(D_100118FC, B_10017928, 0x4000) != 0x4000) {
+    if (uputpos >= 0x1000) {
+        if (write(uputfd, uputbuf, 0x4000) != 0x4000) {
             perror("writing out file");
             exit(1);
         }
-        B_1001B928 = 0;
+        uputpos = 0;
     }
-    B_10017928[B_1001B928++] = value;
+    uputbuf[uputpos++] = value;
 }
 
 /*
 00487408 uputclose
 */
 void uputflush(void) {
-    if (D_100118FC < 0) {
+    if (uputfd < 0) {
         fprintf(stderr, "uput: output file not initialized\n");
         fflush(stderr);
         exit(1);
     }
-    if (write(D_100118FC, B_10017928, B_1001B928 * 4) != (B_1001B928 * 4)) {
+    if (write(uputfd, uputbuf, uputpos * 4) != (uputpos * 4)) {
         perror("writing out file");
         exit(1);
     }
@@ -139,21 +139,21 @@ void uputflush(void) {
 */
 void uputclose(void) {
     uputflush();
-    close(D_100118FC);
-    D_100118FC = -1;
+    close(uputfd);
+    uputfd = -1;
 }
 
 /*
 00486E50 stopucode
 */
 void uputkill(void) {
-    if (D_100118FC < 0) {
+    if (uputfd < 0) {
         fprintf(stderr, "uput: output file not initialized\n");
         fflush(stderr);
         exit(1);
     }
-    if (B_1001BD38[0] != '\0') {
-        unlink(B_1001BD38);
+    if (uputpath[0] != '\0') {
+        unlink(uputpath);
         return;
     }
     fprintf(stderr, "uput: cannot unlink because uputinitfd was used\n");
@@ -166,18 +166,18 @@ void uputkill(void) {
 void ugetinit(const char *path) {
     char *pos;
 
-    pos = B_1001B930;
+    pos = ugetpath;
     while (*path != '\0' && *path != ' ') {
         *pos++ = *path++;
-        if (pos >= B_1001B930 + 1024) {
+        if (pos >= ugetpath + 1024) {
             break;
         }
     }
     *pos = '\0';
-    if (B_1001B930[0] != '\0') {
-        D_100118F8 = open(B_1001B930, O_RDONLY, 0);
-        if (D_100118F8 < 0) {
-            perror(B_1001B930);
+    if (ugetpath[0] != '\0') {
+        ugetfd = open(ugetpath, O_RDONLY, 0);
+        if (ugetfd < 0) {
+            perror(ugetpath);
             exit(1);
         }
     }
@@ -185,15 +185,15 @@ void ugetinit(const char *path) {
 
 // unused
 void ugetinitfd(int fd) {
-    D_100118F8 = fd;
+    ugetfd = fd;
 }
 
 // unused
 void ugetbufinit(int *buf, int len_bytes) {
-    D_100118F8 = 0xFFFF;
-    D_100118F0 = buf;
-    D_100118F4 = len_bytes / 4;
-    B_10017920 = 0;
+    ugetfd = 0xFFFF;
+    ugetbufp = buf;
+    ugetbuflen = len_bytes / 4;
+    ugetpos = 0;
 }
 
 /*
@@ -203,22 +203,22 @@ void ugetbufinit(int *buf, int len_bytes) {
 int ugetint(void) {
     int nread;
 
-    if (D_100118F8 < 0) {
+    if (ugetfd < 0) {
         fprintf(stderr, "uget: input file not initialized\n");
         fflush(stderr);
         exit(1);
     }
-    if (B_10017920 >= D_100118F4) { // pos >= end
-        if (D_100118F8 == 0xFFFF) {
-            if (D_100118F4 > 0) { // This feels buggy, inverted if?
-                D_100118F4 = 0;
+    if (ugetpos >= ugetbuflen) { // pos >= end
+        if (ugetfd == 0xFFFF) {
+            if (ugetbuflen > 0) { // This feels buggy, inverted if?
+                ugetbuflen = 0;
             } else {
                 fprintf(stderr, "read too much from get buffer\n");
                 exit(1);
             }
-            nread = D_100118F4;
+            nread = ugetbuflen;
         } else {
-            nread = read(D_100118F8, D_100118F0, 0x4000);
+            nread = read(ugetfd, ugetbufp, 0x4000);
             if (nread < 0) {
                 perror("reading in file");
                 exit(1);
@@ -229,10 +229,10 @@ int ugetint(void) {
                 exit(1);
             }
         }
-        D_100118F4 = nread / 4;
-        B_10017920 = 0;
+        ugetbuflen = nread / 4;
+        ugetpos = 0;
     }
-    return D_100118F0[B_10017920++];
+    return ugetbufp[ugetpos++];
 }
 
 /*
@@ -240,10 +240,10 @@ int ugetint(void) {
 */
 int ugeteof(void) {
     ugetint();
-    if (D_100118F4 == 0) {
+    if (ugetbuflen == 0) {
         return 1;
     } else {
-        B_10017920--;
+        ugetpos--;
         return 0;
     }
 }
@@ -252,13 +252,13 @@ int ugeteof(void) {
 00487960 resetur
 */
 void ugetclose(void) {
-    if (D_100118F8 < 0) {
+    if (ugetfd < 0) {
         fprintf(stderr, "uget: input file not initialized\n");
         fflush(stderr);
         exit(1);
     }
-    if (D_100118F8 != 0xFFFF) {
-        close(D_100118F8);
+    if (ugetfd != 0xFFFF) {
+        close(ugetfd);
     }
-    D_100118F8 = -1;
+    ugetfd = -1;
 }
