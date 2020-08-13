@@ -125,7 +125,7 @@ struct Graphnode {
     unsigned char unkBb8: 1;
     unsigned char unkBb4: 1;
     struct Graphnode *next; // 0xC
-    int unk10;
+    struct Graphnode *prev; // 0x10
     struct GraphnodeList *predecessors; // 0x14
     struct GraphnodeList *successors; // 0x18
     struct Statement *stat_head; // 0x1C
