@@ -39,18 +39,6 @@ RO_1000B49D:
     # 0042EF10 func_0042EF10
     .asciz " uopt: Internal error: Basic block record magic number mismatch in feedback file."
 
-RO_1000B4F0:
-    # 0042F6CC controlflow
-    .ascii " undefined."
-
-RO_1000B4FB:
-    # 0042F6CC controlflow
-    .ascii ": label L"
-
-RO_1000B504:
-    # 0042F6CC controlflow
-    .asciz "uopt: Internal: "
-
 .data
 D_10010690:
     # 0042EEA8 empty_bb
