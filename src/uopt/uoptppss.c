@@ -81,10 +81,10 @@ unsigned char compareloc(struct VariableInner a, struct VariableInner b, int siz
     if (a.memtype > b.memtype) {
         return 2;
     }
-    if (a.unk4bFFFFF800 < b.unk4bFFFFF800) {
+    if (a.blockno < b.blockno) {
         return 1;
     }
-    if (a.unk4bFFFFF800 > b.unk4bFFFFF800) {
+    if (a.blockno > b.blockno) {
         return 2;
     }
     if (overlapping(a, b, size_a, size_b)) {
@@ -104,10 +104,10 @@ int compareaddr(struct VariableInner a, struct VariableInner b) {
     if (a.memtype > b.memtype) {
         return 2;
     }
-    if (a.unk4bFFFFF800 < b.unk4bFFFFF800) {
+    if (a.blockno < b.blockno) {
         return 1;
     }
-    if (a.unk4bFFFFF800 > b.unk4bFFFFF800) {
+    if (a.blockno > b.blockno) {
         return 2;
     }
     if (a.addr < b.addr) {
@@ -374,7 +374,7 @@ void make_subloc_veqv(struct VariableInner var, int size, struct Variable **pos)
 0045A480 oneinstruction
 0045B508 oneprocprepass
 */
-struct Variable *insertvar(struct VariableInner var, int size, Datatype dtype, struct Variable **pos, bool arg5_unused, bool arg6, bool arg7) {
+struct Variable *insertvar(struct VariableInner var, int size, Datatype dtype, struct Variable **pos, bool arg5_unused, bool arg6, bool arg7) { //arg7 = is_register?
     struct Variable *v = *pos;
     bool done = false;
     bool updated_size;
@@ -595,9 +595,9 @@ void insertlda(struct VariableInner var, int size) {
     int hash;
     int cmp;
 
-    hash = var.unk4bFFFFF800 % 3113;
+    hash = var.blockno % 3113;
     if (hash < 0) {
-        // never happens (var.unk4bFFFFF800 is unsigned)
+        // never happens (var.blockno is unsigned)
         hash += 3113;
     }
 
@@ -735,13 +735,13 @@ void oneinstruction(void) {
             break;
 
         case Uoptn:
-            if (u.Ucode.I1 == 1) {
+            if (u.Ucode.I1 == 1) { // UCO_VARARGS?
                 var.memtype = Pmt;
-                var.unk4bFFFFF800 = curproc->id;
+                var.blockno = curproc->id;
                 var.addr = u.intarray[2];
                 insertvar(var, 8000, Ldt, &curproc->vartree, false, true, false);
                 curproc->unkB = true;
-            } else if (u.Ucode.I1 == 0 && !fortran_lang) {
+            } else if (u.Ucode.I1 == UCO_SOURCE && !fortran_lang) {
                 switch (u.intarray[2]) {
                     case PASCAL_SOURCE:
                         lang = LANG_PASCAL;
@@ -773,7 +773,7 @@ void oneinstruction(void) {
 
         case Ucsym:
             var.memtype = Smt;
-            var.unk4bFFFFF800 = u.Ucode.I1;
+            var.blockno = u.Ucode.I1;
             var.addr = 0;
             if (lang == LANG_FORTRAN || (lang == LANG_PASCAL && nopalias)) {
                 if (!nof77alias) {
@@ -799,7 +799,7 @@ void oneinstruction(void) {
         case Ugsym:
             var.memtype = Smt;
             var.addr = 0;
-            var.unk4bFFFFF800 = u.Ucode.I1;
+            var.blockno = u.Ucode.I1;
             if (u.intarray[2] == 0) {
                 insertlda(var, 0x7FFFFFFF);
             } else {
@@ -819,7 +819,7 @@ void oneinstruction(void) {
 
         case Uvreg:
             var.memtype = u.Ucode.Mtype;
-            var.unk4bFFFFF800 = u.Ucode.I1;
+            var.blockno = u.Ucode.I1;
             var.addr = u.intarray[3];
             insertvar(var, u.intarray[2], u.Ucode.Dtype, &curproc->vartree, false, false, true);
             break;
@@ -829,10 +829,10 @@ void oneinstruction(void) {
         case Uisst:
         case Ulod:
             var.memtype = u.Ucode.Mtype;
-            var.unk4bFFFFF800 = u.Ucode.I1;
+            var.blockno = u.Ucode.I1;
             var.addr = u.intarray[3];
             if (var.memtype == Rmt) {
-                var.unk4bFFFFF800 = 0;
+                var.blockno = 0;
             }
             lexlev1 = (u.Ucode.Lexlev & 1) != 0;
             unk = lexlev1 || (in_exception_block > 0 && u.Ucode.Mtype != Rmt);
@@ -845,7 +845,7 @@ void oneinstruction(void) {
         case Uldap:
         case Uldsp:
             var.memtype = Rmt;
-            var.unk4bFFFFF800 = u.Ucode.Opc == Uldap;
+            var.blockno = u.Ucode.Opc == Uldap;
             var.addr = 29;
             insertvar(var, 4, Adt, &curproc->vartree, true, true, false);
             break;
@@ -853,10 +853,10 @@ void oneinstruction(void) {
         case Uilda:
         case Ulda:
             var.memtype = u.Ucode.Mtype;
-            var.unk4bFFFFF800 = u.Ucode.I1;
+            var.blockno = u.Ucode.I1;
             var.addr = u.intarray[4];
             if (var.memtype == Rmt) {
-                var.unk4bFFFFF800 = 0;
+                var.blockno = 0;
             }
             if (lang == LANG_ADA && u.intarray[2] == -1) {
                 if (var.memtype == Mmt) {
@@ -1045,7 +1045,7 @@ void oneprocprepass(void) {
     in_exception_block = 0;
     if ((lang == LANG_ADA || lang == LANG_PL1 || lang == LANG_COBOL) && !IS_EXTERNAL_ATTR(u.Ucode.Uopcde.uent.Extrnal)) {
         var.memtype = Mmt;
-        var.unk4bFFFFF800 = u.Ucode.I1;
+        var.blockno = u.Ucode.I1;
         var.addr = -4;
         insertvar(var, 4, Adt, &curproc->vartree, true, false, true);
     }
@@ -1286,7 +1286,7 @@ void checkforvreg(struct Variable *var) {
 
     if (var != NULL) {
         if (!var->unk1 && !var->unk2) {
-            hash = var->inner.unk4bFFFFF800 % 3113;
+            hash = var->inner.blockno % 3113;
             if (hash < 0) {
                 hash += 3113; // dead code
             }

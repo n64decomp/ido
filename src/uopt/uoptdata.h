@@ -46,7 +46,7 @@ struct Label {
 // See insertvar
 struct VariableInner {
     int addr; // can be negative, stack offset?
-    unsigned int unk4bFFFFF800: 21;
+    unsigned int blockno: 21;
     unsigned int memtype: 3;
     unsigned int level: 8; // see furthervarintree
 };
@@ -77,8 +77,8 @@ struct UstackEntry {
 };
 
 struct ParstackEntry {
-    struct Statement *unk0;
-    int unk4;
+    struct Statement *par; // Upar, Uxpar or Upmov
+    struct ParstackEntry *up;
     struct ParstackEntry *down;
 };
 
@@ -284,7 +284,7 @@ struct Statement {
     union {
         struct {
             struct Expression *expr; // 0x14
-            struct VarAccessList *next; // 0x18
+            struct VarAccessList *var_access_list_item; // 0x18
             bool unk1C; // not strlkilled
             bool unk1D;
             bool unk1E; // not strskilled
@@ -298,16 +298,18 @@ struct Statement {
                     int unk30;
                 } str;
                 struct {
-                    Datatype dtype;
+                    Datatype dtype; // 0x2C
                     unsigned char unk2D; // LEXLEV&~7 or LENGTH*8
                     unsigned short offset; // 0x2E
                     int unk30; // IONE+ustack->value
-                } istr; // and istv, irst, irsv, mov, movv
+                } istr; // and istv, irst, irsv
+                struct {
+                    struct Expression *baseaddr; // 0x2C
+                    unsigned short offset; // 0x30, OFFSET for Upmov
+                    unsigned char unk32; // IONE for Umov, Umovv and LEXLEV for Upmov
+                    unsigned char unk33; // LEXLEV&~7 for Umov, Umovv
+                } mov; // and movv
             } u;
-            struct {
-                unsigned char unk32; // IONE
-                unsigned char unk33; // LEXLEV&~7
-            } mov; // and movv
         } store;
 
         struct {
@@ -316,11 +318,16 @@ struct Statement {
             bool unk1C; // 0/1 if matched a reference
             int unk20;
             unsigned char flags; // 0x24, LEXLEV
+            int unk28; // initialized to 0 in tail_recursion
         } label;
 
         struct {
             int unk14; // IONE
         } lbgn;
+
+        struct {
+            int blockno; // IONE
+        } bgnb; // and endb
 
         struct {
             unsigned char unk14; // LEXLEV
@@ -365,19 +372,8 @@ struct Statement {
             int index; // 0x18, parcount or OFFSET/4
             int loc; // 0x1C, OFFSET
             struct Expression *baseaddr; // 0x20
+            struct Statement *next; // 0x24, linked list of parameters
         } par; // and xpar
-
-        struct {
-            int unk14;
-            struct VarAccessList *next; // 0x18
-            int unk1C;
-            int size; // 0x20
-            int unk24;
-            int unk28;
-            struct Expression *baseaddr; // 0x2C
-            unsigned short offset; // 0x30, OFFSET
-            unsigned char level; // 0x32, LEXLEV
-        } pmov;
 
         struct {
             Datatype dtype; // 0x14
@@ -417,13 +413,13 @@ struct Statement {
             unsigned char level; // 0x19
             unsigned short extrnal_flags; // 0x1A, EXTRNAL
             unsigned char pop; // 0x1C, POP
-            unsigned char push_flags; // 0x1D, POP (vararg flags)
+            unsigned char push_flags; // 0x1D, PUSH (stdarg flags)
             int unk20; // IONE for Urcuf, register number?
-            struct Statement *unk24; // from parstack
+            struct Statement *parameters; // 0x24, from parstack, linked list
         } call; // cup, icuf, rcuf
 
         struct {
-            char *strp; // 0x14
+            int strp_pos; // 0x14
             unsigned char flags; // 0x18, LEXLEV
             Datatype dtype; // 0x19
             int unk1C; // LENGTH
@@ -495,6 +491,8 @@ struct PdefEntry {
     int size; // from u.intarray[2]
 };
 
+struct ITableEntry;
+
 enum ExpressionType {
     empty, // 0
     islda, // 1
@@ -528,7 +526,7 @@ struct Expression {
     unsigned short int table_index; // 0x8
     int chain_index; // 0xC
     struct Graphnode *graphnode; // 0x10
-    void *unk14;
+    struct ITableEntry *itable_entry; // 0x14
     struct VarAccessList *var_access_list; // 0x18
     struct Expression *next; // 0x1C
 
@@ -610,6 +608,24 @@ struct Expression {
             int unk24;
         } isrconst;
     } data; // 0x20
+};
+
+struct ITableEntry {
+    unsigned char unk0; // type?
+    unsigned char unk1;
+    unsigned char unk2;
+    unsigned char unk3;
+    unsigned short table_index; // 0x4
+    unsigned short chain_index; // 0x6
+    int unk8;
+    struct ITableEntry *next; // 0xC
+    int unk10;
+    int unk14;
+    unsigned char unk18;
+    unsigned char unk19; // see fix_par_vreg inner function
+    int unk1C;
+    int unk20;
+    int unk24;
 };
 
 extern union Bcode u;
@@ -700,7 +716,7 @@ extern int pdeftabsize;
 extern int highestmdef;
 extern int pdefmax;
 extern int pdefno;
-extern void *itable[1619]; // TODO: fix type
+extern struct ITableEntry *itable[1619];
 extern void *toplevelloops; // TODO: fix type (some linked list of 20 bytes data + 4 byte next ptr)
 extern void *looptab; // TODO: fix type
 extern int actnuminteeregs;

@@ -1,3 +1,7 @@
+#include "libxmalloc/xmalloc.h"
+#include "uoptdata.h"
+#include "uoptitab.h"
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -576,84 +580,48 @@ glabel opvalihash
     .size opvalihash, .-opvalihash
     .end opvalihash
 
-glabel appendichain
-    .ent appendichain
-    # 00444A84 isearchloop
-    # 00445AEC trep_image
-    # 00446E18 searchstore
-/* 00444984 3C1C0FBD */  .cpload $t9
-/* 00444988 279C590C */  
-/* 0044498C 0399E021 */  
-/* 00444990 27BDFFC8 */  addiu $sp, $sp, -0x38
-/* 00444994 AFA40038 */  sw    $a0, 0x38($sp)
-/* 00444998 97AE003A */  lhu   $t6, 0x3a($sp)
-/* 0044499C 8F988DF0 */  lw     $t8, %got(itable)($gp)
-/* 004449A0 AFA5003C */  sw    $a1, 0x3c($sp)
-/* 004449A4 000E7880 */  sll   $t7, $t6, 2
-/* 004449A8 01F83021 */  addu  $a2, $t7, $t8
-/* 004449AC 8CC50000 */  lw    $a1, ($a2)
-/* 004449B0 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 004449B4 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 004449B8 54A0000D */  bnezl $a1, .L004449F0
-/* 004449BC 8CA2000C */   lw    $v0, 0xc($a1)
-/* 004449C0 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 004449C4 24040028 */  li    $a0, 40
-/* 004449C8 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 004449CC 0320F809 */  jalr  $t9
-/* 004449D0 AFA60020 */   sw    $a2, 0x20($sp)
-/* 004449D4 8FA60020 */  lw    $a2, 0x20($sp)
-/* 004449D8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004449DC 00401825 */  move  $v1, $v0
-/* 004449E0 00002025 */  move  $a0, $zero
-/* 004449E4 10000014 */  b     .L00444A38
-/* 004449E8 ACC20000 */   sw    $v0, ($a2)
-/* 004449EC 8CA2000C */  lw    $v0, 0xc($a1)
-.L004449F0:
-/* 004449F0 00A01825 */  move  $v1, $a1
-/* 004449F4 10400005 */  beqz  $v0, .L00444A0C
-/* 004449F8 00000000 */   nop   
-/* 004449FC 00401825 */  move  $v1, $v0
-.L00444A00:
-/* 00444A00 8C42000C */  lw    $v0, 0xc($v0)
-/* 00444A04 5440FFFE */  bnezl $v0, .L00444A00
-/* 00444A08 00401825 */   move  $v1, $v0
-.L00444A0C:
-/* 00444A0C 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 00444A10 24040028 */  li    $a0, 40
-/* 00444A14 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 00444A18 0320F809 */  jalr  $t9
-/* 00444A1C AFA30030 */   sw    $v1, 0x30($sp)
-/* 00444A20 8FA30030 */  lw    $v1, 0x30($sp)
-/* 00444A24 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00444A28 94640006 */  lhu   $a0, 6($v1)
-/* 00444A2C AC62000C */  sw    $v0, 0xc($v1)
-/* 00444A30 00401825 */  move  $v1, $v0
-/* 00444A34 24840001 */  addiu $a0, $a0, 1
-.L00444A38:
-/* 00444A38 54400007 */  bnezl $v0, .L00444A58
-/* 00444A3C 97A8003A */   lhu   $t0, 0x3a($sp)
-/* 00444A40 8F818B20 */  lw     $at, %got(outofmem)($gp)
-/* 00444A44 24190001 */  li    $t9, 1
-/* 00444A48 8FA20034 */  lw    $v0, 0x34($sp)
-/* 00444A4C 10000009 */  b     .L00444A74
-/* 00444A50 A0390000 */   sb    $t9, ($at)
-/* 00444A54 97A8003A */  lhu   $t0, 0x3a($sp)
-.L00444A58:
-/* 00444A58 A0600000 */  sb    $zero, ($v1)
-/* 00444A5C A4640006 */  sh    $a0, 6($v1)
-/* 00444A60 AC60000C */  sw    $zero, 0xc($v1)
-/* 00444A64 AC600020 */  sw    $zero, 0x20($v1)
-/* 00444A68 AC600008 */  sw    $zero, 8($v1)
-/* 00444A6C 00601025 */  move  $v0, $v1
-/* 00444A70 A4680004 */  sh    $t0, 4($v1)
-.L00444A74:
-/* 00444A74 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 00444A78 27BD0038 */  addiu $sp, $sp, 0x38
-/* 00444A7C 03E00008 */  jr    $ra
-/* 00444A80 00000000 */   nop   
-    .type appendichain, @function
-    .size appendichain, .-appendichain
-    .end appendichain
+)"");
+
+/*
+00444A84 isearchloop
+00445AEC trep_image
+00446E18 searchstore
+*/
+struct ITableEntry *appendichain(unsigned short table_index, bool arg1_unused) {
+    struct ITableEntry *pos;
+    struct ITableEntry *new_entry;
+    unsigned short chain_index;
+
+    pos = itable[table_index];
+    if (pos == NULL) {
+        new_entry = (struct ITableEntry *)alloc_new(sizeof(struct ITableEntry), &perm_heap);
+        pos = new_entry;
+        itable[table_index] = new_entry;
+        chain_index = 0;
+    } else {
+        while (pos->next != NULL) {
+            pos = pos->next;
+        }
+        new_entry = (struct ITableEntry *)alloc_new(sizeof(struct ITableEntry), &perm_heap);
+        pos->next = new_entry;
+        chain_index = pos->chain_index + 1;
+    }
+    if (new_entry == NULL) {
+        outofmem = true;
+        return NULL; // originally some unused stack slot value was returned
+    }
+    new_entry->unk0 = 0;
+    new_entry->chain_index = chain_index;
+    new_entry->next = NULL;
+    new_entry->unk20 = 0;
+    new_entry->unk8 = 0;
+    new_entry->table_index = table_index;
+    return new_entry;
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel isearchloop
     .ent isearchloop

@@ -1,4 +1,6 @@
 #include "uoptdata.h"
+#include "uopttail.h"
+#include "uoptutil.h"
 
 __asm__(R""(
 .macro glabel label
@@ -66,7 +68,7 @@ bool next_stmt_is_ret1(struct Statement *stmt, int arg1) {
             if (stmt->expr->data.isvar_issvar.unk34->type != isvar) {
                 return false;
             }
-            if (curblk != stmt->expr->data.isvar_issvar.unk34->data.isvar_issvar.var_data.unk4bFFFFF800) {
+            if (curblk != stmt->expr->data.isvar_issvar.unk34->data.isvar_issvar.var_data.blockno) {
                 return false;
             }
             if (arg1 != stmt->expr->data.isvar_issvar.unk34->data.isvar_issvar.var_data.addr) {
@@ -124,7 +126,7 @@ bool next_stmt_is_ret(struct Statement *stmt) {
             if (stmt->expr->type != isvar) {
                 return false;
             }
-            if (curblk != stmt->expr->data.isvar_issvar.var_data.unk4bFFFFF800) {
+            if (curblk != stmt->expr->data.isvar_issvar.var_data.blockno) {
                 return false;
             }
             return next_stmt_is_ret1(stmt, stmt->expr->data.isvar_issvar.var_data.addr);
@@ -133,192 +135,67 @@ bool next_stmt_is_ret(struct Statement *stmt) {
     }
 }
 
+/*
+004761D0 tail_recursion
+*/
+bool no_ref_param(struct Statement *parameters) {
+    struct Expression *baseaddr;
+    while (parameters != NULL) {
+        if (parameters->u.par.dtype == Adt) {
+            baseaddr = parameters->u.par.baseaddr;
+            if (baseaddr->type == islda && curblk == baseaddr->data.islda.var_data.blockno) {
+                return false;
+            }
+        }
+        parameters = parameters->u.par.next;
+    }
+    return true;
+}
+
+/*
+00475E38 func_00475E38
+00475FE8 fix_par_vreg
+*/
+static void func_00475E38(struct Variable *vartree, struct Statement *pmov_stmt) {
+    struct Expression *expr;
+    if (vartree != NULL) {
+        if (vartree->unk2 && vartree->inner.memtype == Pmt && curblk == vartree->inner.blockno) {
+            int loc = vartree->inner.addr;
+            if ((loc >= pmov_stmt->u.store.u.mov.offset && loc - pmov_stmt->u.store.u.mov.offset < pmov_stmt->u.store.size) ||
+                (pmov_stmt->u.store.u.mov.offset >= loc && pmov_stmt->u.store.u.mov.offset - loc < vartree->size))
+            {
+                for (expr = table[isvarhash(vartree->inner)]; expr != NULL; expr = expr->next) {
+                    if (expr->type != isvar) {
+                        continue;
+                    }
+                    if (curblk != expr->data.isvar_issvar.var_data.blockno) {
+                        continue;
+                    }
+                    if (vartree->inner.addr != expr->data.isvar_issvar.var_data.addr) {
+                        continue;
+                    }
+                    expr->data.isvar_issvar.unk22 = false;
+                    if (expr->itable_entry != NULL) {
+                        expr->itable_entry->unk19 = 0;
+                    }
+                }
+            }
+        }
+        func_00475E38(vartree->left, pmov_stmt);
+        func_00475E38(vartree->right, pmov_stmt);
+    }
+}
+
+/*
+004761D0 tail_recursion
+*/
+void fix_par_vreg(struct Statement *pmov_stmt) {
+    func_00475E38(curproc->vartree, pmov_stmt);
+}
+
 __asm__(R""(
 .set noat
 .set noreorder
-
-glabel no_ref_param
-    .ent no_ref_param
-    # 004761D0 tail_recursion
-/* 00475DD0 3C1C0FBA */  .cpload $t9
-/* 00475DD4 279C44C0 */  
-/* 00475DD8 0399E021 */  
-/* 00475DDC 10800013 */  beqz  $a0, .L00475E2C
-/* 00475DE0 24030001 */   li    $v1, 1
-/* 00475DE4 8F858980 */  lw     $a1, %got(curblk)($gp)
-/* 00475DE8 908E0014 */  lbu   $t6, 0x14($a0)
-.L00475DEC:
-/* 00475DEC 55C0000D */  bnezl $t6, .L00475E24
-/* 00475DF0 8C840024 */   lw    $a0, 0x24($a0)
-/* 00475DF4 8C820020 */  lw    $v0, 0x20($a0)
-/* 00475DF8 904F0000 */  lbu   $t7, ($v0)
-/* 00475DFC 546F0009 */  bnel  $v1, $t7, .L00475E24
-/* 00475E00 8C840024 */   lw    $a0, 0x24($a0)
-/* 00475E04 8C590030 */  lw    $t9, 0x30($v0)
-/* 00475E08 8CB80000 */  lw    $t8, ($a1)
-/* 00475E0C 001942C2 */  srl   $t0, $t9, 0xb
-/* 00475E10 57080004 */  bnel  $t8, $t0, .L00475E24
-/* 00475E14 8C840024 */   lw    $a0, 0x24($a0)
-/* 00475E18 03E00008 */  jr    $ra
-/* 00475E1C 00001025 */   move  $v0, $zero
-
-/* 00475E20 8C840024 */  lw    $a0, 0x24($a0)
-.L00475E24:
-/* 00475E24 5480FFF1 */  bnezl $a0, .L00475DEC
-/* 00475E28 908E0014 */   lbu   $t6, 0x14($a0)
-.L00475E2C:
-/* 00475E2C 24020001 */  li    $v0, 1
-/* 00475E30 03E00008 */  jr    $ra
-/* 00475E34 00000000 */   nop   
-    .type no_ref_param, @function
-    .size no_ref_param, .-no_ref_param
-    .end no_ref_param
-
-    .type func_00475E38, @function
-func_00475E38:
-    # 00475E38 func_00475E38
-    # 00475FE8 fix_par_vreg
-/* 00475E38 3C1C0FBA */  .cpload $t9
-/* 00475E3C 279C4458 */  
-/* 00475E40 0399E021 */  
-/* 00475E44 27BDFFC8 */  addiu $sp, $sp, -0x38
-/* 00475E48 AFB6002C */  sw    $s6, 0x2c($sp)
-/* 00475E4C AFB50028 */  sw    $s5, 0x28($sp)
-/* 00475E50 AFB30020 */  sw    $s3, 0x20($sp)
-/* 00475E54 AFB2001C */  sw    $s2, 0x1c($sp)
-/* 00475E58 AFB10018 */  sw    $s1, 0x18($sp)
-/* 00475E5C AFB00014 */  sw    $s0, 0x14($sp)
-/* 00475E60 00808025 */  move  $s0, $a0
-/* 00475E64 24110002 */  li    $s1, 2
-/* 00475E68 8F928980 */  lw     $s2, %got(curblk)($gp)
-/* 00475E6C 24130003 */  li    $s3, 3
-/* 00475E70 0040A825 */  move  $s5, $v0
-/* 00475E74 8F968DF8 */  lw     $s6, %got(table)($gp)
-/* 00475E78 AFBF0034 */  sw    $ra, 0x34($sp)
-/* 00475E7C AFBC0030 */  sw    $gp, 0x30($sp)
-/* 00475E80 AFB40024 */  sw    $s4, 0x24($sp)
-.L00475E84:
-/* 00475E84 5200004F */  beql  $s0, $zero, .L00475FC4
-/* 00475E88 8FBF0034 */   lw    $ra, 0x34($sp)
-/* 00475E8C 920E0002 */  lbu   $t6, 2($s0)
-/* 00475E90 0200A025 */  move  $s4, $s0
-/* 00475E94 11C00041 */  beqz  $t6, .L00475F9C
-/* 00475E98 00000000 */   nop   
-/* 00475E9C 920F000A */  lbu   $t7, 0xa($s0)
-/* 00475EA0 31F80007 */  andi  $t8, $t7, 7
-/* 00475EA4 1638003D */  bne   $s1, $t8, .L00475F9C
-/* 00475EA8 00000000 */   nop   
-/* 00475EAC 8E080008 */  lw    $t0, 8($s0)
-/* 00475EB0 8E590000 */  lw    $t9, ($s2)
-/* 00475EB4 00084AC2 */  srl   $t1, $t0, 0xb
-/* 00475EB8 17290038 */  bne   $t9, $t1, .L00475F9C
-/* 00475EBC 00000000 */   nop   
-/* 00475EC0 8EA40000 */  lw    $a0, ($s5)
-/* 00475EC4 8E030004 */  lw    $v1, 4($s0)
-/* 00475EC8 94820030 */  lhu   $v0, 0x30($a0)
-/* 00475ECC 0062082A */  slt   $at, $v1, $v0
-/* 00475ED0 54200006 */  bnezl $at, .L00475EEC
-/* 00475ED4 0043082A */   slt   $at, $v0, $v1
-/* 00475ED8 8C8B0020 */  lw    $t3, 0x20($a0)
-/* 00475EDC 00625023 */  subu  $t2, $v1, $v0
-/* 00475EE0 014B082A */  slt   $at, $t2, $t3
-/* 00475EE4 14200008 */  bnez  $at, .L00475F08
-/* 00475EE8 0043082A */   slt   $at, $v0, $v1
-.L00475EEC:
-/* 00475EEC 1420002B */  bnez  $at, .L00475F9C
-/* 00475EF0 00000000 */   nop   
-/* 00475EF4 8E0D000C */  lw    $t5, 0xc($s0)
-/* 00475EF8 00436023 */  subu  $t4, $v0, $v1
-/* 00475EFC 018D082A */  slt   $at, $t4, $t5
-/* 00475F00 10200026 */  beqz  $at, .L00475F9C
-/* 00475F04 00000000 */   nop   
-.L00475F08:
-/* 00475F08 8F99864C */  lw    $t9, %call16(isvarhash)($gp)
-/* 00475F0C 8E040004 */  lw    $a0, 4($s0)
-/* 00475F10 8E050008 */  lw    $a1, 8($s0)
-/* 00475F14 AFA40000 */  sw    $a0, ($sp)
-/* 00475F18 0320F809 */  jalr  $t9
-/* 00475F1C AFA50004 */   sw    $a1, 4($sp)
-/* 00475F20 3058FFFF */  andi  $t8, $v0, 0xffff
-/* 00475F24 00184080 */  sll   $t0, $t8, 2
-/* 00475F28 02C8C821 */  addu  $t9, $s6, $t0
-/* 00475F2C 8F230000 */  lw    $v1, ($t9)
-/* 00475F30 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 00475F34 10600019 */  beqz  $v1, .L00475F9C
-/* 00475F38 00000000 */   nop   
-/* 00475F3C 90690000 */  lbu   $t1, ($v1)
-.L00475F40:
-/* 00475F40 56690014 */  bnel  $s3, $t1, .L00475F94
-/* 00475F44 8C63001C */   lw    $v1, 0x1c($v1)
-/* 00475F48 906A002E */  lbu   $t2, 0x2e($v1)
-/* 00475F4C 314B0007 */  andi  $t3, $t2, 7
-/* 00475F50 562B0010 */  bnel  $s1, $t3, .L00475F94
-/* 00475F54 8C63001C */   lw    $v1, 0x1c($v1)
-/* 00475F58 8C6D002C */  lw    $t5, 0x2c($v1)
-/* 00475F5C 8E4C0000 */  lw    $t4, ($s2)
-/* 00475F60 000D72C2 */  srl   $t6, $t5, 0xb
-/* 00475F64 558E000B */  bnel  $t4, $t6, .L00475F94
-/* 00475F68 8C63001C */   lw    $v1, 0x1c($v1)
-/* 00475F6C 8E0F0004 */  lw    $t7, 4($s0)
-/* 00475F70 8C780028 */  lw    $t8, 0x28($v1)
-/* 00475F74 55F80007 */  bnel  $t7, $t8, .L00475F94
-/* 00475F78 8C63001C */   lw    $v1, 0x1c($v1)
-/* 00475F7C 8C620014 */  lw    $v0, 0x14($v1)
-/* 00475F80 A0600022 */  sb    $zero, 0x22($v1)
-/* 00475F84 50400003 */  beql  $v0, $zero, .L00475F94
-/* 00475F88 8C63001C */   lw    $v1, 0x1c($v1)
-/* 00475F8C A0400019 */  sb    $zero, 0x19($v0)
-/* 00475F90 8C63001C */  lw    $v1, 0x1c($v1)
-.L00475F94:
-/* 00475F94 5460FFEA */  bnezl $v1, .L00475F40
-/* 00475F98 90690000 */   lbu   $t1, ($v1)
-.L00475F9C:
-/* 00475F9C 8F998030 */  lw    $t9, %got(func_00475E38)($gp)
-/* 00475FA0 8E040010 */  lw    $a0, 0x10($s0)
-/* 00475FA4 02A01025 */  move  $v0, $s5
-/* 00475FA8 27395E38 */  addiu $t9, %lo(func_00475E38) # addiu $t9, $t9, 0x5e38
-/* 00475FAC 0320F809 */  jalr  $t9
-/* 00475FB0 00000000 */   nop   
-/* 00475FB4 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 00475FB8 1000FFB2 */  b     .L00475E84
-/* 00475FBC 8E900014 */   lw    $s0, 0x14($s4)
-/* 00475FC0 8FBF0034 */  lw    $ra, 0x34($sp)
-.L00475FC4:
-/* 00475FC4 8FB00014 */  lw    $s0, 0x14($sp)
-/* 00475FC8 8FB10018 */  lw    $s1, 0x18($sp)
-/* 00475FCC 8FB2001C */  lw    $s2, 0x1c($sp)
-/* 00475FD0 8FB30020 */  lw    $s3, 0x20($sp)
-/* 00475FD4 8FB40024 */  lw    $s4, 0x24($sp)
-/* 00475FD8 8FB50028 */  lw    $s5, 0x28($sp)
-/* 00475FDC 8FB6002C */  lw    $s6, 0x2c($sp)
-/* 00475FE0 03E00008 */  jr    $ra
-/* 00475FE4 27BD0038 */   addiu $sp, $sp, 0x38
-
-glabel fix_par_vreg
-    .ent fix_par_vreg
-    # 004761D0 tail_recursion
-/* 00475FE8 3C1C0FBA */  .cpload $t9
-/* 00475FEC 279C42A8 */  
-/* 00475FF0 0399E021 */  
-/* 00475FF4 8F8E8B6C */  lw     $t6, %got(curproc)($gp)
-/* 00475FF8 8F998030 */  lw    $t9, %got(func_00475E38)($gp)
-/* 00475FFC 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 00476000 8DCE0000 */  lw    $t6, ($t6)
-/* 00476004 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 00476008 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047600C AFA40020 */  sw    $a0, 0x20($sp)
-/* 00476010 27395E38 */  addiu $t9, %lo(func_00475E38) # addiu $t9, $t9, 0x5e38
-/* 00476014 27A20020 */  addiu $v0, $sp, 0x20
-/* 00476018 0320F809 */  jalr  $t9
-/* 0047601C 8DC40004 */   lw    $a0, 4($t6)
-/* 00476020 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 00476024 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00476028 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0047602C 03E00008 */  jr    $ra
-/* 00476030 00000000 */   nop   
-    .type fix_par_vreg, @function
-    .size fix_par_vreg, .-fix_par_vreg
-    .end fix_par_vreg
 
     .type func_00476034, @function
 func_00476034:

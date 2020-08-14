@@ -642,6 +642,7 @@ restart:
             }
         }
     } else if (curmst == NULL && ustackbot == ustack) {
+        // block ends if > 20 var refs (default limit)
         endblock = varrefs >= curvarreflimit;
     }
 }
@@ -653,7 +654,7 @@ bool formal_parm_vreg(int addr) {
     struct VariableInner var;
     struct Expression *entry;
 
-    var.unk4bFFFFF800 = curblk;
+    var.blockno = curblk;
     var.addr = addr;
     var.memtype = Pmt;
 
@@ -915,7 +916,7 @@ void appendstorelist(void) {
     item->type = 1;
     item->unk8 = false;
     item->data.store = stattail;
-    stattail->u.store.next = item;
+    stattail->u.store.var_access_list_item = item;
 }
 
 /*
@@ -972,7 +973,7 @@ void incroccurrence(struct Expression **entry) {
                 stat->expr->unk6 != 0)
             {
                 if ((!stat->expr->data.isvar_issvar.unk22 ||
-                    curblk != stat->expr->data.isvar_issvar.var_data.unk4bFFFFF800) &&
+                    curblk != stat->expr->data.isvar_issvar.var_data.blockno) &&
                     !doingcopy && !curproc->unk15)
                 {
                     stat->u.store.unk1D = false;
