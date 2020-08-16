@@ -264,7 +264,7 @@ D_10011870:
 0047E938 checkincre
 */
 bool addreq(struct VariableInner a, struct VariableInner b) {
-    return a.addr == b.addr && a.memtype == b.memtype && a.unk4bFFFFF800 == b.unk4bFFFFF800;
+    return a.addr == b.addr && a.memtype == b.memtype && a.blockno == b.blockno;
 }
 
 /*
@@ -521,7 +521,7 @@ struct Expression *appendchain(unsigned short table_index) {
         return NULL; // originally some unused stack slot value was returned
     }
     new_entry->type = empty;
-    new_entry->unk14 = 0;
+    new_entry->ichain = NULL;
     new_entry->chain_index = chain_index;
     new_entry->next = NULL;
     new_entry->table_index = table_index;
@@ -1049,7 +1049,7 @@ void delentry(struct Expression *entry) {
             return;
         }
     }
-    if (entry->unk14 != NULL) {
+    if (entry->ichain != NULL) {
         fixcorr(entry);
     }
     entry->type = dumped;
@@ -1419,7 +1419,7 @@ int realhash(int len) {
 0047E24C enter_lda
 */
 int isvarhash(struct VariableInner var) {
-    int hash = (((var.memtype << 6) + var.unk4bFFFFF800 + var.addr) << 4) % 9113;
+    int hash = (((var.memtype << 6) + var.blockno + var.addr) << 4) % 9113;
     return hash < 0 ? hash + 9113 : hash;
 }
 
@@ -1597,7 +1597,7 @@ void extendstat(Uopcode opc) {
     }
     stat->next = NULL;
     stat->opc = opc;
-    stat->u.cia.unk28 = NULL; // TODO: why is this specific element set?
+    stat->u.store.ichain = NULL;
     stat->graphnode = curgraphnode;
     if (stathead == NULL) {
         stathead = stat;
@@ -2067,7 +2067,7 @@ struct Expression *searchvar(unsigned short table_index, struct VariableInner *v
         entry = appendchain(table_index);
     }
 
-    if (var->memtype == Rmt || var->memtype == Smt || curblk == var->unk4bFFFFF800) {
+    if (var->memtype == Rmt || var->memtype == Smt || curblk == var->blockno) {
         entry->type = isvar;
     } else {
         entry->type = issvar;
