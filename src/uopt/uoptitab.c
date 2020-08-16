@@ -441,12 +441,24 @@ glabel realihash
     .end realihash
 )"");
 
+/*
+# 0041550C func_0041550C
+# 004175BC copypropagate
+# 0042020C gen_static_link
+# 00445E44 exprimage
+# 004471AC codeimage
+*/
 int isvarihash(struct VariableInner vari) {
     int hash = (((vari.memtype << 6) + vari.blockno + vari.addr) << 4) % 0x653;
     if (hash < 0) hash += 0x653;
     return hash;
 }
 
+/* 
+# 0041550C func_0041550C
+# 00445E44 exprimage
+# 0046BA10 change_to_const_eq
+*/
 int isldaihash(struct VariableInner vari, unsigned int addr) {
     int hash = (((vari.memtype << 6) + vari.blockno + addr) << 4) % 0x653;
     if (hash < 0) hash += 0x653;
@@ -3357,7 +3369,14 @@ glabel searchstore
     .size searchstore, .-searchstore
     .end searchstore
 )"");
-
+/* 
+00456310 func_00456310
+0046FCD4 link_jump_in_loop
+00470048 pre_loopblock
+00470248 post_loopblock
+004713E8 loopunroll
+004761D0 tail_recursion
+*/
 void codeimage(void) {
     bool sp57; // expr 1
     bool sp56; // expr 1
