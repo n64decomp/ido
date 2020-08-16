@@ -1249,7 +1249,7 @@ int pdefno;
 00445AEC trep_image
 00446E18 searchstore
 */
-struct ITableEntry *itable[1619];
+struct IChain *itable[1619];
 
 /*
 00453B04 func_00453B04

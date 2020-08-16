@@ -271,11 +271,20 @@ struct Proc {
     int unk38; // mtag uses this
 };
 
+union IChainThing
+{
+    int word; // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
+    struct {
+        unsigned short bit;
+        unsigned short unk2;
+    };
+};
+
 struct Statement {
     Uopcode opc;
     bool unk1;
     bool unk2; // bool or unsigned char?
-    bool unk3; // bool or unsigned char?
+    bool unk3; // codeimage
     struct Expression *expr; // 0x4
     struct Statement *next; // 0x8, towards tail
     struct Statement *prev; // 0xC, towards head
@@ -291,7 +300,7 @@ struct Statement {
             bool unk1F;
             int size; // 0x20
             struct Expression *baseaddr; // 0x24
-            int unk28;
+            struct IChain *ichain; //0x28
             union {
                 struct {
                     int unk2C;
@@ -301,7 +310,7 @@ struct Statement {
                     Datatype dtype; // 0x2C
                     unsigned char unk2D; // LEXLEV&~7 or LENGTH*8
                     unsigned short offset; // 0x2E
-                    int unk30; // IONE+ustack->value
+                    union IChainThing s; // IONE+ustack->value
                 } istr; // and istv, irst, irsv
                 struct {
                     struct Expression *baseaddr; // 0x2C
@@ -425,7 +434,7 @@ struct Statement {
             int unk1C; // LENGTH
             int unk20; // OFFSET
             int len; // 0x24, CONSTVAL.swpart.Ival
-            struct Statement *unk28; // from parstack
+            struct Statement *parameters; // 0x28, from parstack
         } cia;
 
         struct {
@@ -448,8 +457,25 @@ struct Temploc {
 };
 
 struct IChain {
-    char unk0[0x28];
-}; // size 0x28
+    unsigned char unk0; // type?
+    Datatype dtype;
+    unsigned short unk2;
+    unsigned short table_index; // 0x4
+    unsigned short chain_index; // 0x6
+    int unk8;
+    struct IChain *next; // 0xC
+    Uopcode opc;              // 0x10
+    unsigned char unk11;
+    unsigned char unk12;
+    unsigned char unk13;      // codeimage
+    int unk14;
+    unsigned char unk18;
+    unsigned char unk19; // see fix_par_vreg inner function
+    bool unk1A; // codeimage
+    int size;                 // 0x1C
+    struct Statement *stat;   // 0x20
+    union IChainThing s;
+};
 
 struct InterfereWith {
     void *unk0;
@@ -491,8 +517,6 @@ struct PdefEntry {
     int size; // from u.intarray[2]
 };
 
-struct ITableEntry;
-
 enum ExpressionType {
     empty, // 0
     islda, // 1
@@ -526,7 +550,7 @@ struct Expression {
     unsigned short int table_index; // 0x8
     int chain_index; // 0xC
     struct Graphnode *graphnode; // 0x10
-    struct ITableEntry *itable_entry; // 0x14
+    struct IChain *ichain; // 0x14
     struct VarAccessList *var_access_list; // 0x18
     struct Expression *next; // 0x1C
 
@@ -608,24 +632,6 @@ struct Expression {
             int unk24;
         } isrconst;
     } data; // 0x20
-};
-
-struct ITableEntry {
-    unsigned char unk0; // type?
-    unsigned char unk1;
-    unsigned char unk2;
-    unsigned char unk3;
-    unsigned short table_index; // 0x4
-    unsigned short chain_index; // 0x6
-    int unk8;
-    struct ITableEntry *next; // 0xC
-    int unk10;
-    int unk14;
-    unsigned char unk18;
-    unsigned char unk19; // see fix_par_vreg inner function
-    int unk1C;
-    int unk20;
-    int unk24;
 };
 
 extern union Bcode u;
@@ -716,7 +722,7 @@ extern int pdeftabsize;
 extern int highestmdef;
 extern int pdefmax;
 extern int pdefno;
-extern struct ITableEntry *itable[1619];
+extern struct IChain *itable[1619];
 extern void *toplevelloops; // TODO: fix type (some linked list of 20 bytes data + 4 byte next ptr)
 extern void *looptab; // TODO: fix type
 extern int actnuminteeregs;

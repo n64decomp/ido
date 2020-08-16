@@ -2,8 +2,14 @@ default: all
 
 SRC_DIRS := . src src/libmld src/libp src/libu src/libxmalloc src/uopt
 
+AVOID_UB ?= 1
+
 CC := mips-linux-gnu-gcc
-CFLAGS := -fPIC -I src -mips2 -mfp32 -g
+CFLAGS := -fPIC -I src -mips2 -mfp32 -ggdb3
+
+ifeq ($(AVOID_UB),1)
+    CFLAGS := $(CFLAGS) -DAVOID_UB
+endif
 
 BUILD_DIR := build
 ALL_DIRS := $(addprefix $(BUILD_DIR)/,$(SRC_DIRS))

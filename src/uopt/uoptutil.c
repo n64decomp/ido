@@ -521,7 +521,7 @@ struct Expression *appendchain(unsigned short table_index) {
         return NULL; // originally some unused stack slot value was returned
     }
     new_entry->type = empty;
-    new_entry->itable_entry = 0;
+    new_entry->ichain = NULL;
     new_entry->chain_index = chain_index;
     new_entry->next = NULL;
     new_entry->table_index = table_index;
@@ -1049,7 +1049,7 @@ void delentry(struct Expression *entry) {
             return;
         }
     }
-    if (entry->itable_entry != NULL) {
+    if (entry->ichain != NULL) {
         fixcorr(entry);
     }
     entry->type = dumped;
@@ -1597,7 +1597,7 @@ void extendstat(Uopcode opc) {
     }
     stat->next = NULL;
     stat->opc = opc;
-    stat->u.cia.unk28 = NULL; // TODO: why is this specific element set?
+    stat->u.store.ichain = NULL;
     stat->graphnode = curgraphnode;
     if (stathead == NULL) {
         stathead = stat;

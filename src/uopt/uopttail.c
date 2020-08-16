@@ -175,8 +175,8 @@ static void func_00475E38(struct Variable *vartree, struct Statement *pmov_stmt)
                         continue;
                     }
                     expr->data.isvar_issvar.unk22 = false;
-                    if (expr->itable_entry != NULL) {
-                        expr->itable_entry->unk19 = 0;
+                    if (expr->ichain != NULL) {
+                        expr->ichain->unk19 = 0;
                     }
                 }
             }
