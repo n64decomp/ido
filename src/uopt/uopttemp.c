@@ -16,7 +16,7 @@ void findbbtemps(void *arg0) {
     for (i = 0; i < firstconstbit; i++) {
         if (bvectin(i, (struct BitVector *)((char *)arg0 + 0x15c))) {
             if (bvectin(i, &coloreditems)) {
-                ptr = (unsigned char *)bittab[i].unk0;
+                ptr = (unsigned char *)bittab[i].ichain;
                 switch (*ptr) {
                     case 4:
                         setbit(&setofspills, **(int **)(ptr + 0x20));

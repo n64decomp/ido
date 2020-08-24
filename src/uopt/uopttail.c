@@ -143,7 +143,7 @@ bool no_ref_param(struct Statement *parameters) {
     while (parameters != NULL) {
         if (parameters->u.par.dtype == Adt) {
             baseaddr = parameters->u.par.baseaddr;
-            if (baseaddr->type == islda && curblk == baseaddr->data.islda.var_data.blockno) {
+            if (baseaddr->type == islda && curblk == baseaddr->data.islda_isilda.var_data.blockno) {
                 return false;
             }
         }
@@ -176,7 +176,7 @@ static void func_00475E38(struct Variable *vartree, struct Statement *pmov_stmt)
                     }
                     expr->data.isvar_issvar.unk22 = false;
                     if (expr->ichain != NULL) {
-                        expr->ichain->unk19 = 0;
+                        expr->ichain->isvar.unk19 = 0;
                     }
                 }
             }
