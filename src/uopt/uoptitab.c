@@ -316,9 +316,9 @@ int isconstihash(int value) {
 /*
 # 0041550C func_0041550C
 # 00445E44 exprimage
-    only the u16 at value+0x2 is used, but 8 bytes are always passed to this function, see func_0041550C asm
 */
 int realihash(union Constant value) {
+    // only the u16 at value+0x2 is used, but 8 bytes are always passed to this function, see func_0041550C asm
     int hash = ((value.real.len * value.real.len) << 6) % 0x653;
     if (hash < 0) hash += 0x653;
     return hash;
@@ -337,7 +337,7 @@ int isvarihash(struct VariableInner var) {
     return hash;
 }
 
-/* 
+/*
 # 0041550C func_0041550C
 # 00445E44 exprimage
 # 0046BA10 change_to_const_eq
@@ -370,7 +370,7 @@ int isopihash(Uopcode opc, struct IChain *op1, struct IChain *op2) {
     return hash;
 }
 
-/* 
+/*
 # 004150E4 func_004150E4
 # 0041550C func_0041550C
 # 00445AEC trep_image
@@ -1835,32 +1835,32 @@ glabel trep_image
 # 00445E44 exprimage
 # 004471AC codeimage
 */
-struct IChain *exprimage(struct Expression *expr, bool *arg1, bool *arg2) {
-    struct IChain *ichain; //sp84
-    bool sp83;
-    bool sp82;
-    bool sp81;
-    bool sp80;
-    struct IChain *op1_ichain; //sp78
-    struct IChain *op2_ichain; //sp74
-    unsigned int newblocks; // sp6C
+struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *available) {
+    struct IChain *ichain;      // sp84
+    bool op1ant;                // sp83
+    bool op1av;                 // sp82
+    bool op2ant;                // sp81
+    bool op2av;                 // sp80
+    struct IChain *op1_ichain;  // sp78
+    struct IChain *op2_ichain;  // sp74
+    unsigned int newblocks;     // sp6C
     unsigned short hash;
     unsigned char r2bb;
 
     if (expr->ichain != NULL) {
         ichain = expr->ichain;
         if (expr->type == islda || expr->type == isconst) {
-            *arg1 = true;
-            *arg2 = true;
+            *anticipated = true;
+            *available = true;
         } else if (expr->type == isilda) {
-            *arg1 = true;
-            *arg2 = true;
+            *anticipated = true;
+            *available = true;
         } else if (expr->type == isvar || expr->type == issvar) {
-            *arg1 = expr->unk3;
-            *arg2 = !expr->unk2;
+            *anticipated = expr->unk3;
+            *available = !expr->unk2;
         } else {    // empty, isop, dumped, isrconst
-            *arg1 = expr->data.isop.unk21;
-            *arg2 = expr->data.isop.unk22;
+            *anticipated = expr->data.isop.unk21;
+            *available = expr->data.isop.unk22;
         }
     } else {
         switch (expr->type) {
@@ -1887,43 +1887,43 @@ struct IChain *exprimage(struct Expression *expr, bool *arg1, bool *arg2) {
                         break;
                 }
                 ichain = isearchloop(hash, expr, 0, 0);
-                *arg1 = true;
-                *arg2 = true;
+                *anticipated = true;
+                *available = true;
                 break;
 
             case isrconst:
                 ichain = isearchloop(isconstihash(expr->data.isrconst.unk20), expr, 0, 0);
-                *arg1 = true;
-                *arg2 = true;
+                *anticipated = true;
+                *available = true;
                 break;
 
             case islda:
                 ichain = isearchloop(isldaihash(expr->data.islda_isilda.var_data, expr->data.islda_isilda.addr), expr, 0, 0);
-                *arg1 = true;
-                *arg2 = true;
+                *anticipated = true;
+                *available = true;
                 break;
 
             case isilda:
-                exprimage(expr->data.islda_isilda.unk34, arg1, arg2);
+                exprimage(expr->data.islda_isilda.unk34, anticipated, available);
                 ichain = isearchloop(isvarihash(expr->data.islda_isilda.var_data), expr, 0, 0);
                 if (outofmem) return NULL; // used to return UB sp8C
 
                 if (expr->data.islda_isilda.unk34->type != issvar) {
-                    *arg1 = true;
-                    *arg2 = true;
+                    *anticipated = true;
+                    *available = true;
                 } else {
-                    *arg1 = expr->data.islda_isilda.unk34->unk3;
-                    *arg2 = !expr->data.islda_isilda.unk34->unk2;
+                    *anticipated = expr->data.islda_isilda.unk34->unk3;
+                    *available = !expr->data.islda_isilda.unk34->unk2;
                 }
 
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
-                if (*arg1) {
+                if (*anticipated) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, ichain->bitpos);
                 }
-                if (*arg2) {
+                if (*available) {
                     setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
                 }
-                if (*arg1 == false || *arg2 == false) {
+                if (*anticipated == false || *available == false) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
                 }
                 break;
@@ -1937,15 +1937,15 @@ struct IChain *exprimage(struct Expression *expr, bool *arg1, bool *arg2) {
                     if (expr->data.isvar_issvar.var_data.addr != 29) { // $sp?
                         switch (expr->data.isvar_issvar.var_data.addr) {
                             case 0x02:      // $v0?
-                                r2bb = 0u;
+                                r2bb = 0;
                                 break;
 
                             case 0x20:      // $f0?
-                                r2bb = 1u;
+                                r2bb = 1;
                                 break;
 
                             case 0x22:      // $f2?
-                                r2bb = 2u;
+                                r2bb = 2;
                                 break;
 
                             case 0x21:      // $f1?
@@ -1976,28 +1976,28 @@ struct IChain *exprimage(struct Expression *expr, bool *arg1, bool *arg2) {
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->s.bit);
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->s.bit);
                 if (expr->data.isvar_issvar.unk21) {
-                    *arg1 = false;
-                    *arg2 = false;
+                    *anticipated = false;
+                    *available = false;
                     setbit(&vareqv, ichain->bitpos);
                     setbit(&asgneqv, ichain->s.bit);
                 } else {
-                    *arg1 = expr->unk3;
-                    *arg2 = !expr->unk2;
+                    *anticipated = expr->unk3;
+                    *available = !expr->unk2;
                 }
 
-                if (*arg1) {
+                if (*anticipated) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, ichain->bitpos);
                 }
-                if (*arg2) {
+                if (*available) {
                     setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
                 }
-                if (*arg1 == false || *arg2 == false) {
+                if (*anticipated == false || *available == false) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
                 }
                 break;
 
             case issvar:
-                exprimage(expr->data.isvar_issvar.unk24, arg1, arg2);
+                exprimage(expr->data.isvar_issvar.unk24, anticipated, available);
                 if (outofmem) return NULL; // used to return UB sp8C
 
                 ichain = isearchloop(isvarihash(expr->data.isvar_issvar.var_data), expr, 0, 0);
@@ -2007,28 +2007,28 @@ struct IChain *exprimage(struct Expression *expr, bool *arg1, bool *arg2) {
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->s.bit);
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->s.bit);
                 if (expr->data.isvar_issvar.unk21) {
-                    *arg1 = false;
-                    *arg2 = false;
+                    *anticipated = false;
+                    *available = false;
                     setbit(&vareqv, ichain->bitpos);
                     setbit(&asgneqv, ichain->s.bit);
                 } else {
-                    *arg1 = expr->unk3;
-                    *arg2 = !expr->unk2;
+                    *anticipated = expr->unk3;
+                    *available = !expr->unk2;
                 }
 
-                if (*arg1) {
+                if (*anticipated) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, ichain->bitpos);
                 }
-                if (*arg2) {
+                if (*available) {
                     setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
                 }
-                if (*arg1 == false || *arg2 == false) {
+                if (*anticipated == false || *available == false) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
                 }
                 break;
 
             case isop:
-                op1_ichain = exprimage(expr->data.isop.op1, &sp83, &sp82);
+                op1_ichain = exprimage(expr->data.isop.op1, &op1ant, &op1av);
                 if (outofmem) return NULL; // used to return UB sp8C
 
                 if (op1_ichain->type == isop) {
@@ -2049,7 +2049,7 @@ struct IChain *exprimage(struct Expression *expr, bool *arg1, bool *arg2) {
                 }
 
                 if (optab[expr->data.isop.opc].is_binary_op) {
-                    op2_ichain = exprimage(expr->data.isop.op2, &sp81, &sp80);
+                    op2_ichain = exprimage(expr->data.isop.op2, &op2ant, &op2av);
                     if (outofmem) return NULL; // used to return UB sp8C
 
                     if (op2_ichain->type == isop) {
@@ -2069,8 +2069,8 @@ struct IChain *exprimage(struct Expression *expr, bool *arg1, bool *arg2) {
                         }
                     }
                     ichain = isearchloop(isopihash(expr->data.isop.opc, op1_ichain, op2_ichain), expr, op1_ichain, op2_ichain);
-                    *arg1 = sp83 ? sp81 : sp83;
-                    *arg2 = sp82 ? sp80 : sp82;
+                    *anticipated = op1ant ? op2ant : op1ant;
+                    *available = op1av ? op2av : op1av;
 
                     switch (expr->data.isop.opc) {
                         case Uiequ:
@@ -2079,8 +2079,8 @@ struct IChain *exprimage(struct Expression *expr, bool *arg1, bool *arg2) {
                         case Uileq:
                         case Uiles:
                         case Uineq:
-                            *arg1 = *arg1 ? expr->unk3 : *arg1;
-                            *arg2 = *arg2 ? !expr->unk2 : *arg2;
+                            *anticipated = *anticipated ? expr->unk3 : *anticipated;
+                            *available = *available ? !expr->unk2 : *available;
                             break;
 
                         default:
@@ -2121,32 +2121,32 @@ struct IChain *exprimage(struct Expression *expr, bool *arg1, bool *arg2) {
                         case Uilod:
                         case Uirld:
                         case Uirlv:
-                            *arg1 = sp83 ? expr->unk3 : sp83;
-                            *arg2 = sp82 ? !expr->unk2 : sp82;
+                            *anticipated = op1ant ? expr->unk3 : op1ant;
+                            *available = op1av ? !expr->unk2 : op1av;
                             break;
 
                         default:
-                            *arg1 = sp83;
-                            *arg2 = sp82;
+                            *anticipated = op1ant;
+                            *available = op1av;
                             break;
                     }
                 }
                 if (outofmem) return NULL; // used to return UB sp8C
 
                 if (expr->data.isop.datatype == Sdt) {
-                    *arg1 = false;
-                    *arg2 = false;
+                    *anticipated = false;
+                    *available = false;
                 }
-                expr->data.isop.unk21 = *arg1;
-                expr->data.isop.unk22 = *arg2;
+                expr->data.isop.unk21 = *anticipated;
+                expr->data.isop.unk22 = *available;
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
-                if (*arg1) {
+                if (*anticipated) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, ichain->bitpos);
                 }
-                if (*arg2) {
+                if (*available) {
                     setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
                 }
-                if (*arg1 == false || *arg2 == false) {
+                if (*anticipated == false || *available == false) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
                 }
 
@@ -2158,8 +2158,8 @@ struct IChain *exprimage(struct Expression *expr, bool *arg1, bool *arg2) {
                     case Ules:
                     case Uneq:
                         if (expr->data.isop.aux.unk38_int == 0) {
-                            trep_image(expr, 1, sp83, sp82, 0);
-                            trep_image(expr, 0, sp81, sp80, 0);
+                            trep_image(expr, 1, op1ant, op1av, 0);
+                            trep_image(expr, 0, op2ant, op2av, 0);
                         }
                         break;
 
@@ -2183,7 +2183,7 @@ struct IChain *exprimage(struct Expression *expr, bool *arg1, bool *arg2) {
     return ichain;
 }
 
-/* 
+/*
 # 004175BC copypropagate
 # 004471AC codeimage
 */
@@ -2275,7 +2275,7 @@ struct IChain *searchstore(unsigned short hash, Uopcode opc /* sp3f */, struct I
                                 case Idt:
                                 case Jdt:
                                 case Kdt:
-                                case Ldt: 
+                                case Ldt:
                                     setbit(&trapconstop, (int) ichain->bitpos);
                                     break;
                                 default:
@@ -2294,7 +2294,7 @@ struct IChain *searchstore(unsigned short hash, Uopcode opc /* sp3f */, struct I
     return ichain;
 }
 
-/* 
+/*
 00456310 func_00456310
 0046FCD4 link_jump_in_loop
 00470048 pre_loopblock
@@ -2303,10 +2303,10 @@ struct IChain *searchstore(unsigned short hash, Uopcode opc /* sp3f */, struct I
 004761D0 tail_recursion
 */
 void codeimage(void) {
-    bool sp57; // expr 1
-    bool sp56; // expr 1
-    bool sp55; // expr 2
-    bool sp54; // expr 2
+    bool exprant; // expr 1
+    bool exprav; // expr 1
+    bool storeant; // expr 2
+    bool storeav; // expr 2
     unsigned short opihash;
     struct IChain *ichain; // s3, antlocs
     struct IChain *store_ichain; // s1, avlocs
@@ -2319,7 +2319,7 @@ void codeimage(void) {
     do {
         if (stat->opc == Uisst || stat->opc == Ustr) {
             if (stat->opc == Uisst) {
-                exprimage(stat->u.store.expr, &sp57, &sp56);
+                exprimage(stat->u.store.expr, &exprant, &exprav);
                 if (outofmem) return;
             }
 
@@ -2368,7 +2368,7 @@ void codeimage(void) {
                     }
                 }
 
-                store_ichain = exprimage(stat->expr->data.isvar_issvar.unk34, &sp55, &sp54);
+                store_ichain = exprimage(stat->expr->data.isvar_issvar.unk34, &storeant, &storeav);
                 if (outofmem) return;
                 if (store_ichain == NULL) {
                     dbgerror(0x1AC);
@@ -2399,19 +2399,19 @@ void codeimage(void) {
                 store_ichain->stat = stat;
                 store_ichain->dtype = ichain->dtype;
                 stat->u.store.ichain = store_ichain;
-                if (stat->u.store.unk1C && stat->u.store.unk1E && sp55) {
+                if (stat->u.store.unk1C && stat->u.store.unk1E && storeant) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, store_ichain->bitpos);
                 }
                 if (stat->u.store.unk1E == false || stat->u.store.unk1F == false ||
                         stat->u.store.unk1C == false || stat->u.store.unk1D == false ||
-                        sp55 == false || sp54 == false) {
+                        storeant == false || storeav == false) {
                     setbit(&curgraphnode->bvs.stage1.alters, store_ichain->bitpos);
                 }
-                if (stat->u.store.unk1F && sp54) {
+                if (stat->u.store.unk1F && storeav) {
                     setbit(&curgraphnode->bvs.stage1.u.precm.pavlocs, store_ichain->bitpos);
                 }
                 if (stat->u.store.unk1E == false || stat->u.store.unk1F == false ||
-                        sp55 == false || sp54 == false) {
+                        storeant == false || storeav == false) {
                     setbit(&curgraphnode->bvs.stage1.absalters, store_ichain->bitpos);
                 }
             } else {
@@ -2469,7 +2469,7 @@ void codeimage(void) {
                     continue;
 
                 default:
-                    ichain = exprimage(stat->expr, &sp57, &sp56);
+                    ichain = exprimage(stat->expr, &exprant, &exprav);
                     if (outofmem) return;
                     break;
             }
@@ -2497,7 +2497,7 @@ void codeimage(void) {
 
             store_ichain = NULL;
             if (stat->opc != Uchkt) {
-                store_ichain = exprimage(stat->u.store.expr, &sp55, &sp54);
+                store_ichain = exprimage(stat->u.store.expr, &storeant, &storeav);
             }
             if (outofmem) return;
 
@@ -2626,37 +2626,37 @@ void codeimage(void) {
                     store_ichain->s.bit = stat->u.store.u.mov.unk32 + (stat->u.store.u.mov.unk33 << 8);
                 }
 
-                if (stat->u.store.unk1C && stat->u.store.unk1E && sp57 && sp55) {
+                if (stat->u.store.unk1C && stat->u.store.unk1E && exprant && storeant) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, store_ichain->bitpos);
                 }
 
                 if (stat->u.store.unk1C == false || stat->u.store.unk1D == false ||
                         stat->u.store.unk1E == false || stat->u.store.unk1F == false ||
-                        sp57 == false || sp56 == false || sp55 == false || sp54 == false) {
+                        exprant == false || exprav == false || storeant == false || storeav == false) {
                     setbit(&curgraphnode->bvs.stage1.alters, store_ichain->bitpos);
                 }
-                if (stat->u.store.unk1F && sp56 && sp54) {
+                if (stat->u.store.unk1F && exprav && storeav) {
                     setbit(&curgraphnode->bvs.stage1.u.precm.pavlocs, store_ichain->bitpos);
                 }
                 if (stat->u.store.unk1E == false || stat->u.store.unk1F == false ||
-                        sp57 == false || sp56 == false || sp55 == false || sp54 == false) {
+                        exprant == false || exprav == false || storeant == false || storeav == false) {
                     setbit(&curgraphnode->bvs.stage1.absalters, store_ichain->bitpos);
                 }
             } else {
                 // traps
                 if (stat->opc == Uchkt) {
-                    sp55 = true;
-                    sp54 = true;
+                    storeant = true;
+                    storeav = true;
                 } else {
                     store_ichain->dtype = stat->u.trap.dtype;
                 }
-                if (sp57 && sp55) {
+                if (exprant && storeant) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, store_ichain->bitpos);
                 }
-                if (sp56 && sp54) {
+                if (exprav && storeav) {
                     setbit(&curgraphnode->bvs.stage1.avlocs, store_ichain->bitpos);
                 }
-                if (sp57 == false || sp56 == false || sp55 == false || sp54 == false) {
+                if (exprant == false || exprav == false || storeant == false || storeav == false) {
                     setbit(&curgraphnode->bvs.stage1.alters, store_ichain->bitpos);
                 }
             }

@@ -46,7 +46,7 @@ struct Label {
 // See insertvar
 struct VariableInner {
     int addr; // can be negative, stack offset?
-              // type? see exprimage, checks for 2, 29, 32, 33, 34.
+              // register number if memtype == Rmt. see exprimage, checks for 2, 29, 32, 33, 34.
     unsigned int blockno: 21;
     unsigned int memtype: 3;
     unsigned int level: 8; // see furthervarintree
