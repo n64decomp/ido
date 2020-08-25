@@ -1667,7 +1667,7 @@ int blktolev(int blk) {
 0046123C func_0046123C
 00467F04 split
 */
-int newbit(void *unk0, void *unk4) {
+int newbit(struct IChain *ichain, void *unk4) {
     int insertpos;
     int newcount;
 
@@ -1680,7 +1680,7 @@ int newbit(void *unk0, void *unk4) {
     }
     insertpos = bitposcount++;
     newcount = bitposcount;
-    bittab[insertpos].unk0 = unk0;
+    bittab[insertpos].ichain = ichain;
     bittab[insertpos].unk4 = unk4;
     if ((bitvectorsize << 7) < newcount) {
         bitvectorsize++;
@@ -3532,7 +3532,6 @@ void *alloc_realloc(void *old, int oldsize16, int newsize16, struct AllocBlock *
     // Did they miss that alloc_resize already exist?
 
     void *addr;
-    int i;
 
     addr = alloc_new(newsize16 * 16, heap);
     if (addr == NULL) {

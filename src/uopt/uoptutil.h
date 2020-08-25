@@ -20,5 +20,6 @@ void extendstat(Uopcode opc);
 void entervregveqv(void);
 bool has_ilod(struct Expression *expr);
 void skipproc(int reason);
+int newbit(struct IChain *ichain, void *unk4);
 
 #endif

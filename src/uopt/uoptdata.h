@@ -46,6 +46,7 @@ struct Label {
 // See insertvar
 struct VariableInner {
     int addr; // can be negative, stack offset?
+              // register number if memtype == Rmt. see exprimage, checks for 2, 29, 32, 33, 34.
     unsigned int blockno: 21;
     unsigned int memtype: 3;
     unsigned int level: 8; // see furthervarintree
@@ -456,25 +457,58 @@ struct Temploc {
     struct Temploc *next;
 };
 
+enum ExpressionType {
+    empty, // 0
+    islda, // 1
+    isconst, // 2
+    isvar, // 3
+    isop, // 4
+    isilda, // 5
+    issvar, // 6
+    dumped, // 7
+    isrconst // 8
+}
+#ifdef __GNUC__
+__attribute__((packed));
+#endif
+;
+
+#ifdef __GNUC__
+typedef enum ExpressionType ExpressionType;
+#else
+typedef unsigned char ExpressionType;
+#endif
+
+// Probably "Image (Chain)"
 struct IChain {
-    unsigned char unk0; // type?
-    Datatype dtype;
-    unsigned short unk2;
+    ExpressionType type;        // 0x0
+    Datatype dtype;             // 0x1
+    unsigned short bitpos;      // 0x2
     unsigned short table_index; // 0x4
     unsigned short chain_index; // 0x6
-    int unk8;
+    int unk8;            // prev?
     struct IChain *next; // 0xC
+
+    // This almost seems like the actual start of the union
     Uopcode opc;              // 0x10
     unsigned char unk11;
     unsigned char unk12;
     unsigned char unk13;      // codeimage
-    int unk14;
-    unsigned char unk18;
-    unsigned char unk19; // see fix_par_vreg inner function
-    bool unk1A; // codeimage
+    union {
+        struct {
+            int unk14;
+            unsigned char unk18;
+            unsigned char unk19; // see fix_par_vreg inner function
+            bool unk1A; // codeimage
+        } isvar;
+        struct {
+            struct IChain *unk14;
+            struct IChain *unk18;
+        } isop;
+    };
     int size;                 // 0x1C
     struct Statement *stat;   // 0x20
-    union IChainThing s;
+    union IChainThing s;      // 0x24
 };
 
 struct InterfereWith {
@@ -503,7 +537,7 @@ struct BittabItemUnk4 {
 }; // size 0x3C
 
 struct BittabItem {
-    struct IChain *unk0; // a pointer returned by appendichain
+    struct IChain *ichain; // a pointer returned by appendichain
     struct BittabItemUnk4 *unk4;
 };
 
@@ -517,37 +551,31 @@ struct PdefEntry {
     int size; // from u.intarray[2]
 };
 
-enum ExpressionType {
-    empty, // 0
-    islda, // 1
-    isconst, // 2
-    isvar, // 3
-    isop, // 4
-    isilda, // 5
-    issvar, // 6
-    dumped, // 7
-    isrconst // 8
-}
-#ifdef __GNUC__
-__attribute__((packed));
-#endif
-;
-
-#ifdef __GNUC__
-typedef enum ExpressionType ExpressionType;
-#else
-typedef unsigned char ExpressionType;
-#endif
+union Constant {
+    struct {
+        int intval;
+        int intval2;
+    };
+    long long int longval;
+    struct {
+        unsigned short disp; // index to first character in realdisp data
+        unsigned short len; // length of the float string
+    } real;
+    struct {
+        unsigned short disp;
+        unsigned short len;
+    } string;
+};
 
 struct Expression {
     ExpressionType type;
     Datatype datatype;
-    bool unk2; // bool or unsigned char?
+    bool unk2; // see exprimage
     bool unk3; // not varkilled
     bool unk4; // bool or unsigned char?
     bool unk5; // bool or unsigned char?
     unsigned short unk6; // some counter, see exprdelete
-    unsigned short int table_index; // 0x8
+    unsigned short table_index; // 0x8
     int chain_index; // 0xC
     struct Graphnode *graphnode; // 0x10
     struct IChain *ichain; // 0x14
@@ -556,26 +584,15 @@ struct Expression {
 
     union {
         struct {
-            int addr;
+            int addr; // 0x20
             int size; // 0x24
             int level; // 0x28
             struct VariableInner var_data; // 0x2C
-            // maybe same struct as isilda? (at least until this point the struct is shared)
-            int unk34;
-        } islda;
+            struct Expression *unk34;
+            int unk38;
+        } islda_isilda;
         struct {
-            union {
-                int intval;
-                long long int longval;
-                struct {
-                    unsigned short disp; // index to first character in realdisp data
-                    unsigned short len; // length of the float string
-                } real;
-                struct {
-                    unsigned short disp;
-                    unsigned short len;
-                } string;
-            } number; // 0x20
+            union Constant number; // 0x20{
             int size; // 0x28, in bytes
             int real_significand; // 0x2C
             int real_exponent; // 0x30
@@ -594,8 +611,8 @@ struct Expression {
         } isvar_issvar;
         struct {
             Uopcode opc; // 0x20
-            unsigned char pad21;
-            unsigned char pad22;
+            bool unk21; // anticipatable? exprimage
+            bool unk22; // available? exprimage
             Datatype datatype; // 0x23
             struct Expression *op1; // 0x24
             struct Expression *op2; // 0x28
@@ -618,15 +635,6 @@ struct Expression {
                 } v2;
             } aux2;
         } isop;
-        struct {
-            int unk20;
-            int unk24;
-            int unk28;
-            int unk2C;
-            int unk30;
-            struct Expression *unk34;
-            int unk38;
-        } isilda;
         struct {
             unsigned short unk20;
             int unk24;

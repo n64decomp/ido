@@ -1839,7 +1839,6 @@ void printbv(struct BitVector *bv) {
     int blockpos;
     int bitpos = 0;
     int i;
-    int bit;
     bool inside_range = false;
     bool at_first = true;
     bool at_first_element_in_range;
