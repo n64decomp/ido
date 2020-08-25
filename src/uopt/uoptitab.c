@@ -1923,7 +1923,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 if (*available) {
                     setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
                 }
-                if (*anticipated == false || *available == false) {
+                if (!*anticipated || !*available) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
                 }
                 break;
@@ -1991,7 +1991,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 if (*available) {
                     setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
                 }
-                if (*anticipated == false || *available == false) {
+                if (!*anticipated || !*available) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
                 }
                 break;
@@ -2022,7 +2022,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 if (*available) {
                     setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
                 }
-                if (*anticipated == false || *available == false) {
+                if (!*anticipated || !*available) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
                 }
                 break;
@@ -2146,7 +2146,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 if (*available) {
                     setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
                 }
-                if (*anticipated == false || *available == false) {
+                if (!*anticipated || !*available) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
                 }
 
@@ -2195,7 +2195,7 @@ struct IChain *searchstore(unsigned short hash, Uopcode opc /* sp3f */, struct I
     ichain = itable[hash];
     found = false;
 
-    while (found == false && ichain != NULL) {
+    while (!found && ichain != NULL) {
         if (ichain->type == isop && ichain->opc == opc && ichain->isop.unk14 == op1) {
             switch (ichain->opc) {
                 case Uisst:
@@ -2234,12 +2234,12 @@ struct IChain *searchstore(unsigned short hash, Uopcode opc /* sp3f */, struct I
             }
         }
 
-        if (found == false) {
+        if (!found) {
             ichain = ichain->next;
         }
     }
 
-    if (found == false) {
+    if (!found) {
         ichain = appendichain(hash, 0);
         if (ichain == NULL) {
             outofmem = true;
@@ -2326,13 +2326,13 @@ void codeimage(void) {
             ichain = isearchloop(isvarihash(stat->expr->data.isvar_issvar.var_data), stat->expr, 0, 0);
             if (outofmem) return;
 
-            if (stat->unk3 == false) {
+            if (!stat->unk3) {
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->s.bit);
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
                 if (stat->expr->unk6) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->s.bit);
-                    if (stat->expr->unk2 == false) {
+                    if (!stat->expr->unk2) {
                         setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
                     }
                 }
@@ -2346,7 +2346,7 @@ void codeimage(void) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, ichain->s.bit);
                 }
 
-                if (stat->u.store.unk1C == false || stat->u.store.unk1D == false) {
+                if (!stat->u.store.unk1C || !stat->u.store.unk1D) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->s.bit);
                 }
                 else
@@ -2402,29 +2402,29 @@ void codeimage(void) {
                 if (stat->u.store.unk1C && stat->u.store.unk1E && storeant) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, store_ichain->bitpos);
                 }
-                if (stat->u.store.unk1E == false || stat->u.store.unk1F == false ||
-                        stat->u.store.unk1C == false || stat->u.store.unk1D == false ||
-                        storeant == false || storeav == false) {
+                if (!stat->u.store.unk1E || !stat->u.store.unk1F ||
+                        !stat->u.store.unk1C || !stat->u.store.unk1D ||
+                        !storeant || !storeav) {
                     setbit(&curgraphnode->bvs.stage1.alters, store_ichain->bitpos);
                 }
                 if (stat->u.store.unk1F && storeav) {
                     setbit(&curgraphnode->bvs.stage1.u.precm.pavlocs, store_ichain->bitpos);
                 }
-                if (stat->u.store.unk1E == false || stat->u.store.unk1F == false ||
-                        storeant == false || storeav == false) {
+                if (!stat->u.store.unk1E || !stat->u.store.unk1F ||
+                        !storeant || !storeav) {
                     setbit(&curgraphnode->bvs.stage1.absalters, store_ichain->bitpos);
                 }
             } else {
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
                 if (stat->expr->unk6) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->s.bit);
-                    if (stat->expr->unk2 == false) {
+                    if (!stat->expr->unk2) {
                         setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
                     }
                 }
 
                 setbit(&curgraphnode->bvs.stage1.antlocs, ichain->s.bit);
-                if (stat->u.store.unk1D == false) {
+                if (!stat->u.store.unk1D) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->s.bit);
                 } else {
                     stat_tail = curgraphnode->stat_tail;
@@ -2630,16 +2630,16 @@ void codeimage(void) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, store_ichain->bitpos);
                 }
 
-                if (stat->u.store.unk1C == false || stat->u.store.unk1D == false ||
-                        stat->u.store.unk1E == false || stat->u.store.unk1F == false ||
-                        exprant == false || exprav == false || storeant == false || storeav == false) {
+                if (!stat->u.store.unk1C || !stat->u.store.unk1D ||
+                        !stat->u.store.unk1E || !stat->u.store.unk1F ||
+                        !exprant || !exprav || !storeant || !storeav) {
                     setbit(&curgraphnode->bvs.stage1.alters, store_ichain->bitpos);
                 }
                 if (stat->u.store.unk1F && exprav && storeav) {
                     setbit(&curgraphnode->bvs.stage1.u.precm.pavlocs, store_ichain->bitpos);
                 }
-                if (stat->u.store.unk1E == false || stat->u.store.unk1F == false ||
-                        exprant == false || exprav == false || storeant == false || storeav == false) {
+                if (!stat->u.store.unk1E || !stat->u.store.unk1F ||
+                        !exprant || !exprav || !storeant || !storeav) {
                     setbit(&curgraphnode->bvs.stage1.absalters, store_ichain->bitpos);
                 }
             } else {
@@ -2656,7 +2656,7 @@ void codeimage(void) {
                 if (exprav && storeav) {
                     setbit(&curgraphnode->bvs.stage1.avlocs, store_ichain->bitpos);
                 }
-                if (exprant == false || exprav == false || storeant == false || storeav == false) {
+                if (!exprant || !exprav || !storeant || !storeav) {
                     setbit(&curgraphnode->bvs.stage1.alters, store_ichain->bitpos);
                 }
             }
