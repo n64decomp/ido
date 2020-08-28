@@ -649,6 +649,7 @@ struct Expression {
                 Datatype cvtfrom; // if opc == Ucvt, seems to be a union here
                 int unk38_int;
                 struct Expression *unk38; // return value from findbaseaddr
+                struct TrepImageThing *unk38_trep;
             } aux;
             union {
                 struct {
@@ -659,6 +660,7 @@ struct Expression {
                 struct {
                     unsigned int unk3C;
                 } v2;
+                struct TrepImageThing *unk3C_trep;
             } aux2;
         } isop;
         struct {
@@ -667,6 +669,21 @@ struct Expression {
         } isrconst;
     } data; // 0x20
 };
+
+struct TrepImageThing {
+    struct IChain *ichain;  // 0x0
+    unsigned int unk4;
+    unsigned int unk8;
+    unsigned int unkC;
+    unsigned int unk10;
+    unsigned int unk14;
+    unsigned int unk18;
+    unsigned int unk1c;
+    unsigned int unk20;
+    unsigned int unk24;
+    unsigned int unk28;
+    unsigned int unk2C;
+}; // size 0x30
 
 extern union Bcode u;
 extern char *ustrptr;
@@ -713,7 +730,7 @@ extern struct Statement *stathead;
 extern struct Statement *stattail;
 extern int blklev[128];
 extern int staticlinkloc;
-extern void *nocopy; // TODO: fix type (0x40 bytes allocated)
+extern struct Expression *nocopy;
 extern void *nota_candof; // TODO: fix type (0x1C bytes allocated)
 extern void *constprop; // TODO: fix type (0x10 bytes allocated)
 extern int maxlabnam;

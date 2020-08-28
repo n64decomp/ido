@@ -788,7 +788,7 @@ int staticlinkloc;
 0047D000 exproccurred
 0047D878 deccount
 */
-void *nocopy; // TODO: fix type (0x40 bytes allocated)
+struct Expression *nocopy;
 
 /*
 004230F0 func_004230F0
