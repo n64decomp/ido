@@ -745,7 +745,7 @@ void optinit(void) {
     if (usefeedback != 0) {
         incorp_feedback();
     }
-    nocopy = alloc_new(0x40, &perm_heap);
+    nocopy = alloc_new(sizeof (struct Expression), &perm_heap);
     nota_candof = alloc_new(0x1C, &perm_heap);
     constprop = alloc_new(0x10, &perm_heap);
     regsinclass1 = 0x17;

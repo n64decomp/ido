@@ -457,6 +457,23 @@ struct Temploc {
     struct Temploc *next;
 };
 
+union Constant {
+    struct {
+        int intval;
+        int intval2;
+    };
+    long long int longval;
+    struct {
+        unsigned short disp; // index to first character in realdisp data
+        unsigned short len; // length of the float string
+    } real;
+    struct {
+        unsigned short disp;
+        unsigned short len;
+    } string;
+};
+
+
 enum ExpressionType {
     empty, // 0
     islda, // 1
@@ -486,29 +503,54 @@ struct IChain {
     unsigned short bitpos;      // 0x2
     unsigned short table_index; // 0x4
     unsigned short chain_index; // 0x6
-    int unk8;            // prev?
-    struct IChain *next; // 0xC
+    struct Expression *expr;    // 0x8
+    struct IChain *next;        // 0xC
 
-    // This almost seems like the actual start of the union
-    Uopcode opc;              // 0x10
-    unsigned char unk11;
-    unsigned char unk12;
-    unsigned char unk13;      // codeimage
     union {
         struct {
-            int unk14;
-            unsigned char unk18;
-            unsigned char unk19; // see fix_par_vreg inner function
-            bool unk1A; // codeimage
-        } isvar;
+            int addr;   // 0x10
+            int size;   // 0x14
+            // missing level
+            struct VariableInner var_data; // 0x18
+            struct IChain *ichain;         // 0x20
+        } islda_isilda;
         struct {
-            struct IChain *unk14;
-            struct IChain *unk18;
+            struct VariableInner var_data; // 0x10
+            unsigned char size;            // 0x18, expr + 0x20
+            // The order of these two bools is swapped from expr's isvar_issvar
+            // unk19 = unk22, and unk1A = unk21
+            bool unk19; // see fix_par_vreg inner function
+            bool unk1A; // codeimage
+            unsigned char unk1B;
+            struct IChain *ichain;          // 0x1C
+            int           unk20;
+            union {
+                unsigned short assignbit;       // 0x24
+                int unk24;
+            };
+        } isvar_issvar;
+        struct {
+            Uopcode opc;                    // 0x10
+            unsigned char overflow_attr;    // 0x11
+            Datatype datatype;              // 0x12
+            unsigned char unk13;            // codeimage
+            struct IChain *op1;             // 0x14
+            struct IChain *op2;             // 0x18
+            int size;                       // 0x1C
+            struct Statement *stat;         // 0x20
+            union {
+                Datatype cvtfrom;     // 0x24
+                union IChainThing s;  // 0x24
+            };
         } isop;
+        struct {
+            union Constant number;  // 0x10
+            int size;               // 0x18
+        } isconst;
+        struct {
+            unsigned short unk10;
+        } isrconst;
     };
-    int size;                 // 0x1C
-    struct Statement *stat;   // 0x20
-    union IChainThing s;      // 0x24
 };
 
 struct InterfereWith {
@@ -551,22 +593,6 @@ struct PdefEntry {
     int size; // from u.intarray[2]
 };
 
-union Constant {
-    struct {
-        int intval;
-        int intval2;
-    };
-    long long int longval;
-    struct {
-        unsigned short disp; // index to first character in realdisp data
-        unsigned short len; // length of the float string
-    } real;
-    struct {
-        unsigned short disp;
-        unsigned short len;
-    } string;
-};
-
 struct Expression {
     ExpressionType type;
     Datatype datatype;
@@ -592,7 +618,7 @@ struct Expression {
             int unk38;
         } islda_isilda;
         struct {
-            union Constant number; // 0x20{
+            union Constant number; // 0x20
             int size; // 0x28, in bytes
             int real_significand; // 0x2C
             int real_exponent; // 0x30
@@ -623,16 +649,18 @@ struct Expression {
                 Datatype cvtfrom; // if opc == Ucvt, seems to be a union here
                 int unk38_int;
                 struct Expression *unk38; // return value from findbaseaddr
+                struct TrepImageThing *unk38_trep;
             } aux;
             union {
                 struct {
-                    unsigned short unk3C; // some size, used before createcvtl
+                    unsigned short unk3C; // some size, used before createcvtl. used with Uinn
                     bool overflow_attr; // 0x3E
                     unsigned char unk3F; // see Uildv and Uilod in readnxtinst
                 } v1;
                 struct {
                     unsigned int unk3C;
                 } v2;
+                struct TrepImageThing *unk3C_trep;
             } aux2;
         } isop;
         struct {
@@ -641,6 +669,21 @@ struct Expression {
         } isrconst;
     } data; // 0x20
 };
+
+struct TrepImageThing {
+    struct IChain *ichain;  // 0x0
+    unsigned int unk4;
+    unsigned int unk8;
+    unsigned int unkC;
+    unsigned int unk10;
+    unsigned int unk14;
+    unsigned int unk18;
+    unsigned int unk1c;
+    unsigned int unk20;
+    unsigned int unk24;
+    unsigned int unk28;
+    unsigned int unk2C;
+}; // size 0x30
 
 extern union Bcode u;
 extern char *ustrptr;
@@ -687,7 +730,7 @@ extern struct Statement *stathead;
 extern struct Statement *stattail;
 extern int blklev[128];
 extern int staticlinkloc;
-extern void *nocopy; // TODO: fix type (0x40 bytes allocated)
+extern struct Expression *nocopy;
 extern void *nota_candof; // TODO: fix type (0x1C bytes allocated)
 extern void *constprop; // TODO: fix type (0x10 bytes allocated)
 extern int maxlabnam;

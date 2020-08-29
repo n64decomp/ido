@@ -21,5 +21,6 @@ void entervregveqv(void);
 bool has_ilod(struct Expression *expr);
 void skipproc(int reason);
 int newbit(struct IChain *ichain, void *unk4);
+bool in_indmults(struct IChain *ichain);
 
 #endif
