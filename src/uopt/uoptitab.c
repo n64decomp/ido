@@ -452,7 +452,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                         break;
 
                     default:
-                        caseerror(1, 0xB1, "uoptitab.p", 0xA);
+                        caseerror(1, 177, "uoptitab.p", 0xA);
                         break;
 
                 }
@@ -460,7 +460,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
 
             case dumped:
             default:
-                caseerror(1, 0x7B, "uoptitab.p", 0xA);
+                caseerror(1, 123, "uoptitab.p", 0xA);
                 break;
         }
 
@@ -654,13 +654,13 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                         break;
 
                     default:
-                        caseerror(1, 0x135, "uoptitab.p" /* not null-terminated */, 0xA);
+                        caseerror(1, 309, "uoptitab.p", 10);
                         break;
                 }
                 break;
 
             default:
-                caseerror(1, 0x100, "uoptitab.p" /* not null-terminated */, 0xA);
+                caseerror(1, 256, "uoptitab.p", 10);
         }
 
         if (expr->type == islda || expr->type == isconst) {
@@ -1177,7 +1177,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 break;
 
             default:
-                caseerror(1, 0x248, "uoptitab.p", 0xA);
+                caseerror(1, 584, "uoptitab.p", 0xA);
                 break;
         }
     }
@@ -1598,7 +1598,8 @@ void codeimage(void) {
                         default:
                             store_ichain = searchstore(opihash, stat->opc, ichain, store_ichain, 0, 0);
                             break;
-                    } break;
+                    }
+                    break;
             }
             if (outofmem) return;
 
