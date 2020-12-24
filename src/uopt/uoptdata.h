@@ -304,7 +304,6 @@ struct Statement {
             struct IChain *ichain; //0x28
             union {
                 struct {
-                    Datatype dtype; // 0x2C
                     int unk2C;
                     int unk30;
                 } str;
