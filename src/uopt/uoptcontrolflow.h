@@ -5,6 +5,7 @@
 
 void incorp_feedback(void);
 void bb_frequencies(void);
+void init_graphnode(struct Graphnode *node);
 void init_node_vectors(struct Graphnode *graphnode);
 void appendgraph(void);
 void controlflow(void);

@@ -35,13 +35,13 @@ struct optabrec {
 };
 
 struct Label {
-    unsigned int addr;
-    int len; // should probably be endaddr and not len
-    bool unk8; // or unsigned char?
-    bool branched_back;
-    struct Label *left;
-    struct Label *right;
-};
+    /* 0x00 */ unsigned int addr;
+    /* 0x04 */ int len; // should probably be endaddr and not len
+    /* 0x08 */ bool unk8; // or unsigned char?
+    /* 0x09 */ bool branched_back;
+    /* 0x0C */ struct Label *left;
+    /* 0x10 */ struct Label *right;
+}; // size 0x14
 
 // See insertvar
 struct VariableInner {
@@ -447,7 +447,7 @@ struct Statement {
             int unk1C; // initialized to 0
         } aent;
     } u;
-};
+}; // size 0x34
 
 struct Temploc {
     int index;
@@ -592,6 +592,14 @@ struct PdefEntry {
     int offset; // from u.intarray[3]
     int size; // from u.intarray[2]
 };
+
+struct TailRecParameter {
+    /* 0x00 */ struct Statement *stat;
+    /* 0x04 */ int parnum;
+    /* 0x08 */ int unk8; // set to tempdisp in tail_recursion
+    /* 0x0C */ struct Expression* expr;
+    /* 0x10 */ struct TailRecParameter *next;
+}; // size 0x14
 
 struct Expression {
     ExpressionType type;
