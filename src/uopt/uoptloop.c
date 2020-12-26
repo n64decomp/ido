@@ -120,6 +120,9 @@ D_10010C84:
 
 extern struct AllocBlock *intv_heap;
 
+/*
+ * Notes: Only called when graphnode->terminal == true
+ */
 static struct Intval *func_00453430(struct Intval *intvHead) {
     struct Intval *sp44;
     bool done;
@@ -174,12 +177,12 @@ static struct Intval *func_00453430(struct Intval *intvHead) {
         intv_s7->unk28 = 2;
 
         intv_s2->unk29 = intv_s7->unk29;
-        intv_s2->intvList_4 = alloc_new(8, &intv_heap);
-        intv_s2->intvList_4->intv = intv_s7;
+        intv_s2->intvList4 = alloc_new(8, &intv_heap);
+        intv_s2->intvList4->intv = intv_s7;
 
         numintval++;
 
-        phi_s6 = intv_s2->intvList_4;
+        phi_s6 = intv_s2->intvList4;
         list_s0 = phi_s6;
         found = 0;
 
@@ -192,7 +195,7 @@ static struct Intval *func_00453430(struct Intval *intvHead) {
                 temp_v1 = succ_s1->intv->prev;
 
                 if (succ_s1->intv->prev == NULL) {
-                    succ_s1->intv->prev = intv_s2->intvList_4->intv;
+                    succ_s1->intv->prev = intv_s2->intvList4->intv;
                     if (succ_s1->intv->unk1C == 0) {
 
                         list_s0->next = alloc_new(8, &intv_heap);
@@ -202,7 +205,7 @@ static struct Intval *func_00453430(struct Intval *intvHead) {
                     } else {
                         succ_s1->intv->unk28 = 1; // set to 1 here
                     }
-                } else if (intv_s2->intvList_4->intv == temp_v1 
+                } else if (intv_s2->intvList4->intv == temp_v1 
                         && succ_s1->intv->unk1C == 0 
                         && succ_s1->intv->unk28 != 2) {
 
@@ -252,7 +255,7 @@ static struct Intval *func_00453430(struct Intval *intvHead) {
     intv_s2 = sp44;
 
     do {
-        phi_s6 = intv_s2->intvList_4;
+        phi_s6 = intv_s2->intvList4;
 
         do {
             succ_s1 = phi_s6->intv->successors;
@@ -1061,7 +1064,26 @@ func_00453C20:
 /* 00453DB4 8FB40024 */  lw    $s4, 0x24($sp)
 /* 00453DB8 03E00008 */  jr    $ra
 /* 00453DBC 27BD0030 */   addiu $sp, $sp, 0x30
+)"");
 
+static void func_00453DC0(struct Intval *arg0, struct Intval *arg1) {
+    struct IntvalList *pred;
+
+    if (arg0->unk28 == 3U) {
+        return;
+    }
+    pred = arg0->predecessors;
+    arg0->unk28 = 3U;
+
+    while (pred != NULL) {
+        if (arg1 == pred->intv->intv8) {
+            func_00453DC0(pred->intv, arg1);
+        }
+        pred = pred->next;
+    }
+}
+
+#if 0
     .type func_00453DC0, @function
 func_00453DC0:
     # 00453DC0 func_00453DC0
@@ -1108,7 +1130,16 @@ func_00453DC0:
 /* 00453E4C 8FB2001C */  lw    $s2, 0x1c($sp)
 /* 00453E50 03E00008 */  jr    $ra
 /* 00453E54 27BD0028 */   addiu $sp, $sp, 0x28
+)"");
+#endif
 
+static struct Graphnode *func_00453E58(struct Intval *intv) {
+    while (intv->intvList4 != NULL) {
+        intv = intv->intvC;
+    }
+    return intv->graphnode;
+}
+#if 0
     .type func_00453E58, @function
 func_00453E58:
     # 00453ECC func_00453ECC
@@ -1124,7 +1155,22 @@ func_00453E58:
 .L00453E74:
 /* 00453E74 03E00008 */  jr    $ra
 /* 00453E78 8C820000 */   lw    $v0, ($a0)
+#endif
 
+static int func_00453E7C(struct Graphnode *node) {
+    struct GraphnodeList *pred;
+
+    pred = node->predecessors;
+    while (pred != NULL) {
+        if (pred->graphnode->unk2C != 0 && (pred->graphnode->unk2C << 3) < node->unk2C) {
+            return true;
+        }
+        pred = pred->next;
+    }
+    return false;
+}
+
+#if 0
     .type func_00453E7C, @function
 func_00453E7C:
     # 00453ECC func_00453ECC
@@ -1152,6 +1198,41 @@ func_00453E7C:
 .L00453EC4:
 /* 00453EC4 03E00008 */  jr    $ra
 /* 00453EC8 00000000 */   nop   
+#endif
+
+static void func_00453ECC(struct Intval *arg0, struct Intval *arg1) {
+    struct IntvalList *pred;
+    struct Graphnode *node;
+    struct IntvalList *list_s0;
+
+    if (arg0 != NULL) {
+        pred = arg0->predecessors;
+        while (pred != NULL) {
+            if (pred->intv->intv8 == arg1) {
+                arg0->unk28 = 3;
+                func_00453DC0(pred->intv, arg1);
+                node = func_00453E58(arg0);
+                if (node->unk4 == 0) {
+                    if (usefeedback == 0 || curproc->unk34 == NULL || func_00453E7C(node) != 0) {
+                        node->unk5 = 1;
+                    }
+                }
+            }
+            pred = pred->next;
+        }
+
+        list_s0 = arg1->intvList4;
+        do {
+            func_00453ECC(list_s0->intv->intvC, list_s0->intv);
+            list_s0 = list_s0->next;
+        } while(list_s0 != 0);
+    }
+}
+
+#if 0
+__asm__(R""(
+.set noat      # allow manual use of $at
+.set noreorder # don't insert nops after branches
 
     .type func_00453ECC, @function
 func_00453ECC:
@@ -1254,6 +1335,7 @@ func_00453ECC:
 /* 00454030 03E00008 */  jr    $ra
 /* 00454034 27BD0040 */   addiu $sp, $sp, 0x40
 )"");
+#endif
 
 /* Inner function
 # 00455D38 analoop

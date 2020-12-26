@@ -117,7 +117,7 @@ struct JumpFallthroughBB {
 
 struct Graphnode {
     int blockno;
-    bool unk4;
+    bool unk4;          // first loop bb?
     unsigned char unk5; // enum: notloopfirstbb, loopfirstbb, canunroll (see printregs)
     bool terminal;
     unsigned char unk7;     // 0 = unseen, 1 = graphhead, 2 = graphtail?
@@ -133,7 +133,7 @@ struct Graphnode {
     struct Statement *stat_tail; // 0x20
     struct VarAccessList *varlisthead; // 0x24
     struct VarAccessList *varlisttail; // 0x28
-    int unk2C;
+    unsigned int unk2C;      // checked in func_00453E7C analoop.c
     int unk30;
     int regsused[2][2]; // 0x34, should be two 64-bit values, but then alignment fails
     void *unk44[35]; // see printregs
@@ -600,7 +600,7 @@ struct IntvalList {
 
 struct Intval {
     /* 0x00 */ struct Graphnode *graphnode;
-    /* 0x04 */ struct IntvalList *intvList_4; //children? body?
+    /* 0x04 */ struct IntvalList *intvList4; //children? body?
     /* 0x08 */ struct Intval *intv8; //parent? Left?
     /* 0x0C */ struct Intval *intvC; // child? Right?
     /* 0x10 */ struct IntvalList *successors;    // IntvalList?
@@ -611,7 +611,7 @@ struct Intval {
     /* 0x20 */ struct Intval *prev;
     /* 0x24 */ int unk24;           // hyp: another counter?
     /* 0x28 */ unsigned char unk28; // has_child?
-    /* 0x29 */ unsigned char unk29;  // Graphnode->unk4
+    /* 0x29 */ unsigned char unk29; // Graphnode->unk4
     /* 0x2A */ unsigned char unk2A;
 }; // size 0x2C
 
