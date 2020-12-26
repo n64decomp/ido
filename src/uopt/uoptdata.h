@@ -593,6 +593,28 @@ struct PdefEntry {
     int size; // from u.intarray[2]
 };
 
+struct IntvalList {
+    /* 0x00 */struct Intval* intv;
+    /* 0x04 */struct IntvalList* next;
+}; // size 0x8
+
+struct Intval {
+    /* 0x00 */ struct Graphnode *graphnode;
+    /* 0x04 */ struct IntvalList *intvList_4; //children? body?
+    /* 0x08 */ struct Intval *intv8; //parent? Left?
+    /* 0x0C */ struct Intval *intvC; // child? Right?
+    /* 0x10 */ struct IntvalList *successors;    // IntvalList?
+    /* 0x14 */ struct IntvalList *predecessors;  // IntvalList?
+
+    /* 0x18 */ struct Intval *next;
+    /* 0x1C */ int unk1C;           // some counter
+    /* 0x20 */ struct Intval *prev;
+    /* 0x24 */ int unk24;           // hyp: another counter?
+    /* 0x28 */ unsigned char unk28; // has_child?
+    /* 0x29 */ unsigned char unk29;  // Graphnode->unk4
+    /* 0x2A */ unsigned char unk2A;
+}; // size 0x2C
+
 struct TailRecParameter {
     /* 0x00 */ struct Statement *stat;
     /* 0x04 */ int parnum;

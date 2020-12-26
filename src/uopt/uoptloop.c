@@ -1,3 +1,5 @@
+#include "uoptdata.h"
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -7,6 +9,7 @@ __asm__(R""(
 
 .rdata
     .balign 4
+/* 
 jtbl_1000CF00:
     # 00453A30 func_00453A30
     .gpword .L00453A70
@@ -19,6 +22,7 @@ jtbl_1000CF00:
     .gpword .L00453AB0
     .gpword .L00453ABC
     .gpword .L00453AC8
+     */
 
 RO_1000CF28:
     # 00454F00 func_00454F00
@@ -112,6 +116,199 @@ D_10010C84:
 .set noreorder # don't insert nops after branches
 
 .text
+)"");
+
+extern struct AllocBlock *intv_heap;
+
+static struct Intval *func_00453430(struct Intval *intvHead) {
+    struct Intval *sp44;
+    bool done;
+    struct Intval *temp_a2;
+    struct Intval *temp_v1;
+    struct IntvalList *newList;
+    struct Intval *intv_s7;
+    struct Intval *intv_s2;
+    struct IntvalList *phi_v0;
+    struct IntvalList *phi_s6;
+    struct IntvalList* succ_s1;
+    struct IntvalList* list_s0;
+    bool found;
+    int phi_v1;
+
+    intvHead->prev = intvHead;
+    intvHead->unk28 = 1;
+    intv_s7 = intvHead->next;
+    while (intv_s7 != NULL) {
+        if (intv_s7->unk29 != 0) {
+            intv_s7->prev = intv_s7;
+            intv_s7->unk28 = 1;
+        }
+        intv_s7 = intv_s7->next;
+    }
+
+    done = 0;
+    numintval = 0;
+    intv_s7 = intvHead;
+
+    do {
+        if (intv_s7 == intvHead) {
+            sp44 = alloc_new(0x2C, &intv_heap);
+            intv_s2 = sp44;
+        } else {
+            intv_s2->next = alloc_new(0x2C, &intv_heap);
+            intv_s2 = intv_s2->next;
+        }
+
+        intv_s2->graphnode = NULL;
+        intv_s2->unk1C = 0;
+        intv_s2->prev = 0;
+        intv_s2->unk28 = 0;
+        intv_s2->intv8 = 0;
+        intv_s2->successors = NULL;
+        intv_s2->predecessors = NULL;
+        intv_s2->unk2A = 0;
+        intv_s2->intvC = intv_s7;
+        intv_s2->unk24 = 0;
+
+        intv_s7->intv8 = intv_s2;
+        intv_s7->unk28 = 2;
+
+        intv_s2->unk29 = intv_s7->unk29;
+        intv_s2->intvList_4 = alloc_new(8, &intv_heap);
+        intv_s2->intvList_4->intv = intv_s7;
+
+        numintval++;
+
+        phi_s6 = intv_s2->intvList_4;
+        list_s0 = phi_s6;
+        found = 0;
+
+        while (phi_s6 != NULL) {
+            phi_s6->intv->unk28 = 2;
+            succ_s1 = phi_s6->intv->successors;
+
+            while (succ_s1 != NULL) {
+                succ_s1->intv->unk1C--;
+                temp_v1 = succ_s1->intv->prev;
+
+                if (succ_s1->intv->prev == NULL) {
+                    succ_s1->intv->prev = intv_s2->intvList_4->intv;
+                    if (succ_s1->intv->unk1C == 0) {
+
+                        list_s0->next = alloc_new(8, &intv_heap);
+                        list_s0->next->intv = succ_s1->intv;
+                        succ_s1->intv->intv8 = intv_s2;
+                        list_s0 = list_s0->next;
+                    } else {
+                        succ_s1->intv->unk28 = 1; // set to 1 here
+                    }
+                } else if (intv_s2->intvList_4->intv == temp_v1 
+                        && succ_s1->intv->unk1C == 0 
+                        && succ_s1->intv->unk28 != 2) {
+
+                    list_s0->next = alloc_new(8, &intv_heap);
+                    list_s0->next->intv = succ_s1->intv;
+                    succ_s1->intv->intv8 = intv_s2;
+                    succ_s1->intv->unk28 = 0;
+                    list_s0 = list_s0->next;
+                }
+
+                succ_s1 = succ_s1->next;
+            }
+
+            list_s0->next = NULL;
+            phi_s6 = phi_s6->next;
+            found = 0;
+        }
+
+        do {
+            intv_s7 = intv_s7->next;
+            if (intv_s7 != NULL) {
+                found = intv_s7->unk28 == 1;
+            }
+
+            if (found != 0) {
+                break;
+            }
+        } while (intv_s7 != 0);
+
+        if (found == 0) {
+            intv_s7 = intvHead;
+            do {
+                intv_s7 = intv_s7->next;
+                if (intv_s7 == 0) {
+                    done = 1;
+                } else {
+                    found = intv_s7->unk28 == 1;
+                }
+                if (found) {
+                    break;
+                }
+            } while(done == 0);
+        }
+    } while (done == 0);
+    intv_s2->next = NULL;
+
+    intv_s2 = sp44;
+
+    do {
+        phi_s6 = intv_s2->intvList_4;
+
+        do {
+            succ_s1 = phi_s6->intv->successors;
+
+            while (succ_s1 != NULL) {
+                temp_a2 = succ_s1->intv->intv8;
+                if (intv_s2 != temp_a2) {
+                    if (intv_s2->successors == 0) {
+                        intv_s2->successors = alloc_new(8, &intv_heap);
+                        intv_s2->successors->intv = succ_s1->intv->intv8;
+                        intv_s2->successors->next = NULL;
+                        succ_s1->intv->intv8->unk1C++;
+                        newList = alloc_new(8, &intv_heap);
+                        newList->intv = intv_s2;
+                        newList->next = succ_s1->intv->intv8->predecessors;
+                        succ_s1->intv->intv8->predecessors = newList;
+                    } else {
+                        phi_v1 = temp_a2 != intv_s2->successors->intv;
+                        list_s0 = intv_s2->successors;
+                        if (phi_v1) {
+                            phi_v0 = intv_s2->successors->next;
+                            list_s0 = intv_s2->successors;
+
+                            while (phi_v0 != NULL) {
+                                list_s0 = phi_v0;
+                                phi_v1 = temp_a2 != phi_v0->intv;
+                                if (phi_v1 == 0) {
+                                    break;
+                                }
+                                phi_v0 = phi_v0->next;
+                            }
+                        }
+
+                        if (phi_v1) {
+                            list_s0->next = alloc_new(8, &intv_heap);
+                            list_s0->next->next = 0;
+                            list_s0->next->intv = succ_s1->intv->intv8;
+                            succ_s1->intv->intv8->unk1C++;
+
+                            newList = alloc_new(8, &intv_heap);
+                            newList->intv = intv_s2;
+                            newList->next = succ_s1->intv->intv8->predecessors;
+                            succ_s1->intv->intv8->predecessors = newList;
+                        }
+                    }
+                }
+                succ_s1 = succ_s1->next;
+            }
+            phi_s6 = phi_s6->next;
+        } while (phi_s6 != NULL);
+        intv_s2 = intv_s2->next;
+    } while (intv_s2 != NULL);
+    return sp44;
+}
+
+#if 0
     .type func_00453430, @function
 func_00453430:
     # 00455D38 analoop
@@ -448,6 +645,11 @@ func_00453430:
 /* 004538DC 8FBE0038 */  lw    $fp, 0x38($sp)
 /* 004538E0 03E00008 */  jr    $ra
 /* 004538E4 27BD0058 */   addiu $sp, $sp, 0x58
+#endif
+
+__asm__(R""(
+.set noat      # allow manual use of $at
+.set noreorder # don't insert nops after branches
 
     .type func_004538E8, @function
 func_004538E8:
@@ -548,7 +750,42 @@ func_00453914:
 /* 00453A24 8FB30024 */  lw    $s3, 0x24($sp)
 /* 00453A28 03E00008 */  jr    $ra
 /* 00453A2C 27BD0030 */   addiu $sp, $sp, 0x30
+)"");
 
+#if 1
+/* Inner function
+# 00453C20 func_00453C20
+*/
+static int func_00453A30(unsigned int power) {
+    switch (power) {
+        case 0:
+            return 1;
+        case 1:
+            return 10;
+        case 2:
+            return 100;
+        case 3:
+            return 1000;
+        case 4:
+            return 10000;
+        case 5:
+            return 100000;
+        case 6:
+            return 1000000;
+        case 7:
+            return 10000000;
+        case 8:
+            return 100000000;
+        case 9:
+            return 1000000000;
+        default:
+            // what
+            return (power * 100) + 1000000000;
+    }
+}
+
+#else
+__asm__(R""(
     .type func_00453A30, @function
 func_00453A30:
     # 00453C20 func_00453C20
@@ -617,6 +854,13 @@ func_00453A30:
 /* 00453AF8 27BD0028 */  addiu $sp, $sp, 0x28
 /* 00453AFC 03E00008 */  jr    $ra
 /* 00453B00 00000000 */   nop   
+)"");
+#endif
+
+
+__asm__(R""(
+.set noat      # allow manual use of $at
+.set noreorder # don't insert nops after branches
 
     .type func_00453B04, @function
 func_00453B04:
@@ -1009,7 +1253,21 @@ func_00453ECC:
 /* 0045402C 8FBE0038 */  lw    $fp, 0x38($sp)
 /* 00454030 03E00008 */  jr    $ra
 /* 00454034 27BD0040 */   addiu $sp, $sp, 0x40
+)"");
 
+/* Inner function
+# 00455D38 analoop
+*/
+static struct Intval *func_00454038(struct Graphnode *node, struct Intval *loopHead) {
+    struct Intval *l = loopHead;
+
+    while (l->graphnode != node) {
+        l = l->next;
+    }
+    return l;
+}
+
+#if 0
     .type func_00454038, @function
 func_00454038:
     # 00455D38 analoop
@@ -1025,6 +1283,11 @@ func_00454038:
 .L00454058:
 /* 00454058 03E00008 */  jr    $ra
 /* 0045405C 00601025 */   move  $v0, $v1
+#endif
+
+__asm__(R""(
+.set noat      # allow manual use of $at
+.set noreorder # don't insert nops after branches
 
     .type func_00454060, @function
 func_00454060:
@@ -3166,7 +3429,7 @@ glabel analoop
 /* 00455DF0 AC430000 */  sw    $v1, ($v0)
 /* 00455DF4 8C73000C */  lw    $s3, 0xc($v1)
 /* 00455DF8 00409025 */  move  $s2, $v0
-/* 00455DFC AE880000 */  sw    $t0, ($s4)
+/* 00455DFC AE880000 */  sw    $t0, ($s4) # s4 = numintval
 /* 00455E00 52600025 */  beql  $s3, $zero, .L00455E98
 /* 00455E04 AC400018 */   sw    $zero, 0x18($v0)
 .L00455E08:
@@ -3200,11 +3463,11 @@ glabel analoop
 /* 00455E6C A040002A */  sb    $zero, 0x2a($v0)
 /* 00455E70 926B0004 */  lbu   $t3, 4($s3)
 /* 00455E74 A04B0029 */  sb    $t3, 0x29($v0)
-/* 00455E78 8E8C0000 */  lw    $t4, ($s4)
+/* 00455E78 8E8C0000 */  lw    $t4, ($s4) # numintval
 /* 00455E7C 8E73000C */  lw    $s3, 0xc($s3)
 /* 00455E80 258D0001 */  addiu $t5, $t4, 1
 /* 00455E84 1660FFE0 */  bnez  $s3, .L00455E08
-/* 00455E88 AE8D0000 */   sw    $t5, ($s4)
+/* 00455E88 AE8D0000 */   sw    $t5, ($s4) # numintval
 /* 00455E8C 8F8389AC */  lw     $v1, %got(graphhead)($gp)
 /* 00455E90 8C630000 */  lw    $v1, ($v1)
 /* 00455E94 AC400018 */  sw    $zero, 0x18($v0)
@@ -3230,7 +3493,7 @@ glabel analoop
 /* 00455ED8 AE420010 */  sw    $v0, 0x10($s2)
 /* 00455EDC 8E780018 */  lw    $t8, 0x18($s3)
 /* 00455EE0 8F998028 */  lw    $t9, %got(func_00454038)($gp)
-/* 00455EE4 02A01025 */  move  $v0, $s5
+/* 00455EE4 02A01025 */  lw    $a1, 0x88($sp) #move  $v0, $s5
 /* 00455EE8 8F040000 */  lw    $a0, ($t8)
 /* 00455EEC 27394038 */  addiu $t9, %lo(func_00454038) # addiu $t9, $t9, 0x4038
 /* 00455EF0 0320F809 */  jalr  $t9
@@ -3253,7 +3516,7 @@ glabel analoop
 /* 00455F30 AE220004 */  sw    $v0, 4($s1)
 /* 00455F34 8E040000 */  lw    $a0, ($s0)
 /* 00455F38 8F998028 */  lw    $t9, %got(func_00454038)($gp)
-/* 00455F3C 02A01025 */  move  $v0, $s5
+/* 00455F3C 02A01025 */  lw    $a1, 0x88($sp) #move  $v0, $s5
 /* 00455F40 27394038 */  addiu $t9, %lo(func_00454038) # addiu $t9, $t9, 0x4038
 /* 00455F44 0320F809 */  jalr  $t9
 /* 00455F48 00000000 */   nop   
@@ -3281,7 +3544,7 @@ glabel analoop
 /* 00455F98 AE420014 */  sw    $v0, 0x14($s2)
 /* 00455F9C 8E6B0014 */  lw    $t3, 0x14($s3)
 /* 00455FA0 8F998028 */  lw    $t9, %got(func_00454038)($gp)
-/* 00455FA4 02A01025 */  move  $v0, $s5
+/* 00455FA4 02A01025 */  lw    $a1, 0x88($sp) #move  $v0, $s5
 /* 00455FA8 8D640000 */  lw    $a0, ($t3)
 /* 00455FAC 27394038 */  addiu $t9, %lo(func_00454038) # addiu $t9, $t9, 0x4038
 /* 00455FB0 0320F809 */  jalr  $t9
@@ -3304,7 +3567,7 @@ glabel analoop
 /* 00455FF0 AE220004 */  sw    $v0, 4($s1)
 /* 00455FF4 8E040000 */  lw    $a0, ($s0)
 /* 00455FF8 8F998028 */  lw    $t9, %got(func_00454038)($gp)
-/* 00455FFC 02A01025 */  move  $v0, $s5
+/* 00455FFC 02A01025 */  lw    $a1, 0x88($sp) #move  $v0, $s5
 /* 00456000 27394038 */  addiu $t9, %lo(func_00454038) # addiu $t9, $t9, 0x4038
 /* 00456004 0320F809 */  jalr  $t9
 /* 00456008 00000000 */   nop   
@@ -3323,7 +3586,7 @@ glabel analoop
 /* 00456038 8E6F0018 */   lw    $t7, 0x18($s3)
 /* 0045603C 27B50090 */  addiu $s5, $sp, 0x90
 .L00456040:
-/* 00456040 8E900000 */  lw    $s0, ($s4)
+/* 00456040 8E900000 */  lw    $s0, ($s4) # numintval
 .L00456044:
 /* 00456044 8F998028 */  lw    $t9, %got(func_00453430)($gp)
 /* 00456048 02008825 */  move  $s1, $s0
@@ -3331,7 +3594,7 @@ glabel analoop
 /* 00456050 27393430 */  addiu $t9, %lo(func_00453430) # addiu $t9, $t9, 0x3430
 /* 00456054 0320F809 */  jalr  $t9
 /* 00456058 02A01025 */   move  $v0, $s5
-/* 0045605C 8E900000 */  lw    $s0, ($s4)
+/* 0045605C 8E900000 */  lw    $s0, ($s4) # numintval
 /* 00456060 8FBC0038 */  lw    $gp, 0x38($sp)
 /* 00456064 AFA20088 */  sw    $v0, 0x88($sp)
 /* 00456068 12300003 */  beq   $s1, $s0, .L00456078
