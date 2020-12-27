@@ -169,9 +169,9 @@ static struct Intval *func_00453430(struct Intval *intvHead) {
         intv_s2->intv8 = 0;
         intv_s2->successors = NULL;
         intv_s2->predecessors = NULL;
-        intv_s2->unk2A = 0;
+        intv_s2->loopdepth = 0;
         intv_s2->intvC = intv_s7;
-        intv_s2->unk24 = 0;
+        intv_s2->loop = NULL;
 
         intv_s7->intv8 = intv_s2;
         intv_s7->unk28 = 2;
@@ -650,10 +650,21 @@ func_00453430:
 /* 004538E4 27BD0058 */   addiu $sp, $sp, 0x58
 #endif
 
-__asm__(R""(
-.set noat      # allow manual use of $at
-.set noreorder # don't insert nops after branches
+static struct Intval *func_004538E8(struct Intval *arg0, struct Intval *arg1) {
+    struct Intval *phi_v0;
+    struct Intval *phi_v1;
 
+    phi_v0 = arg1->intv8;
+    phi_v1 = arg0->intv8;
+    while (phi_v0 != phi_v1) {
+        arg0 = phi_v1;
+        phi_v1 = phi_v1->intv8;
+        phi_v0 = phi_v0->intv8;
+    }
+    return arg0;
+}
+
+#if 0
     .type func_004538E8, @function
 func_004538E8:
     # 00453914 func_00453914
@@ -670,6 +681,44 @@ func_004538E8:
 .L0045390C:
 /* 0045390C 03E00008 */  jr    $ra
 /* 00453910 00801025 */   move  $v0, $a0
+#endif
+
+static void func_00453914(struct Intval *arg0, struct Intval *arg1) {
+    struct Intval *ret_intv;
+    struct IntvalList *succ;
+
+    succ = arg0->successors;
+    if (succ == NULL) {
+        arg0->loopdepth = 1;
+        return;
+    }
+
+    if (arg0->loopdepth == 0) {
+        arg0->loopdepth = 1;
+
+        do {
+            if (succ->intv->intv8 != arg1) {
+                ret_intv = func_004538E8(arg1, succ->intv->intv8);
+                if (arg0->loopdepth < ret_intv->loopdepth) {
+                    arg0->loopdepth = ret_intv->loopdepth;
+                    arg0->loop = ret_intv->loop;
+                }
+            } else {
+                func_00453914(succ->intv, arg1);
+                if (arg0->loopdepth < succ->intv->loopdepth) {
+                    arg0->loopdepth = succ->intv->loopdepth;
+                    arg0->loop = succ->intv->loop;
+                }
+            }
+            succ = succ->next;
+        } while (succ != NULL);
+    }
+}
+
+#if 0
+__asm__(R""(
+.set noat      # allow manual use of $at
+.set noreorder # don't insert nops after branches
 
     .type func_00453914, @function
 func_00453914:
@@ -754,6 +803,7 @@ func_00453914:
 /* 00453A28 03E00008 */  jr    $ra
 /* 00453A2C 27BD0030 */   addiu $sp, $sp, 0x30
 )"");
+#endif
 
 #if 1
 /* Inner function
@@ -860,11 +910,37 @@ func_00453A30:
 )"");
 #endif
 
+static struct Loop *func_00453B04(struct Intval *arg0) {
+    struct Loop *newLoop;
 
-__asm__(R""(
-.set noat      # allow manual use of $at
-.set noreorder # don't insert nops after branches
+    if (arg0->loop != 0) {
+        newLoop = alloc_new(0x18, &perm_heap);
+        newLoop->loopno = curloopno++;
+        newLoop->unk4 = arg0->loop->unk4 + 1;
+        newLoop->graphnode = 0;
+        newLoop->loopC = NULL;
+        newLoop->loop10 = arg0->loop;
+        newLoop->loop14 = arg0->loop->loopC;
+        arg0->loop->loopC = newLoop;
+        return newLoop;
+    }
 
+    if (arg0->intv8 != 0) {
+        return func_00453B04(arg0->intv8);
+    }
+
+    newLoop = alloc_new(0x18, &perm_heap);
+    newLoop->loopno = curloopno++;
+    newLoop->unk4 = 1;
+    newLoop->graphnode = 0;
+    newLoop->loopC = 0;
+    newLoop->loop10 = 0;
+    newLoop->loop14 = toplevelloops;
+    toplevelloops = newLoop;
+    return newLoop;
+}
+
+#if 0
     .type func_00453B04, @function
 func_00453B04:
     # 00453B04 func_00453B04
@@ -943,6 +1019,55 @@ func_00453B04:
 /* 00453C14 27BD0020 */  addiu $sp, $sp, 0x20
 /* 00453C18 03E00008 */  jr    $ra
 /* 00453C1C 00000000 */   nop   
+#endif
+
+static void func_00453C20(struct Intval *arg0, int arg1) {
+    struct Graphnode *node;
+    struct IntvalList *phi_s0;
+    struct Loop *phi_s1;
+
+    if (arg0->intvList4 == 0) {
+        node = arg0->graphnode;
+        node->loopdepth = arg0->loopdepth;
+        node->unkE8 = arg0->loop;
+        if (arg0->loop != NULL && arg0->loop->graphnode == NULL) {
+            arg0->loop->graphnode = node;
+        }
+        if (usefeedback == 0 || curproc->unk34 == 0) {
+            node->unk2C = func_00453A30(arg0->loopdepth - 1);
+        }
+    } else if (arg1 == 0) {
+        phi_s0 = arg0->intvList4;
+        phi_s1 = NULL;
+
+        do {
+            if (phi_s0->intv->unk28 == 3) {
+                phi_s0->intv->loopdepth = arg0->loopdepth + 1;
+                if (phi_s1 == 0) {
+                    phi_s1 = func_00453B04(arg0);
+                }
+                phi_s0->intv->loop = phi_s1;
+            } else if (phi_s0->intv->loopdepth == 0) {
+                func_00453914(phi_s0->intv, arg0);
+            }
+
+            phi_s0 = phi_s0->next;
+        } while (phi_s0 != 0);
+    } else {
+        phi_s0 = arg0->intvList4;
+
+        do {
+            func_00453C20(phi_s0->intv, arg1 - 1);
+            phi_s0 = phi_s0->next;
+        } while (phi_s0 != NULL);
+    }
+    
+}
+
+#if 0
+__asm__(R""(
+.set noat      # allow manual use of $at
+.set noreorder # don't insert nops after branches
 
     .type func_00453C20, @function
 func_00453C20:
@@ -1065,6 +1190,7 @@ func_00453C20:
 /* 00453DB8 03E00008 */  jr    $ra
 /* 00453DBC 27BD0030 */   addiu $sp, $sp, 0x30
 )"");
+#endif
 
 static void func_00453DC0(struct Intval *arg0, struct Intval *arg1) {
     struct IntvalList *pred;

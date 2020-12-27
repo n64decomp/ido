@@ -15,18 +15,18 @@ struct StrList {
 };
 
 struct livbb {
-    void *unk0; //BittabItemUnk4, previous livbb?
-    struct livbb *next;
-    int unk8;
-    int unkC;
-    unsigned short unk10;
-    unsigned char unk12;
-    unsigned char unk13;
-    bool firstisstr;
-    bool needreglod;
-    bool needregsave;
-    bool deadout;
-};
+    /* 0x00 */ void *unk0; //BittabItemUnk4, previous livbb?
+    /* 0x04 */ struct livbb *next;
+    /* 0x08 */ int unk8;
+    /* 0x0C */ int unkC;
+    /* 0x10 */ unsigned short unk10;
+    /* 0x12 */ unsigned char unk12;
+    /* 0x13 */ unsigned char unk13;
+    /* 0x14 */ bool firstisstr;
+    /* 0x15 */ bool needreglod;
+    /* 0x16 */ bool needregsave;
+    /* 0x17 */ bool deadout;
+}; // size 0x18
 
 struct optabrec {
     bool unk0; // seems to be set if a BB ends with this instruction and for Uaent
@@ -102,6 +102,39 @@ struct VarAccessList {
 };
 
 struct Graphnode;
+
+struct Loop {
+    /* 0x00 */ int loopno;
+    /* 0x04 */ unsigned short unk4;
+    /* 0x08 */ struct Graphnode *graphnode;
+    /* 0x0C */ struct Loop *loopC;
+    /* 0x10 */ struct Loop *loop10;
+    /* 0x14 */ struct Loop *loop14;
+
+}; // size 0x18
+
+struct IntvalList {
+    /* 0x00 */ struct Intval* intv;
+    /* 0x04 */ struct IntvalList* next;
+}; // size 0x8
+
+struct Intval {
+    /* 0x00 */ struct Graphnode *graphnode;
+    /* 0x04 */ struct IntvalList *intvList4; //children? body?
+    /* 0x08 */ struct Intval *intv8; //parent? Left?
+    /* 0x0C */ struct Intval *intvC; // child? Right?
+    /* 0x10 */ struct IntvalList *successors;    // IntvalList?
+    /* 0x14 */ struct IntvalList *predecessors;  // IntvalList?
+
+    /* 0x18 */ struct Intval *next;
+    /* 0x1C */ int unk1C;           // some counter
+    /* 0x20 */ struct Intval *prev;
+    /* 0x24 */ struct Loop *loop;           // 
+    /* 0x28 */ unsigned char unk28; // has_child?
+    /* 0x29 */ unsigned char unk29; // Graphnode->unk4
+    /* 0x2A */ unsigned char loopdepth; // loopdepth
+}; // size 0x2C
+
 struct GraphnodeList {
     struct Graphnode *graphnode;
     struct GraphnodeList *next;
@@ -116,33 +149,34 @@ struct JumpFallthroughBB {
 };
 
 struct Graphnode {
-    int blockno;
-    bool unk4;          // first loop bb?
-    unsigned char unk5; // enum: notloopfirstbb, loopfirstbb, canunroll (see printregs)
-    bool terminal;
-    unsigned char unk7;     // 0 = unseen, 1 = graphhead, 2 = graphtail?
-    unsigned short num; // 0x8
-    unsigned char loopdepth; // 0xA
-    unsigned char unkBb8: 1;
-    unsigned char unkBb4: 1;
-    struct Graphnode *next; // 0xC
-    struct Graphnode *prev; // 0x10
-    struct GraphnodeList *predecessors; // 0x14
-    struct GraphnodeList *successors; // 0x18
-    struct Statement *stat_head; // 0x1C
-    struct Statement *stat_tail; // 0x20
-    struct VarAccessList *varlisthead; // 0x24
-    struct VarAccessList *varlisttail; // 0x28
-    unsigned int unk2C;      // checked in func_00453E7C analoop.c
-    int unk30;
-    int regsused[2][2]; // 0x34, should be two 64-bit values, but then alignment fails
-    void *unk44[35]; // see printregs
-    int unkD0[(0xEC - 0xD0) / 4];
-    struct JumpFallthroughBB *fallthrough_bbs; // 0xEC
-    struct JumpFallthroughBB *jump_bbs; // 0xF0
+    /* 0x00 */ int blockno;
+    /* 0x04 */ bool unk4;          // first loop bb?
+    /* 0x05 */ unsigned char unk5; // enum: notloopfirstbb, loopfirstbb, canunroll (see printregs)
+    /* 0x06 */ bool terminal;
+    /* 0x07 */ unsigned char unk7;     // 0 = unseen, 1 = graphhead, 2 = graphtail?
+    /* 0x08 */ unsigned short num;
+    /* 0x0A */ unsigned char loopdepth; 
+    /* 0x0B */ unsigned char unkBb8: 1;
+    /* 0x0B */ unsigned char unkBb4: 1;
+    /* 0x0C */ struct Graphnode *next;
+    /* 0x10 */ struct Graphnode *prev;
+    /* 0x14 */ struct GraphnodeList *predecessors;
+    /* 0x18 */ struct GraphnodeList *successors;
+    /* 0x1C */ struct Statement *stat_head;
+    /* 0x20 */ struct Statement *stat_tail;
+    /* 0x24 */ struct VarAccessList *varlisthead;
+    /* 0x28 */ struct VarAccessList *varlisttail;
+    /* 0x2C */ unsigned int unk2C;      // checked in func_00453E7C analoop.c
+    /* 0x30 */ int unk30;
+    /* 0x34 */ int regsused[2][2]; // should be two 64-bit values, but then alignment fails
+    /* 0x44 */ void *unk44[35]; // see printregs
+    /* 0xD0 */ int unkD0[(0xE8 - 0xD0) / 4];
+    /* 0xE8 */ struct Loop *unkE8;
+    /* 0xEC */ struct JumpFallthroughBB *fallthrough_bbs;
+    /* 0xF0 */ struct JumpFallthroughBB *jump_bbs;
 
-    struct BitVector indiracc; // 0xF4
-    struct BitVector hoistedexp; // 0xFC
+    /* 0xF4 */ struct BitVector indiracc;
+    /* 0xFC */ struct BitVector hoistedexp;
     union {
         struct {
             int unk104[(0x134 - 0x104) / 4];
@@ -592,28 +626,6 @@ struct PdefEntry {
     int offset; // from u.intarray[3]
     int size; // from u.intarray[2]
 };
-
-struct IntvalList {
-    /* 0x00 */struct Intval* intv;
-    /* 0x04 */struct IntvalList* next;
-}; // size 0x8
-
-struct Intval {
-    /* 0x00 */ struct Graphnode *graphnode;
-    /* 0x04 */ struct IntvalList *intvList4; //children? body?
-    /* 0x08 */ struct Intval *intv8; //parent? Left?
-    /* 0x0C */ struct Intval *intvC; // child? Right?
-    /* 0x10 */ struct IntvalList *successors;    // IntvalList?
-    /* 0x14 */ struct IntvalList *predecessors;  // IntvalList?
-
-    /* 0x18 */ struct Intval *next;
-    /* 0x1C */ int unk1C;           // some counter
-    /* 0x20 */ struct Intval *prev;
-    /* 0x24 */ int unk24;           // hyp: another counter?
-    /* 0x28 */ unsigned char unk28; // has_child?
-    /* 0x29 */ unsigned char unk29; // Graphnode->unk4
-    /* 0x2A */ unsigned char unk2A;
-}; // size 0x2C
 
 struct TailRecParameter {
     /* 0x00 */ struct Statement *stat;
