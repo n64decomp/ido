@@ -73,9 +73,9 @@ D_10010C20:
     # 00454920 func_00454920
     .byte 0x10,0x00,0x00,0x00,0x00,0x00,0x00,0x01
 
-D_10010C28:
-    # 00454AB8 func_00454AB8
-    .byte 0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x10
+#D_10010C28:
+#    # 00454AB8 func_00454AB8
+#    .byte 0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x10
 
 D_10010C34:
     # 00454D08 func_00454D08
@@ -2255,7 +2255,68 @@ func_00454920:
 /* 00454AAC 27BD0028 */  addiu $sp, $sp, 0x28
 /* 00454AB0 03E00008 */  jr    $ra
 /* 00454AB4 00000000 */   nop   
+)"");
 
+static bool func_00454AB8(struct Graphnode *arg0, struct IChain *arg1, struct Statement **arg2) {
+    struct BitVector *sp2C;
+    struct Graphnode *node_a2;
+    struct GraphnodeList *nodelist_pred_s0;
+    struct Statement *stat_v1;
+    bool phi_a1;
+    bool phi_a0;
+
+    nodelist_pred_s0 = arg0->predecessors;
+    sp2C = &arg0->bvs.stage1.u.precm.pavin;
+    while (nodelist_pred_s0 != NULL && (bvectin(nodelist_pred_s0->graphnode->num, sp2C) == 0 || arg0 == nodelist_pred_s0->graphnode)) {
+        nodelist_pred_s0 = nodelist_pred_s0->next;
+    }
+    
+    if (nodelist_pred_s0 == NULL) {
+        return false;
+    }
+
+    node_a2 = nodelist_pred_s0->graphnode;
+    stat_v1 = node_a2->stat_tail;
+
+    phi_a1 = false;
+    phi_a0 = false;
+
+    while (!phi_a1 && !phi_a0) {
+        if ((stat_v1->opc == Uisst || stat_v1->opc == Ustr) && arg1 == stat_v1->expr->ichain) {
+            phi_a1 = true;
+        } else {
+            if (stat_v1->prev == NULL) {
+                phi_a0 = true;
+            } else {
+                phi_a0 = node_a2 != stat_v1->prev->graphnode;
+                stat_v1 = stat_v1->prev;
+            }
+        }
+    }
+
+    while (!phi_a1 && node_a2->predecessors != NULL && node_a2->predecessors->next == NULL) {
+
+        node_a2 = node_a2->predecessors->graphnode;
+        phi_a0 = false;
+        while (!phi_a1 && !phi_a0) {
+            if ((stat_v1->opc == Uisst || stat_v1->opc == Ustr) && arg1 == stat_v1->expr->ichain) {
+                phi_a1 = true;
+            } else {
+                if (stat_v1->prev == NULL) {
+                    phi_a0 = true;
+                } else {
+                    phi_a0 = node_a2 != stat_v1->prev->graphnode;
+                    stat_v1 = stat_v1->prev;
+                }
+            }
+        }
+    }
+
+    *arg2 = stat_v1;
+    return phi_a1;
+}
+
+#if 0
     .type func_00454AB8, @function
 func_00454AB8:
     # 00455518 func_00455518
@@ -2426,6 +2487,11 @@ func_00454AB8:
 /* 00454CFC 8FB1001C */  lw    $s1, 0x1c($sp)
 /* 00454D00 03E00008 */  jr    $ra
 /* 00454D04 27BD0048 */   addiu $sp, $sp, 0x48
+#endif
+
+__asm__(R""(
+.set noat      # allow manual use of $at
+.set noreorder # don't insert nops after branches
 
     .type func_00454D08, @function
 func_00454D08:
@@ -2881,7 +2947,32 @@ func_00455060:
 /* 00455348 8FB30024 */  lw    $s3, 0x24($sp)
 /* 0045534C 03E00008 */  jr    $ra
 /* 00455350 27BD0030 */   addiu $sp, $sp, 0x30
+)"");
 
+static bool func_00455354(struct Intval *arg0) {
+    struct IntvalList *phi_s0;
+
+    if (arg0->intvList4 == NULL) {
+        if (arg0->graphnode->stat_tail->opc == Uclab
+                || arg0->graphnode->stat_tail->opc == Ucup
+                || arg0->graphnode->stat_tail->opc == Uicuf
+                || arg0->graphnode->stat_tail->opc == Uijp
+                || arg0->graphnode->stat_tail->opc == Uxjp) {
+            return true;
+        }
+    } else {
+        phi_s0 = arg0->intvList4;
+        do {
+            if (func_00455354(phi_s0->intv)) {
+                return true;
+            }
+            phi_s0 = phi_s0->next;
+        } while (phi_s0 != NULL);
+    }
+    return false;
+}
+
+#if 0
     .type func_00455354, @function
 func_00455354:
     # 00455354 func_00455354
@@ -2940,7 +3031,46 @@ func_00455354:
 /* 0045540C 8FB1001C */  lw    $s1, 0x1c($sp)
 /* 00455410 03E00008 */  jr    $ra
 /* 00455414 27BD0028 */   addiu $sp, $sp, 0x28
+#endif
 
+static bool func_00455418(struct Intval *arg0, int arg1, int arg2) {
+    struct Graphnode *node_a0;
+    struct Graphnode *node_a2;
+    struct IntvalList *phi_v0;
+    int phi_v1;
+
+    phi_v0 = arg0->intvList4;
+    phi_v1 = 0;
+    do {
+        node_a0 = phi_v0->intv->graphnode;
+        if (node_a0->num >= arg1 && arg2 >= node_a0->num) {
+            phi_v1 = phi_v1 + 1;
+            if (node_a0->stat_tail->opc == Ufjp
+                    || node_a0->stat_tail->opc == Utjp
+                    || node_a0->stat_tail->opc == Uujp) {
+                node_a2 = node_a0->successors->graphnode;
+                if (node_a0->stat_tail->u.jp.target_blockno != node_a0->successors->graphnode->blockno) {
+                    node_a2 = node_a0->successors->next->graphnode;
+                }
+                if (node_a2->num < arg1) {
+                    return false;
+                }
+                if (arg2 < node_a2->num) {
+                    return false;
+                }
+            }
+        } else {
+            if (phi_v0->intv->unk28 == 3) {
+                return false;
+            }
+        }
+        phi_v0 = phi_v0->next;
+    } while (phi_v0 != NULL); 
+
+    return phi_v1 == ((arg2 - arg1) + 1);
+}
+
+#if 0
     .type func_00455418, @function
 func_00455418:
     # 00455518 func_00455518
@@ -3016,6 +3146,20 @@ func_00455418:
 /* 0045550C 8FB00004 */  lw    $s0, 4($sp)
 /* 00455510 03E00008 */  jr    $ra
 /* 00455514 27BD0008 */   addiu $sp, $sp, 8
+#endif
+
+__asm__(R""(
+.set noat      # allow manual use of $at
+.set noreorder # don't insert nops after branches
+
+# v0 / t0 / 0x6c(sp): 0x38(sp) of func_00455C48
+# 0x70(sp): this function's shared stack
+# 0x2c(sp): analoop shared stack # unused
+
+#   4(t0):  ^ 0x3c Intval *arg1
+#   0(t0):  ^ 0x38 Intval *arg0
+/* -4(t0): ^^ 0x34 analoop shared stack */ # unused
+#  -8(t0):  ^ 0x30 Graphnode *node
 
     .type func_00455518, @function
 func_00455518:
@@ -3032,7 +3176,7 @@ func_00455518:
 /* 00455538 00404025 */   move  $t0, $v0
 /* 0045553C 8C8E0000 */  lw    $t6, ($a0)
 /* 00455540 AFAE0060 */  sw    $t6, 0x60($sp)
-/* 00455544 8C47FFF8 */  lw    $a3, -8($v0)
+/* 00455544 8C47FFF8 */  lw    $a3, -8($v0)     /* sp30 (Graphnode) */
 /* 00455548 91D9000A */  lbu   $t9, 0xa($t6)
 /* 0045554C 90EF000A */  lbu   $t7, 0xa($a3)
 /* 00455550 55F901BA */  bnel  $t7, $t9, .L00455C3C
@@ -3115,7 +3259,7 @@ func_00455518:
 /* 0045567C 27395060 */  addiu $t9, %lo(func_00455060) # addiu $t9, $t9, 0x5060
 /* 00455680 AFA70038 */  sw    $a3, 0x38($sp)
 /* 00455684 0320F809 */  jalr  $t9
-/* 00455688 27A20070 */   addiu $v0, $sp, 0x70
+/* 00455688 27A20070 */   addiu $v0, $sp, 0x70  /* Shared stack from THIS function :| */
 /* 0045568C 8FBC0020 */  lw    $gp, 0x20($sp)
 /* 00455690 8FA70038 */  lw    $a3, 0x38($sp)
 /* 00455694 8FA8006C */  lw    $t0, 0x6c($sp)
@@ -3140,12 +3284,12 @@ func_00455518:
 /* 004556D8 1320000B */  beqz  $t9, .L00455708
 /* 004556DC AFA00048 */   sw    $zero, 0x48($sp)
 /* 004556E0 8F998028 */  lw    $t9, %got(func_00455060)($gp)
-/* 004556E4 8D040004 */  lw    $a0, 4($t0)
+/* 004556E4 8D040004 */  lw    $a0, 4($t0)      /* a0 = arg1 from func_00455C48 (Intval *) */
 /* 004556E8 AFA8006C */  sw    $t0, 0x6c($sp)
 /* 004556EC 27395060 */  addiu $t9, %lo(func_00455060) # addiu $t9, $t9, 0x5060
 /* 004556F0 AFA70038 */  sw    $a3, 0x38($sp)
 /* 004556F4 0320F809 */  jalr  $t9
-/* 004556F8 27A20070 */   addiu $v0, $sp, 0x70
+/* 004556F8 27A20070 */   addiu $v0, $sp, 0x70  /* Shared stack from THIS function :| */
 /* 004556FC 8FBC0020 */  lw    $gp, 0x20($sp)
 /* 00455700 8FA70038 */  lw    $a3, 0x38($sp)
 /* 00455704 8FA8006C */  lw    $t0, 0x6c($sp)
@@ -3159,15 +3303,15 @@ func_00455518:
 /* 0045571C 00E02025 */   move  $a0, $a3
 /* 00455720 8FAA0050 */  lw    $t2, 0x50($sp)
 /* 00455724 8F998028 */  lw    $t9, %got(func_00454AB8)($gp)
-/* 00455728 8D03FFFC */  lw    $v1, -4($t0)
+/* 00455728 8D03FFFC */  lw    $v1, -4($t0)           /* shared stack from analoop */
 /* 0045572C 8D450014 */  lw    $a1, 0x14($t2)
 /* 00455730 27394AB8 */  addiu $t9, %lo(func_00454AB8) # addiu $t9, $t9, 0x4ab8
 /* 00455734 AFA8006C */  sw    $t0, 0x6c($sp)
 /* 00455738 AFA70038 */  sw    $a3, 0x38($sp)
 /* 0045573C 27A60058 */  addiu $a2, $sp, 0x58
-/* 00455740 AFA3002C */  sw    $v1, 0x2c($sp)
+/* 00455740 AFA3002C */  sw    $v1, 0x2c($sp)           /* shared stack from analoop */
 /* 00455744 0320F809 */  jalr  $t9
-/* 00455748 00601025 */   move  $v0, $v1
+/* 00455748 00601025 */   move  $v0, $v1           /* shared stack from analoop */
 /* 0045574C 8FBC0020 */  lw    $gp, 0x20($sp)
 /* 00455750 10400011 */  beqz  $v0, .L00455798
 /* 00455754 8FA70038 */   lw    $a3, 0x38($sp)
@@ -3270,7 +3414,7 @@ func_00455518:
 /* 004558B4 24010001 */   li    $at, 1
 /* 004558B8 8F998028 */  lw    $t9, %got(func_00454060)($gp)
 /* 004558BC 00403025 */  move  $a2, $v0
-/* 004558C0 8FA2002C */  lw    $v0, 0x2c($sp)
+/* 004558C0 8FA2002C */  lw    $v0, 0x2c($sp)           /* shared stack from analoop */
 /* 004558C4 27394060 */  addiu $t9, %lo(func_00454060) # addiu $t9, $t9, 0x4060
 /* 004558C8 0320F809 */  jalr  $t9
 /* 004558CC AFA70038 */   sw    $a3, 0x38($sp)
@@ -3311,7 +3455,7 @@ func_00455518:
 /* 00455944 8FAD0050 */  lw    $t5, 0x50($sp)
 /* 00455948 8FB9006C */  lw    $t9, 0x6c($sp)
 /* 0045594C 8D250024 */  lw    $a1, 0x24($t1)
-/* 00455950 8F240004 */  lw    $a0, 4($t9)
+/* 00455950 8F240004 */  lw    $a0, 4($t9)      /* a0 = arg1 from func_00455C48 (Intval *) */
 /* 00455954 15A5001C */  bne   $t5, $a1, .L004559C8
 /* 00455958 00000000 */   nop   
 /* 0045595C 8F998028 */  lw    $t9, %got(func_00454F00)($gp)
@@ -3319,7 +3463,7 @@ func_00455518:
 /* 00455964 AFA70038 */  sw    $a3, 0x38($sp)
 /* 00455968 27394F00 */  addiu $t9, %lo(func_00454F00) # addiu $t9, $t9, 0x4f00
 /* 0045596C 0320F809 */  jalr  $t9
-/* 00455970 27A20070 */   addiu $v0, $sp, 0x70
+/* 00455970 27A20070 */   addiu $v0, $sp, 0x70  /* Shared stack from THIS function :| */
 /* 00455974 8FBC0020 */  lw    $gp, 0x20($sp)
 /* 00455978 1040002C */  beqz  $v0, .L00455A2C
 /* 0045597C 8FA70038 */   lw    $a3, 0x38($sp)
@@ -3343,7 +3487,7 @@ func_00455518:
 /* 004559C4 A3000027 */   sb    $zero, 0x27($t8)
 .L004559C8:
 /* 004559C8 8F998028 */  lw    $t9, %got(func_00454F00)($gp)
-/* 004559CC 27A20070 */  addiu $v0, $sp, 0x70
+/* 004559CC 27A20070 */  addiu $v0, $sp, 0x70  /* Shared stack from THIS function :| */
 /* 004559D0 AFA70038 */  sw    $a3, 0x38($sp)
 /* 004559D4 27394F00 */  addiu $t9, %lo(func_00454F00) # addiu $t9, $t9, 0x4f00
 /* 004559D8 0320F809 */  jalr  $t9
@@ -3387,8 +3531,8 @@ func_00455518:
 .L00455A68:
 /* 00455A68 11A7002D */  beq   $t5, $a3, .L00455B20
 /* 00455A6C 8FA9006C */   lw    $t1, 0x6c($sp)
-/* 00455A70 8D2A0000 */  lw    $t2, ($t1)
-/* 00455A74 27A20070 */  addiu $v0, $sp, 0x70
+/* 00455A70 8D2A0000 */  lw    $t2, ($t1)      /* t2 = arg0 from func_00455C48 (Intval *) */
+/* 00455A74 27A20070 */  addiu $v0, $sp, 0x70  /* Shared stack from THIS function :| */
 /* 00455A78 8D4B0004 */  lw    $t3, 4($t2)
 /* 00455A7C 15600045 */  bnez  $t3, .L00455B94
 /* 00455A80 00000000 */   nop   
@@ -3409,7 +3553,7 @@ func_00455518:
 /* 00455ABC 27395418 */  addiu $t9, %lo(func_00455418) # addiu $t9, $t9, 0x5418
 /* 00455AC0 AFA70038 */  sw    $a3, 0x38($sp)
 /* 00455AC4 0320F809 */  jalr  $t9
-/* 00455AC8 27A20070 */   addiu $v0, $sp, 0x70
+/* 00455AC8 27A20070 */   addiu $v0, $sp, 0x70  /* Shared stack from THIS function :| */
 /* 00455ACC 8FBC0020 */  lw    $gp, 0x20($sp)
 /* 00455AD0 10400030 */  beqz  $v0, .L00455B94
 /* 00455AD4 8FA70038 */   lw    $a3, 0x38($sp)
@@ -3514,6 +3658,9 @@ func_00455518:
 /* 00455C40 03E00008 */  jr    $ra
 /* 00455C44 00000000 */   nop   
 
+# 0x3c(sp): a1
+# 0x38(sp): a0 | top of stack
+# 0x34(sp): v0 / analoop sp90
     .type func_00455C48, @function
 func_00455C48:
     # 00455C48 func_00455C48
@@ -3544,7 +3691,7 @@ func_00455C48:
 /* 00455CA4 8FBC0020 */  lw    $gp, 0x20($sp)
 /* 00455CA8 8FB8003C */  lw    $t8, 0x3c($sp)
 /* 00455CAC 15E00010 */  bnez  $t7, .L00455CF0
-/* 00455CB0 27B10038 */   addiu $s1, $sp, 0x38
+/* 00455CB0 27B10038 */   addiu $s1, $sp, 0x38  /* Passes THIS function's stack, not analoop's */
 /* 00455CB4 8F100004 */  lw    $s0, 4($t8)
 /* 00455CB8 8E050000 */  lw    $a1, ($s0)
 .L00455CBC:

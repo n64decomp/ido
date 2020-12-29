@@ -120,7 +120,7 @@ struct IntvalList {
 
 struct Intval {
     /* 0x00 */ struct Graphnode *graphnode;
-    /* 0x04 */ struct IntvalList *intvList4; //children? body?
+    /* 0x04 */ struct IntvalList *intvList4; //children? body? list is NULL if graphnode != NULL
     /* 0x08 */ struct Intval *intv8; //parent? Left?
     /* 0x0C */ struct Intval *intvC; // child? Right?
     /* 0x10 */ struct IntvalList *successors;    // IntvalList?
@@ -449,6 +449,14 @@ struct Statement {
             int target_blockno; // 0x14
             int unk18;
             int unk1C; // initialized to 0 for tjp/fjp
+            struct Expression* unk20;
+            bool unk24;
+            bool unk25; // is_conditional_jump, true if opc in [Utjp, Ufjp]
+            bool unk26;
+            bool unk27; // constant comparison? true if expr->data.isvar_issvar.unk34->type == isconst
+            int unk28;
+            int unk2C;
+            int unk30;
         } jp; // tjp, fjp, uujp
 
         struct {
@@ -673,7 +681,7 @@ struct Expression {
             struct Expression *unk24;
             struct VariableInner var_data; // 0x28
             struct Expression *unk30;
-            struct Expression *unk34;
+            struct Expression *unk34; // used in analoop
             struct Statement* unk38; // a bit unsure about this type, see delentry
             int unk3C;
         } isvar_issvar;
