@@ -91,14 +91,14 @@ struct RealstoreData {
 struct Statement;
 
 struct VarAccessList {
-    struct VarAccessList *prev; // towards head
-    struct VarAccessList *next; // towards tail
-    bool unk8; // or unsigned char?
-    unsigned char type; // 0: none?, 1: store (Statement), 2: var (Expression), 3: ? (see Upmov in readnxtinst)
-    union {
-        struct Statement *store; // 0xC
-        struct Expression *var; // 0xC
-    } data;
+    /* 0x00 */ struct VarAccessList *prev; // towards head
+    /* 0x04 */ struct VarAccessList *next; // towards tail
+    /* 0x08 */ bool unk8; // or unsigned char?
+    /* 0x09 */ unsigned char type; // 0: none?, 1: store (Statement), 2: var (Expression), 3: ? (see Upmov in readnxtinst)
+    /* 0x0C */ union {
+                   struct Statement *store;
+                   struct Expression *var;
+               } data;
 };
 
 struct Graphnode;
@@ -449,7 +449,7 @@ struct Statement {
             int target_blockno; // 0x14
             int unk18;
             int unk1C; // initialized to 0 for tjp/fjp
-            struct Expression* unk20;
+            struct Expression* unk20; // initial_value? store Statement->expr->data.isvar_issvar.unk34
             bool unk24;
             bool unk25; // is_conditional_jump, true if opc in [Utjp, Ufjp]
             bool unk26;
@@ -503,6 +503,10 @@ union Constant {
     struct {
         int intval;
         int intval2;
+    };
+    struct {
+        unsigned int uintval;
+        unsigned int uintval2;
     };
     long long int longval;
     struct {
