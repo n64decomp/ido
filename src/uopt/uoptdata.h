@@ -51,6 +51,7 @@ struct VariableInner {
     unsigned int memtype: 3;
     unsigned int level: 8; // see furthervarintree
 };
+
 struct Variable {
     Datatype dtype;
     bool unk1;
@@ -110,7 +111,6 @@ struct Loop {
     /* 0x0C */ struct Loop *loopC;
     /* 0x10 */ struct Loop *loop10;
     /* 0x14 */ struct Loop *loop14;
-
 }; // size 0x18
 
 struct IntvalList {
@@ -123,13 +123,13 @@ struct Intval {
     /* 0x04 */ struct IntvalList *intvList4; //children? body? list is NULL if graphnode != NULL
     /* 0x08 */ struct Intval *intv8; //parent? Left?
     /* 0x0C */ struct Intval *intvC; // child? Right?
-    /* 0x10 */ struct IntvalList *successors;    // IntvalList?
-    /* 0x14 */ struct IntvalList *predecessors;  // IntvalList?
+    /* 0x10 */ struct IntvalList *successors;
+    /* 0x14 */ struct IntvalList *predecessors;
 
     /* 0x18 */ struct Intval *next;
-    /* 0x1C */ int unk1C;           // some counter
-    /* 0x20 */ struct Intval *prev;
-    /* 0x24 */ struct Loop *loop;           // 
+    /* 0x1C */ int numPredecessors;
+    /* 0x20 */ struct Intval *head;
+    /* 0x24 */ struct Loop *loop;
     /* 0x28 */ unsigned char unk28; // has_child?
     /* 0x29 */ unsigned char unk29; // Graphnode->unk4
     /* 0x2A */ unsigned char loopdepth; // loopdepth

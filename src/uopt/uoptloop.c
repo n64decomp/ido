@@ -4,6 +4,7 @@
 #include "uoptprep.h"
 #include "uoptutil.h"
 #include "uoptppss.h"
+#include "stdio.h"
 
 
 struct AllocBlock *intv_heap;
@@ -14,48 +15,47 @@ struct AllocBlock *intv_heap;
 Notes: Only called when graphnode->terminal == true
 */
 static struct Intval *func_00453430(struct Intval *intvHead) {
-    struct Intval *sp44;
-    bool done;
-    struct Intval *temp_a2;
+    struct Intval *newHead;
     struct IntvalList *newList;
     struct Intval *intv_s7;
     struct Intval *intv_s2;
     struct IntvalList *phi_v0;
     struct IntvalList *phi_s6;
-    struct IntvalList* succ_s1;
+    struct IntvalList* intvSucc;
     struct IntvalList* list_s0;
+    bool done;
     bool found;
     int phi_v1;
 
-    intvHead->prev = intvHead;
+    intvHead->head = intvHead;
     intvHead->unk28 = 1;
     intv_s7 = intvHead->next;
     while (intv_s7 != NULL) {
         if (intv_s7->unk29 != 0) {
-            intv_s7->prev = intv_s7;
+            intv_s7->head = intv_s7;
             intv_s7->unk28 = 1;
         }
         intv_s7 = intv_s7->next;
     }
 
-    done = 0;
+    done = false;
     numintval = 0;
     intv_s7 = intvHead;
 
     do {
         if (intv_s7 == intvHead) {
-            sp44 = alloc_new(sizeof(struct Intval), &intv_heap);
-            intv_s2 = sp44;
+            newHead = alloc_new(sizeof(struct Intval), &intv_heap);
+            intv_s2 = newHead;
         } else {
             intv_s2->next = alloc_new(sizeof(struct Intval), &intv_heap);
             intv_s2 = intv_s2->next;
         }
 
         intv_s2->graphnode = NULL;
-        intv_s2->unk1C = 0;
-        intv_s2->prev = 0;
+        intv_s2->numPredecessors = 0;
+        intv_s2->head = NULL;
         intv_s2->unk28 = 0;
-        intv_s2->intv8 = 0;
+        intv_s2->intv8 = NULL;
         intv_s2->successors = NULL;
         intv_s2->predecessors = NULL;
         intv_s2->loopdepth = 0;
@@ -73,43 +73,43 @@ static struct Intval *func_00453430(struct Intval *intvHead) {
 
         phi_s6 = intv_s2->intvList4;
         list_s0 = phi_s6;
-        found = 0;
+        found = false;
 
         while (phi_s6 != NULL) {
             phi_s6->intv->unk28 = 2;
-            succ_s1 = phi_s6->intv->successors;
+            intvSucc = phi_s6->intv->successors;
 
-            while (succ_s1 != NULL) {
-                succ_s1->intv->unk1C--;
+            while (intvSucc != NULL) {
+                intvSucc->intv->numPredecessors--;
 
-                if (succ_s1->intv->prev == NULL) {
-                    succ_s1->intv->prev = intv_s2->intvList4->intv;
-                    if (succ_s1->intv->unk1C == 0) {
+                if (intvSucc->intv->head == NULL) {
+                    intvSucc->intv->head = intv_s2->intvList4->intv;
+                    if (intvSucc->intv->numPredecessors == 0) {
 
                         list_s0->next = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                        list_s0->next->intv = succ_s1->intv;
-                        succ_s1->intv->intv8 = intv_s2;
+                        list_s0->next->intv = intvSucc->intv;
+                        intvSucc->intv->intv8 = intv_s2;
                         list_s0 = list_s0->next;
                     } else {
-                        succ_s1->intv->unk28 = 1; // set to 1 here
+                        intvSucc->intv->unk28 = 1;
                     }
-                } else if (intv_s2->intvList4->intv == succ_s1->intv->prev 
-                        && succ_s1->intv->unk1C == 0 
-                        && succ_s1->intv->unk28 != 2) {
+                } else if (intv_s2->intvList4->intv == intvSucc->intv->head 
+                        && intvSucc->intv->numPredecessors == 0 
+                        && intvSucc->intv->unk28 != 2) {
 
                     list_s0->next = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                    list_s0->next->intv = succ_s1->intv;
-                    succ_s1->intv->intv8 = intv_s2;
-                    succ_s1->intv->unk28 = 0;
+                    list_s0->next->intv = intvSucc->intv;
+                    intvSucc->intv->intv8 = intv_s2;
+                    intvSucc->intv->unk28 = 0;
                     list_s0 = list_s0->next;
                 }
 
-                succ_s1 = succ_s1->next;
+                intvSucc = intvSucc->next;
             }
 
             list_s0->next = NULL;
             phi_s6 = phi_s6->next;
-            found = 0;
+            found = false;
         }
 
         do {
@@ -118,50 +118,49 @@ static struct Intval *func_00453430(struct Intval *intvHead) {
                 found = intv_s7->unk28 == 1;
             }
 
-            if (found != 0) {
+            if (found) {
                 break;
             }
-        } while (intv_s7 != 0);
+        } while (intv_s7 != NULL);
 
-        if (found == 0) {
+        if (!found) {
             intv_s7 = intvHead;
             do {
                 intv_s7 = intv_s7->next;
-                if (intv_s7 == 0) {
-                    done = 1;
+                if (intv_s7 == NULL) {
+                    done = true;
                 } else {
                     found = intv_s7->unk28 == 1;
                 }
                 if (found) {
                     break;
                 }
-            } while(done == 0);
+            } while(!done);
         }
-    } while (done == 0);
+    } while (!done);
     intv_s2->next = NULL;
 
-    intv_s2 = sp44;
+    intv_s2 = newHead;
 
     do {
         phi_s6 = intv_s2->intvList4;
 
         do {
-            succ_s1 = phi_s6->intv->successors;
+            intvSucc = phi_s6->intv->successors;
 
-            while (succ_s1 != NULL) {
-                temp_a2 = succ_s1->intv->intv8;
-                if (intv_s2 != temp_a2) {
+            while (intvSucc != NULL) {
+                if (intv_s2 != intvSucc->intv->intv8) {
                     if (intv_s2->successors == 0) {
                         intv_s2->successors = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                        intv_s2->successors->intv = succ_s1->intv->intv8;
+                        intv_s2->successors->intv = intvSucc->intv->intv8;
                         intv_s2->successors->next = NULL;
-                        succ_s1->intv->intv8->unk1C++;
+                        intvSucc->intv->intv8->numPredecessors++;
                         newList = alloc_new(sizeof(struct IntvalList), &intv_heap);
                         newList->intv = intv_s2;
-                        newList->next = succ_s1->intv->intv8->predecessors;
-                        succ_s1->intv->intv8->predecessors = newList;
+                        newList->next = intvSucc->intv->intv8->predecessors;
+                        intvSucc->intv->intv8->predecessors = newList;
                     } else {
-                        phi_v1 = temp_a2 != intv_s2->successors->intv;
+                        phi_v1 = intvSucc->intv->intv8 != intv_s2->successors->intv;
                         list_s0 = intv_s2->successors;
                         if (phi_v1) {
                             phi_v0 = intv_s2->successors->next;
@@ -169,7 +168,7 @@ static struct Intval *func_00453430(struct Intval *intvHead) {
 
                             while (phi_v0 != NULL) {
                                 list_s0 = phi_v0;
-                                phi_v1 = temp_a2 != phi_v0->intv;
+                                phi_v1 = intvSucc->intv->intv8 != phi_v0->intv;
                                 if (phi_v1 == 0) {
                                     break;
                                 }
@@ -180,23 +179,23 @@ static struct Intval *func_00453430(struct Intval *intvHead) {
                         if (phi_v1) {
                             list_s0->next = alloc_new(sizeof(struct IntvalList), &intv_heap);
                             list_s0->next->next = 0;
-                            list_s0->next->intv = succ_s1->intv->intv8;
-                            succ_s1->intv->intv8->unk1C++;
+                            list_s0->next->intv = intvSucc->intv->intv8;
+                            intvSucc->intv->intv8->numPredecessors++;
 
                             newList = alloc_new(sizeof(struct IntvalList), &intv_heap);
                             newList->intv = intv_s2;
-                            newList->next = succ_s1->intv->intv8->predecessors;
-                            succ_s1->intv->intv8->predecessors = newList;
+                            newList->next = intvSucc->intv->intv8->predecessors;
+                            intvSucc->intv->intv8->predecessors = newList;
                         }
                     }
                 }
-                succ_s1 = succ_s1->next;
+                intvSucc = intvSucc->next;
             }
             phi_s6 = phi_s6->next;
         } while (phi_s6 != NULL);
         intv_s2 = intv_s2->next;
     } while (intv_s2 != NULL);
-    return sp44;
+    return newHead;
 }
 
 /* 
@@ -290,7 +289,7 @@ static int func_00453A30(unsigned int power) {
 static struct Loop *func_00453B04(struct Intval *arg0) {
     struct Loop *newLoop;
 
-    if (arg0->loop != 0) {
+    if (arg0->loop != NULL) {
         newLoop = alloc_new(sizeof(struct Loop), &perm_heap);
         newLoop->loopno = curloopno++;
         newLoop->unk4 = arg0->loop->unk4 + 1;
@@ -302,7 +301,7 @@ static struct Loop *func_00453B04(struct Intval *arg0) {
         return newLoop;
     }
 
-    if (arg0->intv8 != 0) {
+    if (arg0->intv8 != NULL) {
         return func_00453B04(arg0->intv8);
     }
 
@@ -326,7 +325,7 @@ static void func_00453C20(struct Intval *arg0, int arg1) {
     struct IntvalList *phi_s0;
     struct Loop *phi_s1;
 
-    if (arg0->intvList4 == 0) {
+    if (arg0->intvList4 == NULL) {
         node = arg0->graphnode;
         node->loopdepth = arg0->loopdepth;
         node->unkE8 = arg0->loop;
@@ -352,7 +351,7 @@ static void func_00453C20(struct Intval *arg0, int arg1) {
             }
 
             phi_s0 = phi_s0->next;
-        } while (phi_s0 != 0);
+        } while (phi_s0 != NULL);
     } else {
         phi_s0 = arg0->intvList4;
 
@@ -399,7 +398,7 @@ static struct Graphnode *func_00453E58(struct Intval *intv) {
 /* 
 00453ECC func_00453ECC
 */
-static int func_00453E7C(struct Graphnode *node) {
+static bool func_00453E7C(struct Graphnode *node) {
     struct GraphnodeList *pred;
 
     pred = node->predecessors;
@@ -429,7 +428,7 @@ static void func_00453ECC(struct Intval *arg0, struct Intval *arg1) {
                 func_00453DC0(pred->intv, arg1);
                 node = func_00453E58(arg0);
                 if (node->unk4 == 0) {
-                    if (usefeedback == 0 || curproc->unk34 == NULL || func_00453E7C(node) != 0) {
+                    if (usefeedback == 0 || curproc->unk34 == NULL || func_00453E7C(node)) {
                         node->unk5 = 1;
                     }
                 }
@@ -441,7 +440,7 @@ static void func_00453ECC(struct Intval *arg0, struct Intval *arg1) {
         do {
             func_00453ECC(list_s0->intv->intvC, list_s0->intv);
             list_s0 = list_s0->next;
-        } while(list_s0 != 0);
+        } while(list_s0 != NULL);
     }
 }
 
@@ -626,11 +625,11 @@ static bool func_00454514(struct Graphnode *node_shared_sp30, struct Expression 
     }
 
     if (expr_op_sp50 == expr_sp54->data.isop.op1) {
-        if (bvectin0(expr_sp54->data.isop.op2->ichain->bitpos, &node_s2->bvs.stage1.alters) != 0) {
+        if (bvectin0(expr_sp54->data.isop.op2->ichain->bitpos, &node_s2->bvs.stage1.alters)) {
             return false;
         }
     } else {
-        if (bvectin0(expr_sp54->data.isop.op1->ichain->bitpos, &node_s2->bvs.stage1.alters) != 0) {
+        if (bvectin0(expr_sp54->data.isop.op1->ichain->bitpos, &node_s2->bvs.stage1.alters)) {
             return false;
         }
     }
@@ -715,11 +714,11 @@ static void func_00454920(struct Statement *stat, struct Expression *expr_sp54, 
         (((stat->u.jp.unk25 == 0 && expr_op_sp50 == expr_sp54->data.isop.op1) ||
           (stat->u.jp.unk25 != 0 && expr_op_sp50 == expr_sp54->data.isop.op2)) 
                 && expr_sp54->data.isop.opc == Ugeq)) {
-        if (incre == 1 && func_00454514(node_shared_sp30, expr_sp54, expr_op_sp50, stat->u.jp.unk20, stat->u.jp.unk25) != 0) {
+        if (incre == 1 && func_00454514(node_shared_sp30, expr_sp54, expr_op_sp50, stat->u.jp.unk20, stat->u.jp.unk25)) {
             stat->u.jp.unk1C = 1;
         }
     } else {
-        if (incre == -1 && func_00454514(node_shared_sp30, expr_sp54, expr_op_sp50, stat->u.jp.unk20, stat->u.jp.unk25) != 0) {
+        if (incre == -1 && func_00454514(node_shared_sp30, expr_sp54, expr_op_sp50, stat->u.jp.unk20, stat->u.jp.unk25)) {
             stat->u.jp.unk1C = -1;
         }
     }
@@ -802,24 +801,24 @@ static bool func_00454D08(struct Intval *intv, struct Expression *expr, struct G
             return true;
         } else {
             //0x10C
-            if (bvectin0(expr->ichain->bitpos, &node_s0->bvs.stage1.alters) != 0) {
+            if (bvectin0(expr->ichain->bitpos, &node_s0->bvs.stage1.alters)) {
                 return false;
             }
             if ((node_s0->stat_tail->opc == Ucia) && (lang == LANG_ADA)) {
                 return false;
             }
             if (node_s0->stat_tail->opc == Ucup || node_s0->stat_tail->opc == Uicuf) {
-                if (clkilled(node_s0->stat_tail->u.call.level, node_s0->stat_tail->u.call.proc, expr) != 0) {
+                if (clkilled(node_s0->stat_tail->u.call.level, node_s0->stat_tail->u.call.proc, expr)) {
                     return false;
                 }
-                if (listplkilled(node_s0->stat_tail->u.call.parameters, expr, 1) != 0) {
+                if (listplkilled(node_s0->stat_tail->u.call.parameters, expr, 1)) {
                     return false;
                 }
             } else if (node_s0->stat_tail->opc == Ucia) {
-                if (((node_s0->stat_tail->u.cia.flags & 1) != 0) && (clkilled(curlevel, indirprocs, expr) != 0)) {
+                if ((node_s0->stat_tail->u.cia.flags & 1) && clkilled(curlevel, indirprocs, expr)) {
                     return false;
                 }
-                if (listplkilled(node_s0->stat_tail->u.cia.parameters, expr, 1) != 0) {
+                if (listplkilled(node_s0->stat_tail->u.cia.parameters, expr, 1)) {
                     return false;
                 }
             }
@@ -901,7 +900,7 @@ static void func_00455060(struct Intval *intv_parent_arg1, struct Graphnode* sp6
             }
 
             if (node_s2->stat_tail->opc == Ucup || node_s2->stat_tail->opc == Uicuf) {
-                if (cupaltered(expr_op_sp50->ichain, node_s2->stat_tail->u.call.level, node_s2->stat_tail->u.call.proc) != 0) {
+                if (cupaltered(expr_op_sp50->ichain, node_s2->stat_tail->u.call.level, node_s2->stat_tail->u.call.proc)) {
                     *sp4F = true;
                     return;
                 }
@@ -933,7 +932,7 @@ static void func_00455060(struct Intval *intv_parent_arg1, struct Graphnode* sp6
         }
 
         vl_s0 = node_s2->varlisthead;
-        while (vl_s0 != 0) {
+        while (vl_s0 != NULL) {
             if (vl_s0->type == 1
                     && (vl_s0->data.store->opc == Uisst || vl_s0->data.store->opc == Ustr)
                     && expr_op_sp50->ichain == vl_s0->data.store->expr->ichain) {
@@ -1115,7 +1114,7 @@ static void func_00455518(struct Intval *arg0, struct Intval *intv_parent_arg0, 
             }
         }
 
-        if (sp4F != 0 || expr_sp48 == NULL) {
+        if (sp4F || expr_sp48 == NULL) {
             return;
         }
 
@@ -1216,7 +1215,7 @@ static void func_00455518(struct Intval *arg0, struct Intval *intv_parent_arg0, 
         do {
             func_00455518(sp68->intv, intv_parent_arg0, intv_parent_arg1, node_shared_sp30);
             sp68 = sp68->next;
-        } while (sp68 != 0);
+        } while (sp68 != NULL);
     }
 }
 
@@ -1225,13 +1224,9 @@ static void func_00455518(struct Intval *arg0, struct Intval *intv_parent_arg0, 
 00455D38 analoop
 */
 static void func_00455C48(struct Intval *arg0, struct Intval *arg1) {
-    // sp38: shared stack for this function
-    //s32 sp34; // shared stack from analoop
-    //void *sp30; // node
     struct Graphnode *node_shared_sp30;
     struct IntvalList *list_s0;
 
-    //sp34 = ERROR(Read from unset register $v0);
     if (arg0 != NULL) {
         if (arg0->unk28 == 3) {
             node_shared_sp30 = func_00453E58(arg0);
@@ -1253,149 +1248,246 @@ static void func_00455C48(struct Intval *arg0, struct Intval *arg1) {
     }
 }
 
+//! debug function
+void print_intval_list(const char *name, struct IntvalList *intvList)
+{
+    int i;
+    printf("%.17s: %x\n", name, intvList);
+
+    i = 0;
+    while(intvList != NULL) {
+        printf("\t%d : %x\n", i, intvList->intv);
+        intvList = intvList->next;
+        i++;
+    }
+}
+
+//! debug function
+void print_intval(struct Intval *intv) {
+    if (intv == NULL) return;
+    printf("intval          : %x\n", intv);
+    printf("graphnode       : %x\n",   intv->graphnode);
+    print_intval_list("intvList4",  intv->intvList4);
+    printf("intv8           : %x\n",   intv->intv8);
+    printf("intvC           : %x\n",   intv->intvC);
+    print_intval_list("successors", intv->successors);
+    print_intval_list("predecessors",  intv->predecessors);
+    printf("next            : %x\n",   intv->next);
+    printf("numPredecessors : %d\n",   intv->numPredecessors);
+    printf("head            : %x\n",   intv->head);
+    printf("loop            : %x\n",   intv->loop);
+    printf("unk28           : %hhd\n", intv->unk28);
+    printf("unk29           : %hhd\n", intv->unk29);
+    printf("loopdepth       : %hhd\n", intv->loopdepth);
+    puts("");
+}
+
 /* 
 00456A2C oneproc
 */
 void analoop() {
-    struct Intval *sp88;
-    struct AllocBlock *sp6C;
+    struct Intval *intvHead;
+    struct AllocBlock *heapBlock;
     struct BitVector sp64;
     struct BitVectorBlock sp48;
-    struct Intval *intv_s2;
-    struct Intval *tempIntval;
-    struct GraphnodeList *nodelist_s0;
-    struct IntvalList *intvList_s1;
-    struct Graphnode *node_s3;
+    struct Intval *curIntv;
+    struct Intval *newIntv;
+    struct GraphnodeList *nodeSucc;
+    struct GraphnodeList *nodePred;
+    struct IntvalList *intvSucc;
+    struct IntvalList *intvPred;
+    struct Graphnode *curnode;
     bool repeat;
     int oldIntval;
-    int it_s0;
+    int i;
+
+    printf("\nStarting analoop %.*s\n", entnam0len, entnam0);
 
     bvlivransize = ((unsigned) (curstaticno - 1) >> 7) + 1; // (curstaticno / 128) + 1, but 33554432 at 0
-    sp6C = alloc_mark(&intv_heap);
-    sp88 = alloc_new(sizeof(struct Intval), &intv_heap);
-    sp88->intvC = NULL;
-    sp88->unk1C = 0;
-    sp88->intvList4 = NULL;
-    sp88->intv8 = NULL;
-    sp88->prev = NULL;
-    sp88->loop = NULL;
-    sp88->unk28 = 0;
-    sp88->loopdepth = 0;
-    sp88->unk29 = 0;
-    sp88->graphnode = graphhead;
+    heapBlock = alloc_mark(&intv_heap);
+    intvHead = alloc_new(sizeof(struct Intval), &intv_heap);
+    intvHead->intvC = NULL;
+    intvHead->numPredecessors = 0;
+    intvHead->intvList4 = NULL;
+    intvHead->intv8 = NULL;
+    intvHead->head = NULL;
+    intvHead->loop = NULL;
+    intvHead->unk28 = 0;
+    intvHead->loopdepth = 0;
+    intvHead->unk29 = 0;
+    intvHead->graphnode = graphhead;
 
-    intv_s2  = sp88;
-    node_s3 = graphhead->next;
+    curIntv = intvHead;
     numintval = 1;
+    curnode = graphhead->next;
 
-    while (node_s3 != NULL) {
-        tempIntval = alloc_new(sizeof(struct Intval), &intv_heap);
-        intv_s2->next = tempIntval;
-        tempIntval->intvC = NULL;
-        tempIntval->graphnode = node_s3;
+    while (curnode != NULL) {
+        newIntv = alloc_new(sizeof(struct Intval), &intv_heap);
+        curIntv->next = newIntv;
+        newIntv->intvC = NULL;
+        newIntv->graphnode = curnode;
 
-        tempIntval->unk1C = 0;
-        nodelist_s0 = node_s3->predecessors;
-        while (nodelist_s0 != NULL) {
-            tempIntval->unk1C++;
-            nodelist_s0 = nodelist_s0->next;
+        // count the number of predecessors
+        newIntv->numPredecessors = 0;
+        nodePred = curnode->predecessors;
+        while (nodePred != NULL) {
+            newIntv->numPredecessors++;
+            nodePred = nodePred->next;
         }
-        tempIntval->intvList4 = NULL;
-        tempIntval->intv8 = NULL;
-        tempIntval->prev = NULL;
-        tempIntval->loop = NULL;
-        tempIntval->unk28 = 0;
-        tempIntval->loopdepth = 0;
-        tempIntval->unk29 = node_s3->unk4;
-        node_s3 = node_s3->next;
+        newIntv->intvList4 = NULL;
+        newIntv->intv8 = NULL;
+        newIntv->head = NULL;
+        newIntv->loop = NULL;
+        newIntv->unk28 = 0;
+        newIntv->loopdepth = 0;
+        newIntv->unk29 = curnode->unk4;
+
+        curIntv = newIntv;
         numintval++;
-        intv_s2 = tempIntval;
+        curnode = curnode->next;
     }
+    curIntv->next = NULL;
 
-    intv_s2->next = NULL;
-    node_s3 = graphhead;
-    intv_s2 = sp88;
-    while (intv_s2 != 0) {
-        if (node_s3->successors == NULL) {
-            intv_s2->successors = NULL;
+    curnode = graphhead;
+    curIntv = intvHead;
+
+    // find successors and predecessors
+    while (curIntv != NULL) {
+        if (curnode->successors == NULL) {
+            curIntv->successors = NULL;
         } else {
-            intv_s2->successors = alloc_new(sizeof(struct IntvalList), &intv_heap);
-            intv_s2->successors->intv = func_00454038(node_s3->successors->graphnode, sp88);
-            intvList_s1 = intv_s2->successors;
-            nodelist_s0 = node_s3->successors->next;
-            while (nodelist_s0 != NULL) {
-                intvList_s1->next = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                intvList_s1->next->intv = func_00454038(nodelist_s0->graphnode, sp88);
-                nodelist_s0 = nodelist_s0->next;
-                intvList_s1 = intvList_s1->next;
+            curIntv->successors = alloc_new(sizeof(struct IntvalList), &intv_heap);
+            curIntv->successors->intv = func_00454038(curnode->successors->graphnode, intvHead);
+
+            intvSucc = curIntv->successors;
+            nodeSucc = curnode->successors->next;
+
+            while (nodeSucc != NULL) {
+                intvSucc->next = alloc_new(sizeof(struct IntvalList), &intv_heap);
+                intvSucc->next->intv = func_00454038(nodeSucc->graphnode, intvHead);
+
+                nodeSucc = nodeSucc->next;
+                intvSucc = intvSucc->next;
             }
-            intvList_s1->next = NULL;
+            intvSucc->next = NULL;
         }
 
-        if (node_s3->predecessors == 0) {
-            intv_s2->predecessors = NULL;
+        if (curnode->predecessors == NULL) {
+            curIntv->predecessors = NULL;
         } else {
-            intv_s2->predecessors = alloc_new(sizeof(struct IntvalList), &intv_heap);
-            intv_s2->predecessors->intv = func_00454038(node_s3->predecessors->graphnode, sp88);
-            intvList_s1 = intv_s2->predecessors;
-            nodelist_s0 = node_s3->predecessors->next;
-            while (nodelist_s0 != NULL) {
-                intvList_s1->next = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                intvList_s1->next->intv = func_00454038(nodelist_s0->graphnode, sp88);
-                nodelist_s0 = nodelist_s0->next;
-                intvList_s1 = intvList_s1->next;
+            curIntv->predecessors = alloc_new(sizeof(struct IntvalList), &intv_heap);
+            curIntv->predecessors->intv = func_00454038(curnode->predecessors->graphnode, intvHead);
+
+            intvPred = curIntv->predecessors;
+            nodePred = curnode->predecessors->next;
+
+            while (nodePred != NULL) {
+                intvPred->next = alloc_new(sizeof(struct IntvalList), &intv_heap);
+                intvPred->next->intv = func_00454038(nodePred->graphnode, intvHead);
+
+                nodePred = nodePred->next;
+                intvPred = intvPred->next;
             }
-            intvList_s1->next = 0;
+            intvPred->next = 0;
         }
-        intv_s2 = intv_s2->next;
-        node_s3 = node_s3->next;
+
+        curIntv = curIntv->next;
+        curnode = curnode->next;
     }
+
+    // DEBUG
+    puts("\033[32m Initial List \033[m\n");
+    curIntv = intvHead;
+    while (curIntv != NULL) {
+        print_intval(curIntv);
+        curIntv = curIntv->next;
+    }
+    ////////////////////////////
 
     do {
         oldIntval = numintval;
-        sp88 = func_00453430(sp88);
+        intvHead = func_00453430(intvHead);
         if (numintval == oldIntval) {
             break;
         }
     } while (numintval != 1);
 
-    intv_s2 = sp88;
+    // DEBUG
+    puts("\033[32m################################################################################\033[m\n");
+    puts("\033[32m After func_00453430 \033[m\n");
+    curIntv = intvHead;
+    while (curIntv != NULL) {
+        print_intval(curIntv);
+        curIntv = curIntv->next;
+    }
+    ////////////////////////////
+
+    curIntv = intvHead;
     do {
-        intv_s2->loopdepth = 1;
-        func_00453ECC(intv_s2->intvC, intv_s2);
-        intv_s2 = intv_s2->next;
-    } while (intv_s2 != NULL);
+        curIntv->loopdepth = 1;
+        func_00453ECC(curIntv->intvC, curIntv);
+        curIntv = curIntv->next;
+    } while (curIntv != NULL);
+
+    // DEBUG
+    puts("\033[33m################################################################################\033[m\n");
+    puts("\033[33m After func_00453ECC \033[m\n");
+    curIntv = intvHead;
+    while (curIntv != NULL) {
+        print_intval(curIntv);
+        curIntv = curIntv->next;
+    }
+    ////////////////////////////
+
 
     graphhead->loopdepth = 0;
-    it_s0 = 0;
+    i = 0;
 
     do {
-        intv_s2 = sp88;
+        curIntv = intvHead;
 
         do {
-            func_00453C20(intv_s2, it_s0);
-            intv_s2 = intv_s2->next;
-        } while (intv_s2 != NULL);
+            func_00453C20(curIntv, i);
+            curIntv = curIntv->next;
+        } while (curIntv != NULL);
 
-        it_s0++;
+        i++;
     } while (graphhead->loopdepth == 0);
 
-    node_s3 = graphhead;
-    while (node_s3 != NULL) {
+    // DEBUG
+    puts("\033[34m################################################################################\033[m\n");
+    puts("\033[34m After func_00453C20 \033[m\n");
+    curIntv = intvHead;
+    while (curIntv != NULL) {
+        print_intval(curIntv);
+        curIntv = curIntv->next;
+    }
+    puts("\033[36m################################################################################\033[m\n");
+    puts("\033[36m Head intvalList4 \033[m\n");
+    struct IntvalList *list = intvHead->intvList4;
+    while (list != NULL) {
+        print_intval(list->intv);
+        list = list->next;
+    }
 
-        node_s3->bvs.stage1.u.precm.pavin.num_blocks = 0;
-        node_s3->bvs.stage1.u.precm.pavin.blocks = 0;
-        checkinitbvlivran(&node_s3->bvs.stage1.u.precm.pavin);
-        if (node_s3->predecessors == NULL || node_s3->unk4 != 0) {
-            setbitbb(&node_s3->bvs.stage1.u.precm.pavin, node_s3->num);
+    ////////////////////////////
+
+    curnode = graphhead;
+    while (curnode != NULL) {
+
+        curnode->bvs.stage1.u.precm.pavin.num_blocks = 0;
+        curnode->bvs.stage1.u.precm.pavin.blocks = 0;
+        checkinitbvlivran(&curnode->bvs.stage1.u.precm.pavin);
+        if (curnode->predecessors == NULL || curnode->unk4 != 0) {
+            setbitbb(&curnode->bvs.stage1.u.precm.pavin, curnode->num);
         } else {
             sp48.words[0] = -1;
             sp48.words[1] = -1;
             sp48.words[2] = -1;
             sp48.words[3] = -1;
-            initbv(&node_s3->bvs.stage1.u.precm.pavin, sp48);
+            initbv(&curnode->bvs.stage1.u.precm.pavin, sp48);
         }
-        node_s3 = node_s3->next;
+        curnode = curnode->next;
     }
 
     sp64.num_blocks = 0;
@@ -1404,35 +1496,36 @@ void analoop() {
 
 
     do {
-        node_s3 = graphhead;
-        repeat = 0;
-        while (node_s3 != NULL) {
-            nodelist_s0 = node_s3->predecessors;
-            if (nodelist_s0 != 0) {
-                if (repeat == 0) {
-                    bvectcopy(&sp64, &node_s3->bvs.stage1.u.precm.pavin);
+        curnode = graphhead;
+        repeat = false;
+        while (curnode != NULL) {
+            nodePred = curnode->predecessors;
+            if (nodePred != NULL) {
+                if (!repeat) {
+                    bvectcopy(&sp64, &curnode->bvs.stage1.u.precm.pavin);
                 }
 
                 do {
-                    bvectintsect(&node_s3->bvs.stage1.u.precm.pavin, &nodelist_s0->graphnode->bvs.stage1.u.precm.pavin);
-                    nodelist_s0 = nodelist_s0->next;
-                } while (nodelist_s0 != NULL);
+                    bvectintsect(&curnode->bvs.stage1.u.precm.pavin, &nodePred->graphnode->bvs.stage1.u.precm.pavin);
+                    nodePred = nodePred->next;
+                } while (nodePred != NULL);
 
-                setbitbb(&node_s3->bvs.stage1.u.precm.pavin, node_s3->num);
-                if (repeat == 0) {
-                    if (bvecteq(&sp64, &node_s3->bvs.stage1.u.precm.pavin) == 0) {
-                        repeat = 1;
+                setbitbb(&curnode->bvs.stage1.u.precm.pavin, curnode->num);
+                if (!repeat) {
+                    if (!bvecteq(&sp64, &curnode->bvs.stage1.u.precm.pavin)) {
+                        repeat = true;
                     }
                 }
             }
-            node_s3 = node_s3->next;
+            curnode = curnode->next;
         }
-    } while (repeat != 0);
+    } while (repeat);
 
-    intv_s2 = sp88;
-    while (intv_s2 != NULL) {
-        func_00455C48(intv_s2->intvC, intv_s2);
-        intv_s2 = intv_s2->next;
+    curIntv = intvHead;
+    while (curIntv != NULL) {
+        func_00455C48(curIntv->intvC, curIntv);
+        curIntv = curIntv->next;
     }
-    alloc_release(&intv_heap, sp6C);
+    alloc_release(&intv_heap, heapBlock);
+    puts("Ending analoop\n");
 }
