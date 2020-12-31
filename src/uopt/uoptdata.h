@@ -383,6 +383,10 @@ struct Statement {
         } loc;
 
         struct {
+            int flags; // 0x14
+        } nop;
+
+        struct {
             Datatype dtype; // 0x14
             int unk18; // IONE
         } clbd_cubd_step;
