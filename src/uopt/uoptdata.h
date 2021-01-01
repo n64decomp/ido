@@ -106,31 +106,39 @@ struct Graphnode;
 
 struct Loop {
     /* 0x00 */ int loopno;
-    /* 0x04 */ unsigned short unk4;
+    /* 0x04 */ unsigned short depth;
     /* 0x08 */ struct Graphnode *graphnode;
-    /* 0x0C */ struct Loop *loopC;
-    /* 0x10 */ struct Loop *loop10;
-    /* 0x14 */ struct Loop *loop14;
+    /* 0x0C */ struct Loop *child;
+    /* 0x10 */ struct Loop *parent;
+    /* 0x14 */ struct Loop *next;
 }; // size 0x18
 
-struct IntvalList {
-    /* 0x00 */ struct Intval* intv;
-    /* 0x04 */ struct IntvalList* next;
+struct IntervalList {
+    /* 0x00 */ struct Interval* intv;
+    /* 0x04 */ struct IntervalList* next;
 }; // size 0x8
 
-struct Intval {
-    /* 0x00 */ struct Graphnode *graphnode;
-    /* 0x04 */ struct IntvalList *intvList4; //children? body? list is NULL if graphnode != NULL
-    /* 0x08 */ struct Intval *intv8; //parent? Left?
-    /* 0x0C */ struct Intval *intvC; // child? Right?
-    /* 0x10 */ struct IntvalList *successors;
-    /* 0x14 */ struct IntvalList *predecessors;
 
-    /* 0x18 */ struct Intval *next;
+enum IntervalType {
+    intv_unvisited, // 0
+    intv_unreduced, // 1
+    intv_acyclic,   // 2
+    intv_loop       // 3
+};
+
+struct Interval {
+    /* 0x00 */ struct Graphnode *graphnode;
+    /* 0x04 */ struct IntervalList *region;
+    /* 0x08 */ struct Interval *parent; //parent? Left?
+    /* 0x0C */ struct Interval *child; // child? Right?
+    /* 0x10 */ struct IntervalList *successors;
+    /* 0x14 */ struct IntervalList *predecessors;
+
+    /* 0x18 */ struct Interval *next;
     /* 0x1C */ int numPredecessors;
-    /* 0x20 */ struct Intval *head;
+    /* 0x20 */ struct Interval *first;
     /* 0x24 */ struct Loop *loop;
-    /* 0x28 */ unsigned char unk28; // has_child?
+    /* 0x28 */ unsigned char type; // has_child?
     /* 0x29 */ unsigned char unk29; // Graphnode->unk4
     /* 0x2A */ unsigned char loopdepth; // loopdepth
 }; // size 0x2C
@@ -171,7 +179,7 @@ struct Graphnode {
     /* 0x34 */ int regsused[2][2]; // should be two 64-bit values, but then alignment fails
     /* 0x44 */ void *unk44[35]; // see printregs
     /* 0xD0 */ int unkD0[(0xE8 - 0xD0) / 4];
-    /* 0xE8 */ struct Loop *unkE8;
+    /* 0xE8 */ struct Loop *loop;
     /* 0xEC */ struct JumpFallthroughBB *fallthrough_bbs;
     /* 0xF0 */ struct JumpFallthroughBB *jump_bbs;
 

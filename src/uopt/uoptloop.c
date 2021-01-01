@@ -11,239 +11,228 @@ struct AllocBlock *intv_heap;
 
 /*
 00455D38 analoop
-
-Notes: Only called when graphnode->terminal == true
 */
-static struct Intval *func_00453430(struct Intval *intvHead) {
-    struct Intval *newHead;
-    struct IntvalList *newList;
-    struct Intval *intv_s7;
-    struct Intval *intv_s2;
-    struct IntvalList *phi_v0;
-    struct IntvalList *phi_s6;
-    struct IntvalList* intvSucc;
-    struct IntvalList* list_s0;
+static struct Interval *reduce_control_tree(struct Interval *intvHead) {
+    struct Interval *newHead;
+    struct IntervalList *pred;
+    struct Interval *child;
+    struct Interval *parent;
+    struct IntervalList *region;
+    struct IntervalList* curList;
+    struct IntervalList* childSucc;
+    struct IntervalList* parentSucc;
     bool done;
-    bool found;
-    int phi_v1;
+    bool repeat;
 
-    intvHead->head = intvHead;
-    intvHead->unk28 = 1;
-    intv_s7 = intvHead->next;
-    while (intv_s7 != NULL) {
-        if (intv_s7->unk29 != 0) {
-            intv_s7->head = intv_s7;
-            intv_s7->unk28 = 1;
+    intvHead->first = intvHead;
+    intvHead->type = intv_unreduced;
+    child = intvHead->next;
+    while (child != NULL) {
+        if (child->unk29 != 0) { // in oot, unk29 is always zero
+            child->first = child;
+            child->type = intv_unreduced;
         }
-        intv_s7 = intv_s7->next;
+        child = child->next;
     }
 
     done = false;
     numintval = 0;
-    intv_s7 = intvHead;
+    child = intvHead;
 
+    // Create the next level of the tree from acyclic intervals in the current level
     do {
-        if (intv_s7 == intvHead) {
-            newHead = alloc_new(sizeof(struct Intval), &intv_heap);
-            intv_s2 = newHead;
+        if (child == intvHead) {
+            newHead = alloc_new(sizeof(struct Interval), &intv_heap);
+            parent = newHead;
         } else {
-            intv_s2->next = alloc_new(sizeof(struct Intval), &intv_heap);
-            intv_s2 = intv_s2->next;
+            parent->next = alloc_new(sizeof(struct Interval), &intv_heap);
+            parent = parent->next;
         }
 
-        intv_s2->graphnode = NULL;
-        intv_s2->numPredecessors = 0;
-        intv_s2->head = NULL;
-        intv_s2->unk28 = 0;
-        intv_s2->intv8 = NULL;
-        intv_s2->successors = NULL;
-        intv_s2->predecessors = NULL;
-        intv_s2->loopdepth = 0;
-        intv_s2->intvC = intv_s7;
-        intv_s2->loop = NULL;
+        parent->graphnode = NULL;
+        parent->numPredecessors = 0;
+        parent->first = NULL;
+        parent->type = intv_unvisited;
+        parent->parent = NULL;
+        parent->successors = NULL;
+        parent->predecessors = NULL;
+        parent->loopdepth = 0;
+        parent->child = child;
+        parent->loop = NULL;
 
-        intv_s7->intv8 = intv_s2;
-        intv_s7->unk28 = 2;
+        child->parent = parent;
+        child->type = intv_acyclic;
 
-        intv_s2->unk29 = intv_s7->unk29;
-        intv_s2->intvList4 = alloc_new(sizeof(struct IntvalList), &intv_heap);
-        intv_s2->intvList4->intv = intv_s7;
+        parent->unk29 = child->unk29;
+        parent->region = alloc_new(sizeof(struct IntervalList), &intv_heap);
+        parent->region->intv = child;
 
         numintval++;
 
-        phi_s6 = intv_s2->intvList4;
-        list_s0 = phi_s6;
-        found = false;
+        region = parent->region;
+        curList = region;
+        repeat = false;
 
-        while (phi_s6 != NULL) {
-            phi_s6->intv->unk28 = 2;
-            intvSucc = phi_s6->intv->successors;
+        while (region != NULL) {
+            region->intv->type = intv_acyclic;
+            childSucc = region->intv->successors;
 
-            while (intvSucc != NULL) {
-                intvSucc->intv->numPredecessors--;
+            while (childSucc != NULL) {
+                childSucc->intv->numPredecessors--;
 
-                if (intvSucc->intv->head == NULL) {
-                    intvSucc->intv->head = intv_s2->intvList4->intv;
-                    if (intvSucc->intv->numPredecessors == 0) {
+                if (childSucc->intv->first == NULL) {
+                    childSucc->intv->first = parent->region->intv;
 
-                        list_s0->next = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                        list_s0->next->intv = intvSucc->intv;
-                        intvSucc->intv->intv8 = intv_s2;
-                        list_s0 = list_s0->next;
+                    // Add the child to the region
+                    if (childSucc->intv->numPredecessors == 0) {
+                        curList->next = alloc_new(sizeof(struct IntervalList), &intv_heap);
+                        curList->next->intv = childSucc->intv;
+                        childSucc->intv->parent = parent;
+                        curList = curList->next;
                     } else {
-                        intvSucc->intv->unk28 = 1;
+                        childSucc->intv->type = intv_unreduced;
                     }
-                } else if (intv_s2->intvList4->intv == intvSucc->intv->head 
-                        && intvSucc->intv->numPredecessors == 0 
-                        && intvSucc->intv->unk28 != 2) {
+                } else if (parent->region->intv == childSucc->intv->first 
+                        && childSucc->intv->numPredecessors == 0 
+                        && childSucc->intv->type != intv_acyclic) {
 
-                    list_s0->next = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                    list_s0->next->intv = intvSucc->intv;
-                    intvSucc->intv->intv8 = intv_s2;
-                    intvSucc->intv->unk28 = 0;
-                    list_s0 = list_s0->next;
+                    curList->next = alloc_new(sizeof(struct IntervalList), &intv_heap);
+                    curList->next->intv = childSucc->intv;
+                    childSucc->intv->parent = parent;
+                    childSucc->intv->type = intv_unvisited;
+                    curList = curList->next;
                 }
 
-                intvSucc = intvSucc->next;
+                childSucc = childSucc->next;
             }
 
-            list_s0->next = NULL;
-            phi_s6 = phi_s6->next;
-            found = false;
+            curList->next = NULL;
+            region = region->next;
         }
 
+        // Repeat from the next unreduced child
         do {
-            intv_s7 = intv_s7->next;
-            if (intv_s7 != NULL) {
-                found = intv_s7->unk28 == 1;
+            child = child->next;
+            if (child != NULL) {
+                repeat = child->type == intv_unreduced;
             }
+        } while (!repeat && child != NULL);
 
-            if (found) {
-                break;
-            }
-        } while (intv_s7 != NULL);
-
-        if (!found) {
-            intv_s7 = intvHead;
+        // Look for any intervals that were missed in the first pass
+        if (!repeat) {
+            child = intvHead;
             do {
-                intv_s7 = intv_s7->next;
-                if (intv_s7 == NULL) {
+                child = child->next;
+                if (child == NULL) {
                     done = true;
                 } else {
-                    found = intv_s7->unk28 == 1;
+                    repeat = child->type == intv_unreduced;
                 }
-                if (found) {
-                    break;
-                }
-            } while(!done);
+            } while(!repeat && !done);
         }
     } while (!done);
-    intv_s2->next = NULL;
+    parent->next = NULL;
 
-    intv_s2 = newHead;
-
+    // Find the successors and predecessors of each of the parents
+    // If a child's successor has a different parent, that parent is a successor of the current parent
+    parent = newHead;
     do {
-        phi_s6 = intv_s2->intvList4;
-
+        region = parent->region;
         do {
-            intvSucc = phi_s6->intv->successors;
+            childSucc = region->intv->successors;
 
-            while (intvSucc != NULL) {
-                if (intv_s2 != intvSucc->intv->intv8) {
-                    if (intv_s2->successors == 0) {
-                        intv_s2->successors = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                        intv_s2->successors->intv = intvSucc->intv->intv8;
-                        intv_s2->successors->next = NULL;
-                        intvSucc->intv->intv8->numPredecessors++;
-                        newList = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                        newList->intv = intv_s2;
-                        newList->next = intvSucc->intv->intv8->predecessors;
-                        intvSucc->intv->intv8->predecessors = newList;
+            while (childSucc != NULL) {
+                if (childSucc->intv->parent != parent) {
+                    if (parent->successors == NULL) {
+                        parent->successors = alloc_new(sizeof(struct IntervalList), &intv_heap);
+                        parent->successors->intv = childSucc->intv->parent;
+                        parent->successors->next = NULL;
+                        childSucc->intv->parent->numPredecessors++;
+
+                        pred = alloc_new(sizeof(struct IntervalList), &intv_heap);
+                        pred->intv = parent;
+                        pred->next = childSucc->intv->parent->predecessors;
+                        childSucc->intv->parent->predecessors = pred;
                     } else {
-                        phi_v1 = intvSucc->intv->intv8 != intv_s2->successors->intv;
-                        list_s0 = intv_s2->successors;
-                        if (phi_v1) {
-                            phi_v0 = intv_s2->successors->next;
-                            list_s0 = intv_s2->successors;
+                        // Determine if the parent is already a successor
+                        parentSucc = parent->successors;
 
-                            while (phi_v0 != NULL) {
-                                list_s0 = phi_v0;
-                                phi_v1 = intvSucc->intv->intv8 != phi_v0->intv;
-                                if (phi_v1 == 0) {
-                                    break;
-                                }
-                                phi_v0 = phi_v0->next;
+                        if (parentSucc->intv != childSucc->intv->parent) {
+                            parentSucc = parent->successors;
+
+                            while (parentSucc->next != NULL && parentSucc->intv != childSucc->intv->parent) {
+                                parentSucc = parentSucc->next;
                             }
                         }
 
-                        if (phi_v1) {
-                            list_s0->next = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                            list_s0->next->next = 0;
-                            list_s0->next->intv = intvSucc->intv->intv8;
-                            intvSucc->intv->intv8->numPredecessors++;
+                        if (parentSucc->intv != childSucc->intv->parent) {
+                            parentSucc->next = alloc_new(sizeof(struct IntervalList), &intv_heap);
+                            parentSucc->next->next = 0;
+                            parentSucc->next->intv = childSucc->intv->parent;
+                            childSucc->intv->parent->numPredecessors++;
 
-                            newList = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                            newList->intv = intv_s2;
-                            newList->next = intvSucc->intv->intv8->predecessors;
-                            intvSucc->intv->intv8->predecessors = newList;
+                            pred = alloc_new(sizeof(struct IntervalList), &intv_heap);
+                            pred->intv = parent;
+                            pred->next = childSucc->intv->parent->predecessors;
+                            childSucc->intv->parent->predecessors = pred;
                         }
                     }
                 }
-                intvSucc = intvSucc->next;
+                childSucc = childSucc->next;
             }
-            phi_s6 = phi_s6->next;
-        } while (phi_s6 != NULL);
-        intv_s2 = intv_s2->next;
-    } while (intv_s2 != NULL);
+            region = region->next;
+        } while (region != NULL);
+        parent = parent->next;
+    } while (parent != NULL);
     return newHead;
 }
 
 /* 
-00453914 func_00453914
+00453914 find_acyclic_loop_depth
 */
-static struct Intval *func_004538E8(struct Intval *arg0, struct Intval *arg1) {
-    struct Intval *phi_v0;
-    struct Intval *phi_v1;
+static struct Interval *find_common_ancestor(struct Interval *child, struct Interval *succ) {
+    struct Interval *ancestor = child;
+    struct Interval *succParent;
+    struct Interval *childParent;
 
-    phi_v0 = arg1->intv8;
-    phi_v1 = arg0->intv8;
-    while (phi_v0 != phi_v1) {
-        arg0 = phi_v1;
-        phi_v1 = phi_v1->intv8;
-        phi_v0 = phi_v0->intv8;
+    childParent = child->parent;
+    succParent = succ->parent;
+    while (succParent != childParent) {
+        ancestor = childParent;
+        childParent = childParent->parent;
+        succParent = succParent->parent;
     }
-    return arg0;
+    return ancestor;
 }
 
 /* 
-00453914 func_00453914
-00453C20 func_00453C20
+00453914 find_acyclic_loop_depth
+00453C20 find_loop_relations
 */
-static void func_00453914(struct Intval *arg0, struct Intval *arg1) {
-    struct Intval *ret_intv;
-    struct IntvalList *succ;
+static void find_acyclic_loop_depth(struct Interval *child, struct Interval *parent) {
+    struct IntervalList *succ;
 
-    succ = arg0->successors;
+    succ = child->successors;
     if (succ == NULL) {
-        arg0->loopdepth = 1;
+        child->loopdepth = 1;
         return;
     }
 
-    if (arg0->loopdepth == 0) {
-        arg0->loopdepth = 1;
+    if (child->loopdepth == 0) {
+        child->loopdepth = 1;
 
         do {
-            if (succ->intv->intv8 != arg1) {
-                ret_intv = func_004538E8(arg1, succ->intv->intv8);
-                if (arg0->loopdepth < ret_intv->loopdepth) {
-                    arg0->loopdepth = ret_intv->loopdepth;
-                    arg0->loop = ret_intv->loop;
+            if (succ->intv->parent != parent) {
+                struct Interval *ancestor = find_common_ancestor(parent, succ->intv->parent);
+                if (child->loopdepth < ancestor->loopdepth) {
+                    child->loopdepth = ancestor->loopdepth;
+                    child->loop = ancestor->loop;
                 }
             } else {
-                func_00453914(succ->intv, arg1);
-                if (arg0->loopdepth < succ->intv->loopdepth) {
-                    arg0->loopdepth = succ->intv->loopdepth;
-                    arg0->loop = succ->intv->loop;
+                find_acyclic_loop_depth(succ->intv, parent);
+                if (child->loopdepth < succ->intv->loopdepth) {
+                    child->loopdepth = succ->intv->loopdepth;
+                    child->loop = succ->intv->loop;
                 }
             }
             succ = succ->next;
@@ -252,9 +241,9 @@ static void func_00453914(struct Intval *arg0, struct Intval *arg1) {
 }
 
 /* Inner function
-00453C20 func_00453C20
+00453C20 find_loop_relations
 */
-static int func_00453A30(unsigned int power) {
+static int power_10(unsigned int power) {
     switch (power) {
         case 0:
             return 1;
@@ -283,122 +272,132 @@ static int func_00453A30(unsigned int power) {
 }
 
 /* 
-00453B04 func_00453B04
-00453C20 func_00453C20
+00453B04 new_loop
+00453C20 find_loop_relations
 */
-static struct Loop *func_00453B04(struct Intval *arg0) {
+static struct Loop *new_loop(struct Interval *parent) {
     struct Loop *newLoop;
 
-    if (arg0->loop != NULL) {
+    // nested loop
+    if (parent->loop != NULL) {
         newLoop = alloc_new(sizeof(struct Loop), &perm_heap);
         newLoop->loopno = curloopno++;
-        newLoop->unk4 = arg0->loop->unk4 + 1;
+        newLoop->depth = parent->loop->depth + 1;
         newLoop->graphnode = 0;
-        newLoop->loopC = NULL;
-        newLoop->loop10 = arg0->loop;
-        newLoop->loop14 = arg0->loop->loopC;
-        arg0->loop->loopC = newLoop;
+        newLoop->child = NULL;
+        newLoop->parent = parent->loop;
+
+        newLoop->next = parent->loop->child;
+        parent->loop->child = newLoop;
         return newLoop;
     }
 
-    if (arg0->intv8 != NULL) {
-        return func_00453B04(arg0->intv8);
+    if (parent->parent != NULL) {
+        return new_loop(parent->parent);
     }
 
     newLoop = alloc_new(sizeof(struct Loop), &perm_heap);
     newLoop->loopno = curloopno++;
-    newLoop->unk4 = 1;
-    newLoop->graphnode = 0;
-    newLoop->loopC = 0;
-    newLoop->loop10 = NULL;
-    newLoop->loop14 = toplevelloops;
+    newLoop->depth = 1;
+    newLoop->graphnode = NULL;
+    newLoop->child = NULL;
+    newLoop->parent = NULL;
+
+    newLoop->next = toplevelloops;
     toplevelloops = newLoop;
     return newLoop;
 }
 
 /* 
-00453C20 func_00453C20
+00453C20 find_loop_relations
 00455D38 analoop
 */
-static void func_00453C20(struct Intval *arg0, int arg1) {
+static void find_loop_relations(struct Interval *parent, int depth) {
+    struct IntervalList *region;
     struct Graphnode *node;
-    struct IntvalList *phi_s0;
-    struct Loop *phi_s1;
+    struct Loop *loop;
 
-    if (arg0->intvList4 == NULL) {
-        node = arg0->graphnode;
-        node->loopdepth = arg0->loopdepth;
-        node->unkE8 = arg0->loop;
-        if (arg0->loop != NULL && arg0->loop->graphnode == NULL) {
-            arg0->loop->graphnode = node;
+    // Leaf interval
+    if (parent->region == NULL) {
+        node = parent->graphnode;
+        node->loopdepth = parent->loopdepth;
+        node->loop = parent->loop;
+        if (parent->loop != NULL && parent->loop->graphnode == NULL) {
+            parent->loop->graphnode = node;
         }
+
+        // some kind of weight?
         if (usefeedback == 0 || curproc->unk34 == 0) {
-            node->unk2C = func_00453A30(arg0->loopdepth - 1);
+            node->unk2C = power_10(parent->loopdepth - 1);
         }
-    } else if (arg1 == 0) {
-        phi_s0 = arg0->intvList4;
-        phi_s1 = NULL;
+    } else if (depth == 0) {
+        region = parent->region;
+        loop = NULL;
 
         do {
-            if (phi_s0->intv->unk28 == 3) {
-                phi_s0->intv->loopdepth = arg0->loopdepth + 1;
-                if (phi_s1 == 0) {
-                    phi_s1 = func_00453B04(arg0);
+            if (region->intv->type == intv_loop) {
+                region->intv->loopdepth = parent->loopdepth + 1;
+                if (loop == NULL) {
+                    loop = new_loop(parent);
                 }
-                phi_s0->intv->loop = phi_s1;
-            } else if (phi_s0->intv->loopdepth == 0) {
-                func_00453914(phi_s0->intv, arg0);
+                region->intv->loop = loop;
+            } else if (region->intv->loopdepth == 0) {
+                find_acyclic_loop_depth(region->intv, parent);
             }
 
-            phi_s0 = phi_s0->next;
-        } while (phi_s0 != NULL);
+            region = region->next;
+        } while (region != NULL);
     } else {
-        phi_s0 = arg0->intvList4;
+        region = parent->region;
 
         do {
-            func_00453C20(phi_s0->intv, arg1 - 1);
-            phi_s0 = phi_s0->next;
-        } while (phi_s0 != NULL);
+            find_loop_relations(region->intv, depth - 1);
+            region = region->next;
+        } while (region != NULL);
     }
     
 }
 
 /* 
-00453DC0 func_00453DC0
-00453ECC func_00453ECC
-*/
-static void func_00453DC0(struct Intval *arg0, struct Intval *arg1) {
-    struct IntvalList *pred;
+00453DC0 extend_loop
+00453ECC find_loops
 
-    if (arg0->unk28 == 3U) {
+Define all the predecessors with the same parent as being in a loop.
+*/
+static void extend_loop(struct Interval *child, struct Interval *parent) {
+    struct IntervalList *pred;
+
+    if (child->type == intv_loop) {
         return;
     }
-    pred = arg0->predecessors;
-    arg0->unk28 = 3U;
+    child->type = intv_loop;
 
+    pred = child->predecessors;
     while (pred != NULL) {
-        if (arg1 == pred->intv->intv8) {
-            func_00453DC0(pred->intv, arg1);
+        if (pred->intv->parent == parent) {
+            extend_loop(pred->intv, parent);
         }
         pred = pred->next;
     }
 }
 
 /* 
-00453ECC func_00453ECC
+00453ECC find_loops
 00455C48 func_00455C48
 */
-static struct Graphnode *func_00453E58(struct Intval *intv) {
-    while (intv->intvList4 != NULL) {
-        intv = intv->intvC;
+static struct Graphnode *find_loop_first_node(struct Interval *intv) {
+    while (intv->region != NULL) {
+        intv = intv->child;
     }
     return intv->graphnode;
 }
 
 /* 
-00453ECC func_00453ECC
+00453ECC find_loops
+
+usefeedback && node->unk34 != NULL
 */
-static bool func_00453E7C(struct Graphnode *node) {
+static bool node_has_higher_weight(struct Graphnode *node) {
     struct GraphnodeList *pred;
 
     pred = node->predecessors;
@@ -412,35 +411,38 @@ static bool func_00453E7C(struct Graphnode *node) {
 }
 
 /* 
-00453ECC func_00453ECC
+00453ECC find_loops
 00455D38 analoop
 */
-static void func_00453ECC(struct Intval *arg0, struct Intval *arg1) {
-    struct IntvalList *pred;
-    struct Graphnode *node;
-    struct IntvalList *list_s0;
+static void find_loops(struct Interval *child, struct Interval *parent) {
+    struct Graphnode *firstLoopNode;
+    struct IntervalList *pred;
+    struct IntervalList *region;
 
-    if (arg0 != NULL) {
-        pred = arg0->predecessors;
+    // if the first child in an interval has a predecessor (with the same parent),
+    // then the first child is in a loop
+    if (child != NULL) {
+        pred = child->predecessors;
         while (pred != NULL) {
-            if (pred->intv->intv8 == arg1) {
-                arg0->unk28 = 3;
-                func_00453DC0(pred->intv, arg1);
-                node = func_00453E58(arg0);
-                if (node->unk4 == 0) {
-                    if (usefeedback == 0 || curproc->unk34 == NULL || func_00453E7C(node)) {
-                        node->unk5 = 1;
+            if (pred->intv->parent == parent) {
+                child->type = intv_loop;
+
+                extend_loop(pred->intv, parent);
+                firstLoopNode = find_loop_first_node(child);
+                if (firstLoopNode->unk4 == 0) {
+                    if (usefeedback == 0 || curproc->unk34 == NULL || node_has_higher_weight(firstLoopNode)) {
+                        firstLoopNode->unk5 = 1; // loopfirstbb
                     }
                 }
             }
             pred = pred->next;
         }
 
-        list_s0 = arg1->intvList4;
+        region = parent->region;
         do {
-            func_00453ECC(list_s0->intv->intvC, list_s0->intv);
-            list_s0 = list_s0->next;
-        } while(list_s0 != NULL);
+            find_loops(region->intv->child, region->intv);
+            region = region->next;
+        } while(region != NULL);
     }
 }
 
@@ -448,8 +450,8 @@ static void func_00453ECC(struct Intval *arg0, struct Intval *arg1) {
 /* Inner function
 00455D38 analoop
 */
-static struct Intval *func_00454038(struct Graphnode *node, struct Intval *intvHead) {
-    struct Intval *l = intvHead;
+static struct Interval *find_interval_with_graphnode(struct Graphnode *node, struct Interval *intvHead) {
+    struct Interval *l = intvHead;
 
     while (l->graphnode != node) {
         l = l->next;
@@ -791,11 +793,11 @@ static bool func_00454AB8(struct Graphnode *arg0, struct IChain *arg1, struct St
 00454D08 func_00454D08
 00454F00 func_00454F00
 */
-static bool func_00454D08(struct Intval *intv, struct Expression *expr, struct Graphnode *sp60) {
+static bool func_00454D08(struct Interval *intv, struct Expression *expr, struct Graphnode *sp60) {
     struct Graphnode *node_s0;
-    struct IntvalList *intvlist_s0;
+    struct IntervalList *intvlist_s0;
 
-    if (intv->intvList4 == NULL) {
+    if (intv->region == NULL) {
         node_s0 = intv->graphnode;
         if (node_s0->loopdepth < sp60->loopdepth) {
             return true;
@@ -824,7 +826,7 @@ static bool func_00454D08(struct Intval *intv, struct Expression *expr, struct G
             }
         }
     } else {
-        intvlist_s0 = intv->intvList4;
+        intvlist_s0 = intv->region;
 
         do {
             if (!func_00454D08(intvlist_s0->intv, expr, sp60)) {
@@ -840,7 +842,7 @@ static bool func_00454D08(struct Intval *intv, struct Expression *expr, struct G
 00454F00 func_00454F00
 00455518 func_00455518
 */
-static bool func_00454F00(struct Intval *arg0, struct Expression *expr, struct Graphnode *sp60) {
+static bool func_00454F00(struct Interval *arg0, struct Expression *expr, struct Graphnode *sp60) {
     bool ret;
 
     switch (expr->type) {
@@ -883,13 +885,13 @@ static bool func_00454F00(struct Intval *arg0, struct Expression *expr, struct G
 00455060 func_00455060
 00455518 func_00455518
 */
-static void func_00455060(struct Intval *intv_parent_arg1, struct Graphnode* sp60, struct Expression *expr_op_sp50, bool *sp4F, struct Expression **expr_sp48) {
+static void func_00455060(struct Interval *intv_parent_arg1, struct Graphnode* sp60, struct Expression *expr_op_sp50, bool *sp4F, struct Expression **expr_sp48) {
     struct Graphnode *node_s2;
 
     struct VarAccessList *vl_s0;
-    struct IntvalList *phi_s0;
+    struct IntervalList *phi_s0;
 
-    if (intv_parent_arg1->intvList4 == NULL) {
+    if (intv_parent_arg1->region == NULL) {
         node_s2 = intv_parent_arg1->graphnode;
         if (node_s2->loopdepth >= sp60->loopdepth) {
 
@@ -954,7 +956,7 @@ static void func_00455060(struct Intval *intv_parent_arg1, struct Graphnode* sp6
         }
 
     } else {
-        phi_s0 = intv_parent_arg1->intvList4;
+        phi_s0 = intv_parent_arg1->region;
         do {
             func_00455060(phi_s0->intv, sp60, expr_op_sp50, sp4F, expr_sp48);
             phi_s0 = phi_s0->next;
@@ -966,10 +968,10 @@ static void func_00455060(struct Intval *intv_parent_arg1, struct Graphnode* sp6
 00455354 func_00455354
 00455518 func_00455518
 */
-static bool func_00455354(struct Intval *arg0) {
-    struct IntvalList *phi_s0;
+static bool func_00455354(struct Interval *arg0) {
+    struct IntervalList *phi_s0;
 
-    if (arg0->intvList4 == NULL) {
+    if (arg0->region == NULL) {
         if (arg0->graphnode->stat_tail->opc == Uclab
                 || arg0->graphnode->stat_tail->opc == Ucup
                 || arg0->graphnode->stat_tail->opc == Uicuf
@@ -978,7 +980,7 @@ static bool func_00455354(struct Intval *arg0) {
             return true;
         }
     } else {
-        phi_s0 = arg0->intvList4;
+        phi_s0 = arg0->region;
         do {
             if (func_00455354(phi_s0->intv)) {
                 return true;
@@ -992,13 +994,13 @@ static bool func_00455354(struct Intval *arg0) {
 /* 
 00455518 func_00455518
 */
-static bool func_00455418(struct Intval *arg0, int arg1, int arg2) {
+static bool func_00455418(struct Interval *arg0, int arg1, int arg2) {
     struct Graphnode *node_a0;
     struct Graphnode *node_a2;
-    struct IntvalList *phi_v0;
+    struct IntervalList *phi_v0;
     int count;
 
-    phi_v0 = arg0->intvList4;
+    phi_v0 = arg0->region;
     count = 0;
     do {
         node_a0 = phi_v0->intv->graphnode;
@@ -1019,7 +1021,7 @@ static bool func_00455418(struct Intval *arg0, int arg1, int arg2) {
                 }
             }
         } else {
-            if (phi_v0->intv->unk28 == 3) {
+            if (phi_v0->intv->type == intv_loop) {
                 return false;
             }
         }
@@ -1033,42 +1035,36 @@ static bool func_00455418(struct Intval *arg0, int arg1, int arg2) {
 00455518 func_00455518
 00455C48 func_00455C48
 */
-static void func_00455518(struct Intval *arg0, struct Intval *intv_parent_arg0, struct Intval *intv_parent_arg1, struct Graphnode *node_shared_sp30) {
-    //void *sp6C;                      //   <
-    struct IntvalList *sp68;           // S | unused in inner functions, whew
-    struct Graphnode *node_sp60;       // h |
-    struct Statement *stat_sp5C;       // a | type = jp
-    struct Statement *stat_sp58;       // r | type = store
-    struct Expression *expr_sp54;      // e | type = isop
-    struct Expression *expr_op_sp50;   // d | type = isvar
-    bool sp4F;                         //   |
+static void func_00455518(struct Interval *child, struct Interval *firstChild, struct Interval *parent, struct Graphnode *loopFirstNode) {
+    struct IntervalList *region;       //   < unused in inner functions, whew
+    struct Graphnode *childNode;       // S |
+    struct Statement *loopStat;        // h | type = jp
+    struct Statement *stat_sp58;       // a | type = store
+    struct Expression *expr_sp54;      // r | type = isop
+    struct Expression *expr_op_sp50;   // e | type = isvar
+    bool sp4F;                         // d |
     struct Expression *expr_sp48;      //   <
 
     int incre; // shared
-    //struct Graphnode *node_shared_sp30; // sp38, shared
-    //struct Intval *intv_parent_arg1; // (*(sp6C+4), sp3c in parent) sp34, shared
-    //struct Intval *intv_parent_arg0; // (*(sp6C), sp38 in parent), shared
 
-    //s32 sp2C; // shared from analoop
-
-    //void *temp_t0;
     struct Graphnode *phi_a1;
     struct Graphnode *phi_a0;
 
-    if (arg0->intvList4 == NULL) {
-        node_sp60 = arg0->graphnode;
-        if (node_shared_sp30->loopdepth != node_sp60->loopdepth) {
+    // Child is a leaf interval
+    if (child->region == NULL) {
+        childNode = child->graphnode;
+        if (loopFirstNode->loopdepth != childNode->loopdepth) {
             return;
         }
-        stat_sp5C = node_sp60->stat_tail;
+        loopStat = childNode->stat_tail;
         // only conditional jumps allowed
-        if (stat_sp5C->opc != Ufjp && stat_sp5C->opc != Utjp) {
+        if (loopStat->opc != Ufjp && loopStat->opc != Utjp) {
             return;
         }
-        if (node_sp60->successors->next->graphnode->loopdepth == node_sp60->successors->graphnode->loopdepth) {
+        if (childNode->successors->next->graphnode->loopdepth == childNode->successors->graphnode->loopdepth) {
             return;
         }
-        expr_sp54 = stat_sp5C->expr;
+        expr_sp54 = loopStat->expr;
         if (expr_sp54->type != isop) {
             return;
         }
@@ -1079,7 +1075,7 @@ static void func_00455518(struct Intval *arg0, struct Intval *intv_parent_arg0, 
             return;
         }
 
-        if (node_shared_sp30->predecessors->next->next != NULL) {
+        if (loopFirstNode->predecessors->next->next != NULL) {
             return;
         }
 
@@ -1100,16 +1096,16 @@ static void func_00455518(struct Intval *arg0, struct Intval *intv_parent_arg0, 
         sp4F = false; // set in 00455060
         expr_sp48 = NULL; // set in 00455060
         if (expr_op_sp50->data.isvar_issvar.unk22) {
-            func_00455060(intv_parent_arg1, node_sp60, expr_op_sp50, &sp4F, &expr_sp48);
+            func_00455060(parent, childNode, expr_op_sp50, &sp4F, &expr_sp48);
         }
 
         if (sp4F != false || expr_sp48 == NULL) {
-            expr_op_sp50 = stat_sp5C->expr->data.isop.op2;
+            expr_op_sp50 = loopStat->expr->data.isop.op2;
             if (expr_op_sp50->type == isvar) {
                 sp4F = false;
                 expr_sp48 = NULL;
                 if (expr_op_sp50->data.isvar_issvar.unk22) {
-                    func_00455060(intv_parent_arg1, node_sp60, expr_op_sp50, &sp4F, &expr_sp48);
+                    func_00455060(parent, childNode, expr_op_sp50, &sp4F, &expr_sp48);
                 }
             }
         }
@@ -1118,24 +1114,24 @@ static void func_00455518(struct Intval *arg0, struct Intval *intv_parent_arg0, 
             return;
         }
 
-        if (func_00454AB8(node_shared_sp30, expr_op_sp50->ichain, &stat_sp58)) {
-            stat_sp5C->u.jp.unk20 = stat_sp58->expr->data.isvar_issvar.unk34;
+        if (func_00454AB8(loopFirstNode, expr_op_sp50->ichain, &stat_sp58)) {
+            loopStat->u.jp.unk20 = stat_sp58->expr->data.isvar_issvar.unk34;
             if (stat_sp58->expr->data.isvar_issvar.unk34->type == isconst) {
-                stat_sp5C->u.jp.unk27 = true;
+                loopStat->u.jp.unk27 = true;
             } else {
-                stat_sp5C->u.jp.unk27 = false;
+                loopStat->u.jp.unk27 = false;
             }
         } else {
-            stat_sp5C->u.jp.unk27 = false;
-            stat_sp5C->u.jp.unk20 = NULL;
+            loopStat->u.jp.unk27 = false;
+            loopStat->u.jp.unk20 = NULL;
         }
 
-        if (stat_sp5C->u.jp.target_blockno == node_sp60->successors->graphnode->blockno) {
-            phi_a1 = node_sp60->successors->next->graphnode;
-            phi_a0 = node_sp60->successors->graphnode;
+        if (loopStat->u.jp.target_blockno == childNode->successors->graphnode->blockno) {
+            phi_a1 = childNode->successors->next->graphnode;
+            phi_a0 = childNode->successors->graphnode;
         } else {
-            phi_a1 = node_sp60->successors->graphnode;
-            phi_a0 = node_sp60->successors->next->graphnode;
+            phi_a1 = childNode->successors->graphnode;
+            phi_a0 = childNode->successors->next->graphnode;
         }
 
         if (phi_a1->loopdepth == phi_a0->loopdepth) {
@@ -1143,79 +1139,78 @@ static void func_00455518(struct Intval *arg0, struct Intval *intv_parent_arg0, 
         }
 
         if (phi_a1->loopdepth < phi_a0->loopdepth) {
-            if (phi_a0 != node_shared_sp30) {
-                if (phi_a0->successors->next != NULL || node_shared_sp30 != phi_a0->successors->graphnode) {
+            if (phi_a0 != loopFirstNode) {
+                if (phi_a0->successors->next != NULL || loopFirstNode != phi_a0->successors->graphnode) {
                     return;
                 }
             }
-            stat_sp5C->u.jp.unk25 = stat_sp5C->opc == Utjp;
+            loopStat->u.jp.unk25 = loopStat->opc == Utjp;
         } else {
-            if (phi_a1 != node_shared_sp30) {
-                if (phi_a1->successors->next != NULL || node_shared_sp30 != phi_a1->successors->graphnode) {
+            if (phi_a1 != loopFirstNode) {
+                if (phi_a1->successors->next != NULL || loopFirstNode != phi_a1->successors->graphnode) {
                     return;
                 }
             }
-            stat_sp5C->u.jp.unk25 = stat_sp5C->opc == Ufjp;
+            loopStat->u.jp.unk25 = loopStat->opc == Ufjp;
         }
 
         incre = findincre(expr_sp48);
-        if (stat_sp5C->u.jp.unk27 && expr_sp54->data.isop.op2->type == isconst) {
-            func_00454060(stat_sp5C, expr_sp54, incre);
+        if (loopStat->u.jp.unk27 && expr_sp54->data.isop.op2->type == isconst) {
+            func_00454060(loopStat, expr_sp54, incre);
         } else {
-            if (((incre == 1 || incre == -1) && stat_sp5C->u.jp.unk20 != NULL)
+            if (((incre == 1 || incre == -1) && loopStat->u.jp.unk20 != NULL)
                     || (expr_sp54->data.isop.opc == Uequ || expr_sp54->data.isop.opc == Uneq)) {
                 if (expr_op_sp50 == expr_sp54->data.isop.op1) {
-                    if (func_00454F00(intv_parent_arg1, expr_sp54->data.isop.op2, node_sp60)) {
-                        func_00454920(stat_sp5C, expr_sp54, expr_op_sp50, node_shared_sp30, incre);
-                        stat_sp5C->u.jp.unk26 = true;
-                        stat_sp5C->u.jp.unk27 = false;
+                    if (func_00454F00(parent, expr_sp54->data.isop.op2, childNode)) {
+                        func_00454920(loopStat, expr_sp54, expr_op_sp50, loopFirstNode, incre);
+                        loopStat->u.jp.unk26 = true;
+                        loopStat->u.jp.unk27 = false;
                     }
                 } else {
-                    if (func_00454F00(intv_parent_arg1, expr_sp54->data.isop.op1, node_sp60)) {
-                        func_00454920(stat_sp5C, expr_sp54, expr_op_sp50, node_shared_sp30, incre);
-                        stat_sp5C->u.jp.unk26 = false;
-                        stat_sp5C->u.jp.unk27 = false;
+                    if (func_00454F00(parent, expr_sp54->data.isop.op1, childNode)) {
+                        func_00454920(loopStat, expr_sp54, expr_op_sp50, loopFirstNode, incre);
+                        loopStat->u.jp.unk26 = false;
+                        loopStat->u.jp.unk27 = false;
                     }
                 }
             }
         }
 
-        if (stat_sp5C->u.jp.unk1C == 0) {
+        if (loopStat->u.jp.unk1C == 0) {
             return;
         }
 
         //! BUG: Most of the time, stat_head->prev->opc is Unop, but in a few cases it's Uloc
-        // if node_shared_sp30->unkBb4 != 0 and u.loc.page is odd, loop unrolling will be prevented
-        if ((!node_shared_sp30->unkBb4 || (node_shared_sp30->stat_head->prev->u.nop.flags & 1) == 0) &&
-                (node_sp60 == node_shared_sp30
-                 || (intv_parent_arg0->intvList4 == NULL
-                     && !func_00455354(intv_parent_arg1)
-                     && func_00455418(intv_parent_arg1, node_shared_sp30->num, node_sp60->num)
+        // if loopFirstNode->unkBb4 != 0 and u.loc.page is odd, loop unrolling will be prevented
+        if ((!loopFirstNode->unkBb4 || (loopFirstNode->stat_head->prev->u.nop.flags & 1) == 0) &&
+                (childNode == loopFirstNode
+                 || (firstChild->region == NULL
+                     && !func_00455354(parent)
+                     && func_00455418(parent, loopFirstNode->num, childNode->num)
                      && ((expr_op_sp50->data.isvar_issvar.var_data.memtype == Mmt
                              || expr_op_sp50->data.isvar_issvar.var_data.memtype == Pmt)
                          || in_fsym(expr_op_sp50->data.isvar_issvar.var_data.blockno))))) {
-            if (node_shared_sp30->predecessors->next->next == 0) {
-                if (node_sp60 == node_shared_sp30->predecessors->graphnode && node_shared_sp30->predecessors->next->graphnode->successors->next == NULL) {
-                    node_shared_sp30->unk5 = 2; // canunroll
-                } else if (node_shared_sp30->predecessors->graphnode->successors->next == NULL && node_shared_sp30 == node_shared_sp30->predecessors->next->graphnode) {
-                    node_shared_sp30->unk5 = 2; // canunroll
+            if (loopFirstNode->predecessors->next->next == 0) {
+                if (childNode == loopFirstNode->predecessors->graphnode && loopFirstNode->predecessors->next->graphnode->successors->next == NULL) {
+                    loopFirstNode->unk5 = 2; // canunroll
+                } else if (loopFirstNode->predecessors->graphnode->successors->next == NULL && loopFirstNode == loopFirstNode->predecessors->next->graphnode) {
+                    loopFirstNode->unk5 = 2; // canunroll
                 }
             }
         }
 
         if (listwritten) {
             write_string(list.c_file, "EQ_INEQ at BB:", 14, 14);
-            write_integer(list.c_file, node_sp60->num, 12, 10);
+            write_integer(list.c_file, childNode->num, 12, 10);
             writeln(list.c_file);
         }
         return;
     } else {
-        //sp6C = temp_t0;
-        sp68 = arg0->intvList4;
+        region = child->region;
         do {
-            func_00455518(sp68->intv, intv_parent_arg0, intv_parent_arg1, node_shared_sp30);
-            sp68 = sp68->next;
-        } while (sp68 != NULL);
+            func_00455518(region->intv, firstChild, parent, loopFirstNode);
+            region = region->next;
+        } while (region != NULL);
     }
 }
 
@@ -1223,108 +1218,111 @@ static void func_00455518(struct Intval *arg0, struct Intval *intv_parent_arg0, 
 00455C48 func_00455C48
 00455D38 analoop
 */
-static void func_00455C48(struct Intval *arg0, struct Intval *arg1) {
-    struct Graphnode *node_shared_sp30;
-    struct IntvalList *list_s0;
+static void func_00455C48(struct Interval *child, struct Interval *parent) {
+    struct Graphnode *loopFirstNode;
+    struct IntervalList *region;
 
-    if (arg0 != NULL) {
-        if (arg0->unk28 == 3) {
-            node_shared_sp30 = func_00453E58(arg0);
-            if (node_shared_sp30->unk4 == 0) {
-                list_s0 = arg1->intvList4;
+    if (child != NULL) {
+        if (child->type == intv_loop) {
+            loopFirstNode = find_loop_first_node(child);
+
+            if (loopFirstNode->unk4 == 0) {
+                region = parent->region;
                 do {
-                    if (list_s0->intv->unk28 == 3) {
-                        func_00455518(list_s0->intv, arg0, arg1, node_shared_sp30);
+                    if (region->intv->type == intv_loop) {
+                        func_00455518(region->intv, child, parent, loopFirstNode);
                     }
-                    list_s0 = list_s0->next;
-                } while (list_s0 != NULL);
+                    region = region->next;
+                } while (region != NULL);
             }
         }
-        list_s0 = arg1->intvList4;
+
+        region = parent->region;
         do {
-            func_00455C48(list_s0->intv->intvC, list_s0->intv);
-            list_s0 = list_s0->next;
-        } while (list_s0 != NULL);
+            func_00455C48(region->intv->child, region->intv);
+            region = region->next;
+        } while (region != NULL);
     }
 }
 
 //! debug function
-void print_intval_list(const char *name, struct IntvalList *intvList)
+void print_intval_list(const char *name, struct IntervalList *intvList)
 {
     int i;
-    printf("%.17s: %x\n", name, intvList);
+    printf("%-17s: %x\n", name, intvList);
 
     i = 0;
     while(intvList != NULL) {
-        printf("\t%d : %x\n", i, intvList->intv);
+        printf("\t\t%d : %x\n", i, intvList->intv);
         intvList = intvList->next;
         i++;
     }
 }
 
 //! debug function
-void print_intval(struct Intval *intv) {
+void print_interval(struct Interval *intv) {
     if (intv == NULL) return;
-    printf("intval          : %x\n", intv);
-    printf("graphnode       : %x\n",   intv->graphnode);
-    print_intval_list("intvList4",  intv->intvList4);
-    printf("intv8           : %x\n",   intv->intv8);
-    printf("intvC           : %x\n",   intv->intvC);
-    print_intval_list("successors", intv->successors);
-    print_intval_list("predecessors",  intv->predecessors);
-    printf("next            : %x\n",   intv->next);
-    printf("numPredecessors : %d\n",   intv->numPredecessors);
-    printf("head            : %x\n",   intv->head);
-    printf("loop            : %x\n",   intv->loop);
-    printf("unk28           : %hhd\n", intv->unk28);
-    printf("unk29           : %hhd\n", intv->unk29);
-    printf("loopdepth       : %hhd\n", intv->loopdepth);
+    printf("interval        : %x\n", intv);
+    printf("\tgraphnode       : %x\n",   intv->graphnode);
+    print_intval_list("\tregion",  intv->region);
+    printf("\tparent          : %x\n",   intv->parent);
+    printf("\tchild           : %x\n",   intv->child);
+    print_intval_list("\tsuccessors", intv->successors);
+    print_intval_list("\tpredecessors",  intv->predecessors);
+    printf("\tnext            : %x\n",   intv->next);
+    printf("\tnumPredecessors : %d\n",   intv->numPredecessors);
+    printf("\tfirst           : %x\n",   intv->first);
+    printf("\tloop            : %x\n",   intv->loop);
+    printf("\tunk28           : %hhd\n", intv->type);
+    printf("\tunk29           : %hhd\n", intv->unk29);
+    printf("\tloopdepth       : %hhd\n", intv->loopdepth);
     puts("");
 }
 
 /* 
 00456A2C oneproc
+
+Interval analysis
 */
 void analoop() {
-    struct Intval *intvHead;
+    struct Interval *intvRoot;
     struct AllocBlock *heapBlock;
-    struct BitVector sp64;
+    struct BitVector pavin;
     struct BitVectorBlock sp48;
-    struct Intval *curIntv;
-    struct Intval *newIntv;
+    struct Interval *curIntv;
+    struct Interval *newIntv;
     struct GraphnodeList *nodeSucc;
     struct GraphnodeList *nodePred;
-    struct IntvalList *intvSucc;
-    struct IntvalList *intvPred;
+    struct IntervalList *intvSucc;
+    struct IntervalList *intvPred;
     struct Graphnode *curnode;
     bool repeat;
-    int oldIntval;
+    int oldInterval;
     int i;
 
     printf("\nStarting analoop %.*s\n", entnam0len, entnam0);
 
     bvlivransize = ((unsigned) (curstaticno - 1) >> 7) + 1; // (curstaticno / 128) + 1, but 33554432 at 0
     heapBlock = alloc_mark(&intv_heap);
-    intvHead = alloc_new(sizeof(struct Intval), &intv_heap);
-    intvHead->intvC = NULL;
-    intvHead->numPredecessors = 0;
-    intvHead->intvList4 = NULL;
-    intvHead->intv8 = NULL;
-    intvHead->head = NULL;
-    intvHead->loop = NULL;
-    intvHead->unk28 = 0;
-    intvHead->loopdepth = 0;
-    intvHead->unk29 = 0;
-    intvHead->graphnode = graphhead;
+    intvRoot = alloc_new(sizeof(struct Interval), &intv_heap);
+    intvRoot->child = NULL;
+    intvRoot->numPredecessors = 0;
+    intvRoot->region = NULL;
+    intvRoot->parent = NULL;
+    intvRoot->first = NULL;
+    intvRoot->loop = NULL;
+    intvRoot->type = intv_unvisited;
+    intvRoot->loopdepth = 0;
+    intvRoot->unk29 = 0;
+    intvRoot->graphnode = graphhead;
 
-    curIntv = intvHead;
+    curIntv = intvRoot;
     numintval = 1;
     curnode = graphhead->next;
 
     while (curnode != NULL) {
-        newIntv = alloc_new(sizeof(struct Intval), &intv_heap);
-        curIntv->next = newIntv;
-        newIntv->intvC = NULL;
+        newIntv = alloc_new(sizeof(struct Interval), &intv_heap);
+        newIntv->child = NULL;
         newIntv->graphnode = curnode;
 
         // count the number of predecessors
@@ -1334,37 +1332,39 @@ void analoop() {
             newIntv->numPredecessors++;
             nodePred = nodePred->next;
         }
-        newIntv->intvList4 = NULL;
-        newIntv->intv8 = NULL;
-        newIntv->head = NULL;
+        newIntv->region = NULL;
+        newIntv->parent = NULL;
+        newIntv->first = NULL;
         newIntv->loop = NULL;
-        newIntv->unk28 = 0;
+        newIntv->type = intv_unvisited;
         newIntv->loopdepth = 0;
-        newIntv->unk29 = curnode->unk4;
+        newIntv->unk29 = curnode->unk4; // in oot, always zero
 
+        curIntv->next = newIntv;
         curIntv = newIntv;
+
         numintval++;
         curnode = curnode->next;
     }
     curIntv->next = NULL;
 
     curnode = graphhead;
-    curIntv = intvHead;
+    curIntv = intvRoot;
 
     // find successors and predecessors
     while (curIntv != NULL) {
         if (curnode->successors == NULL) {
             curIntv->successors = NULL;
         } else {
-            curIntv->successors = alloc_new(sizeof(struct IntvalList), &intv_heap);
-            curIntv->successors->intv = func_00454038(curnode->successors->graphnode, intvHead);
+            curIntv->successors = alloc_new(sizeof(struct IntervalList), &intv_heap);
+            curIntv->successors->intv = find_interval_with_graphnode(curnode->successors->graphnode, intvRoot);
 
             intvSucc = curIntv->successors;
             nodeSucc = curnode->successors->next;
 
             while (nodeSucc != NULL) {
-                intvSucc->next = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                intvSucc->next->intv = func_00454038(nodeSucc->graphnode, intvHead);
+                intvSucc->next = alloc_new(sizeof(struct IntervalList), &intv_heap);
+                intvSucc->next->intv = find_interval_with_graphnode(nodeSucc->graphnode, intvRoot);
 
                 nodeSucc = nodeSucc->next;
                 intvSucc = intvSucc->next;
@@ -1375,20 +1375,20 @@ void analoop() {
         if (curnode->predecessors == NULL) {
             curIntv->predecessors = NULL;
         } else {
-            curIntv->predecessors = alloc_new(sizeof(struct IntvalList), &intv_heap);
-            curIntv->predecessors->intv = func_00454038(curnode->predecessors->graphnode, intvHead);
+            curIntv->predecessors = alloc_new(sizeof(struct IntervalList), &intv_heap);
+            curIntv->predecessors->intv = find_interval_with_graphnode(curnode->predecessors->graphnode, intvRoot);
 
             intvPred = curIntv->predecessors;
             nodePred = curnode->predecessors->next;
 
             while (nodePred != NULL) {
-                intvPred->next = alloc_new(sizeof(struct IntvalList), &intv_heap);
-                intvPred->next->intv = func_00454038(nodePred->graphnode, intvHead);
+                intvPred->next = alloc_new(sizeof(struct IntervalList), &intv_heap);
+                intvPred->next->intv = find_interval_with_graphnode(nodePred->graphnode, intvRoot);
 
                 nodePred = nodePred->next;
                 intvPred = intvPred->next;
             }
-            intvPred->next = 0;
+            intvPred->next = NULL;
         }
 
         curIntv = curIntv->next;
@@ -1396,46 +1396,59 @@ void analoop() {
     }
 
     // DEBUG
-    puts("\033[32m Initial List \033[m\n");
-    curIntv = intvHead;
+    puts("\033[32mInitial List \033[m\n");
+    curIntv = intvRoot;
     while (curIntv != NULL) {
-        print_intval(curIntv);
+        print_interval(curIntv);
         curIntv = curIntv->next;
     }
+    struct IntervalList *region;
     ////////////////////////////
 
     do {
-        oldIntval = numintval;
-        intvHead = func_00453430(intvHead);
-        if (numintval == oldIntval) {
+        oldInterval = numintval;
+        intvRoot = reduce_control_tree(intvRoot);
+    // DEBUG
+    puts("\033[32m################################################################################\033[m\n");
+    puts("\033[32mAfter reduce_control_tree \033[m\n");
+    curIntv = intvRoot;
+    while (curIntv != NULL) {
+        print_interval(curIntv);
+        curIntv = curIntv->next;
+    }
+    puts("\033[36mHead region \033[m\n");
+    region = intvRoot->region;
+    while (region != NULL) {
+        print_interval(region->intv);
+        region = region->next;
+    }
+    ////////////////////////////
+
+        if (numintval == oldInterval) {
             break;
         }
     } while (numintval != 1);
 
-    // DEBUG
-    puts("\033[32m################################################################################\033[m\n");
-    puts("\033[32m After func_00453430 \033[m\n");
-    curIntv = intvHead;
-    while (curIntv != NULL) {
-        print_intval(curIntv);
-        curIntv = curIntv->next;
-    }
-    ////////////////////////////
-
-    curIntv = intvHead;
+    curIntv = intvRoot;
     do {
         curIntv->loopdepth = 1;
-        func_00453ECC(curIntv->intvC, curIntv);
+        find_loops(curIntv->child, curIntv);
         curIntv = curIntv->next;
     } while (curIntv != NULL);
 
     // DEBUG
     puts("\033[33m################################################################################\033[m\n");
-    puts("\033[33m After func_00453ECC \033[m\n");
-    curIntv = intvHead;
+    puts("\033[33mAfter find_loops \033[m\n");
+    curIntv = intvRoot;
     while (curIntv != NULL) {
-        print_intval(curIntv);
+        print_interval(curIntv);
         curIntv = curIntv->next;
+    }
+    puts("\033[36mHead region \033[m\n");
+    region = intvRoot->region;
+    while (region != NULL) {
+        print_interval(region->intv);
+        region = region->next;
     }
     ////////////////////////////
 
@@ -1444,10 +1457,10 @@ void analoop() {
     i = 0;
 
     do {
-        curIntv = intvHead;
+        curIntv = intvRoot;
 
         do {
-            func_00453C20(curIntv, i);
+            find_loop_relations(curIntv, i);
             curIntv = curIntv->next;
         } while (curIntv != NULL);
 
@@ -1456,25 +1469,23 @@ void analoop() {
 
     // DEBUG
     puts("\033[34m################################################################################\033[m\n");
-    puts("\033[34m After func_00453C20 \033[m\n");
-    curIntv = intvHead;
+    puts("\033[34mAfter find_loop_relations \033[m\n");
+    curIntv = intvRoot;
     while (curIntv != NULL) {
-        print_intval(curIntv);
+        print_interval(curIntv);
         curIntv = curIntv->next;
     }
-    puts("\033[36m################################################################################\033[m\n");
-    puts("\033[36m Head intvalList4 \033[m\n");
-    struct IntvalList *list = intvHead->intvList4;
-    while (list != NULL) {
-        print_intval(list->intv);
-        list = list->next;
+    //puts("\033[36m################################################################################\033[m\n");
+    puts("\033[36mHead region \033[m\n");
+    region = intvRoot->region;
+    while (region != NULL) {
+        print_interval(region->intv);
+        region = region->next;
     }
-
     ////////////////////////////
 
     curnode = graphhead;
     while (curnode != NULL) {
-
         curnode->bvs.stage1.u.precm.pavin.num_blocks = 0;
         curnode->bvs.stage1.u.precm.pavin.blocks = 0;
         checkinitbvlivran(&curnode->bvs.stage1.u.precm.pavin);
@@ -1490,9 +1501,9 @@ void analoop() {
         curnode = curnode->next;
     }
 
-    sp64.num_blocks = 0;
-    sp64.blocks = NULL;
-    checkinitbvlivran(&sp64);
+    pavin.num_blocks = 0;
+    pavin.blocks = NULL;
+    checkinitbvlivran(&pavin);
 
 
     do {
@@ -1502,7 +1513,7 @@ void analoop() {
             nodePred = curnode->predecessors;
             if (nodePred != NULL) {
                 if (!repeat) {
-                    bvectcopy(&sp64, &curnode->bvs.stage1.u.precm.pavin);
+                    bvectcopy(&pavin, &curnode->bvs.stage1.u.precm.pavin);
                 }
 
                 do {
@@ -1512,7 +1523,7 @@ void analoop() {
 
                 setbitbb(&curnode->bvs.stage1.u.precm.pavin, curnode->num);
                 if (!repeat) {
-                    if (!bvecteq(&sp64, &curnode->bvs.stage1.u.precm.pavin)) {
+                    if (!bvecteq(&pavin, &curnode->bvs.stage1.u.precm.pavin)) {
                         repeat = true;
                     }
                 }
@@ -1521,11 +1532,11 @@ void analoop() {
         }
     } while (repeat);
 
-    curIntv = intvHead;
+    curIntv = intvRoot;
     while (curIntv != NULL) {
-        func_00455C48(curIntv->intvC, curIntv);
+        func_00455C48(curIntv->child, curIntv);
         curIntv = curIntv->next;
     }
     alloc_release(&intv_heap, heapBlock);
-    puts("Ending analoop\n");
+    puts("\033[mEnding analoop\n");
 }
