@@ -8,7 +8,7 @@
 
 struct AllocBlock *intv_heap;
 
-/*
+/* Inner function
 00455D38 analoop
 */
 static struct Interval *reduce_control_tree(struct Interval *intvHead) {
@@ -187,7 +187,7 @@ static struct Interval *reduce_control_tree(struct Interval *intvHead) {
     return newHead;
 }
 
-/* 
+/* Inner function
 00453914 find_acyclic_loop_depth
 */
 static struct Interval *find_common_ancestor(struct Interval *parent, struct Interval *succ) {
@@ -205,7 +205,7 @@ static struct Interval *find_common_ancestor(struct Interval *parent, struct Int
     return ancestor;
 }
 
-/* 
+/* Inner function
 00453914 find_acyclic_loop_depth
 00453C20 find_loop_relations
 */
@@ -271,7 +271,7 @@ static int power_10(unsigned int power) {
     }
 }
 
-/* 
+/* Inner function
 00453B04 new_loop
 00453C20 find_loop_relations
 */
@@ -308,7 +308,7 @@ static struct Loop *new_loop(struct Interval *parent) {
     return newLoop;
 }
 
-/* 
+/* Inner function
 00453C20 find_loop_relations
 00455D38 analoop
 */
@@ -360,7 +360,7 @@ static void find_loop_relations(struct Interval *intv, int depth) {
     
 }
 
-/* 
+/* Inner function
 00453DC0 find_loop_body
 00453ECC find_loops
 
@@ -383,7 +383,7 @@ static void find_loop_body(struct Interval *child, struct Interval *parent) {
     }
 }
 
-/* 
+/* Inner function
 00453ECC find_loops
 00455C48 find_unrollable_loops
 */
@@ -394,7 +394,7 @@ static struct Graphnode *interval_first_node(struct Interval *intv) {
     return intv->graphnode;
 }
 
-/* 
+/* Inner function
 00453ECC find_loops
 
 usefeedback && curproc->unk34 != NULL
@@ -412,7 +412,7 @@ static bool node_has_higher_weight(struct Graphnode *node) {
     return false;
 }
 
-/* 
+/* Inner function
 00453ECC find_loops
 00455D38 analoop
 */
@@ -462,7 +462,7 @@ static struct Interval *find_interval_with_graphnode(struct Graphnode *node, str
     return l;
 }
 
-/* 
+/* Inner function
 00455518 determine_if_unrollable
 
 loopCond->isop.op2->type = isconst
@@ -536,7 +536,7 @@ static void check_const_invariant(struct Statement *loopStat, struct Expression 
     }
 }
 
-/* 
+/* Inner function
 00454514 check_loop_inequality
 */
 static bool check_initial_cond(bool invertIneq, struct Expression *initialCond, struct Expression *loopCond, struct Expression *loopVar, struct Expression *loopVarInit) {
@@ -596,7 +596,7 @@ static bool check_initial_cond(bool invertIneq, struct Expression *initialCond, 
     return false;
 }
 
-/* 
+/* Inner function
 00454920 check_loop_condition
 */
 static bool check_loop_inequality(struct Graphnode *loopFirstNode, struct Expression *loopCond, struct Expression *loopVar, struct Expression *loopVarInit, bool jp_unk25) {
@@ -711,7 +711,7 @@ static bool check_loop_inequality(struct Graphnode *loopFirstNode, struct Expres
     return false;
 }
 
-/* 
+/* Inner function
 00455518 determine_if_unrollable
 */
 static void check_loop_condition(struct Statement *loopStat, struct Expression *loopCond, struct Expression *loopVar, struct Graphnode *loopFirstNode, int incre) {
@@ -742,7 +742,7 @@ static void check_loop_condition(struct Statement *loopStat, struct Expression *
 }
 
 // Searches backwards for the nearest statement that initializes loopVar
-/* 
+/* Inner function
 00455518 determine_if_unrollable
 */
 static bool find_loopvar_init(struct Graphnode *loopFirstNode, struct IChain *loopVarIChain, struct Statement **init) {
@@ -802,7 +802,7 @@ static bool find_loopvar_init(struct Graphnode *loopFirstNode, struct IChain *lo
     return found;
 }
 
-/* 
+/* Inner function
 00454D08 invariant_var_preserved
 00454F00 is_const_invariant
 */
@@ -850,7 +850,7 @@ static bool invariant_var_preserved(struct Interval *intv, struct Expression *in
     return true;
 }
 
-/* 
+/* Inner function
 00454F00 is_const_invariant
 00455518 determine_if_unrollable
 */
@@ -893,7 +893,7 @@ static bool is_const_invariant(struct Interval *parent, struct Expression *invar
     return false;
 }
 
-/* 
+/* Inner function
 00455060 find_increment_expr
 00455518 determine_if_unrollable
 */
@@ -975,7 +975,7 @@ static void find_increment_expr(struct Interval *intv, struct Graphnode* childNo
     }
 }
 
-/* 
+/* Inner function
 00455354 complex_control_flow_in_interval
 00455518 determine_if_unrollable
 */
@@ -1001,7 +1001,7 @@ static bool complex_control_flow_in_interval(struct Interval *intv) {
     return false;
 }
 
-/* 
+/* Inner function
 00455518 determine_if_unrollable
 */
 static bool no_early_exits(struct Interval *parent, int startNum, int endNum) {
@@ -1041,7 +1041,7 @@ static bool no_early_exits(struct Interval *parent, int startNum, int endNum) {
     return count == ((endNum - startNum) + 1);
 }
 
-/* 
+/* Inner function
 00455518 determine_if_unrollable
 00455C48 find_unrollable_loops
 */
@@ -1239,7 +1239,7 @@ static void determine_if_unrollable(struct Interval *child, struct Interval *out
     }
 }
 
-/* 
+/* Inner function
 00455C48 find_unrollable_loops
 00455D38 analoop
 */
