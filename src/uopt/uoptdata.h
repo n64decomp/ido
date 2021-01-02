@@ -108,8 +108,8 @@ struct Loop {
     /* 0x00 */ int loopno;
     /* 0x04 */ unsigned short depth;
     /* 0x08 */ struct Graphnode *graphnode;
-    /* 0x0C */ struct Loop *child;
-    /* 0x10 */ struct Loop *parent;
+    /* 0x0C */ struct Loop *inner;
+    /* 0x10 */ struct Loop *outer;
     /* 0x14 */ struct Loop *next;
 }; // size 0x18
 
@@ -126,11 +126,13 @@ enum IntervalType {
     intv_loop       // 3
 };
 
+typedef unsigned char IntervalType;
+
 struct Interval {
     /* 0x00 */ struct Graphnode *graphnode;
     /* 0x04 */ struct IntervalList *region;
-    /* 0x08 */ struct Interval *parent; //parent? Left?
-    /* 0x0C */ struct Interval *child; // child? Right?
+    /* 0x08 */ struct Interval *parent;
+    /* 0x0C */ struct Interval *child;
     /* 0x10 */ struct IntervalList *successors;
     /* 0x14 */ struct IntervalList *predecessors;
 
@@ -138,9 +140,9 @@ struct Interval {
     /* 0x1C */ int numPredecessors;
     /* 0x20 */ struct Interval *first;
     /* 0x24 */ struct Loop *loop;
-    /* 0x28 */ unsigned char type; // has_child?
+    /* 0x28 */ IntervalType type;
     /* 0x29 */ unsigned char unk29; // Graphnode->unk4
-    /* 0x2A */ unsigned char loopdepth; // loopdepth
+    /* 0x2A */ unsigned char loopdepth;
 }; // size 0x2C
 
 struct GraphnodeList {
@@ -310,7 +312,7 @@ struct Proc {
     struct Label *labels; // sent to searchlab
     struct Proc *left; // binary search tree left (root is prochead)
     struct Proc *right; // binary search tree right (root is prochead)
-    void *unk34;
+    void *unk34; // related to usefeedback
     int unk38; // mtag uses this
 };
 
@@ -460,12 +462,12 @@ struct Statement {
         struct {
             int target_blockno; // 0x14
             int unk18;
-            int unk1C; // initialized to 0 for tjp/fjp
+            int incre; // initialized to 0 for tjp/fjp
             struct Expression* unk20; // initial_value? store Statement->expr->data.isvar_issvar.unk34
             bool unk24;
             bool unk25; // is_conditional_jump, true if opc in [Utjp, Ufjp]
             bool unk26;
-            bool unk27; // constant comparison? true if expr->data.isvar_issvar.unk34->type == isconst
+            bool has_const_init; // constant comparison? true if expr->data.isvar_issvar.unk34->type == isconst
             int unk28;
             int unk2C;
             int unk30;

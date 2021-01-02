@@ -186,7 +186,7 @@ typedef unsigned char Datatype;
 enum
 Memtype
  {    Zmt,                              /*                                   */
-      Mmt,                              /* complex variables                 */
+      Mmt,                              /* complex variables (local?)        */
       Pmt,                              /* parameters                        */
       Rmt,                              /* register                          */
       Smt,                              /* statically allocated memory       */
