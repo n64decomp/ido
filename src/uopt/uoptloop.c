@@ -397,7 +397,7 @@ static struct Graphnode *interval_first_node(struct Interval *intv) {
 /* 
 00453ECC find_loops
 
-usefeedback && node->unk34 != NULL
+usefeedback && curproc->unk34 != NULL
 */
 static bool node_has_higher_weight(struct Graphnode *node) {
     struct GraphnodeList *pred;
