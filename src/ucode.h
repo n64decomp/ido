@@ -153,24 +153,25 @@
 
 
   enum
-  Datatype  {Adt,                       /* address (pointer)                 */
-      Cdt,                              /* pointer to readonly data          */
-      Fdt,                              /* C pointer to function             */
-      Gdt,                              /* address of label                  */
-      Hdt,                              /* address that only points to heap  */
-      Idt,                              /* integer, double word              */
-      Jdt,                              /* integer, single word              */
-      Kdt,                              /* unsigned integer, double word     */
-      Ldt,                              /* non-negative integer, single word */
-      Mdt,                              /* array or record                   */
-      Ndt,                              /* non-local labels                  */
-      Pdt,                              /* procedure, untyped                */
-      Qdt,                              /* real, double word                 */
-      Rdt,                              /* real, single word                 */
-      Sdt,                              /* set                               */
-      Wdt,                              /* 64 bit wide pointer               */
-      Xdt,                              /* extended precision                */
-      Zdt}                              /* undefined                         */
+  Datatype {
+      /* 0  */ Adt,                              /* address (pointer)                 */
+      /* 1  */ Cdt,                              /* pointer to readonly data          */
+      /* 2  */ Fdt,                              /* C pointer to function             */
+      /* 3  */ Gdt,                              /* address of label                  */
+      /* 4  */ Hdt,                              /* address that only points to heap  */
+      /* 5  */ Idt,                              /* integer, double word              */
+      /* 6  */ Jdt,                              /* integer, single word              */
+      /* 7  */ Kdt,                              /* unsigned integer, double word     */
+      /* 8  */ Ldt,                              /* non-negative integer, single word */
+      /* 9  */ Mdt,                              /* array or record                   */
+      /* 10 */ Ndt,                              /* non-local labels                  */
+      /* 11 */ Pdt,                              /* procedure, untyped                */
+      /* 12 */ Qdt,                              /* real, double word                 */
+      /* 13 */ Rdt,                              /* real, single word                 */
+      /* 14 */ Sdt,                              /* set                               */
+      /* 15 */ Wdt,                              /* 64 bit wide pointer               */
+      /* 16 */ Xdt,                              /* extended precision                */
+      /* 17 */ Zdt}                              /* undefined                         */
 #ifdef __GNUC__
 __attribute__((packed))
 #endif

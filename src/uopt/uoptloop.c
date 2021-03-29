@@ -283,7 +283,7 @@ static struct Loop *new_loop(struct Interval *parent) {
         newLoop = alloc_new(sizeof(struct Loop), &perm_heap);
         newLoop->loopno = curloopno++;
         newLoop->depth = parent->loop->depth + 1;
-        newLoop->graphnode = NULL;
+        newLoop->body = NULL;
         newLoop->inner = NULL;
         newLoop->outer = parent->loop;
 
@@ -299,7 +299,7 @@ static struct Loop *new_loop(struct Interval *parent) {
     newLoop = alloc_new(sizeof(struct Loop), &perm_heap);
     newLoop->loopno = curloopno++;
     newLoop->depth = 1;
-    newLoop->graphnode = NULL;
+    newLoop->body = NULL;
     newLoop->inner = NULL;
     newLoop->outer = NULL;
 
@@ -324,8 +324,8 @@ static void find_loop_relations(struct Interval *intv, int depth) {
         node->loop = intv->loop;
 
         // The first Graphnode in the region
-        if (intv->loop != NULL && intv->loop->graphnode == NULL) {
-            intv->loop->graphnode = node;
+        if (intv->loop != NULL && intv->loop->body == NULL) {
+            intv->loop->body = node;
         }
 
         // some kind of weight?
@@ -473,18 +473,19 @@ static void check_const_invariant(struct Statement *loopJump, struct Expression 
     unsigned int range;
 
     if (loopCond->data.isop.opc == Uequ || loopCond->data.isop.opc == Uneq) {
-        if ((loopJump->u.jp.unk25 != 0 && loopCond->data.isop.opc == Uneq) || (loopJump->u.jp.unk25 == 0 && loopCond->data.isop.opc == Uequ)) {
+        if ((loopJump->u.jp.loop_if_true != 0 && loopCond->data.isop.opc == Uneq) ||
+            (loopJump->u.jp.loop_if_true == 0 && loopCond->data.isop.opc == Uequ)) {
             // s64 or s32
             if (loopCond->datatype == Idt || loopCond->datatype == Jdt) {
                 if (incre > 0) {
                     diff = loopCond->data.isop.op2->data.isconst.number.intval - loopJump->u.jp.unk20->data.isconst.number.intval;
-                    if ((diff > 0) && ((diff % incre) == 0)) {
+                    if (diff > 0 && diff % incre == 0) {
                         loopJump->u.jp.incre = incre;
                         return;
                     }
                 } else {
                     diff = loopJump->u.jp.unk20->data.isconst.number.intval - loopCond->data.isop.op2->data.isconst.number.intval;
-                    if ((diff > 0) && ((diff % incre) == 0)) {
+                    if (diff > 0 && diff % incre == 0) {
                         loopJump->u.jp.incre = incre;
                         return;
                     }
@@ -493,41 +494,42 @@ static void check_const_invariant(struct Statement *loopJump, struct Expression 
             } else if (incre > 0) {
                 initial = loopJump->u.jp.unk20->data.isconst.number.uintval;
                 range = loopCond->data.isop.op2->data.isconst.number.uintval;
-                if ((initial < range) && ((signed int)(range - initial) % incre) == 0) {
+                if (initial < range && (signed int)(range - initial) % incre == 0) {
                     loopJump->u.jp.incre = incre;
                     return;
                 }
             } else {
                 initial = loopJump->u.jp.unk20->data.isconst.number.uintval;
                 range = loopCond->data.isop.op2->data.isconst.number.uintval;
-                if ((range < initial) && ((signed int)(initial - range) % incre) == 0) {
+                if (range < initial && (signed int)(initial - range) % incre == 0) {
                     loopJump->u.jp.incre = incre;
                     return;
                 }
             }
         }
     } else {
-        if ((loopJump->u.jp.unk25 != 0 && loopCond->data.isop.opc == Ules) || (loopJump->u.jp.unk25 == 0 && loopCond->data.isop.opc == Ugeq)) {
+        if ((loopJump->u.jp.loop_if_true != 0 && loopCond->data.isop.opc == Ules) ||
+            (loopJump->u.jp.loop_if_true == 0 && loopCond->data.isop.opc == Ugeq)) {
             // s64 or s32
             if (loopCond->datatype == Idt || loopCond->datatype == Jdt) {
-                if (incre > 0 && ((loopCond->data.isop.op2->data.isconst.number.intval - loopJump->u.jp.unk20->data.isconst.number.intval) > 0)) {
+                if (incre > 0 && loopCond->data.isop.op2->data.isconst.number.intval - loopJump->u.jp.unk20->data.isconst.number.intval > 0) {
                     loopJump->u.jp.incre = incre;
                     return;
                 }
             // u64 or u32
-            } else if (incre > 0 && (loopJump->u.jp.unk20->data.isconst.number.uintval < loopCond->data.isop.op2->data.isconst.number.uintval)) {
+            } else if (incre > 0 && loopJump->u.jp.unk20->data.isconst.number.uintval < loopCond->data.isop.op2->data.isconst.number.uintval) {
                 loopJump->u.jp.incre = incre;
                 return;
             }
         } else {
             // s64 or s32
             if (loopCond->datatype == Idt || loopCond->datatype == Jdt) {
-                if (incre < 0 && (loopJump->u.jp.unk20->data.isconst.number.intval - loopCond->data.isop.op2->data.isconst.number.intval) > 0) {
+                if (incre < 0 && loopJump->u.jp.unk20->data.isconst.number.intval - loopCond->data.isop.op2->data.isconst.number.intval > 0) {
                     loopJump->u.jp.incre = incre;
                     return;
                 }
             // u64 or u32
-            } else if (incre < 0 && (loopCond->data.isop.op2->data.isconst.number.uintval < loopJump->u.jp.unk20->data.isconst.number.uintval)) {
+            } else if (incre < 0 && loopCond->data.isop.op2->data.isconst.number.uintval < loopJump->u.jp.unk20->data.isconst.number.uintval) {
                 loopJump->u.jp.incre = incre;
             }
         }
@@ -599,12 +601,12 @@ static bool check_initial_cond(bool invertIneq, struct Expression *initialCond, 
 /* Inner function
 00454920 check_loop_condition
 */
-static bool check_loop_inequality(struct Graphnode *loopFirstNode, struct Expression *loopCond, struct Expression *loopVar, struct Expression *loopVarInit, bool jp_unk25) {
+static bool check_loop_inequality(struct Graphnode *loopFirstNode, struct Expression *loopCond, struct Expression *loopVar, struct Expression *loopVarInit, bool loopIfTrue) {
     struct GraphnodeList *pred;
     struct Graphnode *successorNode;
     struct Graphnode *curnode;
     bool cond_v0;
-    struct Graphnode *phi_a1;
+    struct Graphnode *jumpTarget;
 
     pred = loopFirstNode->predecessors;
     while (pred != NULL &&
@@ -669,14 +671,14 @@ static bool check_loop_inequality(struct Graphnode *loopFirstNode, struct Expres
 
         if (curnode->stat_tail->opc == Ufjp || curnode->stat_tail->opc == Utjp) {
             if (curnode->stat_tail->u.jp.target_blockno == curnode->successors->graphnode->blockno) {
-                phi_a1 = curnode->successors->graphnode;
+                jumpTarget = curnode->successors->graphnode;
             } else {
-                phi_a1 = curnode->successors->next->graphnode;
+                jumpTarget = curnode->successors->next->graphnode;
             }
 
-            cond_v0 = (curnode->stat_tail->opc == Ufjp && phi_a1 == successorNode) ||
-                (curnode->stat_tail->opc == Utjp && phi_a1 != successorNode);
-            if (jp_unk25 == cond_v0) {
+            cond_v0 = (curnode->stat_tail->opc == Ufjp && jumpTarget == successorNode) ||
+                      (curnode->stat_tail->opc == Utjp && jumpTarget != successorNode);
+            if (loopIfTrue == cond_v0) {
                 if (check_initial_cond(false, curnode->stat_tail->expr, loopCond, loopVar, loopVarInit)
                         || loopCond->ichain == curnode->stat_tail->expr->ichain) {
                     return true;
@@ -717,25 +719,25 @@ static bool check_loop_inequality(struct Graphnode *loopFirstNode, struct Expres
 static void check_loop_condition(struct Statement *loopJump, struct Expression *loopCond, struct Expression *loopVar, struct Graphnode *loopFirstNode, int incre) {
 
     if (loopCond->data.isop.opc == Uequ || loopCond->data.isop.opc == Uneq) {
-        if ((loopJump->u.jp.unk25 != 0 && loopCond->data.isop.opc == Uneq) ||
-            (loopJump->u.jp.unk25 == 0 && loopCond->data.isop.opc == Uequ)) {
+        if ((loopJump->u.jp.loop_if_true != 0 && loopCond->data.isop.opc == Uneq) ||
+            (loopJump->u.jp.loop_if_true == 0 && loopCond->data.isop.opc == Uequ)) {
             loopJump->u.jp.incre = incre;
         }
         return;
     }
 
-    if ((((loopJump->u.jp.unk25 != 0 && loopVar == loopCond->data.isop.op1) ||
-          (loopJump->u.jp.unk25 == 0 && loopVar == loopCond->data.isop.op2)) 
+    if ((((loopJump->u.jp.loop_if_true != 0 && loopVar == loopCond->data.isop.op1) ||
+          (loopJump->u.jp.loop_if_true == 0 && loopVar == loopCond->data.isop.op2)) 
                 && loopCond->data.isop.opc == Ules) ||
 
-        (((loopJump->u.jp.unk25 == 0 && loopVar == loopCond->data.isop.op1) ||
-          (loopJump->u.jp.unk25 != 0 && loopVar == loopCond->data.isop.op2)) 
+        (((loopJump->u.jp.loop_if_true == 0 && loopVar == loopCond->data.isop.op1) ||
+          (loopJump->u.jp.loop_if_true != 0 && loopVar == loopCond->data.isop.op2)) 
                 && loopCond->data.isop.opc == Ugeq)) {
-        if (incre == 1 && check_loop_inequality(loopFirstNode, loopCond, loopVar, loopJump->u.jp.unk20, loopJump->u.jp.unk25)) {
+        if (incre == 1 && check_loop_inequality(loopFirstNode, loopCond, loopVar, loopJump->u.jp.unk20, loopJump->u.jp.loop_if_true)) {
             loopJump->u.jp.incre = 1;
         }
     } else {
-        if (incre == -1 && check_loop_inequality(loopFirstNode, loopCond, loopVar, loopJump->u.jp.unk20, loopJump->u.jp.unk25)) {
+        if (incre == -1 && check_loop_inequality(loopFirstNode, loopCond, loopVar, loopJump->u.jp.unk20, loopJump->u.jp.loop_if_true)) {
             loopJump->u.jp.incre = -1;
         }
     }
@@ -1057,8 +1059,8 @@ static void determine_if_unrollable(struct Interval *child, struct Interval *out
 
     int incre; // shared
 
-    struct Graphnode *phi_a1;
-    struct Graphnode *phi_a0;
+    struct Graphnode *elseTarget;
+    struct Graphnode *jumpTarget;
 
     // Child is a leaf interval
     if (child->region == NULL) {
@@ -1147,31 +1149,31 @@ static void determine_if_unrollable(struct Interval *child, struct Interval *out
         }
 
         if (loopJump->u.jp.target_blockno == childNode->successors->graphnode->blockno) {
-            phi_a1 = childNode->successors->next->graphnode;
-            phi_a0 = childNode->successors->graphnode;
+            jumpTarget = childNode->successors->graphnode;
+            elseTarget = childNode->successors->next->graphnode;
         } else {
-            phi_a1 = childNode->successors->graphnode;
-            phi_a0 = childNode->successors->next->graphnode;
+            jumpTarget = childNode->successors->next->graphnode;
+            elseTarget = childNode->successors->graphnode;
         }
 
-        if (phi_a1->loopdepth == phi_a0->loopdepth) {
+        if (elseTarget->loopdepth == jumpTarget->loopdepth) {
             return;
         }
 
-        if (phi_a1->loopdepth < phi_a0->loopdepth) {
-            if (phi_a0 != loopFirstNode) {
-                if (phi_a0->successors->next != NULL || loopFirstNode != phi_a0->successors->graphnode) {
+        if (elseTarget->loopdepth < jumpTarget->loopdepth) {
+            if (jumpTarget != loopFirstNode) {
+                if (jumpTarget->successors->next != NULL || loopFirstNode != jumpTarget->successors->graphnode) {
                     return;
                 }
             }
-            loopJump->u.jp.unk25 = loopJump->opc == Utjp;
+            loopJump->u.jp.loop_if_true = loopJump->opc == Utjp;
         } else {
-            if (phi_a1 != loopFirstNode) {
-                if (phi_a1->successors->next != NULL || loopFirstNode != phi_a1->successors->graphnode) {
+            if (elseTarget != loopFirstNode) {
+                if (elseTarget->successors->next != NULL || loopFirstNode != elseTarget->successors->graphnode) {
                     return;
                 }
             }
-            loopJump->u.jp.unk25 = loopJump->opc == Ufjp;
+            loopJump->u.jp.loop_if_true = loopJump->opc == Ufjp;
         }
 
         incre = findincre(loopIncrement);

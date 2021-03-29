@@ -733,7 +733,7 @@ void optinit(void) {
     sizethreshold = 1000;
     multibbunroll = true;
     unroll_times = 4;
-    unroll_limit = 0x140;
+    unroll_limit = 320;
     actnuminterregs = 9;
     actnuminteeregs = 0xA;
     processargs();

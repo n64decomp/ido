@@ -4,5 +4,6 @@
 void getop(void);
 void copyline(void);
 void readnxtinst(void);
+void appendstorelist(void);
 
 #endif
