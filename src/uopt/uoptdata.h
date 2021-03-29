@@ -43,8 +43,7 @@ struct Label {
     /* 0x10 */ struct Label *right;
 }; // size 0x14
 
-struct LabelMap
-{
+struct LabelMap {
     int blockno;
     int unk4;
     struct Graphnode *graphnode;
@@ -473,8 +472,8 @@ struct Statement {
             int incre; // initialized to 0 for tjp/fjp
             struct Expression* unk20; // initial_value? store Statement->expr->data.isvar_issvar.unk34
             bool unk24;
-            bool loop_if_true; // is_conditional_jump, true if opc in [Utjp, Ufjp]
-            bool unk26;
+            bool loop_if_true; // tjp -> start of loop, or fjp -> outside of loop
+            bool unk26; // true if iterator == op1 of loop condition
             bool has_const_init; // constant comparison? true if expr->data.isvar_issvar.unk34->type == isconst
             int unk28;
             int unk2C;
