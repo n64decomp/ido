@@ -323,8 +323,7 @@ struct Proc {
     int unk38; // mtag uses this
 };
 
-union IChainThing
-{
+union IChainThing {
     int word; // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
     struct {
         unsigned short bit;

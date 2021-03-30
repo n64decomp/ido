@@ -690,13 +690,11 @@ struct Expression *unroll_resetincr(struct Expression *expr, int spCC) {
 0046E77C oneloopblockstmt
 */
 struct Expression *unroll_resetincr_mod(struct Expression *expr, int *incr) {
-    int temp_a2;
 
     //! why not incr > 0x8000 (or incr <= -0x8000)?
-    if (*incr < -0x8000 || !(*incr < 0x8000)) {
-        temp_a2 = (*incr >> 0xF) << 0xF;
-        *incr = *incr - temp_a2;
-        expr = binopwithconst(1, expr, temp_a2);
+    if (*incr < -0x8000 || *incr >= 0x8000) {
+        *incr = *incr - (*incr & 0xFFFF8000);
+        expr = binopwithconst(Uadd, expr, (*incr & 0xFFFF8000));
     }
     return expr;
 }
@@ -3907,7 +3905,7 @@ glabel par_to_str
 /*
 00473F04 pmov_to_mov
 */
-struct Expression *func_00473D84(struct Statement *pmov, struct VariableInner var, unsigned short hash) {
+static struct Expression *func_00473D84(struct Statement *pmov, struct VariableInner var, unsigned short hash) {
     struct Expression *phi_s0;
     bool found;
 
