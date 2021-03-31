@@ -780,7 +780,7 @@ void trep_image(struct Expression *expr, bool op1, bool ant, bool av, bool arg4)
     trepThing = alloc_new(sizeof (struct TrepImageThing), &perm_heap);
     if (op->type == islda || op->type == isilda || op->type == isconst) {
         trepThing->ichain = NULL;
-    } else if (op->type != isvar && op->unk6 != 1) {
+    } else if (op->type != isvar && op->count != 1) {
         trepThing->ichain = NULL;
     } else {
         cg1hash = opvalihash(Ucg1, op->ichain, expr->graphnode->num);
@@ -1332,7 +1332,7 @@ void codeimage(void) {
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->isop.s.bit);
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
-                if (stat->expr->unk6) {
+                if (stat->expr->count) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->isop.s.bit);
                     if (!stat->expr->unk2) {
                         setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
@@ -1418,7 +1418,7 @@ void codeimage(void) {
                 }
             } else {
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
-                if (stat->expr->unk6) {
+                if (stat->expr->count) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->isop.s.bit);
                     if (!stat->expr->unk2) {
                         setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);

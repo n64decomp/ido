@@ -43,6 +43,13 @@ struct Label {
     /* 0x10 */ struct Label *right;
 }; // size 0x14
 
+struct LabelMap {
+    int blockno;
+    int unk4;
+    struct Graphnode *graphnode;
+    struct LabelMap *next;
+};
+
 // See insertvar
 struct VariableInner {
     int addr; // can be negative, stack offset?
@@ -107,7 +114,7 @@ struct Graphnode;
 struct Loop {
     /* 0x00 */ int loopno;
     /* 0x04 */ unsigned short depth;
-    /* 0x08 */ struct Graphnode *graphnode;
+    /* 0x08 */ struct Graphnode *body;
     /* 0x0C */ struct Loop *inner;
     /* 0x10 */ struct Loop *outer;
     /* 0x14 */ struct Loop *next;
@@ -316,8 +323,7 @@ struct Proc {
     int unk38; // mtag uses this
 };
 
-union IChainThing
-{
+union IChainThing {
     int word; // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
     struct {
         unsigned short bit;
@@ -465,8 +471,8 @@ struct Statement {
             int incre; // initialized to 0 for tjp/fjp
             struct Expression* unk20; // initial_value? store Statement->expr->data.isvar_issvar.unk34
             bool unk24;
-            bool unk25; // is_conditional_jump, true if opc in [Utjp, Ufjp]
-            bool unk26;
+            bool loop_if_true; // tjp -> start of loop, or fjp -> outside of loop
+            bool unk26; // true if iterator == op1 of loop condition
             bool has_const_init; // constant comparison? true if expr->data.isvar_issvar.unk34->type == isconst
             int unk28;
             int unk2C;
@@ -646,9 +652,9 @@ struct BittabItem {
 struct PdefEntry {
     Uopcode opc;
     Datatype dtype;
-    bool unk2; // lexlev & 2
+    bool outmode; // lexlev & 2
     bool unk3;
-    bool unk4; // lexlev & 1
+    bool inmode; // lexlev & 1
     int offset; // from u.intarray[3]
     int size; // from u.intarray[2]
 };
@@ -668,7 +674,7 @@ struct Expression {
     bool unk3; // not varkilled
     bool unk4; // bool or unsigned char?
     bool unk5; // bool or unsigned char?
-    unsigned short unk6; // some counter, see exprdelete
+    unsigned short count; // some counter, see exprdelete
     unsigned short table_index; // 0x8
     int chain_index; // 0xC
     struct Graphnode *graphnode; // 0x10
@@ -700,7 +706,7 @@ struct Expression {
             struct VariableInner var_data; // 0x28
             struct Expression *unk30;
             struct Expression *unk34; // used in analoop
-            struct Statement* unk38; // a bit unsure about this type, see delentry
+            struct Statement *unk38; // a bit unsure about this type, see delentry
             int unk3C;
         } isvar_issvar;
         struct {

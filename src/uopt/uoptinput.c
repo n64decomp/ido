@@ -529,12 +529,12 @@ void getop(void) {
     int temp;
 restart:
     readuinstr(&u, ustrptr);
-    op = u.Ucode.Opc;
+    op = OPC;
     if (op == Ubsub) {
-        u.Ucode.Opc = Usub;
+        OPC = Usub;
     }
     if (op == Ulab) {
-        lab = searchlab(u.Ucode.I1, curproc->labels);
+        lab = searchlab(IONE, curproc->labels);
         if (lab->unk8 == 0) { // 1 byte
             goto restart;
         }
@@ -543,19 +543,19 @@ restart:
         }
         branched_back_lab = lab->branched_back; // 1 byte
     } else if (op == Ufjp || op == Utjp || op == Uujp) {
-        temp = searchlab(u.Ucode.I1, curproc->labels)->len;
+        temp = searchlab(IONE, curproc->labels)->len;
         if (temp != 0) {
-            u.Ucode.I1 = temp;
+            IONE = temp;
         }
-    } else if (op == Uldc && u.Ucode.Dtype == Gdt) {
-        temp = searchlab(u.Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival, curproc->labels)->len;
+    } else if (op == Uldc && DTYPE == Gdt) {
+        temp = searchlab(CONSTVAL.swpart.Ival, curproc->labels)->len;
         if (temp != 0) {
-            u.Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival = temp;
+            CONSTVAL.swpart.Ival = temp;
         }
     } else if (op == Uxjp) {
-        temp = searchlab(u.Ucode.Uopcde.uiequ1.Length, curproc->labels)->len;
+        temp = searchlab(LENGTH, curproc->labels)->len;
         if (temp != 0) {
-            u.Ucode.Uopcde.uiequ1.Length = temp;
+            LENGTH = temp;
         }
     }
     switch (op) {
@@ -608,8 +608,8 @@ restart:
 
         case Uuni:
         case Uxor:
-            if (u.Ucode.Lexlev != 0) {
-                u.Ucode.Lexlev = 0;
+            if (LEXLEV != 0) {
+                LEXLEV = 0;
             }
             break;
     }
@@ -618,23 +618,23 @@ restart:
         return;
     }
     if (op == Uilod || op == Uistr || op == Umov || op == Uirld || op == Uirst) {
-        if (u.Ucode.Lexlev & 1) {
+        if (LEXLEV & 1) {
             // Is this a change to volatile instructions (v as in volatile)?
             switch (op) {
                 case Uilod:
-                    u.Ucode.Opc = Uildv;
+                    OPC = Uildv;
                     break;
                 case Uistr:
-                    u.Ucode.Opc = Uistv;
+                    OPC = Uistv;
                     break;
                 case Umov:
-                    u.Ucode.Opc = Umovv;
+                    OPC = Umovv;
                     break;
                 case Uirld:
-                    u.Ucode.Opc = Uirlv;
+                    OPC = Uirlv;
                     break;
                 case Uirst:
-                    u.Ucode.Opc = Uirsv;
+                    OPC = Uirsv;
                     break;
                 default:
                     caseerror(1, 132, "uoptinput.p", 11);
@@ -681,15 +681,15 @@ static void set_blklev(int blk, int level) {
 0045806C main
 */
 void copyline(void) {
-    int unk;
+    int argNum;
     int new_pdeftabsize;
     int len;
     int i;
     bool cont;
     struct PdefEntry *pdef_entry;
 
-    if (u.Ucode.Opc == Uent) {
-        entflag = u.Ucode.Uopcde.uent.Extrnal;
+    if (OPC == Uent) {
+        entflag = EXTRNAL;
         if (IS_LOAD_STACKLIMIT_ON_ENTRY_ATTR(entflag) || IS_STACK_OVERFLOW_ATTR(entflag)) {
             no_r23 = true;
         }
@@ -697,12 +697,12 @@ void copyline(void) {
             no_r3 = true;
         }
         uwrite(&u);
-        curlevel = u.Ucode.Lexlev;
-        curblk = u.Ucode.I1;
-        set_blklev(u.Ucode.I1, u.Ucode.Lexlev);
+        curlevel = LEXLEV;
+        curblk = IONE;
+        set_blklev(IONE, LEXLEV);
         getop();
-        TRAP_IF(u.Ucode.Opc != Ucomm);
-        len = u.Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival;
+        TRAP_IF(OPC != Ucomm);
+        len = CONSTVAL.swpart.Ival;
         for (i = 0; i < len; i++) {
             entnam0[i] = ustrptr[i];
         }
@@ -722,7 +722,7 @@ void copyline(void) {
         }
         bitvectorsize = (curproc->bvsize >> 7) + 2;
     } else {
-        if (u.Ucode.Opc == Uregs || u.Ucode.Opc == Urlod || u.Ucode.Opc == Urstr) {
+        if (OPC == Uregs || OPC == Urlod || OPC == Urstr) {
             writeln(err.c_file);
             write_string(err.c_file, "uopt: Error: ", 13, 13);
             write_string(err.c_file, entnam0, 1024, entnam0len);
@@ -731,24 +731,24 @@ void copyline(void) {
             fflush(err.c_file);
             abort();
         } else {
-            if (u.Ucode.Opc == Ulex) {
-                set_blklev(u.Ucode.I1, u.Ucode.Lexlev);
+            if (OPC == Ulex) {
+                set_blklev(IONE, LEXLEV);
             } else {
-                if (u.Ucode.Opc == Updef) {
+                if (OPC == Updef) {
                     if (aentptr != NULL) {
                         aentptr->u.aent.blockno++;
                         return;
                     }
-                    unk = u.intarray[3] / 4;
-                    if ((u.intarray[2] & 3) != 0) {
-                        u.intarray[2] = u.intarray[2] - (u.intarray[2] & 3) + 4;
-                        u.intarray[3] = unk * 4;
+                    argNum = OFFSET / 4;
+                    if ((LENGTH & 3) != 0) {
+                        LENGTH = LENGTH - (LENGTH & 3) + 4;
+                        OFFSET = argNum * 4;
                     }
-                    if (allcallersave || unk < 4 || lang == LANG_ADA) {
+                    if (allcallersave || argNum < 4 || lang == LANG_ADA) {
                         if (!allcallersave && ++pdefno >= 3) {
                             passedbyfp = false;
                         }
-                        new_pdeftabsize = unk + u.intarray[2];
+                        new_pdeftabsize = argNum + LENGTH;
                         if (new_pdeftabsize >= pdeftabsize) {
                             pdeftab = (struct PdefEntry *)alloc_realloc(pdeftab, (pdeftabsize * 16 + 15) / 16, (new_pdeftabsize * 16 + 15) / 16, &perm_heap);
                             for (i = pdeftabsize; i < new_pdeftabsize; i++) {
@@ -756,32 +756,32 @@ void copyline(void) {
                             }
                             pdeftabsize = new_pdeftabsize;
                         }
-                        pdef_entry = &pdeftab[unk];
-                        pdef_entry->unk2 = (u.Ucode.Lexlev & 2) != 0;
+                        pdef_entry = &pdeftab[argNum];
+                        pdef_entry->outmode = (LEXLEV & OUT_MODE) != 0;
                         pdef_entry->opc = Updef;
-                        pdef_entry->dtype = u.Ucode.Dtype;
-                        pdef_entry->unk4 = (u.Ucode.Lexlev & 1) != 0;
-                        pdef_entry->size = u.intarray[2];
-                        pdef_entry->offset = u.intarray[3];
-                        pdef_entry->unk3 = !formal_parm_vreg(u.intarray[3]);
+                        pdef_entry->dtype = DTYPE;
+                        pdef_entry->inmode = (LEXLEV & IN_MODE) != 0;
+                        pdef_entry->size = LENGTH;
+                        pdef_entry->offset = OFFSET;
+                        pdef_entry->unk3 = !formal_parm_vreg(OFFSET);
                         if (!allcallersave) {
-                            if (u.Ucode.Dtype != Qdt && u.Ucode.Dtype != Rdt) {
+                            if (DTYPE != Qdt && DTYPE != Rdt) {
                                 passedbyfp = false;
                             }
                             if (passedbyfp) {
-                                offsetpassedbyint = u.intarray[3] + u.intarray[2];
+                                offsetpassedbyint = OFFSET + LENGTH;
                             }
                         }
-                        pdefmax = MAX(unk, pdefmax);
+                        pdefmax = MAX(argNum, pdefmax);
                     }
-                } else if (u.Ucode.Opc == Uoptn) {
-                    getoption(u.Ucode.I1, u.intarray[2]);
+                } else if (OPC == Uoptn) {
+                    getoption(IONE, LENGTH);
                 }
             }
         }
     }
 
-    switch (u.Ucode.Opc) {
+    switch (OPC) {
         case Ucsym:
         case Uesym:
         case Ufsym:
@@ -795,12 +795,12 @@ void copyline(void) {
             lastcopiedu = u;
             break;
     }
-    if (u.Ucode.Opc != Uvreg && u.Ucode.Opc != Unop) {
+    if (OPC != Uvreg && OPC != Unop) {
         uwrite(&u);
     }
-    if (u.Ucode.Opc == Uloc) {
-        curlocpg = u.Ucode.Lexlev;
-        curlocln = u.Ucode.I1;
+    if (OPC == Uloc) {
+        curlocpg = LEXLEV;
+        curlocln = IONE;
     }
 }
 
@@ -808,10 +808,10 @@ void copyline(void) {
 0043CFCC readnxtinst
 */
 void createcvtl(int bitsize, int dtype) {
-    u.Ucode.Opc = Ucvtl;
-    u.Ucode.I1 = bitsize;
-    u.Ucode.Dtype = dtype;
-    u.Ucode.Lexlev = 0;
+    OPC = Ucvtl;
+    IONE = bitsize;
+    DTYPE = dtype;
+    LEXLEV = 0;
     readnxtinst();
 }
 
@@ -970,7 +970,7 @@ void incroccurrence(struct Expression **entry) {
                 !stat->expr->unk2 &&
                 stat->expr->data.isvar_issvar.var_data.memtype != Rmt &&
                 stat->expr->data.isvar_issvar.size >= 4 &&
-                stat->expr->unk6 != 0)
+                stat->expr->count != 0)
             {
                 if ((!stat->expr->data.isvar_issvar.unk22 ||
                     curblk != stat->expr->data.isvar_issvar.var_data.blockno) &&
@@ -978,7 +978,7 @@ void incroccurrence(struct Expression **entry) {
                 {
                     stat->u.store.unk1D = false;
                     done = true;
-                    stat->expr->unk6++;
+                    stat->expr->count++;
                     switch ((*entry)->type) {
                         case isop:
                             decreasecount((*entry)->data.isop.op1);
@@ -1006,7 +1006,7 @@ void incroccurrence(struct Expression **entry) {
                     if (!stat->expr->data.isvar_issvar.unk22) {
                         lodkillprev(stat->expr);
                     }
-                    if ((*entry)->unk6 == 1) {
+                    if ((*entry)->count == 1) {
                         appendbbvarlst(*entry);
                         if ((*entry)->data.isvar_issvar.unk22) {
                             curgraphnode->varlisttail->unk8 = true;

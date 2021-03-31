@@ -252,7 +252,7 @@ void tail_recursion(void) {
 
     if (lang == LANG_ADA && pdefmax >= 0) {
         for (i = 0; i < pdefmax; i++) {
-            if (pdeftab[i].unk2) {
+            if (pdeftab[i].outmode) {
                 return;
             }
         }
