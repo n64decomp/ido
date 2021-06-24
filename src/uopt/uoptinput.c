@@ -21,136 +21,136 @@ RO_1000C274:
     # 0043B504 func_0043B504
     .asciz "uoptinput.p"
 
-    .balign 4
-jtbl_1000C280:
-    # 0043B504 func_0043B504
-    .gpword .L0043BC00
-    .gpword .L0043B9A8
-    .gpword .L0043BD28
-    .gpword .L0043C034
-    .gpword .L0043B9A8
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043BA88
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043BC58
-    .gpword .L0043BC58
-    .gpword .L0043BD74
-
-    .balign 4
-jtbl_1000C2BC:
-    # 0043B504 func_0043B504
-    .gpword .L0043BCC0
-    .gpword .L0043BC58
-    .gpword .L0043BC58
-    .gpword .L0043C034
-    .gpword .L0043BA88
-    .gpword .L0043BA88
-
-    .balign 4
-jtbl_1000C2D4:
-    # 0043B504 func_0043B504
-    .gpword .L0043BAF0
-    .gpword .L0043BAF0
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043BE3C
-    .gpword .L0043BEB4
-    .gpword .L0043BEB4
-    .gpword .L0043C034
-    .gpword .L0043B818
-    .gpword .L0043BE18
-    .gpword .L0043BEB4
-    .gpword .L0043BEB4
-    .gpword .L0043BDA0
-    .gpword .L0043BC58
-    .gpword .L0043BE3C
-    .gpword .L0043C034
-    .gpword .L0043BB40
-    .gpword .L0043B9A8
-    .gpword .L0043B9A8
-    .gpword .L0043B6D8
-    .gpword .L0043B6D8
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043BBA0
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043C0B4
-    .gpword .L0043B7A8
-    .gpword .L0043C034
-    .gpword .L0043B894
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043BAF0
-    .gpword .L0043BAF0
-    .gpword .L0043C034
-    .gpword .L0043BC00
-    .gpword .L0043C034
-    .gpword .L0043B620
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043BA88
-    .gpword .L0043BA88
-    .gpword .L0043BA88
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043B9A8
-    .gpword .L0043C034
-    .gpword .L0043BA88
-    .gpword .L0043BC00
-    .gpword .L0043BA24
-    .gpword .L0043C034
-    .gpword .L0043BC00
-    .gpword .L0043BC00
-
-    .balign 4
-jtbl_1000C3C0:
-    # 0043B504 func_0043B504
-    .gpword .L0043BCC0
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043BC00
-    .gpword .L0043BA88
-    .gpword .L0043BA88
-    .gpword .L0043BA88
-    .gpword .L0043BC00
-    .gpword .L0043BC00
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043B620
-    .gpword .L0043C034
-    .gpword .L0043BA88
-
-    .balign 4
-jtbl_1000C400:
-    # 0043B504 func_0043B504
-    .gpword .L0043BCC0
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043B9A8
-    .gpword .L0043C034
-    .gpword .L0043C034
-    .gpword .L0043B9A8
-
-    .balign 4
-jtbl_1000C420:
-    # 0043B504 func_0043B504
-    .gpword .L0043BDA0
-    .gpword .L0043C034
-    .gpword .L0043B970
+#    .balign 4
+#jtbl_1000C280:
+#    # 0043B504 func_0043B504
+#    .gpword .L0043BC00
+#    .gpword .L0043B9A8
+#    .gpword .L0043BD28
+#    .gpword .L0043C034
+#    .gpword .L0043B9A8
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043BA88
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043BC58
+#    .gpword .L0043BC58
+#    .gpword .L0043BD74
+#
+#    .balign 4
+#jtbl_1000C2BC:
+#    # 0043B504 func_0043B504
+#    .gpword .L0043BCC0
+#    .gpword .L0043BC58
+#    .gpword .L0043BC58
+#    .gpword .L0043C034
+#    .gpword .L0043BA88
+#    .gpword .L0043BA88
+#
+#    .balign 4
+#jtbl_1000C2D4:
+#    # 0043B504 func_0043B504
+#    .gpword .L0043BAF0
+#    .gpword .L0043BAF0
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043BE3C
+#    .gpword .L0043BEB4
+#    .gpword .L0043BEB4
+#    .gpword .L0043C034
+#    .gpword .L0043B818
+#    .gpword .L0043BE18
+#    .gpword .L0043BEB4
+#    .gpword .L0043BEB4
+#    .gpword .L0043BDA0
+#    .gpword .L0043BC58
+#    .gpword .L0043BE3C
+#    .gpword .L0043C034
+#    .gpword .L0043BB40
+#    .gpword .L0043B9A8
+#    .gpword .L0043B9A8
+#    .gpword .L0043B6D8
+#    .gpword .L0043B6D8
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043BBA0
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043C0B4
+#    .gpword .L0043B7A8
+#    .gpword .L0043C034
+#    .gpword .L0043B894
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043BAF0
+#    .gpword .L0043BAF0
+#    .gpword .L0043C034
+#    .gpword .L0043BC00
+#    .gpword .L0043C034
+#    .gpword .L0043B620
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043BA88
+#    .gpword .L0043BA88
+#    .gpword .L0043BA88
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043B9A8
+#    .gpword .L0043C034
+#    .gpword .L0043BA88
+#    .gpword .L0043BC00
+#    .gpword .L0043BA24
+#    .gpword .L0043C034
+#    .gpword .L0043BC00
+#    .gpword .L0043BC00
+#
+#    .balign 4
+#jtbl_1000C3C0:
+#    # 0043B504 func_0043B504
+#    .gpword .L0043BCC0
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043BC00
+#    .gpword .L0043BA88
+#    .gpword .L0043BA88
+#    .gpword .L0043BA88
+#    .gpword .L0043BC00
+#    .gpword .L0043BC00
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043B620
+#    .gpword .L0043C034
+#    .gpword .L0043BA88
+#
+#    .balign 4
+#jtbl_1000C400:
+#    # 0043B504 func_0043B504
+#    .gpword .L0043BCC0
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043B9A8
+#    .gpword .L0043C034
+#    .gpword .L0043C034
+#    .gpword .L0043B9A8
+#
+#    .balign 4
+#jtbl_1000C420:
+#    # 0043B504 func_0043B504
+#    .gpword .L0043BDA0
+#    .gpword .L0043C034
+#    .gpword .L0043B970
 
 RO_1000C42C:
     # 0043CFCC readnxtinst
@@ -503,6 +503,10 @@ struct ParameterList {
     void *value;
     struct ParameterList *next;
 };
+
+extern int parcount;
+extern int passbyfp;
+extern struct Statement *lastmst;
 
 /*
 0043A844 in_outparlist
@@ -1088,6 +1092,28 @@ bool treekilled(struct Expression *expr) {
     }
 }
 
+// check if number is in realstore
+static int func_0043B084(union Constant number) {
+    struct RealstoreData *real;
+    int i;
+
+    real = realstore;
+    for (i = 0; i < (number.real.disp >> 8); i++) {
+        real = real->next;
+    }
+
+    //printf("\e[91mdisp 0x%08x  len %d\e[m", number.real.disp, number.real.len);
+    for (i = 0; i < number.real.len; i++) {
+        if (ustrptr[i] != real->c[(number.real.disp & 0xff) + i]) {
+            //puts("");
+            return false;
+        }
+    }
+    //printf(" \e[92mchars %.*s\e[m\n", number.real.len, &(real->c[number.real.disp&0xff]));
+    return true;
+}
+
+#if 0
 __asm__(R""(
 .set noat
 .set noreorder
@@ -1158,6 +1184,25 @@ func_0043B084:
 .L0043B154:
 /* 0043B154 03E00008 */  jr    $ra
 /* 0043B158 00601025 */   move  $v0, $v1
+)"");
+#endif
+
+// push expr to ustack
+static void func_0043B15C(struct Expression *expr) {
+    if (ustack->up == NULL) {
+        ustack->up = alloc_new(sizeof(struct UstackEntry), &perm_heap);
+        ustack->up->up = NULL;
+        ustack->up->down = ustack;
+    }
+    ustack = ustack->up;
+    ustack->value = 0;
+    ustack->expr = expr;
+}
+
+#if 0
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_0043B15C, @function
 func_0043B15C:
@@ -1195,7 +1240,21 @@ func_0043B15C:
 /* 0043B1D0 27BD0020 */  addiu $sp, $sp, 0x20
 /* 0043B1D4 03E00008 */  jr    $ra
 /* 0043B1D8 00000000 */   nop   
+)"");
+#endif
 
+/*
+0043CFCC readnxtinst
+*/
+static void func_0043B1DC(void) {
+    int value = ustack->value;
+    if (value != 0) {
+        ustack->value = 0;
+        ustack->expr = binopwithconst(Uadd, ustack->expr, value);
+    }
+}
+
+#if 0
     .type func_0043B1DC, @function
 func_0043B1DC:
     # 0043CFCC readnxtinst
@@ -1224,7 +1283,19 @@ func_0043B1DC:
 /* 0043B230 27BD0020 */  addiu $sp, $sp, 0x20
 /* 0043B234 03E00008 */  jr    $ra
 /* 0043B238 00000000 */   nop   
+#endif
 
+static void func_0043B23C(void) {
+    int value;
+
+    value = ustack->value;
+    if (value < -0x8000 || value >= 0x8000) {
+        ustack->value = value - (value & 0xFFFF8000);
+        ustack->expr = binopwithconst(Uadd, ustack->expr, (value & 0xFFFF8000));
+    }
+}
+
+#if 0
     .type func_0043B23C, @function
 func_0043B23C:
     # 0043CFCC readnxtinst
@@ -1261,7 +1332,19 @@ func_0043B23C:
 /* 0043B2AC 27BD0020 */  addiu $sp, $sp, 0x20
 /* 0043B2B0 03E00008 */  jr    $ra
 /* 0043B2B4 00000000 */   nop   
+#endif
 
+static void func_0043B2B8(struct Statement *par) {
+    if (parstack->up == NULL) {
+        parstack->up = alloc_new(sizeof(struct ParstackEntry), &perm_heap);
+        parstack->up->up = NULL;
+        parstack->up->down = parstack;
+    }
+    parstack = parstack->up;
+    parstack->par = par;
+}
+
+#if 0
     .type func_0043B2B8, @function
 func_0043B2B8:
     # 0043CFCC readnxtinst
@@ -1297,7 +1380,50 @@ func_0043B2B8:
 /* 0043B328 27BD0020 */  addiu $sp, $sp, 0x20
 /* 0043B32C 03E00008 */  jr    $ra
 /* 0043B330 00000000 */   nop   
+#endif
 
+static struct Expression *func_0043B334(struct Expression *stexpr) {
+    struct Expression *lda;
+    bool found;
+
+    if (stexpr->type == isconst) {
+        if (stexpr->datatype != Jdt || stexpr->data.isconst.number.intval != 0x7FFFFFFF) {
+            if (stexpr->datatype != Ldt || stexpr->data.isconst.number.uintval != 0xFFFFFFFFu) {
+                return enter_const(stexpr->data.isconst.number.intval + 1, stexpr->datatype, curgraphnode);
+            }
+        }
+        return NULL;
+    }
+    TRAP_IF(stexpr->type != islda);
+    stexpr->data.islda_isilda.addr = stexpr->data.islda_isilda.addr;
+    lda = table[stexpr->table_index];
+    found = false;
+    while (!found && lda != NULL) {
+        if (lda->type == islda &&
+                stexpr->data.islda_isilda.addr + 1 == lda->data.islda_isilda.addr &&
+                addreq(lda->data.islda_isilda.var_data, stexpr->data.islda_isilda.var_data) &&
+                stexpr->data.islda_isilda.size == lda->data.islda_isilda.size) {
+            found = true;
+        } else {
+            lda = lda->next;
+        }
+    }
+
+    if (!found) {
+        lda = appendchain(stexpr->table_index);
+        lda->type = islda;
+        lda->datatype = Adt;
+        lda->data.islda_isilda.var_data = stexpr->data.islda_isilda.var_data;
+        lda->data.islda_isilda.size = stexpr->data.islda_isilda.size;
+        lda->data.islda_isilda.addr = stexpr->data.islda_isilda.addr + 1;
+        lda->var_access_list = NULL;
+        lda->data.islda_isilda.level = stexpr->data.islda_isilda.level;
+        lda->graphnode = curgraphnode;
+    }
+    return lda;
+}
+
+#if 0
     .type func_0043B334, @function
 func_0043B334:
     # 0043CFCC readnxtinst
@@ -1427,6 +1553,541 @@ func_0043B334:
 /* 0043B4F8 8FB40024 */  lw    $s4, 0x24($sp)
 /* 0043B4FC 03E00008 */  jr    $ra
 /* 0043B500 27BD0058 */   addiu $sp, $sp, 0x58
+#endif
+
+static struct Expression *func_0043B504(unsigned short tableIdx, struct VariableInner *var, struct Expression *stexpr1, struct Expression *stexpr2) {
+    bool sp33; // t0
+    bool sp31;
+    bool sp30;
+    bool sp2F;
+    struct Expression *expr_s0;
+
+    expr_s0 = table[tableIdx];
+    sp31 = false;
+    sp30 = false;
+    sp2F = false;
+
+    if (DTYPE == Sdt) {
+        if (OPC != Uldc) {
+            if (OPC != Uisld && OPC != Uisst && OPC != Ulod && OPC != Ustr) {
+                expr_s0 = NULL;
+            } else if (LENGTH > 4) {
+                // small string optimization?
+                sp2F = true;
+            }
+        }
+    }
+
+    sp33 = false;
+    while (!sp33 && !sp2F && expr_s0 != NULL) {
+        if (expr_s0->type == isop || expr_s0->type == isilda) {
+            if (expr_s0->graphnode != curgraphnode) {
+                goto next;
+            }
+        }
+
+        switch (OPC) {
+            case Ulod: // jump 0
+            case Ustr: // jump 0
+                if (expr_s0->type == isvar) {
+                    if (addreq(expr_s0->data.isvar_issvar.var_data, *var) == 0) {
+                        break;
+                    }
+                    if (expr_s0->data.isvar_issvar.unk21) {
+                        sp2F = true;
+                        break;
+                    }
+
+                    sp33 = expr_s0->graphnode == curgraphnode && !expr_s0->unk2;
+                    if (expr_s0->data.isvar_issvar.unk22) {
+                        sp30 = true;
+                    }
+
+                    if (!sp33 && expr_s0->graphnode == curgraphnode) {
+                        sp31 = true;
+                    }
+                }
+                break;
+
+            case Uisld: // jump 1
+            case Uisst: // jump 1
+                if (expr_s0->type != issvar) {
+                    break;
+                }
+                if (addreq(expr_s0->data.isvar_issvar.var_data, *var) == 0) {
+                    break;
+                }
+                if (expr_s0->data.isvar_issvar.unk21) {
+                    sp2F = true;
+                    break;
+                }
+
+                sp33 = curgraphnode == expr_s0->graphnode && !expr_s0->unk2 &&
+                         !expr_s0->data.isvar_issvar.unk24->data.isvar_issvar.unk21;
+                //                                               ^   isop?   ^
+                if (expr_s0->data.isvar_issvar.unk22) {
+                    sp30 = true;
+                }
+
+                if (!sp33 && expr_s0->graphnode == curgraphnode) {
+                    sp31 = true;
+                }
+                break;
+
+            case Ulda: // jump 2
+                if (expr_s0->type != islda) {
+                    break;
+                }
+                if (addreq(expr_s0->data.islda_isilda.var_data, *var) == 0) {
+                    break;
+                }
+                if (LENGTH != expr_s0->data.islda_isilda.size) {
+                    break;
+                }
+                if (OFFSET != expr_s0->data.islda_isilda.addr) {
+                    break;
+                }
+                sp33 = true;
+                break;
+
+            case Uilda: // jump 3
+                if (expr_s0->type != isilda) {
+                    break;
+                }
+                if (addreq(expr_s0->data.islda_isilda.var_data, *var) == 0) {
+                    break;
+                }
+                if (LENGTH != expr_s0->data.islda_isilda.size) {
+                    break;
+                }
+                if (OFFSET != expr_s0->data.islda_isilda.addr) {
+                    break;
+                }
+                sp33 = !expr_s0->data.islda_isilda.unk34->data.isvar_issvar.unk21;
+                break;
+
+            case Uldc: // jump 4
+                if (expr_s0->type != isconst) {
+                    break;
+                }
+
+                if (DTYPE != expr_s0->datatype) {
+                    break;
+                }
+
+                if (DTYPE == Adt || DTYPE == Fdt || DTYPE == Gdt || DTYPE == Hdt || DTYPE == Jdt || DTYPE == Ldt || DTYPE == Ndt) {
+                    if (CONSTVAL.swpart.Ival == expr_s0->data.isconst.number.intval) {
+                        sp33 = true;
+                    }
+                }
+                else if (DTYPE == Idt || DTYPE == Kdt) {
+                    if (CONSTVAL.dwpart.dwval_h != expr_s0->data.isconst.number.intval) {
+                        break;
+                    }
+                    if (CONSTVAL.dwpart.dwval_l != expr_s0->data.isconst.number.intval2) {
+                        break;
+                    }
+                    sp33 = true;
+                    break;
+                }
+
+                if (CONSTVAL.swpart.Ival != expr_s0->data.isconst.number.real.len) {
+                    break;
+                }
+                if (func_0043B084(expr_s0->data.isconst.number) == 0) {
+                    break;
+                }
+                sp33 = true;
+                break;
+
+            case Uldrc: // jump 5
+                if (expr_s0->type != isrconst) {
+                    break;
+                }
+                if (DTYPE != expr_s0->datatype) {
+                    break;
+                }
+                if (IONE != expr_s0->data.isrconst.unk20) {
+                    break;
+                }
+                sp33 = true;
+                break;
+
+            case Uadd: // jump 6
+            case Uand: // jump 6
+            case Uint: // jump 6
+            case Uior: // jump 6
+            case Umpy: // jump 6
+            case Uuni: // jump 6
+            case Uxor: // jump 6
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (DTYPE != expr_s0->datatype) {
+                    break;
+                }
+                if ((stexpr1 == expr_s0->data.isop.op1 && stexpr2 == expr_s0->data.isop.op2) ||
+                    (stexpr2 == expr_s0->data.isop.op1 && stexpr1 == expr_s0->data.isop.op2)) {
+
+                    if (IS_OVERFLOW_ATTR(LEXLEV) != expr_s0->data.isop.aux2.v1.overflow_attr) {
+                        break;
+                    }
+                    sp33 = true;
+                }
+                break;
+
+            case Uequ: // jump 7
+            case Uneq: // jump 7
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (DTYPE != expr_s0->datatype) {
+                    break;
+                }
+                if ((stexpr1 == expr_s0->data.isop.op1 && stexpr2 == expr_s0->data.isop.op2) ||
+                    (stexpr2 == expr_s0->data.isop.op1 && stexpr1 == expr_s0->data.isop.op2)) {
+                    sp33 = true;
+                }
+                break;
+
+            case Ubsub: // jump 8
+            case Udif: // jump 8
+            case Udiv: // jump 8
+            case Umax: // jump 8
+            case Umin: // jump 8
+            case Umod: // jump 8
+            case Umus: // jump 8
+            case Urem: // jump 8
+            case Ushl: // jump 8
+            case Ushr: // jump 8
+            case Usign: // jump 8
+            case Usub: // jump 8
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (DTYPE != expr_s0->datatype) {
+                    break;
+                }
+                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
+                    break;
+                }
+                if (stexpr2 != expr_s0->data.isop.op2) { // stexpr2 $v0-1C
+                    break;
+                }
+                if (IS_OVERFLOW_ATTR(LEXLEV) != expr_s0->data.isop.aux2.v1.overflow_attr) {
+                    break;
+                }
+                sp33 = true;
+                break;
+
+            case Ugeq: // jump 9
+            case Ugrt: // jump 9
+            case Uleq: // jump 9
+            case Ules: // jump 9
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (DTYPE != expr_s0->datatype) {
+                    break;
+                }
+                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
+                    break;
+                }
+                if (stexpr2 != expr_s0->data.isop.op2) { // stexpr2 $v0-1C
+                    break;
+                }
+                sp33 = true;
+                break;
+
+            case Uinn: // jump 10
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (DTYPE != expr_s0->datatype) {
+                    break;
+                }
+                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
+                    break;
+                }
+                if (stexpr2 != expr_s0->data.isop.op2) { // stexpr2 $v0-1C
+                    break;
+                }
+                if (IONE != expr_s0->data.isop.aux2.v1.unk3C) {
+                    break;
+                }
+                sp33 = true;
+                break;
+
+            case Uixa: // jump 11
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (DTYPE != expr_s0->datatype) {
+                    break;
+                }
+                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
+                    break;
+                }
+                if (stexpr2 != expr_s0->data.isop.op2) { // stexpr2 $v0-1C
+                    break;
+                }
+                if (IONE != expr_s0->data.isop.datasize) {
+                    break;
+                }
+                sp33 = true;
+                break;
+
+            case Uabs: // jump 12
+            case Ulnot: // jump 12
+            case Uneg: // jump 12
+            case Unot: // jump 12
+            case Uodd: // jump 12
+            case Usgs: // jump 12
+            case Usqr: // jump 12
+            case Usqrt: // jump 12
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (DTYPE != expr_s0->datatype) {
+                    break;
+                }
+                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
+                    break;
+                }
+                if (IS_OVERFLOW_ATTR(LEXLEV) != expr_s0->data.isop.aux2.v1.overflow_attr) {
+                    break;
+                }
+                sp33 = true;
+                break;
+
+            case Uchkh: // jump 13
+            case Uchkl: // jump 13
+            case Ucvtl: // jump 13
+            case Udec: // jump 13
+            case Uinc: // jump 13
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (DTYPE != expr_s0->datatype) {
+                    break;
+                }
+                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
+                    break;
+                }
+                if (IONE != expr_s0->data.isop.datasize) {
+                    break;
+                }
+                if (IS_OVERFLOW_ATTR(LEXLEV) != expr_s0->data.isop.aux2.v1.overflow_attr) {
+                    break;
+                }
+                sp33 = true;
+                break;
+
+            case Ucvt: // jump 14
+            case Urnd: // jump 14
+            case Utyp: // jump 14
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (DTYPE != expr_s0->datatype) {
+                    break;
+                }
+                if (DTYPE2 != expr_s0->data.isop.aux.cvtfrom) {
+                    break;
+                }
+                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
+                    break;
+                }
+                if (IS_OVERFLOW_ATTR(LEXLEV) != expr_s0->data.isop.aux2.v1.overflow_attr) {
+                    break;
+                }
+                sp33 = true;
+                break;
+
+            case Uadj: // jump 15
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (OFFSET != expr_s0->data.isop.datasize) {
+                    break;
+                }
+                if (LENGTH != expr_s0->data.isop.aux2.v1.unk3C) {
+                    break;
+                }
+                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
+                    break;
+                }
+                sp33 = true;
+                break;
+
+            case Uchkn: // jump 16
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
+                    break;
+                }
+                sp33 = true;
+                break;
+
+            case Uilod: // jump 17
+            case Uirld: // jump 17
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (DTYPE != expr_s0->datatype) {
+                    break;
+                }
+                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
+                    break;
+                }
+                if (IONE != expr_s0->data.isop.datasize) {
+                    break;
+                }
+                if (LENGTH != expr_s0->data.isop.aux2.v1.unk3C) {
+                    break;
+                }
+                sp33 = !expr_s0->unk2;
+                sp31 = !sp33;
+                break;
+
+            case Uildv: // jump 18
+            case Uirlv: // jump 18
+                while (expr_s0->next != NULL) {
+                    expr_s0 = expr_s0->next;
+                }
+                break;
+
+            case Uiequ: // jump 19
+            case Uineq: // jump 19
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if ((stexpr1 == expr_s0->data.isop.op1 && stexpr2 == expr_s0->data.isop.op2) ||
+                    (stexpr2 == expr_s0->data.isop.op1 && stexpr1 == expr_s0->data.isop.op2)) {
+                    if (LENGTH != expr_s0->data.isop.datasize) {
+                        break;
+                    }
+                    sp33 = !expr_s0->unk2;
+                    sp31 = !sp33;
+                }
+                break;
+
+            case Uigeq: // jump 20
+            case Uigrt: // jump 20
+            case Uileq: // jump 20
+            case Uiles: // jump 20
+                if (expr_s0->type != isop) {
+                    break;
+                }
+                if (OPC != expr_s0->data.isop.opc) {
+                    break;
+                }
+                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
+                    break;
+                }
+                if (stexpr2 != expr_s0->data.isop.op2) { // stexpr2 $v0-1C
+                    break;
+                }
+                if (LENGTH != expr_s0->data.isop.datasize) {
+                    break;
+                }
+                sp33 = !expr_s0->unk2;
+                if (sp33 != 0) {
+                    break;
+                }
+                sp31 = true;
+                break;
+
+            default:
+                caseerror(1, 706, "uoptinput.p", 0xB);
+                break;
+
+            case Ulca: // ignored 420
+                break;
+
+        }
+
+next:
+        if (!sp33) {
+            expr_s0 = expr_s0->next;
+        }
+    }
+
+    if (!sp33 || sp2F) {
+        expr_s0 = appendchain(tableIdx);
+        if (outofmem) {
+            return expr_s0;
+        }
+
+        expr_s0->graphnode = curgraphnode;
+
+        // originally performs useless checks for below opcodes including Ulca Ulda Uldc, then overwrites with && below
+        if (OPC == Uisld || OPC == Uisst || OPC == Ulod || OPC == Ustr) {
+                expr_s0->data.isvar_issvar.unk21 = sp2F;
+                expr_s0->data.isvar_issvar.unk22 = !sp2F && sp30;
+        }
+
+        if (sp31) {
+            expr_s0->unk3 = false;
+        } else if (OPC == Uisld || OPC == Uisst || OPC == Ulod || OPC == Ustr ||
+                   (OPC == Uiequ ||
+                    OPC == Uigeq ||
+                    OPC == Uigrt ||
+                    OPC == Uileq ||
+                    OPC == Uiles ||
+                    OPC == Uineq ||
+                    OPC == Uilod ||
+                    OPC == Uirld)) {
+                expr_s0->unk3 = true;
+        }
+    }
+    return expr_s0;
+}
+
+#if 0
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_0043B504, @function
 func_0043B504:
@@ -1439,6 +2100,11 @@ func_0043B504:
 /* 0043B510 27BDFFC0 */  addiu $sp, $sp, -0x40
 /* 0043B514 AFB10018 */  sw    $s1, 0x18($sp)
 /* 0043B518 AFA40040 */  sw    $a0, 0x40($sp)
+########### Shared Stack Arguments ##################
+/* 0043B518 AFA40040 */  sw    $a1, 0x44($sp)               # struct VariableInner *var, $s2-[0x2c,0x28]
+/* 0043B518 AFA40040 */  sw    $a2, 0x48($sp)               # stexpr1, $s2-0x18
+/* 0043B518 AFA40040 */  sw    $a3, 0x4C($sp)               # stexpr2, $s2-0x1c
+#####################################################
 /* 0043B51C 8F918DA4 */  lw     $s1, %got(u)($gp)
 /* 0043B520 97AE0042 */  lhu   $t6, 0x42($sp)
 /* 0043B524 8F988DF8 */  lw     $t8, %got(table)($gp)
@@ -1517,11 +2183,18 @@ func_0043B504:
 /* 0043B62C 8E040028 */  lw    $a0, 0x28($s0)
 /* 0043B630 8E05002C */  lw    $a1, 0x2c($s0)
 /* 0043B634 8F99860C */  lw    $t9, %call16(addreq)($gp)
+# Changed to use shared stack arg
 /* 0043B638 AFA40000 */  sw    $a0, ($sp)
 /* 0043B63C AFA50004 */  sw    $a1, 4($sp)
-/* 0043B640 8E46FFD4 */  lw    $a2, -0x2c($s2)
+                         lw    $a2, 0x44($sp)
+
+                         lw    $a3, 4($a2) #var[1]
+                         lw    $a2, 0($a2) #var[0]
+
 /* 0043B644 AFA60008 */  sw    $a2, 8($sp)
-/* 0043B648 8E47FFD8 */  lw    $a3, -0x28($s2)
+#/* 0043B640 8E46FFD4 */  lw    $a2, -0x2c($s2)
+#/* 0043B648 8E47FFD8 */  lw    $a3, -0x28($s2)
+#
 /* 0043B64C A3A80033 */  sb    $t0, 0x33($sp)
 /* 0043B650 0320F809 */  jalr  $t9
 /* 0043B654 AFA7000C */   sw    $a3, 0xc($sp)
@@ -1567,11 +2240,17 @@ func_0043B504:
 /* 0043B6E4 8E040028 */  lw    $a0, 0x28($s0)
 /* 0043B6E8 8E05002C */  lw    $a1, 0x2c($s0)
 /* 0043B6EC 8F99860C */  lw    $t9, %call16(addreq)($gp)
+# Changed to use shared stack arg
 /* 0043B6F0 AFA40000 */  sw    $a0, ($sp)
 /* 0043B6F4 AFA50004 */  sw    $a1, 4($sp)
-/* 0043B6F8 8E46FFD4 */  lw    $a2, -0x2c($s2)
+                         lw    $a2, 0x44($sp)
+
+                         lw    $a3, 4($a2) #var[1]
+                         lw    $a2, 0($a2) #var[0]
+
+#/* 0043B6F8 8E46FFD4 */  lw    $a2, -0x2c($s2)
+#/* 0043B700 8E47FFD8 */  lw    $a3, -0x28($s2)
 /* 0043B6FC AFA60008 */  sw    $a2, 8($sp)
-/* 0043B700 8E47FFD8 */  lw    $a3, -0x28($s2)
 /* 0043B704 A3A80033 */  sb    $t0, 0x33($sp)
 /* 0043B708 0320F809 */  jalr  $t9
 /* 0043B70C AFA7000C */   sw    $a3, 0xc($sp)
@@ -1624,11 +2303,17 @@ func_0043B504:
 /* 0043B7B4 8E04002C */  lw    $a0, 0x2c($s0)
 /* 0043B7B8 8E050030 */  lw    $a1, 0x30($s0)
 /* 0043B7BC 8F99860C */  lw    $t9, %call16(addreq)($gp)
+# Changed to use shared stack arg
 /* 0043B7C0 AFA40000 */  sw    $a0, ($sp)
 /* 0043B7C4 AFA50004 */  sw    $a1, 4($sp)
-/* 0043B7C8 8E46FFD4 */  lw    $a2, -0x2c($s2)
+                         lw    $a2, 0x44($sp)
+
+                         lw    $a3, 4($a2) #var[1]
+                         lw    $a2, 0($a2) #var[0]
+
+#/* 0043B7C8 8E46FFD4 */  lw    $a2, -0x2c($s2)
+#/* 0043B7D0 8E47FFD8 */  lw    $a3, -0x28($s2)
 /* 0043B7CC AFA60008 */  sw    $a2, 8($sp)
-/* 0043B7D0 8E47FFD8 */  lw    $a3, -0x28($s2)
 /* 0043B7D4 A3A80033 */  sb    $t0, 0x33($sp)
 /* 0043B7D8 0320F809 */  jalr  $t9
 /* 0043B7DC AFA7000C */   sw    $a3, 0xc($sp)
@@ -1653,11 +2338,17 @@ func_0043B504:
 /* 0043B824 8E04002C */  lw    $a0, 0x2c($s0)
 /* 0043B828 8E050030 */  lw    $a1, 0x30($s0)
 /* 0043B82C 8F99860C */  lw    $t9, %call16(addreq)($gp)
+# Changed to use shared stack arg
 /* 0043B830 AFA40000 */  sw    $a0, ($sp)
 /* 0043B834 AFA50004 */  sw    $a1, 4($sp)
-/* 0043B838 8E46FFD4 */  lw    $a2, -0x2c($s2)
+                         lw    $a2, 0x44($sp)
+
+                         lw    $a3, 4($a2) #var[1]
+                         lw    $a2, 0($a2) #var[0]
+
+#/* 0043B838 8E46FFD4 */  lw    $a2, -0x2c($s2)
+#/* 0043B840 8E47FFD8 */  lw    $a3, -0x28($s2)
 /* 0043B83C AFA60008 */  sw    $a2, 8($sp)
-/* 0043B840 8E47FFD8 */  lw    $a3, -0x28($s2)
 /* 0043B844 A3A80033 */  sb    $t0, 0x33($sp)
 /* 0043B848 0320F809 */  jalr  $t9
 /* 0043B84C AFA7000C */   sw    $a3, 0xc($sp)
@@ -1762,9 +2453,11 @@ func_0043B504:
 /* 0043B9C4 318B001F */  andi  $t3, $t4, 0x1f
 /* 0043B9C8 156E01BA */  bne   $t3, $t6, .L0043C0B4
 /* 0043B9CC 00000000 */   nop   
-/* 0043B9D0 8E44FFE8 */  lw    $a0, -0x18($s2)
+## Shared stack args
+/* 0043B9D0 8E44FFE8 */  lw    $a0, 0x48($sp)  #-0x18($s2) #stexpr1
 /* 0043B9D4 8E030024 */  lw    $v1, 0x24($s0)
-/* 0043B9D8 8E42FFE4 */  lw    $v0, -0x1c($s2)
+## Shared stack args
+/* 0043B9D8 8E42FFE4 */  lw    $v0, 0x4c($sp) #-0x1c($s2)
 /* 0043B9DC 14830004 */  bne   $a0, $v1, .L0043B9F0
 /* 0043B9E0 00000000 */   nop   
 /* 0043B9E4 8E0F0028 */  lw    $t7, 0x28($s0)
@@ -1796,9 +2489,9 @@ func_0043B504:
 /* 0043BA40 31CF001F */  andi  $t7, $t6, 0x1f
 /* 0043BA44 15F8019B */  bne   $t7, $t8, .L0043C0B4
 /* 0043BA48 00000000 */   nop   
-/* 0043BA4C 8E44FFE8 */  lw    $a0, -0x18($s2)
+/* 0043BA4C 8E44FFE8 */  lw    $a0, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BA50 8E030024 */  lw    $v1, 0x24($s0)
-/* 0043BA54 8E42FFE4 */  lw    $v0, -0x1c($s2)
+/* 0043BA54 8E42FFE4 */  lw    $v0, 0x4c($sp) #-0x1c($s2) #stexpr2
 /* 0043BA58 14830004 */  bne   $a0, $v1, .L0043BA6C
 /* 0043BA5C 00000000 */   nop   
 /* 0043BA60 8E190028 */  lw    $t9, 0x28($s0)
@@ -1824,11 +2517,11 @@ func_0043B504:
 /* 0043BAA4 318B001F */  andi  $t3, $t4, 0x1f
 /* 0043BAA8 156E0182 */  bne   $t3, $t6, .L0043C0B4
 /* 0043BAAC 00000000 */   nop   
-/* 0043BAB0 8E4FFFE8 */  lw    $t7, -0x18($s2)
+/* 0043BAB0 8E4FFFE8 */  lw    $t7, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BAB4 8E180024 */  lw    $t8, 0x24($s0)
 /* 0043BAB8 15F8017E */  bne   $t7, $t8, .L0043C0B4
 /* 0043BABC 00000000 */   nop   
-/* 0043BAC0 8E59FFE4 */  lw    $t9, -0x1c($s2)
+/* 0043BAC0 8E59FFE4 */  lw    $t9, 0x4c($sp) #-0x1c($s2) #stexpr2
 /* 0043BAC4 8E0D0028 */  lw    $t5, 0x28($s0)
 /* 0043BAC8 172D017A */  bne   $t9, $t5, .L0043C0B4
 /* 0043BACC 00000000 */   nop   
@@ -1851,11 +2544,11 @@ func_0043B504:
 /* 0043BB0C 3319001F */  andi  $t9, $t8, 0x1f
 /* 0043BB10 172D0168 */  bne   $t9, $t5, .L0043C0B4
 /* 0043BB14 00000000 */   nop   
-/* 0043BB18 8E4AFFE8 */  lw    $t2, -0x18($s2)
+/* 0043BB18 8E4AFFE8 */  lw    $t2, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BB1C 8E0C0024 */  lw    $t4, 0x24($s0)
 /* 0043BB20 154C0164 */  bne   $t2, $t4, .L0043C0B4
 /* 0043BB24 00000000 */   nop   
-/* 0043BB28 8E4BFFE4 */  lw    $t3, -0x1c($s2)
+/* 0043BB28 8E4BFFE4 */  lw    $t3, 0x4c($sp) #-0x1c($s2) #stexpr2
 /* 0043BB2C 8E0E0028 */  lw    $t6, 0x28($s0)
 /* 0043BB30 156E0160 */  bne   $t3, $t6, .L0043C0B4
 /* 0043BB34 00000000 */   nop   
@@ -1872,11 +2565,11 @@ func_0043B504:
 /* 0043BB5C 3319001F */  andi  $t9, $t8, 0x1f
 /* 0043BB60 172D0154 */  bne   $t9, $t5, .L0043C0B4
 /* 0043BB64 00000000 */   nop   
-/* 0043BB68 8E4AFFE8 */  lw    $t2, -0x18($s2)
+/* 0043BB68 8E4AFFE8 */  lw    $t2, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BB6C 8E0C0024 */  lw    $t4, 0x24($s0)
 /* 0043BB70 154C0150 */  bne   $t2, $t4, .L0043C0B4
 /* 0043BB74 00000000 */   nop   
-/* 0043BB78 8E4BFFE4 */  lw    $t3, -0x1c($s2)
+/* 0043BB78 8E4BFFE4 */  lw    $t3, 0x4c($sp) #-0x1c($s2) #stexpr2
 /* 0043BB7C 8E0E0028 */  lw    $t6, 0x28($s0)
 /* 0043BB80 156E014C */  bne   $t3, $t6, .L0043C0B4
 /* 0043BB84 00000000 */   nop   
@@ -1897,11 +2590,11 @@ func_0043B504:
 /* 0043BBBC 31AA001F */  andi  $t2, $t5, 0x1f
 /* 0043BBC0 154C013C */  bne   $t2, $t4, .L0043C0B4
 /* 0043BBC4 00000000 */   nop   
-/* 0043BBC8 8E4BFFE8 */  lw    $t3, -0x18($s2)
+/* 0043BBC8 8E4BFFE8 */  lw    $t3, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BBCC 8E0E0024 */  lw    $t6, 0x24($s0)
 /* 0043BBD0 156E0138 */  bne   $t3, $t6, .L0043C0B4
 /* 0043BBD4 00000000 */   nop   
-/* 0043BBD8 8E4FFFE4 */  lw    $t7, -0x1c($s2)
+/* 0043BBD8 8E4FFFE4 */  lw    $t7, 0x4c($sp) #-0x1c($s2) #stexpr2
 /* 0043BBDC 8E180028 */  lw    $t8, 0x28($s0)
 /* 0043BBE0 15F80134 */  bne   $t7, $t8, .L0043C0B4
 /* 0043BBE4 00000000 */   nop   
@@ -1922,7 +2615,7 @@ func_0043B504:
 /* 0043BC1C 318B001F */  andi  $t3, $t4, 0x1f
 /* 0043BC20 156E0124 */  bne   $t3, $t6, .L0043C0B4
 /* 0043BC24 00000000 */   nop   
-/* 0043BC28 8E4FFFE8 */  lw    $t7, -0x18($s2)
+/* 0043BC28 8E4FFFE8 */  lw    $t7, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BC2C 8E180024 */  lw    $t8, 0x24($s0)
 /* 0043BC30 15F80120 */  bne   $t7, $t8, .L0043C0B4
 /* 0043BC34 00000000 */   nop   
@@ -1945,7 +2638,7 @@ func_0043B504:
 /* 0043BC74 31CF001F */  andi  $t7, $t6, 0x1f
 /* 0043BC78 15F8010E */  bne   $t7, $t8, .L0043C0B4
 /* 0043BC7C 00000000 */   nop   
-/* 0043BC80 8E59FFE8 */  lw    $t9, -0x18($s2)
+/* 0043BC80 8E59FFE8 */  lw    $t9, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BC84 8E0D0024 */  lw    $t5, 0x24($s0)
 /* 0043BC88 172D010A */  bne   $t9, $t5, .L0043C0B4
 /* 0043BC8C 00000000 */   nop   
@@ -1976,7 +2669,7 @@ func_0043B504:
 /* 0043BCEC 920E0038 */  lbu   $t6, 0x38($s0)
 /* 0043BCF0 156E00F0 */  bne   $t3, $t6, .L0043C0B4
 /* 0043BCF4 00000000 */   nop   
-/* 0043BCF8 8E4FFFE8 */  lw    $t7, -0x18($s2)
+/* 0043BCF8 8E4FFFE8 */  lw    $t7, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BCFC 8E180024 */  lw    $t8, 0x24($s0)
 /* 0043BD00 15F800EC */  bne   $t7, $t8, .L0043C0B4
 /* 0043BD04 00000000 */   nop   
@@ -2002,7 +2695,7 @@ func_0043B504:
 /* 0043BD50 9619003C */  lhu   $t9, 0x3c($s0)
 /* 0043BD54 171900D7 */  bne   $t8, $t9, .L0043C0B4
 /* 0043BD58 00000000 */   nop   
-/* 0043BD5C 8E4DFFE8 */  lw    $t5, -0x18($s2)
+/* 0043BD5C 8E4DFFE8 */  lw    $t5, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BD60 8E0A0024 */  lw    $t2, 0x24($s0)
 /* 0043BD64 15AA00D3 */  bne   $t5, $t2, .L0043C0B4
 /* 0043BD68 00000000 */   nop   
@@ -2014,7 +2707,7 @@ func_0043B504:
 /* 0043BD7C 920C0020 */  lbu   $t4, 0x20($s0)
 /* 0043BD80 148C00CC */  bne   $a0, $t4, .L0043C0B4
 /* 0043BD84 00000000 */   nop   
-/* 0043BD88 8E4BFFE8 */  lw    $t3, -0x18($s2)
+/* 0043BD88 8E4BFFE8 */  lw    $t3, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BD8C 8E0E0024 */  lw    $t6, 0x24($s0)
 /* 0043BD90 156E00C8 */  bne   $t3, $t6, .L0043C0B4
 /* 0043BD94 00000000 */   nop   
@@ -2031,7 +2724,7 @@ func_0043B504:
 /* 0043BDBC 3319001F */  andi  $t9, $t8, 0x1f
 /* 0043BDC0 172D00BC */  bne   $t9, $t5, .L0043C0B4
 /* 0043BDC4 00000000 */   nop   
-/* 0043BDC8 8E4AFFE8 */  lw    $t2, -0x18($s2)
+/* 0043BDC8 8E4AFFE8 */  lw    $t2, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BDCC 8E0C0024 */  lw    $t4, 0x24($s0)
 /* 0043BDD0 154C00B8 */  bne   $t2, $t4, .L0043C0B4
 /* 0043BDD4 00000000 */   nop   
@@ -2069,9 +2762,9 @@ func_0043B504:
 /* 0043BE44 920D0020 */  lbu   $t5, 0x20($s0)
 /* 0043BE48 148D009A */  bne   $a0, $t5, .L0043C0B4
 /* 0043BE4C 00000000 */   nop   
-/* 0043BE50 8E44FFE8 */  lw    $a0, -0x18($s2)
+/* 0043BE50 8E44FFE8 */  lw    $a0, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BE54 8E030024 */  lw    $v1, 0x24($s0)
-/* 0043BE58 8E42FFE4 */  lw    $v0, -0x1c($s2)
+/* 0043BE58 8E42FFE4 */  lw    $v0, 0x4c($sp) #-0x1c($s2) #stexpr2
 /* 0043BE5C 14830004 */  bne   $a0, $v1, .L0043BE70
 /* 0043BE60 00000000 */   nop   
 /* 0043BE64 8E0A0028 */  lw    $t2, 0x28($s0)
@@ -2102,11 +2795,11 @@ func_0043B504:
 /* 0043BEBC 92180020 */  lbu   $t8, 0x20($s0)
 /* 0043BEC0 1498007C */  bne   $a0, $t8, .L0043C0B4
 /* 0043BEC4 00000000 */   nop   
-/* 0043BEC8 8E59FFE8 */  lw    $t9, -0x18($s2)
+/* 0043BEC8 8E59FFE8 */  lw    $t9, 0x48($sp) #-0x18($s2) # stexpr1
 /* 0043BECC 8E0D0024 */  lw    $t5, 0x24($s0)
 /* 0043BED0 172D0078 */  bne   $t9, $t5, .L0043C0B4
 /* 0043BED4 00000000 */   nop   
-/* 0043BED8 8E4AFFE4 */  lw    $t2, -0x1c($s2)
+/* 0043BED8 8E4AFFE4 */  lw    $t2, 0x4c($sp) #-0x1c($s2) #stexpr2
 /* 0043BEDC 8E0C0028 */  lw    $t4, 0x28($s0)
 /* 0043BEE0 154C0074 */  bne   $t2, $t4, .L0043C0B4
 /* 0043BEE4 00000000 */   nop   
@@ -2349,6 +3042,87 @@ func_0043B504:
 /* 0043C23C 8FB2001C */  lw    $s2, 0x1c($sp)
 /* 0043C240 03E00008 */  jr    $ra
 /* 0043C244 27BD0040 */   addiu $sp, $sp, 0x40
+)"");
+#endif
+
+static void func_0043C248(struct UstackEntry *ustackHead, struct VariableInner *var, struct Expression *stexpr1, struct Expression *stexpr2) {
+    struct Expression *sp20;
+    unsigned int value;
+    unsigned int exponent;
+    bool done;
+    int i;
+
+    OPC = Uldc;
+    if (DTYPE == Rdt) {
+        LENGTH = 4;
+    } else {
+        LENGTH = 8;
+    }
+
+    CONSTVAL.swpart.Ival = 0;
+    ustackHead->expr = ustackHead->expr;
+    if ((ustackHead->expr->datatype == Idt || ustackHead->expr->datatype == Jdt) && ustackHead->expr->data.isconst.number.intval < 0) {
+        CONSTVAL.swpart.Ival = 1;
+        ustrptr[0] = '-';
+        value = -ustackHead->expr->data.isconst.number.intval;
+    } else {
+        value = ustackHead->expr->data.isconst.number.intval;
+    }
+
+    exponent = 1;
+    done = false;
+
+    do {
+        if (value < exponent * 10 || exponent == 1000000000) {
+            done = 1;
+        } else {
+            exponent *= 10;
+        }
+    } while (!done);
+
+    do {
+        ustrptr[CONSTVAL.swpart.Ival++] = '0' + (char)(value / exponent);
+        value %= exponent;
+        if ((signed)(value ^ exponent) < 0) {
+            value += exponent;
+        }
+        exponent /= 10;
+    } while (exponent != 0);
+
+    ustrptr[CONSTVAL.swpart.Ival] = '.';
+    ustrptr[CONSTVAL.swpart.Ival + 1] = '0';
+    CONSTVAL.swpart.Ival += 2;
+    sp20 = func_0043B504(realhash(CONSTVAL.swpart.Ival), var, stexpr1, stexpr2);
+    if (sp20->type == empty) {
+        sp20->type = isconst;
+        sp20->datatype = DTYPE;
+        if (realdispmod + CONSTVAL.swpart.Ival >= 0x100) {
+            realdispmod = 0;
+            realdispdiv += 1;
+            currealpool->next = alloc_new(sizeof(struct RealstoreData), &perm_heap);
+            currealpool = currealpool->next;
+            currealpool->next = NULL;
+        }
+
+        for (i = 0; i < CONSTVAL.swpart.Ival; i++) {
+            currealpool->c[realdispmod + i] = ustrptr[i];
+        }
+
+        sp20->data.isconst.number.real.len = CONSTVAL.swpart.Ival;
+        sp20->data.isconst.number.real.disp = (realdispdiv << 8) + realdispmod;
+        sp20->data.isconst.real_exponent = 0;
+        sp20->var_access_list = 0;
+        sp20->data.isconst.size = LENGTH;
+        sp20->data.isconst.real_significand = ustackHead->expr->data.isconst.number.intval;
+        realdispmod += CONSTVAL.swpart.Ival;
+    }
+    ustackHead->expr = sp20;
+}
+
+#if 0
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_0043C248, @function
 func_0043C248:
@@ -2461,6 +3235,12 @@ func_0043C248:
 /* 0043C3C0 8FBC0018 */  lw    $gp, 0x18($sp)
 /* 0043C3C4 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 0043C3C8 8FA20024 */  lw    $v0, 0x24($sp)
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 0043C3CC 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043C3D0 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 0043C3D4 0320F809 */  jalr  $t9
@@ -2571,130 +3351,311 @@ func_0043C248:
 /* 0043C560 27BD0028 */  addiu $sp, $sp, 0x28
 /* 0043C564 03E00008 */  jr    $ra
 /* 0043C568 00000000 */   nop   
+)"");
+#endif
 
-    .type func_0043C56C, @function
-func_0043C56C:
+// XXX: remove when everything is decompiled
+struct VariableInner *gVar;
+struct Expression *gStexpr1;
+struct Expression *gStexpr2;
+
+int gsp34;
+int gExponent;
+int gdone;
+int gs0;
+
+static struct Expression *func_0043C56C(int real_significand, bool negative, int real_exponent, Datatype dtype, struct VariableInner *var, struct Expression *stexpr1, struct Expression *stexpr2) {
+    int sp34;
+    struct Expression *sp20;
+    bool done;
+    int phi_s0;
+    int value;
+    int exponent;
+    int i;
+
+    // TODO: Remove once readnxtinst decompiled
+    var = gVar;
+    stexpr1 = gStexpr1;
+    stexpr2 = gStexpr2;
+
+    phi_s0 = -real_exponent;
+    sp34 = 1;
+    if (is_power2(real_significand)) {
+        while (real_significand != 1) {
+            // 5 ** 13
+            if (sp34 == 1220703125) {
+                return NULL;
+            }
+            sp34 *= 5;
+            real_significand >>= 1;
+            phi_s0--;
+        }
+    } else {
+        while (real_significand != 1) {
+            if (sp34 == 0x40000000) {
+                return NULL;
+            }
+            real_significand = real_significand / 5;
+            sp34 = sp34 << 1;
+            phi_s0--;
+        }
+    }
+
+
+    OPC = Uldc;
+    DTYPE = dtype;
+    if (dtype == Rdt) {
+        LENGTH = 4;
+    } else {
+        LENGTH = 8;
+    }
+    CONSTVAL.swpart.Ival = 0;
+    if (negative) {
+        CONSTVAL.swpart.Ival = 1;
+        ustrptr[0] = '-';
+    }
+
+    exponent = 1;
+    done = false;
+    do {
+        if (sp34 < exponent * 10 || exponent == 1000000000) {
+            done = true;
+        } else {
+            exponent *= 10;
+        }
+    } while (!done);
+
+    value = sp34;
+    do {
+        ustrptr[CONSTVAL.swpart.Ival++] = '0' + (char)(value / exponent);
+        value %= exponent;
+        if ((signed)(value ^ exponent) < 0) {
+            value += exponent;
+        }
+        exponent /= 10;
+    } while (exponent != 0);
+    ustrptr[CONSTVAL.swpart.Ival] = '.';
+    ustrptr[CONSTVAL.swpart.Ival + 1] = '0';
+    CONSTVAL.swpart.Ival += 2;
+
+    // Add exponent
+    if (phi_s0 != 0) {
+        ustrptr[CONSTVAL.swpart.Ival++] = 'E';
+        if (phi_s0 < 0) {
+            ustrptr[CONSTVAL.swpart.Ival++] = '-';
+            value = -phi_s0;
+        } else {
+            value = phi_s0;
+        }
+
+        exponent = 1;
+        do {
+            if (value < exponent * 10) {
+                done = true;
+            } else {
+                exponent *= 10;
+            }
+        } while (!done);
+
+       do {
+            //printf("\e[91m a0 %d exp %d a0/exp %d\e[m\n", value, exponent, value / exponent);
+            ustrptr[CONSTVAL.swpart.Ival++] = '0' + (char) (value / exponent);
+            value %= exponent;
+            if ((signed)(value ^ exponent) < 0) {
+                value += exponent;
+            }
+            exponent /= 10;
+        }  while (exponent != 0);
+    }
+
+    //printf("\e[91mustr %.*s\e[m\n", CONSTVAL.swpart.Ival, ustrptr);
+    //printf("\e[91m Ival %d\e[m\n", CONSTVAL.swpart.Ival);
+
+    sp20 = func_0043B504(realhash(CONSTVAL.swpart.Ival), var, stexpr1, stexpr2);
+    if (sp20->type == empty) {
+        sp20->type = isconst;
+        sp20->datatype = DTYPE;
+        if (realdispmod + CONSTVAL.swpart.Ival >= 0x100) {
+            realdispmod = 0;
+            realdispdiv += 1;
+            currealpool->next = alloc_new(sizeof(struct RealstoreData), &perm_heap);
+            currealpool = currealpool->next;
+            currealpool->next = NULL;
+
+        }
+        for (i = 0; i < CONSTVAL.swpart.Ival; i++) {
+            currealpool->c[realdispmod + i] = ustrptr[i];
+        }
+
+        sp20->data.isconst.number.real.len = CONSTVAL.swpart.Ival;
+        sp20->data.isconst.number.real.disp = (realdispdiv << 8) + realdispmod;
+        sp20->data.isconst.size = LENGTH;
+        if (negative) {
+            sp20->data.isconst.real_significand = -sp34;
+        } else {
+            sp20->data.isconst.real_significand = sp34;
+        }
+        sp20->data.isconst.real_exponent = phi_s0;
+        sp20->var_access_list = NULL;
+        realdispmod += CONSTVAL.swpart.Ival;
+    }
+    //printf("\e[91m sp20\n");
+    //printf("\t number.real.len %d\n", sp20->data.isconst.number.real.len);
+    //printf("\t number.real.disp %d\n", sp20->data.isconst.number.real.disp);
+    //printf("\t size %d\n", sp20->data.isconst.size);
+    //printf("\t real_significand %d\n", sp20->data.isconst.real_significand);
+    //printf("\t real_exponent %d\n", sp20->data.isconst.real_exponent);
+    //printf("\e[m");
+    return sp20;
+}
+
+#if 0
+__asm__(R""(
+.set noat
+.set noreorder
+
+glabel func_0043C56C_asm
+    .ent func_0043C56C_asm
     # 0043CFCC readnxtinst
 /* 0043C56C 3C1C0FBE */  .cpload $t9
 /* 0043C570 279CDD24 */  
 /* 0043C574 0399E021 */  
 /* 0043C578 27BDFFC0 */  addiu $sp, $sp, -0x40
-/* 0043C57C 8F9986F8 */  lw    $t9, %call16(is_power2)($gp)
+#/* 0043C57C 8F9986F8 */  lw    $t9, %call16(is_power2)($gp)
 /* 0043C580 AFBF001C */  sw    $ra, 0x1c($sp)
 /* 0043C584 AFB00014 */  sw    $s0, 0x14($sp)
-/* 0043C588 24080001 */  li    $t0, 1
+#/* 0043C588 24080001 */  li    $t0, 1
 /* 0043C58C AFBC0018 */  sw    $gp, 0x18($sp)
 /* 0043C590 AFA50044 */  sw    $a1, 0x44($sp)
 /* 0043C594 AFA7004C */  sw    $a3, 0x4c($sp)
 /* 0043C598 AFA2003C */  sw    $v0, 0x3c($sp)
-/* 0043C59C 00068023 */  negu  $s0, $a2
-/* 0043C5A0 AFA80034 */  sw    $t0, 0x34($sp)
-/* 0043C5A4 0320F809 */  jalr  $t9
+#/* 0043C59C 00068023 */  negu  $s0, $a2
+                          move $s0, $a2
+#/* 0043C5A0 AFA80034 */  sw    $t0, 0x34($sp)
+#/* 0043C5A4 0320F809 */  jalr  $t9
 /* 0043C5A8 AFA40040 */   sw    $a0, 0x40($sp)
 /* 0043C5AC 8FBC0018 */  lw    $gp, 0x18($sp)
 /* 0043C5B0 8FA40040 */  lw    $a0, 0x40($sp)
 /* 0043C5B4 93A6004F */  lbu   $a2, 0x4f($sp)
-/* 0043C5B8 10400012 */  beqz  $v0, .L0043C604
-/* 0043C5BC 8FA80034 */   lw    $t0, 0x34($sp)
-/* 0043C5C0 24050001 */  li    $a1, 1
-/* 0043C5C4 10850025 */  beq   $a0, $a1, .L0043C65C
-/* 0043C5C8 3C0348C2 */   lui   $v1, 0x48c2
-/* 0043C5CC 34637395 */  ori   $v1, $v1, 0x7395
-/* 0043C5D0 24020005 */  li    $v0, 5
-.L0043C5D4:
-/* 0043C5D4 15030003 */  bne   $t0, $v1, .L0043C5E4
-/* 0043C5D8 00000000 */   nop   
-/* 0043C5DC 10000126 */  b     .L0043CA78
-/* 0043C5E0 00001025 */   move  $v0, $zero
-.L0043C5E4:
-/* 0043C5E4 01020019 */  multu $t0, $v0
-/* 0043C5E8 00042043 */  sra   $a0, $a0, 1
-/* 0043C5EC 2610FFFF */  addiu $s0, $s0, -1
-/* 0043C5F0 00004012 */  mflo  $t0
-/* 0043C5F4 1485FFF7 */  bne   $a0, $a1, .L0043C5D4
-/* 0043C5F8 00000000 */   nop   
-/* 0043C5FC 10000017 */  b     .L0043C65C
-/* 0043C600 00000000 */   nop   
-.L0043C604:
-/* 0043C604 24050001 */  li    $a1, 1
-/* 0043C608 10850014 */  beq   $a0, $a1, .L0043C65C
-/* 0043C60C 3C034000 */   lui   $v1, 0x4000
-/* 0043C610 24020005 */  li    $v0, 5
-.L0043C614:
-/* 0043C614 15030003 */  bne   $t0, $v1, .L0043C624
-/* 0043C618 00000000 */   nop   
-/* 0043C61C 10000116 */  b     .L0043CA78
-/* 0043C620 00001025 */   move  $v0, $zero
-.L0043C624:
-/* 0043C624 0082001A */  div   $zero, $a0, $v0
-/* 0043C628 14400002 */  bnez  $v0, .L0043C634
-/* 0043C62C 00000000 */   nop   
-/* 0043C630 0007000D */  break 7
-.L0043C634:
-/* 0043C634 2401FFFF */  li    $at, -1
-/* 0043C638 14410004 */  bne   $v0, $at, .L0043C64C
-/* 0043C63C 3C018000 */   lui   $at, 0x8000
-/* 0043C640 14810002 */  bne   $a0, $at, .L0043C64C
-/* 0043C644 00000000 */   nop   
-/* 0043C648 0006000D */  break 6
-.L0043C64C:
-/* 0043C64C 00002012 */  mflo  $a0
-/* 0043C650 00084040 */  sll   $t0, $t0, 1
-/* 0043C654 1485FFEF */  bne   $a0, $a1, .L0043C614
-/* 0043C658 2610FFFF */   addiu $s0, $s0, -1
-.L0043C65C:
+
+                         lw $t0, %got(gsp34)($gp)
+                         lw $t0, ($t0)
+                         sw $t0, 0x34($sp)
+
+#/* 0043C5B8 10400012 */  beqz  $v0, .L0043C604
+#/* 0043C5BC 8FA80034 */   lw    $t0, 0x34($sp)
+#/* 0043C5C0 24050001 */  li    $a1, 1
+#/* 0043C5C4 10850025 */  beq   $a0, $a1, .L0043C65C
+#/* 0043C5C8 3C0348C2 */   lui   $v1, 0x48c2
+#/* 0043C5CC 34637395 */  ori   $v1, $v1, 0x7395
+#/* 0043C5D0 24020005 */  li    $v0, 5
+#.L0043C5D4:
+#/* 0043C5D4 15030003 */  bne   $t0, $v1, .L0043C5E4
+#/* 0043C5D8 00000000 */   nop   
+#/* 0043C5DC 10000126 */  b     .L0043CA78
+#/* 0043C5E0 00001025 */   move  $v0, $zero
+#.L0043C5E4:
+#/* 0043C5E4 01020019 */  multu $t0, $v0
+#/* 0043C5E8 00042043 */  sra   $a0, $a0, 1
+#/* 0043C5EC 2610FFFF */  addiu $s0, $s0, -1
+#/* 0043C5F0 00004012 */  mflo  $t0
+#/* 0043C5F4 1485FFF7 */  bne   $a0, $a1, .L0043C5D4
+#/* 0043C5F8 00000000 */   nop   
+#/* 0043C5FC 10000017 */  b     .L0043C65C
+#/* 0043C600 00000000 */   nop   
+#.L0043C604:
+#/* 0043C604 24050001 */  li    $a1, 1
+#/* 0043C608 10850014 */  beq   $a0, $a1, .L0043C65C
+#/* 0043C60C 3C034000 */   lui   $v1, 0x4000
+#/* 0043C610 24020005 */  li    $v0, 5
+#.L0043C614:
+#/* 0043C614 15030003 */  bne   $t0, $v1, .L0043C624
+#/* 0043C618 00000000 */   nop   
+#/* 0043C61C 10000116 */  b     .L0043CA78
+#/* 0043C620 00001025 */   move  $v0, $zero
+#.L0043C624:
+#/* 0043C624 0082001A */  div   $zero, $a0, $v0
+#/* 0043C628 14400002 */  bnez  $v0, .L0043C634
+#/* 0043C62C 00000000 */   nop   
+#/* 0043C630 0007000D */  break 7
+#.L0043C634:
+#/* 0043C634 2401FFFF */  li    $at, -1
+#/* 0043C638 14410004 */  bne   $v0, $at, .L0043C64C
+#/* 0043C63C 3C018000 */   lui   $at, 0x8000
+#/* 0043C640 14810002 */  bne   $a0, $at, .L0043C64C
+#/* 0043C644 00000000 */   nop   
+#/* 0043C648 0006000D */  break 6
+#.L0043C64C:
+#/* 0043C64C 00002012 */  mflo  $a0
+#/* 0043C650 00084040 */  sll   $t0, $t0, 1
+#/* 0043C654 1485FFEF */  bne   $a0, $a1, .L0043C614
+#/* 0043C658 2610FFFF */   addiu $s0, $s0, -1
+#.L0043C65C:
+
 /* 0043C65C 8F898DA4 */  lw     $t1, %got(u)($gp)
-/* 0043C660 240E0049 */  li    $t6, 73
-/* 0043C664 2401000D */  li    $at, 13
-/* 0043C668 91220001 */  lbu   $v0, 1($t1)
-/* 0043C66C A12E0000 */  sb    $t6, ($t1)
+#    lw $t2, %got(ustrptr)($gp)
+#    lw $t2, ($t2)
+
+#/* 0043C660 240E0049 */  li    $t6, 73
+#/* 0043C664 2401000D */  li    $at, 13
+#/* 0043C668 91220001 */  lbu   $v0, 1($t1)
+#/* 0043C66C A12E0000 */  sb    $t6, ($t1)
 /* 0043C670 2407000A */  li    $a3, 10
-/* 0043C674 00027EC0 */  sll   $t7, $v0, 0x1b
-/* 0043C678 000FC6C2 */  srl   $t8, $t7, 0x1b
-/* 0043C67C 00D8C826 */  xor   $t9, $a2, $t8
-/* 0043C680 332E001F */  andi  $t6, $t9, 0x1f
-/* 0043C684 01C27826 */  xor   $t7, $t6, $v0
-/* 0043C688 14C10004 */  bne   $a2, $at, .L0043C69C
-/* 0043C68C A12F0001 */   sb    $t7, 1($t1)
-/* 0043C690 24180004 */  li    $t8, 4
-/* 0043C694 10000003 */  b     .L0043C6A4
-/* 0043C698 AD380008 */   sw    $t8, 8($t1)
-.L0043C69C:
-/* 0043C69C 24190008 */  li    $t9, 8
-/* 0043C6A0 AD390008 */  sw    $t9, 8($t1)
-.L0043C6A4:
-/* 0043C6A4 93AE0047 */  lbu   $t6, 0x47($sp)
-/* 0043C6A8 AD200010 */  sw    $zero, 0x10($t1)
+#/* 0043C674 00027EC0 */  sll   $t7, $v0, 0x1b
+#/* 0043C678 000FC6C2 */  srl   $t8, $t7, 0x1b
+#/* 0043C67C 00D8C826 */  xor   $t9, $a2, $t8
+#/* 0043C680 332E001F */  andi  $t6, $t9, 0x1f
+#/* 0043C684 01C27826 */  xor   $t7, $t6, $v0
+#/* 0043C688 14C10004 */  bne   $a2, $at, .L0043C69C
+#/* 0043C68C A12F0001 */   sb    $t7, 1($t1)
+#/* 0043C690 24180004 */  li    $t8, 4
+#/* 0043C694 10000003 */  b     .L0043C6A4
+#/* 0043C698 AD380008 */   sw    $t8, 8($t1)
+#.L0043C69C:
+#/* 0043C69C 24190008 */  li    $t9, 8
+#/* 0043C6A0 AD390008 */  sw    $t9, 8($t1)
+#.L0043C6A4:
+#/* 0043C6A4 93AE0047 */  lbu   $t6, 0x47($sp)
+#/* 0043C6A8 AD200010 */  sw    $zero, 0x10($t1)
 /* 0043C6AC 24020001 */  li    $v0, 1
-/* 0043C6B0 11C00006 */  beqz  $t6, .L0043C6CC
+#/* 0043C6B0 11C00006 */  beqz  $t6, .L0043C6CC
 /* 0043C6B4 3C043B9A */   lui   $a0, 0x3b9a
-/* 0043C6B8 8F988950 */  lw     $t8, %got(ustrptr)($gp)
-/* 0043C6BC AD250010 */  sw    $a1, 0x10($t1)
-/* 0043C6C0 240F002D */  li    $t7, 45
-/* 0043C6C4 8F180000 */  lw    $t8, ($t8)
-/* 0043C6C8 A30F0000 */  sb    $t7, ($t8)
-.L0043C6CC:
+#/* 0043C6B8 8F988950 */  lw     $t8, %got(ustrptr)($gp)
+#/* 0043C6BC AD250010 */  sw    $a1, 0x10($t1)
+#/* 0043C6C0 240F002D */  li    $t7, 45
+#/* 0043C6C4 8F180000 */  lw    $t8, ($t8)
+#/* 0043C6C8 A30F0000 */  sb    $t7, ($t8)
+#.L0043C6CC:
+
+                         lw $a1, %got(gdone)($gp)
+                         lw $a1, ($a1)
+                         andi $a1, $a1, 0xff
+
 /* 0043C6CC 8F8A8950 */  lw     $t2, %got(ustrptr)($gp)
-/* 0043C6D0 00002825 */  move  $a1, $zero
-/* 0043C6D4 3484CA00 */  ori   $a0, $a0, 0xca00
+#/* 0043C6D0 00002825 */  move  $a1, $zero
+#/* 0043C6D4 3484CA00 */  ori   $a0, $a0, 0xca00
 /* 0043C6D8 8D4A0000 */  lw    $t2, ($t2)
-.L0043C6DC:
-/* 0043C6DC 00470019 */  multu $v0, $a3
-/* 0043C6E0 00001812 */  mflo  $v1
-/* 0043C6E4 0103082A */  slt   $at, $t0, $v1
-/* 0043C6E8 14200003 */  bnez  $at, .L0043C6F8
-/* 0043C6EC 00000000 */   nop   
-/* 0043C6F0 54440004 */  bnel  $v0, $a0, .L0043C704
-/* 0043C6F4 00601025 */   move  $v0, $v1
-.L0043C6F8:
-/* 0043C6F8 10000002 */  b     .L0043C704
-/* 0043C6FC 24050001 */   li    $a1, 1
-/* 0043C700 00601025 */  move  $v0, $v1
-.L0043C704:
-/* 0043C704 10A0FFF5 */  beqz  $a1, .L0043C6DC
-/* 0043C708 00000000 */   nop   
+#.L0043C6DC:
+#/* 0043C6DC 00470019 */  multu $v0, $a3
+#/* 0043C6E0 00001812 */  mflo  $v1
+#/* 0043C6E4 0103082A */  slt   $at, $t0, $v1
+#/* 0043C6E8 14200003 */  bnez  $at, .L0043C6F8
+#/* 0043C6EC 00000000 */   nop   
+#/* 0043C6F0 54440004 */  bnel  $v0, $a0, .L0043C704
+#/* 0043C6F4 00601025 */   move  $v0, $v1
+#.L0043C6F8:
+#/* 0043C6F8 10000002 */  b     .L0043C704
+#/* 0043C6FC 24050001 */   li    $a1, 1
+#/* 0043C700 00601025 */  move  $v0, $v1
+#.L0043C704:
+#/* 0043C704 10A0FFF5 */  beqz  $a1, .L0043C6DC
+#/* 0043C708 00000000 */   nop   
 /* 0043C70C 01002025 */  move  $a0, $t0
 /* 0043C710 8D260010 */  lw    $a2, 0x10($t1)
+
+                         lw $v0, %got(gExponent)($gp)
+                         lw $v0, ($v0)
+
 .L0043C714:
 /* 0043C714 0082001A */  div   $zero, $a0, $v0
 /* 0043C718 24D90001 */  addiu $t9, $a2, 1
@@ -2741,8 +3702,13 @@ func_0043C56C:
 /* 0043C7A8 24CF0002 */  addiu $t7, $a2, 2
 /* 0043C7AC A0790000 */  sb    $t9, ($v1)
 /* 0043C7B0 A06E0001 */  sb    $t6, 1($v1)
+
+
+#lw $t7, 0x10($t1)
+#li $a3, 10
 /* 0043C7B4 1200003F */  beqz  $s0, .L0043C8B4
-/* 0043C7B8 AD2F0010 */   sw    $t7, 0x10($t1)
+#nop
+/* 0043C7B8 AD2F0010 */   sw    $t7, 0x10($t1)    #!
 /* 0043C7BC 01E0C025 */  move  $t8, $t7
 /* 0043C7C0 25F90001 */  addiu $t9, $t7, 1
 /* 0043C7C4 01597821 */  addu  $t7, $t2, $t9
@@ -2816,134 +3782,202 @@ func_0043C56C:
 /* 0043C8AC 1440FFDF */  bnez  $v0, .L0043C82C
 /* 0043C8B0 00000000 */   nop   
 .L0043C8B4:
-/* 0043C8B4 8F998648 */  lw    $t9, %call16(realhash)($gp)
-/* 0043C8B8 8D240010 */  lw    $a0, 0x10($t1)
-/* 0043C8BC AFA80034 */  sw    $t0, 0x34($sp)
-/* 0043C8C0 0320F809 */  jalr  $t9
-/* 0043C8C4 00000000 */   nop   
-/* 0043C8C8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0043C8CC 3044FFFF */  andi  $a0, $v0, 0xffff
-/* 0043C8D0 8FA2003C */  lw    $v0, 0x3c($sp)
-/* 0043C8D4 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
-/* 0043C8D8 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
-/* 0043C8DC 0320F809 */  jalr  $t9
-/* 0043C8E0 00000000 */   nop   
-/* 0043C8E4 90580000 */  lbu   $t8, ($v0)
-/* 0043C8E8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0043C8EC 8FA80034 */  lw    $t0, 0x34($sp)
-/* 0043C8F0 00405825 */  move  $t3, $v0
-/* 0043C8F4 1700005F */  bnez  $t8, .L0043CA74
-/* 0043C8F8 8F898DA4 */   lw     $t1, %got(u)($gp)
-/* 0043C8FC 24190002 */  li    $t9, 2
-/* 0043C900 A0590000 */  sb    $t9, ($v0)
-/* 0043C904 912E0001 */  lbu   $t6, 1($t1)
-/* 0043C908 8F8A8994 */  lw     $t2, %got(realdispmod)($gp)
-/* 0043C90C 31CF001F */  andi  $t7, $t6, 0x1f
-/* 0043C910 A04F0001 */  sb    $t7, 1($v0)
-/* 0043C914 8D260010 */  lw    $a2, 0x10($t1)
-/* 0043C918 914A0000 */  lbu   $t2, ($t2)
-/* 0043C91C 01466821 */  addu  $t5, $t2, $a2
-/* 0043C920 29A10100 */  slti  $at, $t5, 0x100
-/* 0043C924 1420001B */  bnez  $at, .L0043C994
-/* 0043C928 00000000 */   nop   
-/* 0043C92C 8F828990 */  lw     $v0, %got(realdispdiv)($gp)
-/* 0043C930 8F818994 */  lw     $at, %got(realdispmod)($gp)
-/* 0043C934 24040104 */  li    $a0, 260
-/* 0043C938 8C580000 */  lw    $t8, ($v0)
-/* 0043C93C 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 0043C940 AFA80034 */  sw    $t0, 0x34($sp)
-/* 0043C944 27190001 */  addiu $t9, $t8, 1
-/* 0043C948 AC590000 */  sw    $t9, ($v0)
-/* 0043C94C 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0043C950 AFAB0020 */  sw    $t3, 0x20($sp)
-/* 0043C954 A0200000 */  sb    $zero, ($at)
-/* 0043C958 0320F809 */  jalr  $t9
-/* 0043C95C 00000000 */   nop   
-/* 0043C960 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0043C964 8FA80034 */  lw    $t0, 0x34($sp)
-/* 0043C968 8FAB0020 */  lw    $t3, 0x20($sp)
-/* 0043C96C 8F83898C */  lw     $v1, %got(currealpool)($gp)
-/* 0043C970 8F898DA4 */  lw     $t1, %got(u)($gp)
-/* 0043C974 8F8A8994 */  lw     $t2, %got(realdispmod)($gp)
-/* 0043C978 8C6E0000 */  lw    $t6, ($v1)
-/* 0043C97C ADC20100 */  sw    $v0, 0x100($t6)
-/* 0043C980 AC620000 */  sw    $v0, ($v1)
-/* 0043C984 AC400100 */  sw    $zero, 0x100($v0)
-/* 0043C988 8D260010 */  lw    $a2, 0x10($t1)
-/* 0043C98C 914A0000 */  lbu   $t2, ($t2)
-/* 0043C990 01466821 */  addu  $t5, $t2, $a2
-.L0043C994:
-/* 0043C994 8F83898C */  lw     $v1, %got(currealpool)($gp)
-/* 0043C998 00C03825 */  move  $a3, $a2
-/* 0043C99C 18C00023 */  blez  $a2, .L0043CA2C
-/* 0043C9A0 8C7F0000 */   lw    $ra, ($v1)
-/* 0043C9A4 24E70001 */  addiu $a3, $a3, 1
-/* 0043C9A8 24ECFFFF */  addiu $t4, $a3, -1
-/* 0043C9AC 318C0003 */  andi  $t4, $t4, 3
-/* 0043C9B0 1180000E */  beqz  $t4, .L0043C9EC
-/* 0043C9B4 24040001 */   li    $a0, 1
-/* 0043C9B8 8F988950 */  lw     $t8, %got(ustrptr)($gp)
-/* 0043C9BC 25820001 */  addiu $v0, $t4, 1
-/* 0043C9C0 03EA2821 */  addu  $a1, $ra, $t2
-/* 0043C9C4 8F180000 */  lw    $t8, ($t8)
-/* 0043C9C8 03041821 */  addu  $v1, $t8, $a0
-.L0043C9CC:
-/* 0043C9CC 9079FFFF */  lbu   $t9, -1($v1)
-/* 0043C9D0 00A47021 */  addu  $t6, $a1, $a0
-/* 0043C9D4 24840001 */  addiu $a0, $a0, 1
-/* 0043C9D8 24630001 */  addiu $v1, $v1, 1
-/* 0043C9DC 1444FFFB */  bne   $v0, $a0, .L0043C9CC
-/* 0043C9E0 A1D9FFFF */   sb    $t9, -1($t6)
-/* 0043C9E4 10870011 */  beq   $a0, $a3, .L0043CA2C
-/* 0043C9E8 00000000 */   nop   
-.L0043C9EC:
-/* 0043C9EC 8F8F8950 */  lw     $t7, %got(ustrptr)($gp)
-/* 0043C9F0 03EA2821 */  addu  $a1, $ra, $t2
-/* 0043C9F4 8DEF0000 */  lw    $t7, ($t7)
-/* 0043C9F8 01E41821 */  addu  $v1, $t7, $a0
-.L0043C9FC:
-/* 0043C9FC 9078FFFF */  lbu   $t8, -1($v1)
-/* 0043CA00 00A41021 */  addu  $v0, $a1, $a0
-/* 0043CA04 24840004 */  addiu $a0, $a0, 4
-/* 0043CA08 A058FFFF */  sb    $t8, -1($v0)
-/* 0043CA0C 90790000 */  lbu   $t9, ($v1)
-/* 0043CA10 24630004 */  addiu $v1, $v1, 4
-/* 0043CA14 A0590000 */  sb    $t9, ($v0)
-/* 0043CA18 906EFFFD */  lbu   $t6, -3($v1)
-/* 0043CA1C A04E0001 */  sb    $t6, 1($v0)
-/* 0043CA20 906FFFFE */  lbu   $t7, -2($v1)
-/* 0043CA24 1487FFF5 */  bne   $a0, $a3, .L0043C9FC
-/* 0043CA28 A04F0002 */   sb    $t7, 2($v0)
-.L0043CA2C:
-/* 0043CA2C 8F988990 */  lw     $t8, %got(realdispdiv)($gp)
-/* 0043CA30 93AF0047 */  lbu   $t7, 0x47($sp)
-/* 0043CA34 8F818994 */  lw     $at, %got(realdispmod)($gp)
-/* 0043CA38 8F180000 */  lw    $t8, ($t8)
-/* 0043CA3C A5660022 */  sh    $a2, 0x22($t3)
-/* 0043CA40 0018CA00 */  sll   $t9, $t8, 8
-/* 0043CA44 032A7021 */  addu  $t6, $t9, $t2
-/* 0043CA48 A56E0020 */  sh    $t6, 0x20($t3)
-/* 0043CA4C 11E00004 */  beqz  $t7, .L0043CA60
-/* 0043CA50 A02D0000 */   sb    $t5, ($at)
-/* 0043CA54 0008C023 */  negu  $t8, $t0
-/* 0043CA58 10000002 */  b     .L0043CA64
-/* 0043CA5C AD78002C */   sw    $t8, 0x2c($t3)
-.L0043CA60:
-/* 0043CA60 AD68002C */  sw    $t0, 0x2c($t3)
-.L0043CA64:
-/* 0043CA64 8D390008 */  lw    $t9, 8($t1)
-/* 0043CA68 AD700030 */  sw    $s0, 0x30($t3)
-/* 0043CA6C AD600018 */  sw    $zero, 0x18($t3)
-/* 0043CA70 AD790028 */  sw    $t9, 0x28($t3)
-.L0043CA74:
-/* 0043CA74 01601025 */  move  $v0, $t3
-.L0043CA78:
+
+lw $at, %got(gsp34)($gp)
+sw $t0, ($at)
+
+lw $at, %got(gs0)($gp)
+sw $s0, ($at)
+
+
+#/* 0043C8B4 8F998648 */  lw    $t9, %call16(realhash)($gp)
+#/* 0043C8B8 8D240010 */  lw    $a0, 0x10($t1)
+#/* 0043C8BC AFA80034 */  sw    $t0, 0x34($sp)
+#/* 0043C8C0 0320F809 */  jalr  $t9
+#/* 0043C8C4 00000000 */   nop   
+#/* 0043C8C8 8FBC0018 */  lw    $gp, 0x18($sp)
+#/* 0043C8CC 3044FFFF */  andi  $a0, $v0, 0xffff
+#/* 0043C8D0 8FA2003C */  lw    $v0, 0x3c($sp)
+#
+######### Passing Shared Stack through Args ########
+#                        lw $at, %got(gVar)($gp)
+#                        lw $a1, ($at)
+#
+#                        lw $at, %got(gStexpr1)($gp)
+#                        lw $a2, ($at)
+#
+#                        lw $at, %got(gStexpr2)($gp)
+#                        lw $a3, ($at)
+#
+##/*                   */  addiu $a1, $v0, -0x2c
+##/*                   */  lw $a2, -0x18($v0)
+##/*                   */  lw $a3, -0x1c($v0)
+#
+######### Passing Shared Stack through Args ########
+#/* 0043C8D4 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
+#/* 0043C8D8 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
+#/* 0043C8DC 0320F809 */  jalr  $t9
+#/* 0043C8E0 00000000 */   nop   
+#/* 0043C8E4 90580000 */  lbu   $t8, ($v0)
+#/* 0043C8E8 8FBC0018 */  lw    $gp, 0x18($sp)
+#/* 0043C8EC 8FA80034 */  lw    $t0, 0x34($sp)
+#/* 0043C8F0 00405825 */  move  $t3, $v0
+#/* 0043C8F4 1700005F */  bnez  $t8, .L0043CA74
+#/* 0043C8F8 8F898DA4 */   lw     $t1, %got(u)($gp)
+#/* 0043C8FC 24190002 */  li    $t9, 2
+#/* 0043C900 A0590000 */  sb    $t9, ($v0)
+#/* 0043C904 912E0001 */  lbu   $t6, 1($t1)
+#/* 0043C908 8F8A8994 */  lw     $t2, %got(realdispmod)($gp)
+#/* 0043C90C 31CF001F */  andi  $t7, $t6, 0x1f
+#/* 0043C910 A04F0001 */  sb    $t7, 1($v0)
+#/* 0043C914 8D260010 */  lw    $a2, 0x10($t1)
+#/* 0043C918 914A0000 */  lbu   $t2, ($t2)
+#/* 0043C91C 01466821 */  addu  $t5, $t2, $a2
+#/* 0043C920 29A10100 */  slti  $at, $t5, 0x100
+#/* 0043C924 1420001B */  bnez  $at, .L0043C994
+#/* 0043C928 00000000 */   nop   
+#/* 0043C92C 8F828990 */  lw     $v0, %got(realdispdiv)($gp)
+#/* 0043C930 8F818994 */  lw     $at, %got(realdispmod)($gp)
+#/* 0043C934 24040104 */  li    $a0, 260
+#/* 0043C938 8C580000 */  lw    $t8, ($v0)
+#/* 0043C93C 8F858954 */  lw     $a1, %got(perm_heap)($gp)
+#/* 0043C940 AFA80034 */  sw    $t0, 0x34($sp)
+#/* 0043C944 27190001 */  addiu $t9, $t8, 1
+#/* 0043C948 AC590000 */  sw    $t9, ($v0)
+#/* 0043C94C 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
+#/* 0043C950 AFAB0020 */  sw    $t3, 0x20($sp)
+#/* 0043C954 A0200000 */  sb    $zero, ($at)
+#/* 0043C958 0320F809 */  jalr  $t9
+#/* 0043C95C 00000000 */   nop   
+#/* 0043C960 8FBC0018 */  lw    $gp, 0x18($sp)
+#/* 0043C964 8FA80034 */  lw    $t0, 0x34($sp)
+#/* 0043C968 8FAB0020 */  lw    $t3, 0x20($sp)
+#/* 0043C96C 8F83898C */  lw     $v1, %got(currealpool)($gp)
+#/* 0043C970 8F898DA4 */  lw     $t1, %got(u)($gp)
+#/* 0043C974 8F8A8994 */  lw     $t2, %got(realdispmod)($gp)
+#/* 0043C978 8C6E0000 */  lw    $t6, ($v1)
+#/* 0043C97C ADC20100 */  sw    $v0, 0x100($t6)
+#/* 0043C980 AC620000 */  sw    $v0, ($v1)
+#/* 0043C984 AC400100 */  sw    $zero, 0x100($v0)
+#/* 0043C988 8D260010 */  lw    $a2, 0x10($t1)
+#/* 0043C98C 914A0000 */  lbu   $t2, ($t2)
+#/* 0043C990 01466821 */  addu  $t5, $t2, $a2
+#.L0043C994:
+#/* 0043C994 8F83898C */  lw     $v1, %got(currealpool)($gp)
+#/* 0043C998 00C03825 */  move  $a3, $a2
+#/* 0043C99C 18C00023 */  blez  $a2, .L0043CA2C
+#/* 0043C9A0 8C7F0000 */   lw    $ra, ($v1)
+#/* 0043C9A4 24E70001 */  addiu $a3, $a3, 1
+#/* 0043C9A8 24ECFFFF */  addiu $t4, $a3, -1
+#/* 0043C9AC 318C0003 */  andi  $t4, $t4, 3
+#/* 0043C9B0 1180000E */  beqz  $t4, .L0043C9EC
+#/* 0043C9B4 24040001 */   li    $a0, 1
+#/* 0043C9B8 8F988950 */  lw     $t8, %got(ustrptr)($gp)
+#/* 0043C9BC 25820001 */  addiu $v0, $t4, 1
+#/* 0043C9C0 03EA2821 */  addu  $a1, $ra, $t2
+#/* 0043C9C4 8F180000 */  lw    $t8, ($t8)
+#/* 0043C9C8 03041821 */  addu  $v1, $t8, $a0
+#.L0043C9CC:
+#/* 0043C9CC 9079FFFF */  lbu   $t9, -1($v1)
+#/* 0043C9D0 00A47021 */  addu  $t6, $a1, $a0
+#/* 0043C9D4 24840001 */  addiu $a0, $a0, 1
+#/* 0043C9D8 24630001 */  addiu $v1, $v1, 1
+#/* 0043C9DC 1444FFFB */  bne   $v0, $a0, .L0043C9CC
+#/* 0043C9E0 A1D9FFFF */   sb    $t9, -1($t6)
+#/* 0043C9E4 10870011 */  beq   $a0, $a3, .L0043CA2C
+#/* 0043C9E8 00000000 */   nop   
+#.L0043C9EC:
+#/* 0043C9EC 8F8F8950 */  lw     $t7, %got(ustrptr)($gp)
+#/* 0043C9F0 03EA2821 */  addu  $a1, $ra, $t2
+#/* 0043C9F4 8DEF0000 */  lw    $t7, ($t7)
+#/* 0043C9F8 01E41821 */  addu  $v1, $t7, $a0
+#.L0043C9FC:
+#/* 0043C9FC 9078FFFF */  lbu   $t8, -1($v1)
+#/* 0043CA00 00A41021 */  addu  $v0, $a1, $a0
+#/* 0043CA04 24840004 */  addiu $a0, $a0, 4
+#/* 0043CA08 A058FFFF */  sb    $t8, -1($v0)
+#/* 0043CA0C 90790000 */  lbu   $t9, ($v1)
+#/* 0043CA10 24630004 */  addiu $v1, $v1, 4
+#/* 0043CA14 A0590000 */  sb    $t9, ($v0)
+#/* 0043CA18 906EFFFD */  lbu   $t6, -3($v1)
+#/* 0043CA1C A04E0001 */  sb    $t6, 1($v0)
+#/* 0043CA20 906FFFFE */  lbu   $t7, -2($v1)
+#/* 0043CA24 1487FFF5 */  bne   $a0, $a3, .L0043C9FC
+#/* 0043CA28 A04F0002 */   sb    $t7, 2($v0)
+#.L0043CA2C:
+#/* 0043CA2C 8F988990 */  lw     $t8, %got(realdispdiv)($gp)
+#/* 0043CA30 93AF0047 */  lbu   $t7, 0x47($sp)
+#/* 0043CA34 8F818994 */  lw     $at, %got(realdispmod)($gp)
+#/* 0043CA38 8F180000 */  lw    $t8, ($t8)
+#/* 0043CA3C A5660022 */  sh    $a2, 0x22($t3)
+#/* 0043CA40 0018CA00 */  sll   $t9, $t8, 8
+#/* 0043CA44 032A7021 */  addu  $t6, $t9, $t2
+#/* 0043CA48 A56E0020 */  sh    $t6, 0x20($t3)
+#/* 0043CA4C 11E00004 */  beqz  $t7, .L0043CA60
+#/* 0043CA50 A02D0000 */   sb    $t5, ($at)
+#/* 0043CA54 0008C023 */  negu  $t8, $t0
+#/* 0043CA58 10000002 */  b     .L0043CA64
+#/* 0043CA5C AD78002C */   sw    $t8, 0x2c($t3)
+#.L0043CA60:
+#/* 0043CA60 AD68002C */  sw    $t0, 0x2c($t3)
+#.L0043CA64:
+#/* 0043CA64 8D390008 */  lw    $t9, 8($t1)
+#/* 0043CA68 AD700030 */  sw    $s0, 0x30($t3)
+#/* 0043CA6C AD600018 */  sw    $zero, 0x18($t3)
+#/* 0043CA70 AD790028 */  sw    $t9, 0x28($t3)
+#.L0043CA74:
+#/* 0043CA74 01601025 */  move  $v0, $t3
+#.L0043CA78:
 /* 0043CA78 8FBF001C */  lw    $ra, 0x1c($sp)
 /* 0043CA7C 8FB00014 */  lw    $s0, 0x14($sp)
 /* 0043CA80 27BD0040 */  addiu $sp, $sp, 0x40
 /* 0043CA84 03E00008 */  jr    $ra
 /* 0043CA88 00000000 */   nop   
+    .type func_0043C56C_asm, @function
+    .size func_0043C56C_asm, .-func_0043C56C_asm
+    .end func_0043C56C_asm
+)"");
+#endif
 
+static void func_0043CA8C(struct IjpLabel *ijp) {
+    struct Graphnode *targetnode;
+    struct GraphnodeList *predecessors;
+    struct GraphnodeList *successors;
+
+    while (ijp != NULL) {
+        targetnode = ingraph(ijp->num);
+        if (targetnode == NULL) {
+            appendgraph();
+            if (outofmem) {
+                return;
+            }
+            targetnode = graphtail;
+            targetnode->blockno = ijp->num;
+        }
+
+        predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+        if (predecessors == NULL) {
+            outofmem = true;
+            return;
+        }
+        predecessors->graphnode = curgraphnode;
+        predecessors->next = targetnode->predecessors;
+        targetnode->predecessors = predecessors;
+
+        successors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+        if (successors == NULL) {
+            outofmem = true;
+            return;
+        }
+        successors->graphnode = targetnode;
+        successors->next = curgraphnode->successors;
+        curgraphnode->successors = successors;
+
+        func_0043CA8C(ijp->left);
+        ijp = ijp->right;
+    }
+}
+#if 0
     .type func_0043CA8C, @function
 func_0043CA8C:
     # 0043CA8C func_0043CA8C
@@ -3046,7 +4080,72 @@ func_0043CA8C:
 /* 0043CBF0 8FBE0038 */  lw    $fp, 0x38($sp)
 /* 0043CBF4 03E00008 */  jr    $ra
 /* 0043CBF8 27BD0040 */   addiu $sp, $sp, 0x40
+#endif
 
+static void func_0043CBFC(struct UstackEntry *head) {
+    struct VariableInner var_data;
+    unsigned short varhash;
+    struct Expression *var;
+    bool found;
+
+    if (head->expr->data.isvar_issvar.var_data.blockno != staticlinkloc) {
+        decreasecount(head->expr);
+        var_data.addr = staticlinkloc;
+        var_data.blockno = curblk;
+        var_data.memtype = Mmt;
+        varhash = isvarhash(var_data);
+        var = table[varhash];
+        found = false;
+        while (!found && var != NULL) {
+            if (var->graphnode == curgraphnode
+                    && var->type == isvar
+                    && addreq(var->data.isvar_issvar.var_data, var_data)) {
+                found = true;
+            }
+            if (!found) {
+                var = var->next;
+            }
+        }
+
+        if (!found) {
+            var = appendchain(varhash);
+            if (outofmem) {
+                return;
+            }
+
+            var->data.isvar_issvar.unk21 = false;
+            var->data.isvar_issvar.unk22 = true;
+            var->graphnode = curgraphnode;
+        }
+
+        if (var->type == empty) {
+            var->type = isvar;
+            var->data.isvar_issvar.unk38 = NULL;
+            var->datatype = Adt;
+            var->data.isvar_issvar.size = 4;
+            var->count = 0;
+            var->data.isvar_issvar.unk30 = NULL;
+            var->data.isvar_issvar.unk24 = NULL;
+            var->unk2 = false;
+            var->unk3 = true;
+            var->data.isvar_issvar.is_volatile = false;
+            var->data.isvar_issvar.var_data = var_data;
+        }
+
+        head->expr = var;
+        increasecount(var);
+
+        if (var->count == 1) {
+            appendbbvarlst(var);
+            curgraphnode->varlisttail->unk8 = true;
+        }
+    }
+
+    head->expr->data.isvar_issvar.var_data.level = 0xC8;
+    head->expr->data.isvar_issvar.unk22 = true;
+}
+
+#if 0
     .type func_0043CBFC, @function
 func_0043CBFC:
     # 0043CFCC readnxtinst
@@ -3212,7 +4311,33 @@ func_0043CBFC:
 /* 0043CE58 8FB40024 */  lw    $s4, 0x24($sp)
 /* 0043CE5C 03E00008 */  jr    $ra
 /* 0043CE60 27BD0058 */   addiu $sp, $sp, 0x58
+#endif
 
+static bool func_0043CE64(struct Expression *stexpr1, int val) {
+    struct Expression *expr;
+    struct Statement *store;
+    struct VarAccessList *var;
+
+    var = curgraphnode->varlisttail;
+    while (var != NULL) {
+        if (var->type == 1) {
+            store = var->data.store;
+            if (store->opc == Uistr && stexpr1 == store->expr && val == store->u.store.u.istr.s.word && store->u.store.unk1F != 0 && DTYPE == store->u.store.u.istr.dtype && LENGTH == store->u.store.size && treekilled(store->u.store.expr) == 0) {
+                decreasecount(stexpr1);
+                expr = var->data.store->u.store.expr;
+                if (expr->type == isvar || expr->type == isop || expr->type == isilda || expr->type == issvar) {
+                    expr->count++;
+                }
+                ustack->expr = expr;
+                return true;
+            }
+        }
+        var = var->prev;
+    }
+    return false;
+}
+
+#if 0
     .type func_0043CE64, @function
 func_0043CE64:
     # 0043CFCC readnxtinst
@@ -3312,6 +4437,12 @@ func_0043CE64:
 /* 0043CFC0 8FB5002C */  lw    $s5, 0x2c($sp)
 /* 0043CFC4 03E00008 */  jr    $ra
 /* 0043CFC8 27BD0038 */   addiu $sp, $sp, 0x38
+#endif
+
+#if 1
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel readnxtinst
     .ent readnxtinst
@@ -3521,10 +4652,17 @@ glabel readnxtinst
 /* 0043D2D8 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043D2DC 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 0043D2E0 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 0043D2E4 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043D2E8 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 0043D2EC 0320F809 */  jalr  $t9
 /* 0043D2F0 00000000 */   nop   
+
 /* 0043D2F4 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043D2F8 0040A825 */  move  $s5, $v0
 /* 0043D2FC 8F8B8B20 */  lw     $t3, %got(outofmem)($gp)
@@ -3716,10 +4854,17 @@ glabel readnxtinst
 /* 0043D5BC 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043D5C0 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 0043D5C4 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 0043D5C8 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043D5CC 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 0043D5D0 0320F809 */  jalr  $t9
 /* 0043D5D4 00000000 */   nop   
+
 /* 0043D5D8 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043D5DC 0040A825 */  move  $s5, $v0
 /* 0043D5E0 8F8C8B20 */  lw     $t4, %got(outofmem)($gp)
@@ -4333,10 +5478,17 @@ glabel readnxtinst
 /* 0043DEB8 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043DEBC 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 0043DEC0 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 0043DEC4 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043DEC8 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 0043DECC 0320F809 */  jalr  $t9
 /* 0043DED0 00000000 */   nop   
+
 /* 0043DED4 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043DED8 0040A825 */  move  $s5, $v0
 /* 0043DEDC 8F8D8B20 */  lw     $t5, %got(outofmem)($gp)
@@ -4565,11 +5717,18 @@ glabel readnxtinst
 /* 0043E218 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043E21C 3044FFFF */  andi  $a0, $v0, 0xffff
 .L0043E220:
-/* 0043E220 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043E224 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
+/* 0043E220 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043E228 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 0043E22C 0320F809 */  jalr  $t9
 /* 0043E230 00000000 */   nop   
+
 /* 0043E234 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043E238 0040A825 */  move  $s5, $v0
 /* 0043E23C 8F998B20 */  lw     $t9, %got(outofmem)($gp)
@@ -4714,10 +5873,17 @@ glabel readnxtinst
 /* 0043E440 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043E444 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 0043E448 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 0043E44C 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043E450 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 0043E454 0320F809 */  jalr  $t9
 /* 0043E458 00000000 */   nop   
+
 /* 0043E45C 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043E460 0040A825 */  move  $s5, $v0
 /* 0043E464 8F8D8B20 */  lw     $t5, %got(outofmem)($gp)
@@ -5177,9 +6343,25 @@ glabel readnxtinst
 /* 0043EB10 AFB600F8 */  sw    $s6, 0xf8($sp)
 /* 0043EB14 14C00014 */  bnez  $a2, .L0043EB68
 /* 0043EB18 00000000 */   nop   
-/* 0043EB1C 8F998024 */  lw    $t9, %got(func_0043C56C)($gp)
 /* 0043EB20 93C70001 */  lbu   $a3, 1($fp)
 /* 0043EB24 27A20110 */  addiu $v0, $sp, 0x110
+####################### passing shared stack through global variables
+#/*                   */  addiu $a1, $sp, 0xe4
+#/*                   */  lw $a2, 0xf8($sp)
+#/*                   */  lw $a3, 0xf4($sp)
+                        lw $at, %got(gVar)($gp)
+                        addiu $t1, $sp, 0xe4
+                        sw $t1, ($at)
+
+                        lw $at, %got(gStexpr1)($gp)
+                        lw $t1, 0xf8($sp)
+                        sw $t1, ($at)
+
+                        lw $at, %got(gStexpr2)($gp)
+                        lw $t1, 0xf4($sp)
+                        sw $t1, ($at)
+
+/* 0043EB1C 8F998024 */  lw    $t9, %got(func_0043C56C)($gp)
 /* 0043EB28 2739C56C */  addiu $t9, %lo(func_0043C56C) # addiu $t9, $t9, -0x3a94
 /* 0043EB2C 0320F809 */  jalr  $t9
 /* 0043EB30 30E7001F */   andi  $a3, $a3, 0x1f
@@ -5315,9 +6497,14 @@ glabel readnxtinst
 /* 0043ED08 AE600004 */  sw    $zero, 4($s3)
 /* 0043ED0C 24190006 */  li    $t9, 6
 /* 0043ED10 A0590001 */  sb    $t9, 1($v0)
-/* 0043ED14 8F998024 */  lw    $t9, %got(func_0043C248)($gp)
 /* 0043ED18 27A20110 */  addiu $v0, $sp, 0x110
 /* 0043ED1C 02602025 */  move  $a0, $s3
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
+/* 0043ED14 8F998024 */  lw    $t9, %got(func_0043C248)($gp)
 /* 0043ED20 2739C248 */  addiu $t9, %lo(func_0043C248) # addiu $t9, $t9, -0x3db8
 /* 0043ED24 0320F809 */  jalr  $t9
 /* 0043ED28 00000000 */   nop   
@@ -5840,10 +7027,17 @@ glabel readnxtinst
 /* 0043F48C 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043F490 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 0043F494 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 0043F498 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043F49C 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 0043F4A0 0320F809 */  jalr  $t9
 /* 0043F4A4 00000000 */   nop   
+
 /* 0043F4A8 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043F4AC 0040A825 */  move  $s5, $v0
 /* 0043F4B0 8F8F8B20 */  lw     $t7, %got(outofmem)($gp)
@@ -5998,10 +7192,17 @@ glabel readnxtinst
 /* 0043F6D0 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043F6D4 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 0043F6D8 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 0043F6DC 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043F6E0 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 0043F6E4 0320F809 */  jalr  $t9
 /* 0043F6E8 00000000 */   nop   
+
 /* 0043F6EC 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043F6F0 0040A825 */  move  $s5, $v0
 /* 0043F6F4 8F8E8B20 */  lw     $t6, %got(outofmem)($gp)
@@ -6151,6 +7352,12 @@ glabel readnxtinst
 /* 0043F914 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043F918 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 0043F91C 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 0043F920 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043F924 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 0043F928 0320F809 */  jalr  $t9
@@ -6254,8 +7461,14 @@ glabel readnxtinst
 /* 0043FA90 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043FA94 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 0043FA98 AFB100F4 */  sw    $s1, 0xf4($sp)
-/* 0043FA9C 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043FAA0 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
+/* 0043FA9C 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043FAA4 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 0043FAA8 0320F809 */  jalr  $t9
 /* 0043FAAC 00000000 */   nop   
@@ -6479,6 +7692,12 @@ glabel readnxtinst
 /* 0043FDDC 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0043FDE0 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 0043FDE4 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 0043FDE8 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0043FDEC 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 0043FDF0 0320F809 */  jalr  $t9
@@ -6634,6 +7853,12 @@ glabel readnxtinst
 /* 0044001C 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 00440020 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 00440024 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 00440028 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 0044002C 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 00440030 0320F809 */  jalr  $t9
@@ -6751,6 +7976,12 @@ glabel readnxtinst
 /* 004401D0 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 004401D4 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 004401D8 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 004401DC 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 004401E0 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 004401E4 0320F809 */  jalr  $t9
@@ -6835,9 +8066,14 @@ glabel readnxtinst
 /* 00440314 8E6F0004 */  lw    $t7, 4($s3)
 /* 00440318 15E00056 */  bnez  $t7, .L00440474
 /* 0044031C 00000000 */   nop   
-/* 00440320 8F998024 */  lw    $t9, %got(func_0043C248)($gp)
-/* 00440324 02602025 */  move  $a0, $s3
 /* 00440328 27A20110 */  addiu $v0, $sp, 0x110
+/* 00440324 02602025 */  move  $a0, $s3
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
+/* 00440320 8F998024 */  lw    $t9, %got(func_0043C248)($gp)
 /* 0044032C 2739C248 */  addiu $t9, %lo(func_0043C248) # addiu $t9, $t9, -0x3db8
 /* 00440330 0320F809 */  jalr  $t9
 /* 00440334 00000000 */   nop   
@@ -6942,6 +8178,12 @@ glabel readnxtinst
 /* 004404AC 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 004404B0 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 004404B4 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 004404B8 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 004404BC 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 004404C0 0320F809 */  jalr  $t9
@@ -7009,6 +8251,12 @@ glabel readnxtinst
 /* 004405AC 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 004405B0 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 004405B4 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 004405B8 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 004405BC 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 004405C0 0320F809 */  jalr  $t9
@@ -7075,6 +8323,12 @@ glabel readnxtinst
 /* 004406A8 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 004406AC 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 004406B0 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 004406B4 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 004406B8 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 004406BC 0320F809 */  jalr  $t9
@@ -7160,6 +8414,12 @@ glabel readnxtinst
 /* 004407EC 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 004407F0 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 004407F4 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 004407F8 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 004407FC 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 00440800 0320F809 */  jalr  $t9
@@ -7383,6 +8643,12 @@ glabel readnxtinst
 /* 00440B20 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 00440B24 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 00440B28 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 00440B2C 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 00440B30 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 00440B34 0320F809 */  jalr  $t9
@@ -7596,6 +8862,12 @@ glabel readnxtinst
 /* 00440E30 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 00440E34 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 00440E38 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 00440E3C 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 00440E40 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 00440E44 0320F809 */  jalr  $t9
@@ -7736,6 +9008,12 @@ glabel readnxtinst
 /* 00441044 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 00441048 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 0044104C 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 00441050 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 00441054 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 00441058 0320F809 */  jalr  $t9
@@ -8101,6 +9379,12 @@ glabel readnxtinst
 /* 004415BC 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 004415C0 3044FFFF */  andi  $a0, $v0, 0xffff
 /* 004415C4 27A20110 */  addiu $v0, $sp, 0x110
+
+######## Passing Shared Stack through Args ########
+/*                   */  addiu $a1, $sp, 0xe4
+/*                   */  lw $a2, 0xf8($sp)
+/*                   */  lw $a3, 0xf4($sp)
+######## Passing Shared Stack through Args ########
 /* 004415C8 8F998024 */  lw    $t9, %got(func_0043B504)($gp)
 /* 004415CC 2739B504 */  addiu $t9, %lo(func_0043B504) # addiu $t9, $t9, -0x4afc
 /* 004415D0 0320F809 */  jalr  $t9
@@ -11527,3 +12811,4 @@ glabel readnxtinst
     .size readnxtinst, .-readnxtinst
     .end readnxtinst
 )"");
+#endif

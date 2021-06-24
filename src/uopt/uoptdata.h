@@ -307,7 +307,7 @@ struct Proc {
     bool o3opt; // written to allcallersave in procinit
     bool unkD; // set to lang == LANG_COBOL
     bool unkE; // bool or char?
-    bool unkF; // bool or char?
+    bool nonlocal_goto; // bool or char?
     unsigned char level; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass
     unsigned short num_bbs; // 0x12
     bool unk14; // bool or char?
@@ -670,7 +670,7 @@ struct TailRecParameter {
 struct Expression {
     ExpressionType type;
     Datatype datatype;
-    bool unk2; // see exprimage
+    bool unk2; // saved? see exprimage
     bool unk3; // not varkilled
     bool unk4; // bool or unsigned char?
     bool unk5; // bool or unsigned char?

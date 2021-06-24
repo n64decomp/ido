@@ -23,5 +23,6 @@ void skipproc(int reason);
 int newbit(struct IChain *ichain, void *unk4);
 bool in_indmults(struct IChain *ichain);
 int findincre(struct Expression *entry);
+struct Expression *appendchain(unsigned short table_index);
 
 #endif
