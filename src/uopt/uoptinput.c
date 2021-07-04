@@ -707,15 +707,16 @@ static struct Expression *func_0043B334(struct Expression *stexpr) {
         }
         return NULL;
     }
+
     TRAP_IF(stexpr->type != islda);
     stexpr->data.islda_isilda.addr = stexpr->data.islda_isilda.addr;
     lda = table[stexpr->table_index];
     found = false;
     while (!found && lda != NULL) {
         if (lda->type == islda &&
-                stexpr->data.islda_isilda.addr + 1 == lda->data.islda_isilda.addr &&
+                lda->data.islda_isilda.addr == stexpr->data.islda_isilda.addr + 1 &&
                 addreq(lda->data.islda_isilda.var_data, stexpr->data.islda_isilda.var_data) &&
-                stexpr->data.islda_isilda.size == lda->data.islda_isilda.size) {
+                lda->data.islda_isilda.size == stexpr->data.islda_isilda.size) {
             found = true;
         } else {
             lda = lda->next;
@@ -773,8 +774,8 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
         }
 
         switch (OPC) {
-            case Ulod: // jump 0
-            case Ustr: // jump 0
+            case Ulod:
+            case Ustr:
                 if (expr_s0->type == isvar) {
                     if (addreq(expr_s0->data.isvar_issvar.var_data, *var) == 0) {
                         break;
@@ -795,12 +796,12 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 }
                 break;
 
-            case Uisld: // jump 1
-            case Uisst: // jump 1
+            case Uisld:
+            case Uisst:
                 if (expr_s0->type != issvar) {
                     break;
                 }
-                if (addreq(expr_s0->data.isvar_issvar.var_data, *var) == 0) {
+                if (!addreq(expr_s0->data.isvar_issvar.var_data, *var)) {
                     break;
                 }
                 if (expr_s0->data.isvar_issvar.unk21) {
@@ -820,7 +821,7 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 }
                 break;
 
-            case Ulda: // jump 2
+            case Ulda:
                 if (expr_s0->type != islda) {
                     break;
                 }
@@ -836,11 +837,11 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = true;
                 break;
 
-            case Uilda: // jump 3
+            case Uilda:
                 if (expr_s0->type != isilda) {
                     break;
                 }
-                if (addreq(expr_s0->data.islda_isilda.var_data, *var) == 0) {
+                if (!addreq(expr_s0->data.islda_isilda.var_data, *var)) {
                     break;
                 }
                 if (LENGTH != expr_s0->data.islda_isilda.size) {
@@ -852,7 +853,7 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = !expr_s0->data.islda_isilda.unk34->data.isvar_issvar.unk21;
                 break;
 
-            case Uldc: // jump 4
+            case Uldc:
                 if (expr_s0->type != isconst) {
                     break;
                 }
@@ -886,7 +887,7 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = true;
                 break;
 
-            case Uldrc: // jump 5
+            case Uldrc:
                 if (expr_s0->type != isrconst) {
                     break;
                 }
@@ -899,13 +900,13 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = true;
                 break;
 
-            case Uadd: // jump 6
-            case Uand: // jump 6
-            case Uint: // jump 6
-            case Uior: // jump 6
-            case Umpy: // jump 6
-            case Uuni: // jump 6
-            case Uxor: // jump 6
+            case Uadd:
+            case Uand:
+            case Uint:
+            case Uior:
+            case Umpy:
+            case Uuni:
+            case Uxor:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -925,8 +926,8 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 }
                 break;
 
-            case Uequ: // jump 7
-            case Uneq: // jump 7
+            case Uequ:
+            case Uneq:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -942,18 +943,18 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 }
                 break;
 
-            case Ubsub: // jump 8
-            case Udif: // jump 8
-            case Udiv: // jump 8
-            case Umax: // jump 8
-            case Umin: // jump 8
-            case Umod: // jump 8
-            case Umus: // jump 8
-            case Urem: // jump 8
-            case Ushl: // jump 8
-            case Ushr: // jump 8
-            case Usign: // jump 8
-            case Usub: // jump 8
+            case Ubsub:
+            case Udif:
+            case Udiv:
+            case Umax:
+            case Umin:
+            case Umod:
+            case Umus:
+            case Urem:
+            case Ushl:
+            case Ushr:
+            case Usign:
+            case Usub:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -975,10 +976,10 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = true;
                 break;
 
-            case Ugeq: // jump 9
-            case Ugrt: // jump 9
-            case Uleq: // jump 9
-            case Ules: // jump 9
+            case Ugeq:
+            case Ugrt:
+            case Uleq:
+            case Ules:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -997,7 +998,7 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = true;
                 break;
 
-            case Uinn: // jump 10
+            case Uinn:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -1019,7 +1020,7 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = true;
                 break;
 
-            case Uixa: // jump 11
+            case Uixa:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -1041,14 +1042,14 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = true;
                 break;
 
-            case Uabs: // jump 12
-            case Ulnot: // jump 12
-            case Uneg: // jump 12
-            case Unot: // jump 12
-            case Uodd: // jump 12
-            case Usgs: // jump 12
-            case Usqr: // jump 12
-            case Usqrt: // jump 12
+            case Uabs:
+            case Ulnot:
+            case Uneg:
+            case Unot:
+            case Uodd:
+            case Usgs:
+            case Usqr:
+            case Usqrt:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -1067,11 +1068,11 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = true;
                 break;
 
-            case Uchkh: // jump 13
-            case Uchkl: // jump 13
-            case Ucvtl: // jump 13
-            case Udec: // jump 13
-            case Uinc: // jump 13
+            case Uchkh:
+            case Uchkl:
+            case Ucvtl:
+            case Udec:
+            case Uinc:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -1093,9 +1094,9 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = true;
                 break;
 
-            case Ucvt: // jump 14
-            case Urnd: // jump 14
-            case Utyp: // jump 14
+            case Ucvt:
+            case Urnd:
+            case Utyp:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -1117,7 +1118,7 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = true;
                 break;
 
-            case Uadj: // jump 15
+            case Uadj:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -1136,7 +1137,7 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = true;
                 break;
 
-            case Uchkn: // jump 16
+            case Uchkn:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -1149,8 +1150,8 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp33 = true;
                 break;
 
-            case Uilod: // jump 17
-            case Uirld: // jump 17
+            case Uilod:
+            case Uirld:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -1173,15 +1174,15 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 sp31 = !sp33;
                 break;
 
-            case Uildv: // jump 18
-            case Uirlv: // jump 18
+            case Uildv:
+            case Uirlv:
                 while (expr_s0->next != NULL) {
                     expr_s0 = expr_s0->next;
                 }
                 break;
 
-            case Uiequ: // jump 19
-            case Uineq: // jump 19
+            case Uiequ:
+            case Uineq:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -1198,10 +1199,10 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 }
                 break;
 
-            case Uigeq: // jump 20
-            case Uigrt: // jump 20
-            case Uileq: // jump 20
-            case Uiles: // jump 20
+            case Uigeq:
+            case Uigrt:
+            case Uileq:
+            case Uiles:
                 if (expr_s0->type != isop) {
                     break;
                 }
@@ -1228,7 +1229,7 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
                 caseerror(1, 706, "uoptinput.p", 0xB);
                 break;
 
-            case Ulca: // ignored 420
+            case Ulca:
                 break;
 
         }
@@ -1581,7 +1582,7 @@ static void func_0043CBFC(struct UstackEntry *head) {
         }
     }
 
-    head->expr->data.isvar_issvar.var_data.level = 0xC8;
+    head->expr->data.isvar_issvar.var_data.level = 200;
     head->expr->data.isvar_issvar.unk22 = true;
 }
 
@@ -1661,8 +1662,8 @@ void readnxtinst(void) {
         return;
     }
 
-    // XXX: untested (Amt doesn't exist in C)
     if (ustackbot != ustack && ustack->expr->type == isvar && ustack->expr->data.isvar_issvar.var_data.memtype == Amt && OPC != Ustr) {
+        // XXX: untested (Amt doesn't exist in C)
         TRAP_IF(ustack->expr->data.isvar_issvar.unk38 != NULL);
         ustack->expr->unk2 = true;
         expr = appendchain(ustack->expr->table_index);
@@ -1865,7 +1866,7 @@ void readnxtinst(void) {
                         && ((!((expr->data.isvar_issvar.unk22 && expr->data.isvar_issvar.var_data.blockno == curblk)
                                     || doingcopy || curproc->unk15)
                                 || has_ilod(expr->data.isvar_issvar.unk34))
-                            && (!constexp(expr->data.isvar_issvar.unk34)))))
+                            && !constexp(expr->data.isvar_issvar.unk34))))
             {
                 func_0043B15C(expr);
                 expr->data.isvar_issvar.unk38->u.store.unk1D = false;
@@ -2034,8 +2035,8 @@ void readnxtinst(void) {
             }
             return;
 
-        case Ulbd:
-        case Uubd:
+        case Ulbd: // XXX: untested
+        case Uubd: // XXX: untested
             return;
 
         case Uldc:
@@ -2185,14 +2186,12 @@ void readnxtinst(void) {
                         ustack->value -= stexpr2->data.isconst.number.intval + stval2;
                         eliminated = true;
                     }
-                    
-                } else {
-                    if (OPC != Usub) {
-                        ustack->value = stexpr1->data.isconst.number.intval + stval1 + stval2;
-                        ustack->expr = stexpr2;
-                        eliminated = true;
-                    }
+                } else if (OPC != Usub) {
+                    ustack->value = stexpr1->data.isconst.number.intval + stval1 + stval2;
+                    ustack->expr = stexpr2;
+                    eliminated = true;
                 }
+                
             } else if (OPC == Umpy && (DTYPE == Jdt || DTYPE == Ldt) &&
                     (stexpr2->type == isconst || stexpr1->type == isconst) &&
                     !IS_OVERFLOW_ATTR(LEXLEV))
@@ -2368,9 +2367,12 @@ void readnxtinst(void) {
                                 case Ules:
                                 case Uneq:
                                     // x - y COMP 0 -> x COMP y
+                                    // 0 COMP x - y -> x COMP y
                                     if (DTYPE == Qdt || DTYPE == Rdt) {
-                                        if ((stexpr2->type == isconst && stexpr2->data.isconst.real_significand == 0 && stexpr1->type == isop && stexpr1->data.isop.opc == Usub) ||
-                                            (stexpr1->type == isconst && stexpr1->data.isconst.real_significand == 0 && stexpr2->type == isop && stexpr2->data.isop.opc == Usub))
+                                        if ((stexpr2->type == isconst && stexpr2->data.isconst.real_significand == 0 &&
+                                             stexpr1->type == isop && stexpr1->data.isop.opc == Usub) ||
+                                            (stexpr1->type == isconst && stexpr1->data.isconst.real_significand == 0 &&
+                                             stexpr2->type == isop && stexpr2->data.isop.opc == Usub))
                                         {
                                             if (stexpr1->type == isop) {
                                                 stexpr2 = stexpr1->data.isop.op2;
@@ -2453,6 +2455,9 @@ void readnxtinst(void) {
                     }
                 }
             } else if (OPC == Ugeq || OPC == Ules) {
+                // c >= y -> y <  c + 1
+                // c <  y -> y >= c + 1
+                // ...what is this for?
                 if ((DTYPE == Adt || DTYPE == Hdt || DTYPE == Jdt || DTYPE == Ldt) && (stexpr1->type == islda || stexpr1->type == isconst)) {
                     expr = func_0043B334(stexpr1);
                     if (expr != NULL) {
@@ -3435,6 +3440,7 @@ void readnxtinst(void) {
             ustack = ustack->down;
             return;
 
+        // alloca
         case Uaos:
             extendstat(Uaos);
             if (outofmem) {
@@ -3738,7 +3744,7 @@ void readnxtinst(void) {
             curlocln = 0;
             return;
 
-            // Most likely "indexed jump", for computed gotos in fortan and pl/1
+        // Most likely "indexed jump", for computed gotos in fortan and pl/1
         case Uijp:
             extendstat(Uijp);
             if (outofmem) {
@@ -3747,6 +3753,7 @@ void readnxtinst(void) {
             func_0043B1DC();
             stattail->expr = ustack->expr;
             ustack = ustack->down;
+            // link ijp labels to curgraphnode
             func_0043CA8C(curproc->ijp_labels);
             loc_not_yet_seen = false;
             curlocln = 0;

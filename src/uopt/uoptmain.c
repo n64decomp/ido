@@ -38,17 +38,16 @@ static void func_00456310(bool *sp4F) { // originally embedded func
 
     if (filteringout || *sp4F) {
         curgraphnode = NULL;
-        op = u.Ucode.Opc;
-        while (!(op == Uaent || op == Uend || op == Ulab)) {
-            if (!optab[op].unk1) {
+        while (!(OPC == Uaent || OPC == Uend || OPC == Ulab)) {
+            if (!optab[OPC].unk1) {
                 copyline();
-            } else if (op == Ubgnb || op == Udef || op == Uendb) {
+            } else if (OPC == Ubgnb || OPC == Udef || OPC == Uendb) {
                 readnxtinst();
                 if (outofmem) {
                     return;
                 }
                 stattail->graphnode = stattail->prev->graphnode;
-            } else if (op == Uclab) {
+            } else if (OPC == Uclab) {
                 statpos = stattail;
                 readnxtinst();
                 if (outofmem) {
@@ -60,11 +59,10 @@ static void func_00456310(bool *sp4F) { // originally embedded func
                 } while (statpos != stattail);
             }
             getop();
-            op = u.Ucode.Opc;
         }
     }
-    if (op != Uend) {
-        if (!(op == Uaent || op == Ulab) || (op == Ulab && (stattail->opc == Ufjp || stattail->opc == Utjp))) {
+    if (OPC != Uend) {
+        if (!(OPC == Uaent || OPC == Ulab) || (OPC == Ulab && (stattail->opc == Ufjp || stattail->opc == Utjp))) {
             appendgraph();
             if (outofmem) {
                 return;
@@ -81,7 +79,7 @@ static void func_00456310(bool *sp4F) { // originally embedded func
                 curgraphnode->successors = graphnode_list;
             }
             curgraphnode = graphtail;
-            if (op == Ulab) {
+            if (OPC == Ulab) {
                 graphtail->num = (unsigned short)curstaticno++;
                 extendstat(Unop);
                 curgraphnode->stat_tail = stattail;
@@ -94,11 +92,10 @@ static void func_00456310(bool *sp4F) { // originally embedded func
         if (outofmem) {
             return;
         }
-        op = u.Ucode.Opc; // this can be removed if readnxtinst doesn't change u
-        if (!(op == Uaent || op == Ulab)) {
+        if (!(OPC == Uaent || OPC == Ulab)) {
             curgraphnode->num = (unsigned short)curstaticno++;
         }
-        switch (op) {
+        switch (OPC) {
             case Ucia:
             case Ucup:
             case Ufjp:
@@ -116,9 +113,8 @@ static void func_00456310(bool *sp4F) { // originally embedded func
         }
         if (!endblock) {
             getop();
-            op = u.Ucode.Opc;
             while (!endblock) {
-                if (!optab[op].unk1) {
+                if (!optab[OPC].unk1) {
                     copyline();
                 } else {
                     readnxtinst();
@@ -127,10 +123,9 @@ static void func_00456310(bool *sp4F) { // originally embedded func
                     }
                 }
                 getop();
-                op = u.Ucode.Opc;
             }
-            *sp4F = (op == Uijp || op == Uret || op == Uujp || op == Uxjp) || (op == Ucup && (u.intarray[3] & 2) != 0);
-            switch (op) {
+            *sp4F = (OPC == Uijp || OPC == Uret || OPC == Uujp || OPC == Uxjp) || (OPC == Ucup && (u.intarray[3] & 2) != 0);
+            switch (OPC) {
                 case Ucia:
                 case Ucup:
                 case Ufjp:
@@ -148,24 +143,22 @@ static void func_00456310(bool *sp4F) { // originally embedded func
                     endblock = false;
 
                     getop();
-                    op = u.Ucode.Opc;
-                    while (!optab[op].unk1 && op != Uend) {
+                    OPC = u.Ucode.Opc;
+                    while (!optab[OPC].unk1 && OPC != Uend) {
                         copyline();
                         getop();
-                        op = u.Ucode.Opc;
+                        OPC = u.Ucode.Opc;
                     }
                     break;
             }
         } else {
-            *sp4F = (op == Uijp || op == Uret || op == Uujp || op == Uxjp) || (op == Ucup && (u.intarray[3] & 2) != 0);
+            *sp4F = (OPC == Uijp || OPC == Uret || OPC == Uujp || OPC == Uxjp) || (OPC == Ucup && (u.intarray[3] & 2) != 0);
             endblock = false;
 
             getop();
-            op = u.Ucode.Opc;
-            while (!optab[op].unk1 && op != Uend) {
+            while (!optab[OPC].unk1 && OPC != Uend) {
                 copyline();
                 getop();
-                op = u.Ucode.Opc;
             }
         }
         filteringout = false;
