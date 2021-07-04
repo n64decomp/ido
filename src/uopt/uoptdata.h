@@ -420,6 +420,7 @@ struct Statement {
             struct Proc *proc; // indirprocs/ciaprocs
         } mst;
 
+        // check true
         struct {
             int unk14;
             int unk18; // initialized to 0
@@ -477,11 +478,11 @@ struct Statement {
             int unk28;
             int unk2C;
             int unk30;
-        } jp; // tjp, fjp, uujp
+        } jp; // tjp, fjp, ujp
 
         struct {
             struct Proc *proc; // 0x14
-            Datatype dtype; // 0x18
+            Datatype dtype; // 0x18 TODO: rename to returntype
             unsigned char level; // 0x19
             unsigned short extrnal_flags; // 0x1A, EXTRNAL
             unsigned char pop; // 0x1C, POP
@@ -493,7 +494,7 @@ struct Statement {
         struct {
             int strp_pos; // 0x14
             unsigned char flags; // 0x18, LEXLEV
-            Datatype dtype; // 0x19
+            Datatype dtype; // 0x19 TODO: rename to returntype
             int unk1C; // LENGTH
             int unk20; // OFFSET
             int len; // 0x24, CONSTVAL.swpart.Ival
@@ -501,7 +502,7 @@ struct Statement {
         } cia;
 
         struct {
-            Datatype dtype; // 0x14
+            Datatype dtype; // 0x14 TODO: rename to returntype
             unsigned char pop; // 0x15, POP
             unsigned char push; // 0x16, PUSH
             unsigned char extrnal_flags; // 0x17, EXTRNAL
@@ -703,7 +704,7 @@ struct Expression {
             bool unk22;
             bool is_volatile; // 0x23
             struct Expression *unk24;
-            struct VariableInner var_data; // 0x28
+            struct VariableInner var_data; // 0x28 // TODO: rename to prevent confusion during decomp
             struct Expression *unk30;
             struct Expression *unk34; // used in analoop
             struct Statement *unk38; // a bit unsure about this type, see delentry

@@ -911,91 +911,37 @@ glabel fix_base
     .type fix_base, @function
     .size fix_base, .-fix_base
     .end fix_base
-
-glabel fixcorr
-    .ent fixcorr
-    # 0041550C func_0041550C
-    # 004712A4 reset_images
-    # 004713E8 loopunroll
-    # 0047C650 delentry
-/* 0047C53C 3C1C0FBA */  .cpload $t9
-/* 0047C540 279CDD54 */
-/* 0047C544 0399E021 */
-/* 0047C548 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0047C54C AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047C550 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047C554 AFB00014 */  sw    $s0, 0x14($sp)
-/* 0047C558 8C8E0014 */  lw    $t6, 0x14($a0)
-/* 0047C55C 00808025 */  move  $s0, $a0
-/* 0047C560 8DCF0008 */  lw    $t7, 8($t6)
-/* 0047C564 548F0036 */  bnel  $a0, $t7, .L0047C640
-/* 0047C568 8FBF001C */   lw    $ra, 0x1c($sp)
-/* 0047C56C 90820000 */  lbu   $v0, ($a0)
-/* 0047C570 3C011A00 */  lui   $at, 0x1a00
-/* 0047C574 2C580020 */  sltiu $t8, $v0, 0x20
-/* 0047C578 0018C823 */  negu  $t9, $t8
-/* 0047C57C 03214024 */  and   $t0, $t9, $at
-/* 0047C580 00484804 */  sllv  $t1, $t0, $v0
-/* 0047C584 0521002D */  bgez  $t1, .L0047C63C
-/* 0047C588 24010004 */   li    $at, 4
-/* 0047C58C 14410010 */  bne   $v0, $at, .L0047C5D0
-/* 0047C590 00000000 */   nop
-/* 0047C594 908A0020 */  lbu   $t2, 0x20($a0)
-/* 0047C598 254BFFE0 */  addiu $t3, $t2, -0x20
-/* 0047C59C 2D6C0080 */  sltiu $t4, $t3, 0x80
-/* 0047C5A0 11800009 */  beqz  $t4, .L0047C5C8
-/* 0047C5A4 00000000 */   nop
-/* 0047C5A8 8F8F8044 */  lw    $t7, %got(D_10011834)($gp)
-/* 0047C5AC 000B6943 */  sra   $t5, $t3, 5
-/* 0047C5B0 000D7080 */  sll   $t6, $t5, 2
-/* 0047C5B4 25EF1834 */  addiu $t7, %lo(D_10011834) # addiu $t7, $t7, 0x1834
-/* 0047C5B8 01EEC021 */  addu  $t8, $t7, $t6
-/* 0047C5BC 8F190000 */  lw    $t9, ($t8)
-/* 0047C5C0 01794004 */  sllv  $t0, $t9, $t3
-/* 0047C5C4 290C0000 */  slti  $t4, $t0, 0
-.L0047C5C8:
-/* 0047C5C8 5180001D */  beql  $t4, $zero, .L0047C640
-/* 0047C5CC 8FBF001C */   lw    $ra, 0x1c($sp)
-.L0047C5D0:
-/* 0047C5D0 8F998624 */  lw    $t9, %call16(findsimilar)($gp)
-/* 0047C5D4 02002025 */  move  $a0, $s0
-/* 0047C5D8 0320F809 */  jalr  $t9
-/* 0047C5DC 00000000 */   nop
-/* 0047C5E0 8E0A0014 */  lw    $t2, 0x14($s0)
-/* 0047C5E4 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047C5E8 AD420008 */  sw    $v0, 8($t2)
-/* 0047C5EC 8E0D0014 */  lw    $t5, 0x14($s0)
-/* 0047C5F0 8DAF0008 */  lw    $t7, 8($t5)
-/* 0047C5F4 55E00012 */  bnezl $t7, .L0047C640
-/* 0047C5F8 8FBF001C */   lw    $ra, 0x1c($sp)
-/* 0047C5FC 8F998620 */  lw    $t9, %call16(appendchain)($gp)
-/* 0047C600 96040008 */  lhu   $a0, 8($s0)
-/* 0047C604 0320F809 */  jalr  $t9
-/* 0047C608 00000000 */   nop
-/* 0047C60C 8E0E0014 */  lw    $t6, 0x14($s0)
-/* 0047C610 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047C614 02002825 */  move  $a1, $s0
-/* 0047C618 ADC20008 */  sw    $v0, 8($t6)
-/* 0047C61C 8F998628 */  lw    $t9, %call16(copycoderep)($gp)
-/* 0047C620 8E180014 */  lw    $t8, 0x14($s0)
-/* 0047C624 0320F809 */  jalr  $t9
-/* 0047C628 8F040008 */   lw    $a0, 8($t8)
-/* 0047C62C 8E190014 */  lw    $t9, 0x14($s0)
-/* 0047C630 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047C634 8F2B0008 */  lw    $t3, 8($t9)
-/* 0047C638 AD600010 */  sw    $zero, 0x10($t3)
-.L0047C63C:
-/* 0047C63C 8FBF001C */  lw    $ra, 0x1c($sp)
-.L0047C640:
-/* 0047C640 8FB00014 */  lw    $s0, 0x14($sp)
-/* 0047C644 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0047C648 03E00008 */  jr    $ra
-/* 0047C64C 00000000 */   nop
-    .type fixcorr, @function
-    .size fixcorr, .-fixcorr
-    .end fixcorr
-
 )"");
+
+/* 
+# 0041550C func_0041550C
+# 004712A4 reset_images
+# 004713E8 loopunroll
+# 0047C650 delentry
+*/
+void fixcorr(struct Expression *expr) {
+    if (expr->ichain->expr == expr) {
+        if (expr->type == isop || expr->type == isvar || expr->type == issvar) {
+            if (expr->type != isop || (expr->data.isop.opc == Uiequ ||
+                        expr->data.isop.opc == Uigeq ||
+                        expr->data.isop.opc == Uigrt ||
+                        expr->data.isop.opc == Uildv ||
+                        expr->data.isop.opc == Uileq ||
+                        expr->data.isop.opc == Uiles ||
+                        expr->data.isop.opc == Uilod ||
+                        expr->data.isop.opc == Uineq ||
+                        expr->data.isop.opc == Uirld ||
+                        expr->data.isop.opc == Uirlv)) {
+                expr->ichain->expr = findsimilar(expr);
+                if (expr->ichain->expr == NULL) {
+                    expr->ichain->expr = appendchain(expr->table_index);
+                    copycoderep(expr->ichain->expr, expr);
+                    expr->ichain->expr->graphnode = NULL;
+                }
+            }
+        }
+    }
+}
 
 /*
 00413000 exprdelete
