@@ -684,6 +684,7 @@ static void parstack_push(struct Statement *par) {
 
 /* 
 0043CFCC readnxtinst
+    replace addr with addr+1...????
 */
 static struct Expression *func_0043B334(struct Expression *stexpr) {
     struct Expression *lda;
@@ -728,8 +729,8 @@ static struct Expression *func_0043B334(struct Expression *stexpr) {
 }
 
 /* 
-0043C248 func_0043C248
-0043C56C func_0043C56C
+0043C248 cvt_to_float
+0043C56C transform_float_div
 0043CFCC readnxtinst
 */
 static struct Expression *readnxtinst_searchloop(unsigned short tableIdx, struct VariableInner *var, struct Expression *stexpr1, struct Expression *stexpr2) {
@@ -1081,7 +1082,7 @@ next:
 /* 
 0043CFCC readnxtinst
 */
-static void func_0043C248(struct UstackEntry *ustackHead, struct VariableInner *var, struct Expression *stexpr1, struct Expression *stexpr2) {
+static void cvt_to_float(struct UstackEntry *ustackHead, struct VariableInner *var, struct Expression *stexpr1, struct Expression *stexpr2) {
     struct Expression *expr;
     unsigned int value;
     unsigned int exponent;
@@ -1155,7 +1156,7 @@ static void func_0043C248(struct UstackEntry *ustackHead, struct VariableInner *
 /* 
 0043CFCC readnxtinst
 */
-static struct Expression *func_0043C56C(int real_significand, bool negative, int real_exponent, Datatype dtype, struct VariableInner *var, struct Expression *stexpr1, struct Expression *stexpr2) {
+static struct Expression *transform_float_div(int real_significand, bool negative, int real_exponent, Datatype dtype, struct VariableInner *var, struct Expression *stexpr1, struct Expression *stexpr2) {
     int sp34;
     struct Expression *expr;
     bool done;
@@ -1327,7 +1328,7 @@ static void link_ijp_labels(struct IjpLabel *ijp) {
 /* 
 0043CFCC readnxtinst
 */
-static void func_0043CBFC(struct UstackEntry *head) {
+static void func_0043CBFC(struct UstackEntry *head) { // XXX: never called in oot
     struct VariableInner var_data;
     unsigned short varhash;
     struct Expression *var;
@@ -2082,7 +2083,7 @@ void readnxtinst(void) {
                     tmp1 = -tmp1;
                 }
                 if (is_power2(tmp1) && stexpr2->data.isconst.real_exponent == 0) {
-                    expr = func_0043C56C(tmp1, negative, stexpr2->data.isconst.real_exponent, DTYPE, &var, stexpr1, stexpr2);
+                    expr = transform_float_div(tmp1, negative, stexpr2->data.isconst.real_exponent, DTYPE, &var, stexpr1, stexpr2);
                     if (expr != NULL) {
                         stexpr2 = expr;
                         OPC = Umpy;
@@ -2136,7 +2137,7 @@ void readnxtinst(void) {
                                         if (DTYPE == Qdt || DTYPE == Rdt) {
                                             ustack->value = 0;
                                             ustack->expr->datatype = Jdt;
-                                            func_0043C248(ustack, &var, stexpr1, stexpr2);
+                                            cvt_to_float(ustack, &var, stexpr1, stexpr2);
                                         }
                                     } else {
                                         eliminated = false;
@@ -2619,7 +2620,7 @@ void readnxtinst(void) {
         case Utyp: // XXX: untested
             if (OPC == Ucvt && (DTYPE2 == Jdt || DTYPE2 == Ldt) && (DTYPE == Qdt || DTYPE == Rdt) && !IS_OVERFLOW_ATTR(LEXLEV)) {
                 if (ustack->expr->type == isconst && ustack->value == 0) {
-                    func_0043C248(ustack, &var, stexpr1, stexpr2);
+                    cvt_to_float(ustack, &var, stexpr1, stexpr2);
                     return;
                 }
             } else if (DTYPE2 == DTYPE) {

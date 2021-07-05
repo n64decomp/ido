@@ -32,7 +32,6 @@
 00456A2C oneproc
 */
 static void func_00456310(bool *sp4F) { // originally embedded func
-    enum Uopcode op;
     struct Statement *statpos;
     struct GraphnodeList *graphnode_list;
 
@@ -143,11 +142,9 @@ static void func_00456310(bool *sp4F) { // originally embedded func
                     endblock = false;
 
                     getop();
-                    OPC = u.Ucode.Opc;
                     while (!optab[OPC].unk1 && OPC != Uend) {
                         copyline();
                         getop();
-                        OPC = u.Ucode.Opc;
                     }
                     break;
             }
@@ -203,22 +200,22 @@ void oneproc(void) {
             }
             do {
                 getop();
-                if (!optab[u.Ucode.Opc].unk1) {
+                if (!optab[OPC].unk1) {
                     copyline();
-                } else if (u.Ucode.Opc == Ulab && (u.Ucode.Lexlev & 4)) {
+                } else if (OPC == Ulab && (u.Ucode.Lexlev & 4)) {
                     uwrite(&u);
                 }
-            } while (u.Ucode.Opc != Uend);
+            } while (OPC != Uend);
         } else {
             endblock = false;
             inlopt = true;
             loc_not_yet_seen = false;
             getop();
-            while (!optab[u.Ucode.Opc].unk1) {
+            while (!optab[OPC].unk1) {
                 copyline();
                 getop();
             }
-            if (u.Ucode.Opc == Ulab) {
+            if (OPC == Ulab) {
                 appendgraph();
                 if (outofmem) {
                     return;
@@ -232,7 +229,7 @@ void oneproc(void) {
             }
             sp4F = false;
             filteringout = false;
-            while (u.Ucode.Opc != Uend) {
+            while (OPC != Uend) {
                 func_00456310(&sp4F);
                 loc_not_yet_seen = true;
                 if (outofmem) {
@@ -472,22 +469,22 @@ int main1(int argc, char *argv[]) {
         }
         do {
             readuinstr(&u, ustrptr);
-            if (Ueof == u.Ucode.Opc) {
+            if (Ueof == OPC) {
                 write_string(err.c_file, "uopt: Error: unexpected EOF in input ucode; giving up.", 0x36, 0x36);
                 writeln(err.c_file);
                 fflush(err.c_file);
                 abort();
             }
             uwrite(&u);
-        } while (Ustp != u.Ucode.Opc);
+        } while (Ustp != OPC);
     } else {
         getop();
-        while (Ueof != u.Ucode.Opc) {
-            while (Uent != u.Ucode.Opc && Ustp != u.Ucode.Opc) {
+        while (Ueof != OPC) {
+            while (Uent != OPC && Ustp != OPC) {
                 copyline();
                 getop();
             }
-            if (Uent == u.Ucode.Opc) {
+            if (Uent == OPC) {
                 oneproc();
             } else {
                 copyline();
