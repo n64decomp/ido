@@ -29,7 +29,7 @@ struct livbb {
 }; // size 0x18
 
 struct optabrec {
-    bool unk0; // seems to be set if a BB ends with this instruction and for Uaent
+    bool ends_bb;
     bool unk1;
     bool is_binary_op;
 };
@@ -414,8 +414,8 @@ struct Statement {
         } ctrl;
 
         struct {
-            int unk14; // LEXLEV
-            int unk18; // Upar/Uxpar OFFSET+LENGTH if passbyfp
+            int cup_level; // LEXLEV
+            int fp_offset; // Upar/Uxpar OFFSET+LENGTH if passbyfp
             int loc; // 0x1C, VariableInner loc
             struct Proc *proc; // indirprocs/ciaprocs
         } mst;
@@ -688,7 +688,7 @@ struct Expression {
             int addr; // 0x20
             int size; // 0x24
             int level; // 0x28
-            struct VariableInner var_data; // 0x2C
+            struct VariableInner var_data; // 0x2C // TODO: rename to prevent confusion during decomp
             struct Expression *unk34;
             int unk38;
         } islda_isilda;
@@ -700,11 +700,11 @@ struct Expression {
         } isconst;
         struct {
             unsigned char size; // 0x20, in bytes
-            bool unk21;
-            bool unk22;
+            bool unk21; // one of these is probably 'dead'
+            bool unk22; // one of these is probably 'dead'
             bool is_volatile; // 0x23
             struct Expression *unk24;
-            struct VariableInner var_data; // 0x28 // TODO: rename to prevent confusion during decomp
+            struct VariableInner var_data; // 0x28
             struct Expression *unk30;
             struct Expression *unk34; // used in analoop
             struct Statement *unk38; // a bit unsure about this type, see delentry
@@ -739,7 +739,7 @@ struct Expression {
             } aux2;
         } isop;
         struct {
-            unsigned short unk20;
+            unsigned short value;
             int unk24;
         } isrconst;
     } data; // 0x20

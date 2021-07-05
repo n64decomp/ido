@@ -198,7 +198,7 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
             }
         }
 
-        if (found == 0) {
+        if (!found) {
             phi_s1 = appendchain(hash);
             phi_s1->type = isop;
             phi_s1->datatype = phi_s3->datatype;

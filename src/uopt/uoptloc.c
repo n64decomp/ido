@@ -4495,69 +4495,12 @@ void reduceixa(struct Expression *ixa) {
     if (datasize < 0) {
         datasize = -datasize;
     }
-    if (datasize >= 2) {
+    if (datasize > 1) {
         ixa->data.isop.op2 = binopwithconst(Umpy, ixa->data.isop.op2, datasize);
 
         ixa->data.isop.datasize /= datasize;
     }
 }
-
-#if 0
-glabel reduceixa
-    .ent reduceixa
-    # 00451764 func_00451764
-    # 00452DAC constarith
-/* 004516BC 3C1C0FBD */  .cpload $t9
-/* 004516C0 279C8BD4 */  
-/* 004516C4 0399E021 */  
-/* 004516C8 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 004516CC AFBF001C */  sw    $ra, 0x1c($sp)
-/* 004516D0 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 004516D4 8C86002C */  lw    $a2, 0x2c($a0)
-/* 004516D8 00803825 */  move  $a3, $a0
-/* 004516DC 04C30003 */  bgezl $a2, .L004516EC
-/* 004516E0 28C10002 */   slti  $at, $a2, 2
-/* 004516E4 00063023 */  negu  $a2, $a2
-/* 004516E8 28C10002 */  slti  $at, $a2, 2
-.L004516EC:
-/* 004516EC 5420001A */  bnezl $at, .L00451758
-/* 004516F0 8FBF001C */   lw    $ra, 0x1c($sp)
-/* 004516F4 8F9986B8 */  lw    $t9, %call16(binopwithconst)($gp)
-/* 004516F8 2404005B */  li    $a0, 91
-/* 004516FC 8CE50028 */  lw    $a1, 0x28($a3)
-/* 00451700 0320F809 */  jalr  $t9
-/* 00451704 AFA70020 */   sw    $a3, 0x20($sp)
-/* 00451708 8FA70020 */  lw    $a3, 0x20($sp)
-/* 0045170C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00451710 8CE3002C */  lw    $v1, 0x2c($a3)
-/* 00451714 ACE20028 */  sw    $v0, 0x28($a3)
-/* 00451718 04610002 */  bgez  $v1, .L00451724
-/* 0045171C 00607025 */   move  $t6, $v1
-/* 00451720 00037023 */  negu  $t6, $v1
-.L00451724:
-/* 00451724 006E001A */  div   $zero, $v1, $t6
-/* 00451728 00007812 */  mflo  $t7
-/* 0045172C ACEF002C */  sw    $t7, 0x2c($a3)
-/* 00451730 15C00002 */  bnez  $t6, .L0045173C
-/* 00451734 00000000 */   nop   
-/* 00451738 0007000D */  break 7
-.L0045173C:
-/* 0045173C 2401FFFF */  li    $at, -1
-/* 00451740 15C10004 */  bne   $t6, $at, .L00451754
-/* 00451744 3C018000 */   lui   $at, 0x8000
-/* 00451748 14610002 */  bne   $v1, $at, .L00451754
-/* 0045174C 00000000 */   nop   
-/* 00451750 0006000D */  break 6
-.L00451754:
-/* 00451754 8FBF001C */  lw    $ra, 0x1c($sp)
-.L00451758:
-/* 00451758 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0045175C 03E00008 */  jr    $ra
-/* 00451760 00000000 */   nop   
-    .type reduceixa, @function
-    .size reduceixa, .-reduceixa
-    .end reduceixa
-#endif
 
 __asm__(R""(
 .set noat

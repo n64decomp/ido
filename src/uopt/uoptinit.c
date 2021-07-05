@@ -516,10 +516,10 @@ void processargs(void) {
 /*
 0043771C optinit
 */
-static void set_optab_entry(enum Uopcode op, bool a, bool b, bool c) {
-    optab[op].unk0 = a; // is_jump
+static void set_optab_entry(enum Uopcode op, bool ends_bb, bool b, bool is_binary_op) {
+    optab[op].ends_bb = ends_bb;
     optab[op].unk1 = b; // true = actual code, false = meta?
-    optab[op].is_binary_op = c;
+    optab[op].is_binary_op = is_binary_op;
 }
 /*
 0045806C main

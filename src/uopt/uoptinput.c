@@ -141,7 +141,7 @@ restart: // TODO: change to tail recursion when O2 works
             }
             break;
     }
-    if (optab[op].unk0) {
+    if (optab[op].ends_bb) {
         endblock = true;
         return;
     }
@@ -617,10 +617,9 @@ bool treekilled(struct Expression *expr) {
 }
 
 /* 
-0043B504 func_0043B504
-  check if number is in realstore
+0043B504 readnxtinst_searchloop
 */
-static int func_0043B084(union Constant number) {
+static bool number_in_realstore(union Constant number) {
     struct RealstoreData *real;
     int i;
 
@@ -629,22 +628,13 @@ static int func_0043B084(union Constant number) {
         real = real->next;
     }
 
-    //printf("\e[91mdisp 0x%08x  len %d\e[m", number.real.disp, number.real.len);
-    for (i = 0; i < number.real.len; i++) {
-        if (ustrptr[i] != real->c[(number.real.disp & 0xff) + i]) {
-            //puts("");
-            return false;
-        }
-    }
-    //printf(" \e[92mchars %.*s\e[m\n", number.real.len, &(real->c[number.real.disp&0xff]));
-    return true;
+    return strncmp(ustrptr, &real->c[number.real.disp & 0xff], number.real.len) == 0;
 }
 
 /* 
 0043CFCC readnxtinst
-  push expr to ustack
 */
-static void func_0043B15C(struct Expression *expr) {
+static void ustack_push(struct Expression *expr) {
     if (ustack->up == NULL) {
         ustack->up = alloc_new(sizeof(struct UstackEntry), &perm_heap);
         ustack->up->up = NULL;
@@ -660,6 +650,7 @@ static void func_0043B15C(struct Expression *expr) {
 */
 static void func_0043B1DC(void) {
     int value = ustack->value;
+
     if (value != 0) {
         ustack->value = 0;
         ustack->expr = binopwithconst(Uadd, ustack->expr, value);
@@ -670,9 +661,8 @@ static void func_0043B1DC(void) {
 0043CFCC readnxtinst
 */
 static void func_0043B23C(void) {
-    int value;
+    int value = ustack->value;
 
-    value = ustack->value;
     if (value < -0x8000 || value >= 0x8000) {
         ustack->value = value - (value & 0xFFFF8000);
         ustack->expr = binopwithconst(Uadd, ustack->expr, (value & 0xFFFF8000));
@@ -682,7 +672,7 @@ static void func_0043B23C(void) {
 /* 
 0043CFCC readnxtinst
 */
-static void func_0043B2B8(struct Statement *par) {
+static void parstack_push(struct Statement *par) {
     if (parstack->up == NULL) {
         parstack->up = alloc_new(sizeof(struct ParstackEntry), &perm_heap);
         parstack->up->up = NULL;
@@ -700,11 +690,11 @@ static struct Expression *func_0043B334(struct Expression *stexpr) {
     bool found;
 
     if (stexpr->type == isconst) {
-        if (stexpr->datatype != Jdt || stexpr->data.isconst.number.intval != 0x7FFFFFFF) {
-            if (stexpr->datatype != Ldt || stexpr->data.isconst.number.uintval != 0xFFFFFFFFu) {
-                return enter_const(stexpr->data.isconst.number.intval + 1, stexpr->datatype, curgraphnode);
-            }
+        if ((stexpr->datatype != Jdt || stexpr->data.isconst.number.intval  != 0x7FFFFFFF) &&
+            (stexpr->datatype != Ldt || stexpr->data.isconst.number.uintval != 0xFFFFFFFF)) {
+            return enter_const(stexpr->data.isconst.number.intval + 1, stexpr->datatype, curgraphnode);
         }
+        
         return NULL;
     }
 
@@ -742,14 +732,14 @@ static struct Expression *func_0043B334(struct Expression *stexpr) {
 0043C56C func_0043C56C
 0043CFCC readnxtinst
 */
-static struct Expression *func_0043B504(unsigned short tableIdx, struct VariableInner *var, struct Expression *stexpr1, struct Expression *stexpr2) {
-    bool sp33; // t0
+static struct Expression *readnxtinst_searchloop(unsigned short tableIdx, struct VariableInner *var, struct Expression *stexpr1, struct Expression *stexpr2) {
+    bool sp33;
     bool sp31;
     bool sp30;
     bool sp2F;
-    struct Expression *expr_s0;
+    struct Expression *expr;
 
-    expr_s0 = table[tableIdx];
+    expr = table[tableIdx];
     sp31 = false;
     sp30 = false;
     sp2F = false;
@@ -757,7 +747,7 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
     if (DTYPE == Sdt) {
         if (OPC != Uldc) {
             if (OPC != Uisld && OPC != Uisst && OPC != Ulod && OPC != Ustr) {
-                expr_s0 = NULL;
+                expr = NULL;
             } else if (LENGTH > 4) {
                 // small string optimization?
                 sp2F = true;
@@ -766,9 +756,9 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
     }
 
     sp33 = false;
-    while (!sp33 && !sp2F && expr_s0 != NULL) {
-        if (expr_s0->type == isop || expr_s0->type == isilda) {
-            if (expr_s0->graphnode != curgraphnode) {
+    while (!sp33 && !sp2F && expr != NULL) {
+        if (expr->type == isop || expr->type == isilda) {
+            if (expr->graphnode != curgraphnode) {
                 goto next;
             }
         }
@@ -776,21 +766,18 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
         switch (OPC) {
             case Ulod:
             case Ustr:
-                if (expr_s0->type == isvar) {
-                    if (addreq(expr_s0->data.isvar_issvar.var_data, *var) == 0) {
-                        break;
-                    }
-                    if (expr_s0->data.isvar_issvar.unk21) {
+                if (expr->type == isvar && addreq(expr->data.isvar_issvar.var_data, *var)) {
+                    if (expr->data.isvar_issvar.unk21) {
                         sp2F = true;
                         break;
                     }
 
-                    sp33 = expr_s0->graphnode == curgraphnode && !expr_s0->unk2;
-                    if (expr_s0->data.isvar_issvar.unk22) {
+                    sp33 = expr->graphnode == curgraphnode && !expr->unk2;
+                    if (expr->data.isvar_issvar.unk22) {
                         sp30 = true;
                     }
 
-                    if (!sp33 && expr_s0->graphnode == curgraphnode) {
+                    if (!sp33 && expr->graphnode == curgraphnode) {
                         sp31 = true;
                     }
                 }
@@ -798,106 +785,63 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
 
             case Uisld:
             case Uisst:
-                if (expr_s0->type != issvar) {
-                    break;
-                }
-                if (!addreq(expr_s0->data.isvar_issvar.var_data, *var)) {
-                    break;
-                }
-                if (expr_s0->data.isvar_issvar.unk21) {
-                    sp2F = true;
-                    break;
-                }
+                if (expr->type == issvar && addreq(expr->data.isvar_issvar.var_data, *var)) {
+                    if (expr->data.isvar_issvar.unk21) {
+                        sp2F = true;
+                        break;
+                    }
 
-                sp33 = curgraphnode == expr_s0->graphnode && !expr_s0->unk2 &&
-                         !expr_s0->data.isvar_issvar.unk24->data.isvar_issvar.unk21;
-                //                                               ^   isop?   ^
-                if (expr_s0->data.isvar_issvar.unk22) {
-                    sp30 = true;
-                }
+                    sp33 = curgraphnode == expr->graphnode && !expr->unk2 &&
+                        !expr->data.isvar_issvar.unk24->data.isvar_issvar.unk21;
+                    //                                            ^   isop?   ^
+                    if (expr->data.isvar_issvar.unk22) {
+                        sp30 = true;
+                    }
 
-                if (!sp33 && expr_s0->graphnode == curgraphnode) {
-                    sp31 = true;
+                    if (!sp33 && expr->graphnode == curgraphnode) {
+                        sp31 = true;
+                    }
                 }
                 break;
 
             case Ulda:
-                if (expr_s0->type != islda) {
-                    break;
-                }
-                if (addreq(expr_s0->data.islda_isilda.var_data, *var) == 0) {
-                    break;
-                }
-                if (LENGTH != expr_s0->data.islda_isilda.size) {
-                    break;
-                }
-                if (OFFSET != expr_s0->data.islda_isilda.addr) {
-                    break;
-                }
-                sp33 = true;
-                break;
-
-            case Uilda:
-                if (expr_s0->type != isilda) {
-                    break;
-                }
-                if (!addreq(expr_s0->data.islda_isilda.var_data, *var)) {
-                    break;
-                }
-                if (LENGTH != expr_s0->data.islda_isilda.size) {
-                    break;
-                }
-                if (OFFSET != expr_s0->data.islda_isilda.addr) {
-                    break;
-                }
-                sp33 = !expr_s0->data.islda_isilda.unk34->data.isvar_issvar.unk21;
-                break;
-
-            case Uldc:
-                if (expr_s0->type != isconst) {
-                    break;
-                }
-
-                if (DTYPE != expr_s0->datatype) {
-                    break;
-                }
-
-                if (DTYPE == Adt || DTYPE == Fdt || DTYPE == Gdt || DTYPE == Hdt || DTYPE == Jdt || DTYPE == Ldt || DTYPE == Ndt) {
-                    if (CONSTVAL.swpart.Ival == expr_s0->data.isconst.number.intval) {
+                if (expr->type == islda && addreq(expr->data.islda_isilda.var_data, *var)) {
+                    if (expr->data.islda_isilda.size == LENGTH && expr->data.islda_isilda.addr == OFFSET) {
                         sp33 = true;
                     }
                 }
-                else if (DTYPE == Idt || DTYPE == Kdt) {
-                    if (CONSTVAL.dwpart.dwval_h != expr_s0->data.isconst.number.intval) {
-                        break;
-                    }
-                    if (CONSTVAL.dwpart.dwval_l != expr_s0->data.isconst.number.intval2) {
-                        break;
-                    }
-                    sp33 = true;
-                    break;
-                }
+                break;
 
-                if (CONSTVAL.swpart.Ival != expr_s0->data.isconst.number.real.len) {
-                    break;
+            case Uilda:
+                if (expr->type == isilda && addreq(expr->data.islda_isilda.var_data, *var) &&
+                        expr->data.islda_isilda.size == LENGTH && expr->data.islda_isilda.addr == OFFSET) {
+                    sp33 = !expr->data.islda_isilda.unk34->data.isvar_issvar.unk21;
                 }
-                if (func_0043B084(expr_s0->data.isconst.number) == 0) {
-                    break;
+                break;
+
+            case Uldc:
+                if (expr->type == isconst && expr->datatype == DTYPE) {
+                    if (DTYPE == Adt || DTYPE == Fdt || DTYPE == Gdt || DTYPE == Hdt || DTYPE == Jdt || DTYPE == Ldt || DTYPE == Ndt) {
+                        if (expr->data.isconst.number.intval == CONSTVAL.swpart.Ival) {
+                            sp33 = true;
+                        }
+                    } else if (DTYPE == Idt || DTYPE == Kdt) {
+                        if (expr->data.isconst.number.intval  == CONSTVAL.dwpart.dwval_h &&
+                            expr->data.isconst.number.intval2 == CONSTVAL.dwpart.dwval_l) {
+                            sp33 = true;
+                        }
+                    } else if (CONSTVAL.swpart.Ival == expr->data.isconst.number.real.len &&
+                            number_in_realstore(expr->data.isconst.number)) {
+                        sp33 = true;
+                    }
                 }
-                sp33 = true;
+                
                 break;
 
             case Uldrc:
-                if (expr_s0->type != isrconst) {
-                    break;
+                if (expr->type == isrconst && expr->datatype == DTYPE && expr->data.isrconst.value == IONE) {
+                    sp33 = true;
                 }
-                if (DTYPE != expr_s0->datatype) {
-                    break;
-                }
-                if (IONE != expr_s0->data.isrconst.unk20) {
-                    break;
-                }
-                sp33 = true;
                 break;
 
             case Uadd:
@@ -907,39 +851,23 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
             case Umpy:
             case Uuni:
             case Uxor:
-                if (expr_s0->type != isop) {
-                    break;
-                }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (DTYPE != expr_s0->datatype) {
-                    break;
-                }
-                if ((stexpr1 == expr_s0->data.isop.op1 && stexpr2 == expr_s0->data.isop.op2) ||
-                    (stexpr2 == expr_s0->data.isop.op1 && stexpr1 == expr_s0->data.isop.op2)) {
-
-                    if (IS_OVERFLOW_ATTR(LEXLEV) != expr_s0->data.isop.aux2.v1.overflow_attr) {
-                        break;
+                if (expr->type == isop && expr->data.isop.opc == OPC && expr->datatype == DTYPE) {
+                    if ((expr->data.isop.op1 == stexpr1 && expr->data.isop.op2 == stexpr2) ||
+                        (expr->data.isop.op1 == stexpr2 && expr->data.isop.op2 == stexpr1)) {
+                        if (expr->data.isop.aux2.v1.overflow_attr == IS_OVERFLOW_ATTR(LEXLEV)) {
+                            sp33 = true;
+                        }
                     }
-                    sp33 = true;
                 }
                 break;
 
             case Uequ:
             case Uneq:
-                if (expr_s0->type != isop) {
-                    break;
-                }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (DTYPE != expr_s0->datatype) {
-                    break;
-                }
-                if ((stexpr1 == expr_s0->data.isop.op1 && stexpr2 == expr_s0->data.isop.op2) ||
-                    (stexpr2 == expr_s0->data.isop.op1 && stexpr1 == expr_s0->data.isop.op2)) {
-                    sp33 = true;
+                if (expr->type == isop && expr->data.isop.opc == OPC && expr->datatype == DTYPE) {
+                    if ((expr->data.isop.op1 == stexpr1 && expr->data.isop.op2 == stexpr2) ||
+                        (expr->data.isop.op1 == stexpr2 && expr->data.isop.op2 == stexpr1)) {
+                        sp33 = true;
+                    }
                 }
                 break;
 
@@ -955,91 +883,44 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
             case Ushr:
             case Usign:
             case Usub:
-                if (expr_s0->type != isop) {
-                    break;
+                if (expr->type == isop && expr->data.isop.opc == OPC && expr->datatype == DTYPE) {
+                    if (expr->data.isop.op1 == stexpr1 && expr->data.isop.op2 == stexpr2) {
+                        if (expr->data.isop.aux2.v1.overflow_attr == IS_OVERFLOW_ATTR(LEXLEV)) {
+                            sp33 = true;
+                        }
+                    }
                 }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (DTYPE != expr_s0->datatype) {
-                    break;
-                }
-                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
-                    break;
-                }
-                if (stexpr2 != expr_s0->data.isop.op2) { // stexpr2 $v0-1C
-                    break;
-                }
-                if (IS_OVERFLOW_ATTR(LEXLEV) != expr_s0->data.isop.aux2.v1.overflow_attr) {
-                    break;
-                }
-                sp33 = true;
                 break;
 
             case Ugeq:
             case Ugrt:
             case Uleq:
             case Ules:
-                if (expr_s0->type != isop) {
-                    break;
+                if (expr->type == isop && expr->data.isop.opc == OPC && expr->datatype == DTYPE) {
+                    if (expr->data.isop.op1 == stexpr1 && expr->data.isop.op2 == stexpr2) {
+                        sp33 = true;
+                    }
                 }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (DTYPE != expr_s0->datatype) {
-                    break;
-                }
-                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
-                    break;
-                }
-                if (stexpr2 != expr_s0->data.isop.op2) { // stexpr2 $v0-1C
-                    break;
-                }
-                sp33 = true;
                 break;
 
             case Uinn:
-                if (expr_s0->type != isop) {
-                    break;
+                if (expr->type == isop && expr->data.isop.opc == OPC && expr->datatype == DTYPE) {
+                    if (expr->data.isop.op1 == stexpr1 && expr->data.isop.op2 == stexpr2) {
+                        if (IONE == expr->data.isop.aux2.v1.unk3C) {
+                            sp33 = true;
+                        }
+                    }
                 }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (DTYPE != expr_s0->datatype) {
-                    break;
-                }
-                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
-                    break;
-                }
-                if (stexpr2 != expr_s0->data.isop.op2) { // stexpr2 $v0-1C
-                    break;
-                }
-                if (IONE != expr_s0->data.isop.aux2.v1.unk3C) {
-                    break;
-                }
-                sp33 = true;
                 break;
 
             case Uixa:
-                if (expr_s0->type != isop) {
-                    break;
+                if (expr->type == isop && expr->data.isop.opc == OPC && expr->datatype == DTYPE) {
+                    if (expr->data.isop.op1 == stexpr1 && expr->data.isop.op2 == stexpr2) {
+                        if (IONE == expr->data.isop.datasize) {
+                            sp33 = true;
+                        }
+                    }
                 }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (DTYPE != expr_s0->datatype) {
-                    break;
-                }
-                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
-                    break;
-                }
-                if (stexpr2 != expr_s0->data.isop.op2) { // stexpr2 $v0-1C
-                    break;
-                }
-                if (IONE != expr_s0->data.isop.datasize) {
-                    break;
-                }
-                sp33 = true;
                 break;
 
             case Uabs:
@@ -1050,22 +931,13 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
             case Usgs:
             case Usqr:
             case Usqrt:
-                if (expr_s0->type != isop) {
-                    break;
+                if (expr->type == isop && expr->data.isop.opc == OPC && expr->datatype == DTYPE) {
+                    if (expr->data.isop.op1 == stexpr1) {
+                        if (expr->data.isop.aux2.v1.overflow_attr == IS_OVERFLOW_ATTR(LEXLEV)) {
+                            sp33 = true;
+                        }
+                    }
                 }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (DTYPE != expr_s0->datatype) {
-                    break;
-                }
-                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
-                    break;
-                }
-                if (IS_OVERFLOW_ATTR(LEXLEV) != expr_s0->data.isop.aux2.v1.overflow_attr) {
-                    break;
-                }
-                sp33 = true;
                 break;
 
             case Uchkh:
@@ -1073,129 +945,76 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
             case Ucvtl:
             case Udec:
             case Uinc:
-                if (expr_s0->type != isop) {
-                    break;
+                if (expr->type == isop && expr->data.isop.opc == OPC && expr->datatype == DTYPE) {
+                    if (expr->data.isop.op1 == stexpr1) {
+                        if (expr->data.isop.datasize == IONE) {
+                            if (expr->data.isop.aux2.v1.overflow_attr == IS_OVERFLOW_ATTR(LEXLEV)) {
+                                sp33 = true;
+                            }
+                        }
+                    }
                 }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (DTYPE != expr_s0->datatype) {
-                    break;
-                }
-                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
-                    break;
-                }
-                if (IONE != expr_s0->data.isop.datasize) {
-                    break;
-                }
-                if (IS_OVERFLOW_ATTR(LEXLEV) != expr_s0->data.isop.aux2.v1.overflow_attr) {
-                    break;
-                }
-                sp33 = true;
                 break;
 
             case Ucvt:
             case Urnd:
             case Utyp:
-                if (expr_s0->type != isop) {
-                    break;
+                if (expr->type == isop && expr->data.isop.opc == OPC && expr->datatype == DTYPE && expr->data.isop.aux.cvtfrom == DTYPE2) {
+                    if (expr->data.isop.op1 == stexpr1) {
+                        if (expr->data.isop.aux2.v1.overflow_attr == IS_OVERFLOW_ATTR(LEXLEV)) {
+                            sp33 = true;
+                        }
+                    }
                 }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (DTYPE != expr_s0->datatype) {
-                    break;
-                }
-                if (DTYPE2 != expr_s0->data.isop.aux.cvtfrom) {
-                    break;
-                }
-                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
-                    break;
-                }
-                if (IS_OVERFLOW_ATTR(LEXLEV) != expr_s0->data.isop.aux2.v1.overflow_attr) {
-                    break;
-                }
-                sp33 = true;
                 break;
 
             case Uadj:
-                if (expr_s0->type != isop) {
-                    break;
+                if (expr->type == isop && expr->data.isop.opc == OPC) {
+                    if (expr->data.isop.datasize == OFFSET && expr->data.isop.aux2.v1.unk3C == LENGTH) {
+                        if (expr->data.isop.op1 == stexpr1) {
+                            sp33 = true;
+                        }
+                    }
                 }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (OFFSET != expr_s0->data.isop.datasize) {
-                    break;
-                }
-                if (LENGTH != expr_s0->data.isop.aux2.v1.unk3C) {
-                    break;
-                }
-                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
-                    break;
-                }
-                sp33 = true;
                 break;
 
             case Uchkn:
-                if (expr_s0->type != isop) {
-                    break;
+                if (expr->type == isop && expr->data.isop.opc == OPC) {
+                    if (stexpr1 == expr->data.isop.op1) {
+                        sp33 = true;
+                    }
                 }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
-                    break;
-                }
-                sp33 = true;
                 break;
 
             case Uilod:
             case Uirld:
-                if (expr_s0->type != isop) {
-                    break;
+                if (expr->type == isop && expr->data.isop.opc == OPC && expr->datatype == DTYPE) {
+                    if (expr->data.isop.op1 == stexpr1) {
+                        if (expr->data.isop.datasize == IONE && expr->data.isop.aux2.v1.unk3C == LENGTH) {
+                            sp33 = !expr->unk2;
+                            sp31 = !sp33;
+                        }
+                    }
                 }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (DTYPE != expr_s0->datatype) {
-                    break;
-                }
-                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
-                    break;
-                }
-                if (IONE != expr_s0->data.isop.datasize) {
-                    break;
-                }
-                if (LENGTH != expr_s0->data.isop.aux2.v1.unk3C) {
-                    break;
-                }
-                sp33 = !expr_s0->unk2;
-                sp31 = !sp33;
                 break;
 
             case Uildv:
             case Uirlv:
-                while (expr_s0->next != NULL) {
-                    expr_s0 = expr_s0->next;
+                while (expr->next != NULL) {
+                    expr = expr->next;
                 }
                 break;
 
             case Uiequ:
             case Uineq:
-                if (expr_s0->type != isop) {
-                    break;
-                }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if ((stexpr1 == expr_s0->data.isop.op1 && stexpr2 == expr_s0->data.isop.op2) ||
-                    (stexpr2 == expr_s0->data.isop.op1 && stexpr1 == expr_s0->data.isop.op2)) {
-                    if (LENGTH != expr_s0->data.isop.datasize) {
-                        break;
+                if (expr->type == isop && expr->data.isop.opc == OPC) {
+                    if ((expr->data.isop.op1 == stexpr1 && expr->data.isop.op2 == stexpr2) ||
+                        (expr->data.isop.op1 == stexpr2 && expr->data.isop.op2 == stexpr1)) {
+                        if (expr->data.isop.datasize == LENGTH) {
+                            sp33 = !expr->unk2;
+                            sp31 = !sp33;
+                        }
                     }
-                    sp33 = !expr_s0->unk2;
-                    sp31 = !sp33;
                 }
                 break;
 
@@ -1203,26 +1022,14 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
             case Uigrt:
             case Uileq:
             case Uiles:
-                if (expr_s0->type != isop) {
-                    break;
+                if (expr->type == isop && expr->data.isop.opc == OPC) {
+                    if (expr->data.isop.op1 == stexpr1 && expr->data.isop.op2 == stexpr2) {
+                        if (expr->data.isop.datasize == LENGTH) {
+                            sp33 = !expr->unk2;
+                            sp31 = !sp33;
+                        }
+                    }
                 }
-                if (OPC != expr_s0->data.isop.opc) {
-                    break;
-                }
-                if (stexpr1 != expr_s0->data.isop.op1) { // stexpr1 $v0-18
-                    break;
-                }
-                if (stexpr2 != expr_s0->data.isop.op2) { // stexpr2 $v0-1C
-                    break;
-                }
-                if (LENGTH != expr_s0->data.isop.datasize) {
-                    break;
-                }
-                sp33 = !expr_s0->unk2;
-                if (sp33 != 0) {
-                    break;
-                }
-                sp31 = true;
                 break;
 
             default:
@@ -1236,26 +1043,26 @@ static struct Expression *func_0043B504(unsigned short tableIdx, struct Variable
 
 next:
         if (!sp33) {
-            expr_s0 = expr_s0->next;
+            expr = expr->next;
         }
     }
 
     if (!sp33 || sp2F) {
-        expr_s0 = appendchain(tableIdx);
+        expr = appendchain(tableIdx);
         if (outofmem) {
-            return expr_s0;
+            return expr;
         }
 
-        expr_s0->graphnode = curgraphnode;
+        expr->graphnode = curgraphnode;
 
         // originally performs useless checks for below opcodes including Ulca Ulda Uldc, then overwrites with && below
         if (OPC == Uisld || OPC == Uisst || OPC == Ulod || OPC == Ustr) {
-                expr_s0->data.isvar_issvar.unk21 = sp2F;
-                expr_s0->data.isvar_issvar.unk22 = !sp2F && sp30;
+                expr->data.isvar_issvar.unk21 = sp2F;
+                expr->data.isvar_issvar.unk22 = !sp2F && sp30;
         }
 
         if (sp31) {
-            expr_s0->unk3 = false;
+            expr->unk3 = false;
         } else if (OPC == Uisld || OPC == Uisst || OPC == Ulod || OPC == Ustr ||
                    (OPC == Uiequ ||
                     OPC == Uigeq ||
@@ -1265,10 +1072,10 @@ next:
                     OPC == Uineq ||
                     OPC == Uilod ||
                     OPC == Uirld)) {
-                expr_s0->unk3 = true;
+                expr->unk3 = true;
         }
     }
-    return expr_s0;
+    return expr;
 }
 
 /* 
@@ -1289,7 +1096,6 @@ static void func_0043C248(struct UstackEntry *ustackHead, struct VariableInner *
     }
 
     CONSTVAL.swpart.Ival = 0;
-    ustackHead->expr = ustackHead->expr;
     if ((ustackHead->expr->datatype == Idt || ustackHead->expr->datatype == Jdt) && ustackHead->expr->data.isconst.number.intval < 0) {
         CONSTVAL.swpart.Ival = 1;
         ustrptr[0] = '-';
@@ -1303,7 +1109,7 @@ static void func_0043C248(struct UstackEntry *ustackHead, struct VariableInner *
 
     do {
         if (value < exponent * 10 || exponent == 1000000000) {
-            done = 1;
+            done = true;
         } else {
             exponent *= 10;
         }
@@ -1318,10 +1124,10 @@ static void func_0043C248(struct UstackEntry *ustackHead, struct VariableInner *
         exponent /= 10;
     } while (exponent != 0);
 
-    ustrptr[CONSTVAL.swpart.Ival] = '.';
-    ustrptr[CONSTVAL.swpart.Ival + 1] = '0';
-    CONSTVAL.swpart.Ival += 2;
-    expr = func_0043B504(realhash(CONSTVAL.swpart.Ival), var, stexpr1, stexpr2);
+    ustrptr[CONSTVAL.swpart.Ival++] = '.';
+    ustrptr[CONSTVAL.swpart.Ival++] = '0';
+
+    expr = readnxtinst_searchloop(realhash(CONSTVAL.swpart.Ival), var, stexpr1, stexpr2);
     if (expr->type == empty) {
         expr->type = isconst;
         expr->datatype = DTYPE;
@@ -1337,10 +1143,10 @@ static void func_0043C248(struct UstackEntry *ustackHead, struct VariableInner *
 
         expr->data.isconst.number.real.len = CONSTVAL.swpart.Ival;
         expr->data.isconst.number.real.disp = (realdispdiv << 8) + realdispmod;
-        expr->data.isconst.real_exponent = 0;
-        expr->var_access_list = 0;
-        expr->data.isconst.size = LENGTH;
         expr->data.isconst.real_significand = ustackHead->expr->data.isconst.number.intval;
+        expr->data.isconst.real_exponent = 0;
+        expr->data.isconst.size = LENGTH;
+        expr->var_access_list = NULL;
         realdispmod += CONSTVAL.swpart.Ival;
     }
     ustackHead->expr = expr;
@@ -1353,7 +1159,6 @@ static struct Expression *func_0043C56C(int real_significand, bool negative, int
     int sp34;
     struct Expression *expr;
     bool done;
-    int phi_s0;
     int value;
     int exponent;
     int i;
@@ -1375,8 +1180,8 @@ static struct Expression *func_0043C56C(int real_significand, bool negative, int
             if (sp34 == 0x40000000) {
                 return NULL;
             }
-            real_significand = real_significand / 5;
-            sp34 = sp34 << 1;
+            real_significand /= 5;
+            sp34 <<= 1;
             real_exponent--;
         }
     }
@@ -1414,9 +1219,8 @@ static struct Expression *func_0043C56C(int real_significand, bool negative, int
         }
         exponent /= 10;
     } while (exponent != 0);
-    ustrptr[CONSTVAL.swpart.Ival] = '.';
-    ustrptr[CONSTVAL.swpart.Ival + 1] = '0';
-    CONSTVAL.swpart.Ival += 2;
+    ustrptr[CONSTVAL.swpart.Ival++] = '.';
+    ustrptr[CONSTVAL.swpart.Ival++] = '0';
 
     // Add exponent
     if (real_exponent != 0) {
@@ -1447,7 +1251,7 @@ static struct Expression *func_0043C56C(int real_significand, bool negative, int
         }  while (exponent != 0);
     }
 
-    expr = func_0043B504(realhash(CONSTVAL.swpart.Ival), var, stexpr1, stexpr2);
+    expr = readnxtinst_searchloop(realhash(CONSTVAL.swpart.Ival), var, stexpr1, stexpr2);
     if (expr->type == empty) {
         expr->type = isconst;
         expr->datatype = DTYPE;
@@ -1478,10 +1282,10 @@ static struct Expression *func_0043C56C(int real_significand, bool negative, int
 }
 
 /* 
-0043CA8C func_0043CA8C
+0043CA8C link_ijp_labels
 0043CFCC readnxtinst
 */
-static void func_0043CA8C(struct IjpLabel *ijp) {
+static void link_ijp_labels(struct IjpLabel *ijp) {
     struct Graphnode *targetnode;
     struct GraphnodeList *predecessors;
     struct GraphnodeList *successors;
@@ -1515,7 +1319,7 @@ static void func_0043CA8C(struct IjpLabel *ijp) {
         successors->next = curgraphnode->successors;
         curgraphnode->successors = successors;
 
-        func_0043CA8C(ijp->left);
+        link_ijp_labels(ijp->left);
         ijp = ijp->right;
     }
 }
@@ -1598,7 +1402,9 @@ static bool func_0043CE64(struct Expression *stexpr1, int val) {
     while (var != NULL) {
         if (var->type == 1) {
             store = var->data.store;
-            if (store->opc == Uistr && stexpr1 == store->expr && val == store->u.store.u.istr.s.word && store->u.store.unk1F != 0 && DTYPE == store->u.store.u.istr.dtype && LENGTH == store->u.store.size && treekilled(store->u.store.expr) == 0) {
+            if (store->opc == Uistr && store->expr == stexpr1 && store->u.store.u.istr.s.word == val
+                    && store->u.store.unk1F && store->u.store.u.istr.dtype == DTYPE && store->u.store.size == LENGTH
+                    && !treekilled(store->u.store.expr)) {
                 decreasecount(stexpr1);
                 expr = var->data.store->u.store.expr;
                 if (expr->type == isvar || expr->type == isop || expr->type == isilda || expr->type == issvar) {
@@ -1612,12 +1418,6 @@ static bool func_0043CE64(struct Expression *stexpr1, int val) {
     }
     return false;
 }
-
-struct Expression *gspF8;
-struct Expression *gspF4;
-int gstval1;
-int gstval2;
-int gok;
 
 /* 
 0043A7DC createcvtl
@@ -1648,11 +1448,12 @@ void readnxtinst(void) {
     struct Expression *expr2;
     struct Statement *stmt;
     struct Graphnode *target_graphnode;
-    struct GraphnodeList *graphnode_list_item;
+    struct GraphnodeList *successors;
+    struct GraphnodeList *predecessors;
     bool stop;
     bool found;
-    struct Graphnode *graphnode;
     bool endblock_saved;
+    struct Graphnode *graphnode;
     struct GraphnodeList *new_graphnode_list_item;
     struct ParstackEntry *parstack_entry;
 
@@ -1700,7 +1501,7 @@ void readnxtinst(void) {
         expr->data.isvar_issvar.unk38 = NULL;
         appendstorelist();
         curgraphnode->varlisttail->unk8 = true;
-        func_0043B15C(expr);
+        ustack_push(expr);
         increasecount(expr);
     }
 
@@ -1718,7 +1519,7 @@ void readnxtinst(void) {
             var.blockno = IONE;
             var.addr = 29;
 
-            expr = func_0043B504(isvarhash(var), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(isvarhash(var), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -1738,7 +1539,7 @@ void readnxtinst(void) {
                 expr->data.isvar_issvar.var_data.level = curlevel;
             }
 
-            func_0043B15C(expr);
+            ustack_push(expr);
             increasecount(expr);
             if (expr->count == 1) {
                 appendbbvarlst(expr);
@@ -1776,7 +1577,7 @@ void readnxtinst(void) {
 
             if (MTYPE == Amt && in_outparlist(OFFSET) != NULL) {
                 expr = in_outparlist(OFFSET);
-                func_0043B15C(expr);
+                ustack_push(expr);
                 increasecount(expr);
                 return;
             }
@@ -1789,7 +1590,7 @@ void readnxtinst(void) {
             }
 
             // searchloop
-            expr = func_0043B504(isvarhash(var), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(isvarhash(var), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -1846,7 +1647,7 @@ void readnxtinst(void) {
             }
 
             if (expr->data.isvar_issvar.unk38 == NULL || !expr->data.isvar_issvar.unk38->u.store.unk1F) {
-                func_0043B15C(expr);
+                ustack_push(expr);
                 increasecount(expr);
                 if (!expr->data.isvar_issvar.unk22) {
                     lodkillprev(expr);
@@ -1868,7 +1669,7 @@ void readnxtinst(void) {
                                 || has_ilod(expr->data.isvar_issvar.unk34))
                             && !constexp(expr->data.isvar_issvar.unk34))))
             {
-                func_0043B15C(expr);
+                ustack_push(expr);
                 expr->data.isvar_issvar.unk38->u.store.unk1D = false;
 
                 if (expr->count == 0) {
@@ -1894,14 +1695,14 @@ void readnxtinst(void) {
                 case islda:
                 case isconst:
                 case isrconst:
-                    func_0043B15C(expr->data.isvar_issvar.unk34);
+                    ustack_push(expr->data.isvar_issvar.unk34);
                     if (expr->data.isvar_issvar.size < 4) {
                         createcvtl(expr->data.isvar_issvar.size * 8, expr->datatype);
                     }
                     return;
 
                 case isvar:
-                    func_0043B15C(expr->data.isvar_issvar.unk34);
+                    ustack_push(expr->data.isvar_issvar.unk34);
                     expr->data.isvar_issvar.unk34->count++;
                     if (expr->data.isvar_issvar.size < expr->data.isvar_issvar.unk34->data.isvar_issvar.size) {
                         createcvtl(expr->data.isvar_issvar.size * 8, expr->datatype);
@@ -1915,7 +1716,7 @@ void readnxtinst(void) {
                         case isop:
                             if (expr->data.isvar_issvar.size < 4) {
                                 expr->data.isvar_issvar.unk34->count++;
-                                func_0043B15C(expr->data.isvar_issvar.unk34);
+                                ustack_push(expr->data.isvar_issvar.unk34);
                                 if (expr->data.isvar_issvar.unk34->data.isop.opc != Ucvtl || expr->data.isvar_issvar.size * 8 < expr->data.isvar_issvar.unk34->data.isop.datasize) {
                                     if ((expr->data.isvar_issvar.unk34->data.isop.opc != Uildv && expr->data.isvar_issvar.unk34->data.isop.opc != Uilod) ||
                                             expr->data.isvar_issvar.size < expr->data.isvar_issvar.unk34->data.isop.aux2.v1.unk3C)
@@ -1929,23 +1730,23 @@ void readnxtinst(void) {
                                         expr->data.isvar_issvar.unk34->data.isop.op2->type == isconst &&
                                         (dtype == Adt || dtype == Hdt || dtype == Jdt || dtype == Ldt)) {
                                     expr->data.isvar_issvar.unk34->data.isop.op1->count++;
-                                    func_0043B15C(expr->data.isvar_issvar.unk34->data.isop.op1);
+                                    ustack_push(expr->data.isvar_issvar.unk34->data.isop.op1);
                                     ustack->value = expr->data.isvar_issvar.unk34->data.isop.op2->data.isconst.number.intval;
                                 } else {
                                     expr->data.isvar_issvar.unk34->count += 1;
-                                    func_0043B15C(expr->data.isvar_issvar.unk34);
+                                    ustack_push(expr->data.isvar_issvar.unk34);
                                 }
                             }
                             return;
 
                         case isilda:
                             expr->data.isvar_issvar.unk34->count++;
-                            func_0043B15C(expr->data.isvar_issvar.unk34);
+                            ustack_push(expr->data.isvar_issvar.unk34);
                             return;
 
                         case issvar:
                             expr->data.isvar_issvar.unk34->count++;
-                            func_0043B15C(expr->data.isvar_issvar.unk34);
+                            ustack_push(expr->data.isvar_issvar.unk34);
                             if (expr->data.isvar_issvar.size < expr->data.isvar_issvar.unk34->data.isvar_issvar.size) {
                                 createcvtl(expr->data.isvar_issvar.size * 8, expr->datatype);
                             }
@@ -1984,7 +1785,7 @@ void readnxtinst(void) {
                 }
             }
 
-            expr = func_0043B504(isvarhash(var), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(isvarhash(var), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -2031,7 +1832,7 @@ void readnxtinst(void) {
             if (OPC == Uilda) {
                 ustack->expr = expr;
             } else {
-                func_0043B15C(expr);
+                ustack_push(expr);
             }
             return;
 
@@ -2069,7 +1870,7 @@ void readnxtinst(void) {
                     break;
             }
 
-            expr = func_0043B504(hash, &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(hash, &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -2116,11 +1917,11 @@ void readnxtinst(void) {
                 expr->data.isconst.size = LENGTH;
             }
 
-            func_0043B15C(expr);
+            ustack_push(expr);
             return;
 
         case Uldrc: // XXX: untested
-            expr = func_0043B504(isconsthash(IONE), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(isconsthash(IONE), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -2129,12 +1930,12 @@ void readnxtinst(void) {
                 expr->type = isrconst;
                 expr->datatype = DTYPE;
                 expr->count = 0;
-                expr->data.isrconst.unk20 = IONE;
+                expr->data.isrconst.value = IONE;
                 expr->data.isrconst.unk24 = LENGTH;
                 expr->var_access_list = NULL;
             }
 
-            func_0043B15C(expr);
+            ustack_push(expr);
             return;
 
         case Uadd:
@@ -2258,11 +2059,11 @@ void readnxtinst(void) {
                             stexpr2->count++;
                             ustack->value = 0;
                             ustack->expr = stexpr2;
-                            func_0043B15C(stexpr2);
+                            ustack_push(stexpr2);
                             ustack->value = 0;
                         } else {
                             stexpr1->count++;
-                            func_0043B15C(stexpr1);
+                            ustack_push(stexpr1);
                             ustack->value = 0;
                         }
                         OPC = Uadd;
@@ -2478,7 +2279,7 @@ void readnxtinst(void) {
                 }
             }
 
-            expr = func_0043B504(isophash(OPC, stexpr1, stexpr2), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(isophash(OPC, stexpr1, stexpr2), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -2553,7 +2354,7 @@ void readnxtinst(void) {
                 ustack->value += stval2 * IONE;
             }
             stexpr1 = ustack->expr;
-            expr = func_0043B504(isophash(OPC, stexpr1, stexpr2), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(isophash(OPC, stexpr1, stexpr2), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -2606,7 +2407,7 @@ void readnxtinst(void) {
                 func_0043B1DC();
                 OPC = Umpy;
                 stexpr1 = ustack->expr;
-                expr = func_0043B504(isophash(Umpy, stexpr1, stexpr2), &var, stexpr1, stexpr2);
+                expr = readnxtinst_searchloop(isophash(Umpy, stexpr1, stexpr2), &var, stexpr1, stexpr2);
                 if (outofmem) {
                     return;
                 }
@@ -2650,7 +2451,7 @@ void readnxtinst(void) {
 
             OPC = Uadd;
             stexpr2 = stexpr3;
-            expr = func_0043B504(isophash(Uadd, stexpr1, stexpr3), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(isophash(Uadd, stexpr1, stexpr3), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -2698,7 +2499,7 @@ void readnxtinst(void) {
                     CONSTVAL.swpart.Ival = stexpr1->data.isconst.number.real.len - 1;
                     memcpy(ustrptr, &currealpool->c[stexpr1->data.isconst.number.real.disp & 0xff] + 1, stexpr1->data.isconst.number.real.len - 1);
                 }
-                expr = func_0043B504(realhash(CONSTVAL.swpart.Ival), &var, stexpr1, stexpr2);
+                expr = readnxtinst_searchloop(realhash(CONSTVAL.swpart.Ival), &var, stexpr1, stexpr2);
                 if (outofmem) {
                     return;
                 }
@@ -2739,7 +2540,7 @@ void readnxtinst(void) {
                 }
 
                 stexpr1 = ustack->expr;
-                expr = func_0043B504(isophash(OPC, stexpr1, NULL), &var, stexpr1, stexpr2);
+                expr = readnxtinst_searchloop(isophash(OPC, stexpr1, NULL), &var, stexpr1, stexpr2);
                 if (outofmem) {
                     return;
                 }
@@ -2790,7 +2591,7 @@ void readnxtinst(void) {
             }
             func_0043B1DC();
             stexpr1 = ustack->expr;
-            expr = func_0043B504(opvalhash(OPC, stexpr1, IONE), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(opvalhash(OPC, stexpr1, IONE), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -2838,7 +2639,7 @@ void readnxtinst(void) {
             }
             func_0043B1DC();
             stexpr1 = ustack->expr;
-            expr = func_0043B504(isophash(OPC, stexpr1, NULL), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(isophash(OPC, stexpr1, NULL), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -2864,7 +2665,7 @@ void readnxtinst(void) {
         case Uadj: // XXX: untested
             func_0043B1DC();
             stexpr1 = ustack->expr;
-            expr = func_0043B504(opvalhash(OPC, stexpr1, OFFSET), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(opvalhash(OPC, stexpr1, OFFSET), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -2891,7 +2692,7 @@ void readnxtinst(void) {
         case Uchkn: // XXX: untested
             func_0043B1DC();
             stexpr1 = ustack->expr;
-            expr = func_0043B504(isophash(OPC, stexpr1, NULL), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(isophash(OPC, stexpr1, NULL), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -2923,7 +2724,7 @@ void readnxtinst(void) {
             if (OPC == Uilod && stexpr1->count >= 2 && LENGTH >= 4 && func_0043CE64(stexpr1, IONE)) {
                 return;
             }
-            expr = func_0043B504(opvalhash(OPC, stexpr1, IONE), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(opvalhash(OPC, stexpr1, IONE), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -2993,7 +2794,7 @@ void readnxtinst(void) {
                 return;
             }
 
-            expr = func_0043B504(opvalhash(OPC, stexpr1, IONE), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(opvalhash(OPC, stexpr1, IONE), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -3071,7 +2872,7 @@ void readnxtinst(void) {
             ustack = ustack->down;
             func_0043B1DC();
             stexpr1 = ustack->expr;
-            expr = func_0043B504(isophash(OPC, stexpr1, stexpr2), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(isophash(OPC, stexpr1, stexpr2), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -3105,7 +2906,7 @@ void readnxtinst(void) {
             return;
 
         case Udup: // XXX: untested
-            func_0043B15C(ustack->expr);
+            ustack_push(ustack->expr);
             ustack->expr->count++;
             ustack->value = ustack->down->value;
             return;
@@ -3115,7 +2916,7 @@ void readnxtinst(void) {
             for (i = 0; i < CONSTVAL.swpart.Ival; i++) {
                 write_char(strp.c_file, ustrptr[i], 1);
             }
-            expr = func_0043B504(isconsthash(strpdisplace), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(isconsthash(strpdisplace), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -3126,7 +2927,7 @@ void readnxtinst(void) {
             expr->var_access_list = NULL;
             expr->data.isconst.number.string.len = CONSTVAL.swpart.Ival;
             strpdisplace += CONSTVAL.swpart.Ival + 1;
-            func_0043B15C(expr);
+            ustack_push(expr);
             return;
 
         case Uisst: // XXX: untested
@@ -3184,7 +2985,7 @@ void readnxtinst(void) {
             var.addr = OFFSET;
             if (var.memtype == Rmt) {
                 var.blockno = 0;
-                if (curmst != NULL && curmst->u.mst.unk14 && OFFSET == 2) {
+                if (curmst != NULL && curmst->u.mst.cup_level && OFFSET == 2) {
                     if (ustack->expr->type == isvar) {
                         func_0043CBFC(ustack);
                     } else if (ustack->expr->type == issvar) {
@@ -3214,7 +3015,7 @@ void readnxtinst(void) {
                     return;
                 }
             }
-            expr = func_0043B504(isvarhash(var), &var, stexpr1, stexpr2);
+            expr = readnxtinst_searchloop(isvarhash(var), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
@@ -3516,23 +3317,23 @@ void readnxtinst(void) {
                 target_graphnode->bvs.init.line = curlocln;
             }
             if (OPC != Ulab) {
-                graphnode_list_item = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                if (graphnode_list_item == NULL) {
+                predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+                if (predecessors == NULL) {
                     outofmem = true;
                     return;
                 }
-                graphnode_list_item->graphnode = curgraphnode;
-                graphnode_list_item->next = target_graphnode->predecessors;
-                target_graphnode->predecessors = graphnode_list_item;
+                predecessors->graphnode = curgraphnode;
+                predecessors->next = target_graphnode->predecessors;
+                target_graphnode->predecessors = predecessors;
 
-                graphnode_list_item = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                if (graphnode_list_item == NULL) {
+                successors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+                if (successors == NULL) {
                     outofmem = true;
                     return;
                 }
-                graphnode_list_item->graphnode = target_graphnode;
-                graphnode_list_item->next = curgraphnode->successors;
-                curgraphnode->successors = graphnode_list_item;
+                successors->graphnode = target_graphnode;
+                successors->next = curgraphnode->successors;
+                curgraphnode->successors = successors;
                 return;
             }
 
@@ -3559,32 +3360,32 @@ void readnxtinst(void) {
                     }
                 }
                 found = false;
-                graphnode_list_item = curgraphnode->successors;
-                while (graphnode_list_item != NULL && !found) {
-                    if (IONE == graphnode_list_item->graphnode->blockno) {
+                successors = curgraphnode->successors;
+                while (successors != NULL && !found) {
+                    if (IONE == successors->graphnode->blockno) {
                         found = true;
                     } else {
-                        graphnode_list_item = graphnode_list_item->next;
+                        successors = successors->next;
                     }
                 }
                 if (!found) {
-                    graphnode_list_item = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                    if (graphnode_list_item == NULL) {
+                    predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+                    if (predecessors == NULL) {
                         outofmem = true;
                         return;
                     }
-                    graphnode_list_item->graphnode = curgraphnode;
-                    graphnode_list_item->next = target_graphnode->predecessors;
-                    target_graphnode->predecessors = graphnode_list_item;
+                    predecessors->graphnode = curgraphnode;
+                    predecessors->next = target_graphnode->predecessors;
+                    target_graphnode->predecessors = predecessors;
 
-                    graphnode_list_item = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                    if (graphnode_list_item == NULL) {
+                    successors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+                    if (successors == NULL) {
                         outofmem = true;
                         return;
                     }
-                    graphnode_list_item->graphnode = target_graphnode;
-                    graphnode_list_item->next = curgraphnode->successors;
-                    curgraphnode->successors = graphnode_list_item;
+                    successors->graphnode = target_graphnode;
+                    successors->next = curgraphnode->successors;
+                    curgraphnode->successors = successors;
                 }
             }
             curgraphnode = target_graphnode;
@@ -3639,23 +3440,23 @@ void readnxtinst(void) {
                             target_graphnode->blockno = IONE;
                         }
                         if (IONE != graphnode->blockno) {
-                            graphnode_list_item = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                            if (graphnode_list_item == NULL) {
+                            predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+                            if (predecessors == NULL) {
                                 outofmem = true;
                                 return;
                             }
-                            graphnode_list_item->graphnode = graphnode;
-                            graphnode_list_item->next = target_graphnode->predecessors;
-                            target_graphnode->predecessors = graphnode_list_item;
+                            predecessors->graphnode = graphnode;
+                            predecessors->next = target_graphnode->predecessors;
+                            target_graphnode->predecessors = predecessors;
                         }
-                        graphnode_list_item = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                        if (graphnode_list_item == NULL) {
+                        successors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+                        if (successors == NULL) {
                             outofmem = true;
                             return;
                         }
-                        graphnode_list_item->graphnode = target_graphnode;
-                        graphnode_list_item->next = graphnode->successors;
-                        graphnode->successors = graphnode_list_item;
+                        successors->graphnode = target_graphnode;
+                        successors->next = graphnode->successors;
+                        graphnode->successors = successors;
                     }
                 } while (OPC != Uujp || ++i != LENGTH);
             }
@@ -3687,15 +3488,15 @@ void readnxtinst(void) {
 
                 // Move over the successors from the case labels graphnode and add predecessor at targets
                 curgraphnode->successors = graphnode->successors;
-                for (graphnode_list_item = graphnode->successors; graphnode_list_item != NULL; graphnode_list_item = graphnode_list_item->next) {
+                for (successors = graphnode->successors; successors != NULL; successors = successors->next) {
                     new_graphnode_list_item = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
                     if (new_graphnode_list_item == NULL) {
                         outofmem = true;
                         return;
                     }
                     new_graphnode_list_item->graphnode = curgraphnode;
-                    new_graphnode_list_item->next = graphnode_list_item->graphnode->predecessors;
-                    graphnode_list_item->graphnode->predecessors = new_graphnode_list_item;
+                    new_graphnode_list_item->next = successors->graphnode->predecessors;
+                    successors->graphnode->predecessors = new_graphnode_list_item;
                 }
                 graphnode->successors = NULL;
             } else {
@@ -3704,14 +3505,14 @@ void readnxtinst(void) {
                     return;
                 }
                 graphtail->blockno = IONE;
-                graphnode_list_item = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                graphtail->predecessors = graphnode_list_item;
-                if (graphnode_list_item == NULL) {
+                predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+                graphtail->predecessors = predecessors;
+                if (predecessors == NULL) {
                     outofmem = true;
                     return;
                 }
-                graphnode_list_item->next = NULL;
-                graphnode_list_item->graphnode = curgraphnode;
+                predecessors->next = NULL;
+                predecessors->graphnode = curgraphnode;
             }
 
             graphnode = ingraph(LENGTH);
@@ -3723,23 +3524,23 @@ void readnxtinst(void) {
                 graphnode = graphtail;
                 graphnode->blockno = LENGTH;
             }
-            graphnode_list_item = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-            if (graphnode_list_item == NULL) {
+            predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+            if (predecessors == NULL) {
                 outofmem = true;
                 return;
             }
-            graphnode_list_item->graphnode = curgraphnode;
-            graphnode_list_item->next = graphnode->predecessors;
-            graphnode->predecessors = graphnode_list_item;
+            predecessors->graphnode = curgraphnode;
+            predecessors->next = graphnode->predecessors;
+            graphnode->predecessors = predecessors;
 
-            graphnode_list_item = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-            if (graphnode_list_item == NULL) {
+            successors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+            if (successors == NULL) {
                 outofmem = true;
                 return;
             }
-            graphnode_list_item->graphnode = graphnode;
-            graphnode_list_item->next = curgraphnode->successors;
-            curgraphnode->successors = graphnode_list_item;
+            successors->graphnode = graphnode;
+            successors->next = curgraphnode->successors;
+            curgraphnode->successors = successors;
             loc_not_yet_seen = false;
             curlocln = 0;
             return;
@@ -3753,20 +3554,20 @@ void readnxtinst(void) {
             func_0043B1DC();
             stattail->expr = ustack->expr;
             ustack = ustack->down;
-            // link ijp labels to curgraphnode
-            func_0043CA8C(curproc->ijp_labels);
+            link_ijp_labels(curproc->ijp_labels);
             loc_not_yet_seen = false;
             curlocln = 0;
             return;
 
+        // Mark Stack, used to save the current stack info before a procedure call
         case Umst:
             extendstat(Umst);
             if (outofmem) {
                 return;
             }
             curmst = stattail;
-            curmst->u.mst.unk14 = LEXLEV;
-            curmst->u.mst.unk18 = 0;
+            curmst->u.mst.cup_level = LEXLEV;
+            curmst->u.mst.fp_offset = 0;
             curmst->u.mst.loc = -1;
             outparhead = NULL;
             parcount = 0;
@@ -3782,18 +3583,23 @@ void readnxtinst(void) {
             if (OPC == Upar) {
                 func_0043B1DC();
             }
+
             stattail->expr = ustack->expr;
             stattail->u.par.dtype = DTYPE;
             ustack = ustack->down;
             if (OPC == Upar) {
                 stattail->u.par.loc = OFFSET;
                 stattail->u.par.size = LENGTH;
-                if (++parcount >= 3 || !(stattail->u.par.dtype == Qdt || stattail->u.par.dtype == Rdt)) {
+
+                // use $f12 and $f14 to pass first two float args
+                if (++parcount > 2 || !(stattail->u.par.dtype == Qdt || stattail->u.par.dtype == Rdt)) {
                     passbyfp = false;
                 }
+
                 if (passbyfp) {
-                    curmst->u.mst.unk18 = OFFSET + LENGTH;
+                    curmst->u.mst.fp_offset = OFFSET + LENGTH;
                 }
+
                 if (stattail->u.par.dtype == Adt) {
                     stattail->u.par.baseaddr = findbaseaddr(stattail->expr);
                 } else if (stattail->u.par.dtype == Fdt) {
@@ -3801,6 +3607,7 @@ void readnxtinst(void) {
                 } else if (lang == LANG_ADA) {
                     stattail->u.par.baseaddr = findbaseaddr_ada(stattail->expr);
                 }
+
                 if (passbyfp) {
                     stattail->u.par.index = parcount;
                 } else {
@@ -3809,7 +3616,7 @@ void readnxtinst(void) {
             } else {
                 stattail->u.par.baseaddr = findbaseaddr(stattail->expr);
             }
-            func_0043B2B8(stattail);
+            parstack_push(stattail);
             return;
 
         case Upmov:
@@ -3828,7 +3635,7 @@ void readnxtinst(void) {
             appendstorelist();
             stattail->u.store.var_access_list_item->type = 3;
             movkillprev(stattail);
-            func_0043B2B8(stattail);
+            parstack_push(stattail);
             return;
 
         case Uistr:
@@ -4219,7 +4026,7 @@ void readnxtinst(void) {
 
         case Ucup:
         case Uicuf:
-        case Urcuf: // XXX: Urcuf untested
+        case Urcuf: // XXX: untested
             if (OPC == Uicuf) {
                 extendstat(Upop);
                 if (outofmem) {
@@ -4251,22 +4058,23 @@ void readnxtinst(void) {
                     stattail->u.call.level = (unsigned char)curlevel;
                 }
             }
+
             stattail->u.call.push_flags = PUSH;
             stattail->u.call.pop = POP;
-            if ((PUSH >> STDARGS_NUM_BIT_OFS) != 0) {
-                tmp1 = POP - (PUSH >> STDARGS_NUM_BIT_OFS);
+            if (GET_STDARGS_NUM(PUSH) != 0) {
                 parstack_entry = parstack;
-                for (i = 0; i < tmp1; i++) {
+                for (i = 0; i < POP - GET_STDARGS_NUM(PUSH); i++) {
                     parstack_entry = parstack_entry->down;
                 }
-                if (POP != 0 && parstack_entry->par->u.par.loc < curmst->u.mst.unk18) {
-                    curmst->u.mst.unk18 = parstack_entry->par->u.par.loc;
+                if (POP != 0 && parstack_entry->par->u.par.loc < curmst->u.mst.fp_offset) {
+                    curmst->u.mst.fp_offset = parstack_entry->par->u.par.loc;
                     parstack_entry->par->u.par.index = parstack_entry->par->u.par.loc / 4 + 1;
                     if (parstack_entry->up != NULL) {
                         parstack_entry->up->par->u.par.index = parstack_entry->up->par->u.par.loc / 4 + 1;
                     }
                 }
             }
+
             stattail->u.call.parameters = NULL;
             stattail->u.call.extrnal_flags = EXTRNAL;
             if (OPC == Uicuf) {

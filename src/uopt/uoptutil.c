@@ -914,10 +914,10 @@ glabel fix_base
 )"");
 
 /* 
-# 0041550C func_0041550C
-# 004712A4 reset_images
-# 004713E8 loopunroll
-# 0047C650 delentry
+0041550C func_0041550C
+004712A4 reset_images
+004713E8 loopunroll
+0047C650 delentry
 */
 void fixcorr(struct Expression *expr) {
     if (expr->ichain->expr == expr) {

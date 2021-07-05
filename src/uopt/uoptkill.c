@@ -112,131 +112,40 @@ D_10010AFC:
 
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
-
 .text
-glabel findbaseaddr
-    .ent findbaseaddr
-    # 0043CFCC readnxtinst
-    # 0046D428 oneloopblockexpr
-    # 0046E77C oneloopblockstmt
-    # 00473F04 pmov_to_mov
-/* 004490B0 24050004 */  li    $a1, 4
-.L004490B4:
-/* 004490B4 908E0000 */  lbu   $t6, ($a0)
-/* 004490B8 14AE0063 */  bne   $a1, $t6, .L00449248
-/* 004490BC 00000000 */   nop   
-/* 004490C0 90820020 */  lbu   $v0, 0x20($a0)
-/* 004490C4 2C4F0060 */  sltiu $t7, $v0, 0x60
-/* 004490C8 11E00009 */  beqz  $t7, .L004490F0
-/* 004490CC 2C4D0080 */   sltiu $t5, $v0, 0x80
-/* 004490D0 8F888044 */  lw    $t0, %got(D_10010A60)($gp)
-/* 004490D4 0002C143 */  sra   $t8, $v0, 5
-/* 004490D8 0018C880 */  sll   $t9, $t8, 2
-/* 004490DC 25080A60 */  addiu $t0, %lo(D_10010A60) # addiu $t0, $t0, 0xa60
-/* 004490E0 01194821 */  addu  $t1, $t0, $t9
-/* 004490E4 8D2A0000 */  lw    $t2, ($t1)
-/* 004490E8 004A5804 */  sllv  $t3, $t2, $v0
-/* 004490EC 296F0000 */  slti  $t7, $t3, 0
-.L004490F0:
-/* 004490F0 11E00003 */  beqz  $t7, .L00449100
-/* 004490F4 00000000 */   nop   
-/* 004490F8 1000FFEE */  b     .L004490B4
-/* 004490FC 8C840024 */   lw    $a0, 0x24($a0)
-.L00449100:
-/* 00449100 11A00009 */  beqz  $t5, .L00449128
-/* 00449104 00000000 */   nop   
-/* 00449108 8F888044 */  lw    $t0, %got(D_10010A50)($gp)
-/* 0044910C 00027143 */  sra   $t6, $v0, 5
-/* 00449110 000EC080 */  sll   $t8, $t6, 2
-/* 00449114 25080A50 */  addiu $t0, %lo(D_10010A50) # addiu $t0, $t0, 0xa50
-/* 00449118 0118C821 */  addu  $t9, $t0, $t8
-/* 0044911C 8F290000 */  lw    $t1, ($t9)
-/* 00449120 00495004 */  sllv  $t2, $t1, $v0
-/* 00449124 294D0000 */  slti  $t5, $t2, 0
-.L00449128:
-/* 00449128 11A00047 */  beqz  $t5, .L00449248
-/* 0044912C 00000000 */   nop   
-/* 00449130 8C820024 */  lw    $v0, 0x24($a0)
-/* 00449134 3C014400 */  lui   $at, 0x4400
-/* 00449138 90430000 */  lbu   $v1, ($v0)
-/* 0044913C 2C6C0020 */  sltiu $t4, $v1, 0x20
-/* 00449140 000C7823 */  negu  $t7, $t4
-/* 00449144 01E17024 */  and   $t6, $t7, $at
-/* 00449148 006E4004 */  sllv  $t0, $t6, $v1
-/* 0044914C 05000019 */  bltz  $t0, .L004491B4
-/* 00449150 2C780020 */   sltiu $t8, $v1, 0x20
-/* 00449154 0018C823 */  negu  $t9, $t8
-/* 00449158 3C011200 */  lui   $at, 0x1200
-/* 0044915C 03214824 */  and   $t1, $t9, $at
-/* 00449160 00695004 */  sllv  $t2, $t1, $v1
-/* 00449164 05410009 */  bgez  $t2, .L0044918C
-/* 00449168 00000000 */   nop   
-/* 0044916C 904B0001 */  lbu   $t3, 1($v0)
-/* 00449170 3C018800 */  lui   $at, 0x8800
-/* 00449174 2D6D0020 */  sltiu $t5, $t3, 0x20
-/* 00449178 000D6023 */  negu  $t4, $t5
-/* 0044917C 01817824 */  and   $t7, $t4, $at
-/* 00449180 016F7004 */  sllv  $t6, $t7, $t3
-/* 00449184 05C0000B */  bltz  $t6, .L004491B4
-/* 00449188 00000000 */   nop   
-.L0044918C:
-/* 0044918C 54A3000C */  bnel  $a1, $v1, .L004491C0
-/* 00449190 8C820028 */   lw    $v0, 0x28($a0)
-/* 00449194 90480023 */  lbu   $t0, 0x23($v0)
-/* 00449198 3C018800 */  lui   $at, 0x8800
-/* 0044919C 2D180020 */  sltiu $t8, $t0, 0x20
-/* 004491A0 0018C823 */  negu  $t9, $t8
-/* 004491A4 03214824 */  and   $t1, $t9, $at
-/* 004491A8 01095004 */  sllv  $t2, $t1, $t0
-/* 004491AC 05430004 */  bgezl $t2, .L004491C0
-/* 004491B0 8C820028 */   lw    $v0, 0x28($a0)
-.L004491B4:
-/* 004491B4 1000FFBF */  b     .L004490B4
-/* 004491B8 00402025 */   move  $a0, $v0
-/* 004491BC 8C820028 */  lw    $v0, 0x28($a0)
-.L004491C0:
-/* 004491C0 3C014400 */  lui   $at, 0x4400
-/* 004491C4 90430000 */  lbu   $v1, ($v0)
-/* 004491C8 2C6D0020 */  sltiu $t5, $v1, 0x20
-/* 004491CC 000D6023 */  negu  $t4, $t5
-/* 004491D0 01817824 */  and   $t7, $t4, $at
-/* 004491D4 006F5804 */  sllv  $t3, $t7, $v1
-/* 004491D8 05600019 */  bltz  $t3, .L00449240
-/* 004491DC 2C6E0020 */   sltiu $t6, $v1, 0x20
-/* 004491E0 000EC023 */  negu  $t8, $t6
-/* 004491E4 3C011200 */  lui   $at, 0x1200
-/* 004491E8 0301C824 */  and   $t9, $t8, $at
-/* 004491EC 00794804 */  sllv  $t1, $t9, $v1
-/* 004491F0 05210009 */  bgez  $t1, .L00449218
-/* 004491F4 00000000 */   nop   
-/* 004491F8 90480001 */  lbu   $t0, 1($v0)
-/* 004491FC 3C018800 */  lui   $at, 0x8800
-/* 00449200 2D0A0020 */  sltiu $t2, $t0, 0x20
-/* 00449204 000A6823 */  negu  $t5, $t2
-/* 00449208 01A16024 */  and   $t4, $t5, $at
-/* 0044920C 010C7804 */  sllv  $t7, $t4, $t0
-/* 00449210 05E0000B */  bltz  $t7, .L00449240
-/* 00449214 00000000 */   nop   
-.L00449218:
-/* 00449218 14A3000B */  bne   $a1, $v1, .L00449248
-/* 0044921C 00000000 */   nop   
-/* 00449220 904B0023 */  lbu   $t3, 0x23($v0)
-/* 00449224 3C018800 */  lui   $at, 0x8800
-/* 00449228 2D6E0020 */  sltiu $t6, $t3, 0x20
-/* 0044922C 000EC023 */  negu  $t8, $t6
-/* 00449230 0301C824 */  and   $t9, $t8, $at
-/* 00449234 01794804 */  sllv  $t1, $t9, $t3
-/* 00449238 05210003 */  bgez  $t1, .L00449248
-/* 0044923C 00000000 */   nop   
-.L00449240:
-/* 00449240 1000FF9C */  b     .L004490B4
-/* 00449244 00402025 */   move  $a0, $v0
-.L00449248:
-/* 00449248 03E00008 */  jr    $ra
-/* 0044924C 00801025 */   move  $v0, $a0
-    .type findbaseaddr, @function
-    .size findbaseaddr, .-findbaseaddr
-    .end findbaseaddr
+)"");
+
+/* 
+0043CFCC readnxtinst
+0046D428 oneloopblockexpr
+0046E77C oneloopblockstmt
+00473F04 pmov_to_mov
+*/
+struct Expression *findbaseaddr(struct Expression *expr) {
+    while (expr->type == isop) {
+        if (expr->data.isop.opc == Udec || expr->data.isop.opc == Uinc || expr->data.isop.opc == Uixa) {
+            expr = expr->data.isop.op1;
+        } else if (expr->data.isop.opc == Uadd || expr->data.isop.opc == Usub) {
+            if ((expr->data.isop.op1->type == islda || expr->data.isop.op1->type == isilda) || 
+                    ((expr->data.isop.op1->type == isvar || expr->data.isop.op1->type == issvar) && (expr->data.isop.op1->datatype == Adt || expr->data.isop.op1->datatype == Hdt)) ||
+                    (expr->data.isop.op1->type == isop && (expr->data.isop.op1->data.isop.datatype == Adt || expr->data.isop.op1->data.isop.datatype == Hdt))) {
+                expr = expr->data.isop.op1;
+            } else if ((expr->data.isop.op2->type == islda || expr->data.isop.op2->type == isilda) || 
+                    ((expr->data.isop.op2->type == isvar || expr->data.isop.op2->type == issvar) && (expr->data.isop.op2->datatype == Adt || expr->data.isop.op2->datatype == Hdt)) ||
+                    (expr->data.isop.op2->type == isop && (expr->data.isop.op2->data.isop.datatype == Adt || expr->data.isop.op2->data.isop.datatype == Hdt))) {
+                expr = expr->data.isop.op2;
+            } else {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+    return expr;
+}
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel findbaseaddr_ada
     .ent findbaseaddr_ada
@@ -2550,160 +2459,51 @@ glabel sskilled
     .type sskilled, @function
     .size sskilled, .-sskilled
     .end sskilled
-
-glabel movkillprev
-    .ent movkillprev
-    # 0043CFCC readnxtinst
-    # 0046E77C oneloopblockstmt
-    # 00473F04 pmov_to_mov
-/* 0044B25C 3C1C0FBD */  .cpload $t9
-/* 0044B260 279CF034 */  
-/* 0044B264 0399E021 */  
-/* 0044B268 8F8E89B4 */  lw     $t6, %got(curgraphnode)($gp)
-/* 0044B26C 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0044B270 AFBF0024 */  sw    $ra, 0x24($sp)
-/* 0044B274 8DCE0000 */  lw    $t6, ($t6)
-/* 0044B278 AFBC0020 */  sw    $gp, 0x20($sp)
-/* 0044B27C AFB2001C */  sw    $s2, 0x1c($sp)
-/* 0044B280 AFB10018 */  sw    $s1, 0x18($sp)
-/* 0044B284 AFB00014 */  sw    $s0, 0x14($sp)
-/* 0044B288 8DD00024 */  lw    $s0, 0x24($t6)
-/* 0044B28C 00808825 */  move  $s1, $a0
-/* 0044B290 24120001 */  li    $s2, 1
-/* 0044B294 52000017 */  beql  $s0, $zero, .L0044B2F4
-/* 0044B298 8FBF0024 */   lw    $ra, 0x24($sp)
-/* 0044B29C 920F0009 */  lbu   $t7, 9($s0)
-.L0044B2A0:
-/* 0044B2A0 564F0011 */  bnel  $s2, $t7, .L0044B2E8
-/* 0044B2A4 8E100004 */   lw    $s0, 4($s0)
-/* 0044B2A8 92180008 */  lbu   $t8, 8($s0)
-/* 0044B2AC 5700000E */  bnezl $t8, .L0044B2E8
-/* 0044B2B0 8E100004 */   lw    $s0, 4($s0)
-/* 0044B2B4 8E04000C */  lw    $a0, 0xc($s0)
-/* 0044B2B8 9099001D */  lbu   $t9, 0x1d($a0)
-/* 0044B2BC 5320000A */  beql  $t9, $zero, .L0044B2E8
-/* 0044B2C0 8E100004 */   lw    $s0, 4($s0)
-/* 0044B2C4 8F998390 */  lw    $t9, %call16(smkilled)($gp)
-/* 0044B2C8 02202825 */  move  $a1, $s1
-/* 0044B2CC 0320F809 */  jalr  $t9
-/* 0044B2D0 00000000 */   nop   
-/* 0044B2D4 8E09000C */  lw    $t1, 0xc($s0)
-/* 0044B2D8 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0044B2DC 2C480001 */  sltiu $t0, $v0, 1
-/* 0044B2E0 A128001D */  sb    $t0, 0x1d($t1)
-/* 0044B2E4 8E100004 */  lw    $s0, 4($s0)
-.L0044B2E8:
-/* 0044B2E8 5600FFED */  bnezl $s0, .L0044B2A0
-/* 0044B2EC 920F0009 */   lbu   $t7, 9($s0)
-/* 0044B2F0 8FBF0024 */  lw    $ra, 0x24($sp)
-.L0044B2F4:
-/* 0044B2F4 8FB00014 */  lw    $s0, 0x14($sp)
-/* 0044B2F8 8FB10018 */  lw    $s1, 0x18($sp)
-/* 0044B2FC 8FB2001C */  lw    $s2, 0x1c($sp)
-/* 0044B300 03E00008 */  jr    $ra
-/* 0044B304 27BD0028 */   addiu $sp, $sp, 0x28
-    .type movkillprev, @function
-    .size movkillprev, .-movkillprev
-    .end movkillprev
-
-glabel strkillprev
-    .ent strkillprev
-    # 0043CFCC readnxtinst
-    # 0046E77C oneloopblockstmt
-    # 004737E0 par_to_str
-    # 00473F04 pmov_to_mov
-/* 0044B308 3C1C0FBD */  .cpload $t9
-/* 0044B30C 279CEF88 */  
-/* 0044B310 0399E021 */  
-/* 0044B314 27BDFFD0 */  addiu $sp, $sp, -0x30
-/* 0044B318 8F8E89B4 */  lw     $t6, %got(curgraphnode)($gp)
-/* 0044B31C AFBF002C */  sw    $ra, 0x2c($sp)
-/* 0044B320 AFBC0028 */  sw    $gp, 0x28($sp)
-/* 0044B324 8DCE0000 */  lw    $t6, ($t6)
-/* 0044B328 AFB40024 */  sw    $s4, 0x24($sp)
-/* 0044B32C AFB30020 */  sw    $s3, 0x20($sp)
-/* 0044B330 AFB2001C */  sw    $s2, 0x1c($sp)
-/* 0044B334 AFB10018 */  sw    $s1, 0x18($sp)
-/* 0044B338 AFB00014 */  sw    $s0, 0x14($sp)
-/* 0044B33C 8DD00024 */  lw    $s0, 0x24($t6)
-/* 0044B340 00808825 */  move  $s1, $a0
-/* 0044B344 24130003 */  li    $s3, 3
-/* 0044B348 12000037 */  beqz  $s0, .L0044B428
-/* 0044B34C 24140001 */   li    $s4, 1
-/* 0044B350 24120002 */  li    $s2, 2
-/* 0044B354 92020009 */  lbu   $v0, 9($s0)
-.L0044B358:
-/* 0044B358 16420010 */  bne   $s2, $v0, .L0044B39C
-/* 0044B35C 00000000 */   nop   
-/* 0044B360 920F0008 */  lbu   $t7, 8($s0)
-/* 0044B364 15E0000D */  bnez  $t7, .L0044B39C
-/* 0044B368 00000000 */   nop   
-/* 0044B36C 8E05000C */  lw    $a1, 0xc($s0)
-/* 0044B370 90B80002 */  lbu   $t8, 2($a1)
-/* 0044B374 5700002A */  bnezl $t8, .L0044B420
-/* 0044B378 8E100004 */   lw    $s0, 4($s0)
-/* 0044B37C 8F99838C */  lw    $t9, %call16(slkilled)($gp)
-/* 0044B380 02202025 */  move  $a0, $s1
-/* 0044B384 0320F809 */  jalr  $t9
-/* 0044B388 00000000 */   nop   
-/* 0044B38C 8E19000C */  lw    $t9, 0xc($s0)
-/* 0044B390 8FBC0028 */  lw    $gp, 0x28($sp)
-/* 0044B394 10000021 */  b     .L0044B41C
-/* 0044B398 A3220002 */   sb    $v0, 2($t9)
-.L0044B39C:
-/* 0044B39C 1662000E */  bne   $s3, $v0, .L0044B3D8
-/* 0044B3A0 00000000 */   nop   
-/* 0044B3A4 8E05000C */  lw    $a1, 0xc($s0)
-/* 0044B3A8 90A8001F */  lbu   $t0, 0x1f($a1)
-/* 0044B3AC 5100001C */  beql  $t0, $zero, .L0044B420
-/* 0044B3B0 8E100004 */   lw    $s0, 4($s0)
-/* 0044B3B4 8F998390 */  lw    $t9, %call16(smkilled)($gp)
-/* 0044B3B8 02202025 */  move  $a0, $s1
-/* 0044B3BC 0320F809 */  jalr  $t9
-/* 0044B3C0 00000000 */   nop   
-/* 0044B3C4 8E0A000C */  lw    $t2, 0xc($s0)
-/* 0044B3C8 8FBC0028 */  lw    $gp, 0x28($sp)
-/* 0044B3CC 2C490001 */  sltiu $t1, $v0, 1
-/* 0044B3D0 10000012 */  b     .L0044B41C
-/* 0044B3D4 A149001F */   sb    $t1, 0x1f($t2)
-.L0044B3D8:
-/* 0044B3D8 56820011 */  bnel  $s4, $v0, .L0044B420
-/* 0044B3DC 8E100004 */   lw    $s0, 4($s0)
-/* 0044B3E0 920B0008 */  lbu   $t3, 8($s0)
-/* 0044B3E4 5560000E */  bnezl $t3, .L0044B420
-/* 0044B3E8 8E100004 */   lw    $s0, 4($s0)
-/* 0044B3EC 8E05000C */  lw    $a1, 0xc($s0)
-/* 0044B3F0 90AC001F */  lbu   $t4, 0x1f($a1)
-/* 0044B3F4 5180000A */  beql  $t4, $zero, .L0044B420
-/* 0044B3F8 8E100004 */   lw    $s0, 4($s0)
-/* 0044B3FC 8F998394 */  lw    $t9, %call16(sskilled)($gp)
-/* 0044B400 02202025 */  move  $a0, $s1
-/* 0044B404 0320F809 */  jalr  $t9
-/* 0044B408 00000000 */   nop   
-/* 0044B40C 8E0E000C */  lw    $t6, 0xc($s0)
-/* 0044B410 8FBC0028 */  lw    $gp, 0x28($sp)
-/* 0044B414 2C4D0001 */  sltiu $t5, $v0, 1
-/* 0044B418 A1CD001F */  sb    $t5, 0x1f($t6)
-.L0044B41C:
-/* 0044B41C 8E100004 */  lw    $s0, 4($s0)
-.L0044B420:
-/* 0044B420 5600FFCD */  bnezl $s0, .L0044B358
-/* 0044B424 92020009 */   lbu   $v0, 9($s0)
-.L0044B428:
-/* 0044B428 8FBF002C */  lw    $ra, 0x2c($sp)
-/* 0044B42C 8FB00014 */  lw    $s0, 0x14($sp)
-/* 0044B430 8FB10018 */  lw    $s1, 0x18($sp)
-/* 0044B434 8FB2001C */  lw    $s2, 0x1c($sp)
-/* 0044B438 8FB30020 */  lw    $s3, 0x20($sp)
-/* 0044B43C 8FB40024 */  lw    $s4, 0x24($sp)
-/* 0044B440 03E00008 */  jr    $ra
-/* 0044B444 27BD0030 */   addiu $sp, $sp, 0x30
-    .type strkillprev, @function
-    .size strkillprev, .-strkillprev
-    .end strkillprev
-
 )"");
 
+/* 
+0043CFCC readnxtinst
+0046E77C oneloopblockstmt
+00473F04 pmov_to_mov
+*/
+void movkillprev(struct Statement *stmt) {
+    struct VarAccessList *item;
+
+    for (item = curgraphnode->varlisthead; item != NULL; item = item->next) {
+        if (item->type == 1 && !item->unk8) {
+            if (item->data.store->u.store.unk1D) {
+                item->data.store->u.store.unk1D = !smkilled(item->data.store, stmt);
+            }
+        }
+    }
+}
+
+/* 
+0043CFCC readnxtinst
+0046E77C oneloopblockstmt
+004737E0 par_to_str
+00473F04 pmov_to_mov
+*/
+void strkillprev(struct Statement *stmt) {
+    struct VarAccessList *item;
+
+    for (item = curgraphnode->varlisthead; item != NULL; item = item->next) {
+        if (item->type == 2 && !item->unk8) {
+            if (!item->data.var->unk2) {
+                item->data.var->unk2 = slkilled(stmt, item->data.var);
+            }
+        } else if (item->type == 3) { // mov?
+            if (item->data.store->u.store.unk1F) {
+                item->data.store->u.store.unk1F = !smkilled(stmt, item->data.store);
+            }
+        } else if (item->type == 1 && !item->unk8) {
+            if (item->data.store->u.store.unk1F) {
+                item->data.store->u.store.unk1F = !sskilled(stmt, item->data.store);
+            }
+        }
+    }
+    
+}
 /*
 0043ABD0 incroccurrence
 0043CFCC readnxtinst

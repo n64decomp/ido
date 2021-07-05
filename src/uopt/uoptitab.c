@@ -195,7 +195,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                 if (ichain->type != isrconst || ichain->dtype != expr->datatype) {
                     break;
                 }
-                if (expr->data.isrconst.unk20 == ichain->isrconst.unk10) {
+                if (expr->data.isrconst.value == ichain->isrconst.unk10) {
                     found = true;
                 }
                 break;
@@ -894,7 +894,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 break;
 
             case isrconst:
-                ichain = isearchloop(isconstihash(expr->data.isrconst.unk20), expr, 0, 0);
+                ichain = isearchloop(isconstihash(expr->data.isrconst.value), expr, 0, 0);
                 *anticipated = true;
                 *available = true;
                 break;
