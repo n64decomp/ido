@@ -198,7 +198,7 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
             }
         }
 
-        if (found == 0) {
+        if (!found) {
             phi_s1 = appendchain(hash);
             phi_s1->type = isop;
             phi_s1->datatype = phi_s3->datatype;
@@ -655,11 +655,11 @@ block_137:
                      (expr->data.isop.opc == Uiequ ||
                       expr->data.isop.opc == Uigeq ||
                       expr->data.isop.opc == Uigrt ||
-                      expr->data.isop.opc == Uildv ||
                       expr->data.isop.opc == Uileq ||
                       expr->data.isop.opc == Uiles ||
-                      expr->data.isop.opc == Uilod ||
                       expr->data.isop.opc == Uineq ||
+                      expr->data.isop.opc == Uilod ||
+                      expr->data.isop.opc == Uildv ||
                       expr->data.isop.opc == Uirld ||
                       expr->data.isop.opc == Uirlv))) {
                 phi_s0->unk3 = 1;

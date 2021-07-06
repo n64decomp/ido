@@ -138,6 +138,7 @@ static struct Interval *reduce_control_tree(struct Interval *intvHead) {
     parent = newHead;
     do {
         region = parent->region;
+
         do {
             childSucc = region->intv->successors;
 
@@ -180,10 +181,13 @@ static struct Interval *reduce_control_tree(struct Interval *intvHead) {
                 }
                 childSucc = childSucc->next;
             }
+
             region = region->next;
         } while (region != NULL);
+
         parent = parent->next;
     } while (parent != NULL);
+
     return newHead;
 }
 

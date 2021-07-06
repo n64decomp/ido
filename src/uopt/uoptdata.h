@@ -29,7 +29,7 @@ struct livbb {
 }; // size 0x18
 
 struct optabrec {
-    bool unk0; // seems to be set if a BB ends with this instruction and for Uaent
+    bool ends_bb;
     bool unk1;
     bool is_binary_op;
 };
@@ -307,7 +307,7 @@ struct Proc {
     bool o3opt; // written to allcallersave in procinit
     bool unkD; // set to lang == LANG_COBOL
     bool unkE; // bool or char?
-    bool unkF; // bool or char?
+    bool nonlocal_goto; // bool or char?
     unsigned char level; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass
     unsigned short num_bbs; // 0x12
     bool unk14; // bool or char?
@@ -414,12 +414,13 @@ struct Statement {
         } ctrl;
 
         struct {
-            int unk14; // LEXLEV
-            int unk18; // Upar/Uxpar OFFSET+LENGTH if passbyfp
+            int cup_level; // LEXLEV
+            int fp_offset; // Upar/Uxpar OFFSET+LENGTH if passbyfp
             int loc; // 0x1C, VariableInner loc
             struct Proc *proc; // indirprocs/ciaprocs
         } mst;
 
+        // check true
         struct {
             int unk14;
             int unk18; // initialized to 0
@@ -477,11 +478,11 @@ struct Statement {
             int unk28;
             int unk2C;
             int unk30;
-        } jp; // tjp, fjp, uujp
+        } jp; // tjp, fjp, ujp
 
         struct {
             struct Proc *proc; // 0x14
-            Datatype dtype; // 0x18
+            Datatype dtype; // 0x18 TODO: rename to returntype
             unsigned char level; // 0x19
             unsigned short extrnal_flags; // 0x1A, EXTRNAL
             unsigned char pop; // 0x1C, POP
@@ -493,7 +494,7 @@ struct Statement {
         struct {
             int strp_pos; // 0x14
             unsigned char flags; // 0x18, LEXLEV
-            Datatype dtype; // 0x19
+            Datatype dtype; // 0x19 TODO: rename to returntype
             int unk1C; // LENGTH
             int unk20; // OFFSET
             int len; // 0x24, CONSTVAL.swpart.Ival
@@ -501,7 +502,7 @@ struct Statement {
         } cia;
 
         struct {
-            Datatype dtype; // 0x14
+            Datatype dtype; // 0x14 TODO: rename to returntype
             unsigned char pop; // 0x15, POP
             unsigned char push; // 0x16, PUSH
             unsigned char extrnal_flags; // 0x17, EXTRNAL
@@ -670,7 +671,7 @@ struct TailRecParameter {
 struct Expression {
     ExpressionType type;
     Datatype datatype;
-    bool unk2; // see exprimage
+    bool unk2; // saved? see exprimage
     bool unk3; // not varkilled
     bool unk4; // bool or unsigned char?
     bool unk5; // bool or unsigned char?
@@ -687,7 +688,7 @@ struct Expression {
             int addr; // 0x20
             int size; // 0x24
             int level; // 0x28
-            struct VariableInner var_data; // 0x2C
+            struct VariableInner var_data; // 0x2C // TODO: rename to prevent confusion during decomp
             struct Expression *unk34;
             int unk38;
         } islda_isilda;
@@ -699,8 +700,8 @@ struct Expression {
         } isconst;
         struct {
             unsigned char size; // 0x20, in bytes
-            bool unk21;
-            bool unk22;
+            bool unk21; // one of these is probably 'dead'
+            bool unk22; // one of these is probably 'dead'
             bool is_volatile; // 0x23
             struct Expression *unk24;
             struct VariableInner var_data; // 0x28
@@ -716,7 +717,7 @@ struct Expression {
             Datatype datatype; // 0x23
             struct Expression *op1; // 0x24
             struct Expression *op2; // 0x28
-            int datasize; // calculated result? seems to also sometimes be size in bits of the datatype
+            int datasize; // calculated result? seems to also sometimes be size in bits of the datatype. Also used as offset in bytes for ilod
             int unk30;
             struct Expression *unk34; // return value from findbaseaddr
             union {
@@ -738,7 +739,7 @@ struct Expression {
             } aux2;
         } isop;
         struct {
-            unsigned short unk20;
+            unsigned short value;
             int unk24;
         } isrconst;
     } data; // 0x20

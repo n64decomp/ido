@@ -1,3 +1,11 @@
+#include "uoptdata.h"
+#include "uoptutil.h"
+#include "uoptitab.h"
+#include "uoptcopy.h"
+#include "uoptinput.h"
+#include "uoptcontrolflow.h"
+
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -4472,61 +4480,31 @@ glabel distrlaw
     .type distrlaw, @function
     .size distrlaw, .-distrlaw
     .end distrlaw
+)"");
 
-glabel reduceixa
-    .ent reduceixa
-    # 00451764 func_00451764
-    # 00452DAC constarith
-/* 004516BC 3C1C0FBD */  .cpload $t9
-/* 004516C0 279C8BD4 */  
-/* 004516C4 0399E021 */  
-/* 004516C8 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 004516CC AFBF001C */  sw    $ra, 0x1c($sp)
-/* 004516D0 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 004516D4 8C86002C */  lw    $a2, 0x2c($a0)
-/* 004516D8 00803825 */  move  $a3, $a0
-/* 004516DC 04C30003 */  bgezl $a2, .L004516EC
-/* 004516E0 28C10002 */   slti  $at, $a2, 2
-/* 004516E4 00063023 */  negu  $a2, $a2
-/* 004516E8 28C10002 */  slti  $at, $a2, 2
-.L004516EC:
-/* 004516EC 5420001A */  bnezl $at, .L00451758
-/* 004516F0 8FBF001C */   lw    $ra, 0x1c($sp)
-/* 004516F4 8F9986B8 */  lw    $t9, %call16(binopwithconst)($gp)
-/* 004516F8 2404005B */  li    $a0, 91
-/* 004516FC 8CE50028 */  lw    $a1, 0x28($a3)
-/* 00451700 0320F809 */  jalr  $t9
-/* 00451704 AFA70020 */   sw    $a3, 0x20($sp)
-/* 00451708 8FA70020 */  lw    $a3, 0x20($sp)
-/* 0045170C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00451710 8CE3002C */  lw    $v1, 0x2c($a3)
-/* 00451714 ACE20028 */  sw    $v0, 0x28($a3)
-/* 00451718 04610002 */  bgez  $v1, .L00451724
-/* 0045171C 00607025 */   move  $t6, $v1
-/* 00451720 00037023 */  negu  $t6, $v1
-.L00451724:
-/* 00451724 006E001A */  div   $zero, $v1, $t6
-/* 00451728 00007812 */  mflo  $t7
-/* 0045172C ACEF002C */  sw    $t7, 0x2c($a3)
-/* 00451730 15C00002 */  bnez  $t6, .L0045173C
-/* 00451734 00000000 */   nop   
-/* 00451738 0007000D */  break 7
-.L0045173C:
-/* 0045173C 2401FFFF */  li    $at, -1
-/* 00451740 15C10004 */  bne   $t6, $at, .L00451754
-/* 00451744 3C018000 */   lui   $at, 0x8000
-/* 00451748 14610002 */  bne   $v1, $at, .L00451754
-/* 0045174C 00000000 */   nop   
-/* 00451750 0006000D */  break 6
-.L00451754:
-/* 00451754 8FBF001C */  lw    $ra, 0x1c($sp)
-.L00451758:
-/* 00451758 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0045175C 03E00008 */  jr    $ra
-/* 00451760 00000000 */   nop   
-    .type reduceixa, @function
-    .size reduceixa, .-reduceixa
-    .end reduceixa
+
+
+/* 
+00451764 func_00451764
+00452DAC constarith
+*/
+void reduceixa(struct Expression *ixa) {
+    int datasize;
+
+    datasize = ixa->data.isop.datasize;
+    if (datasize < 0) {
+        datasize = -datasize;
+    }
+    if (datasize > 1) {
+        ixa->data.isop.op2 = binopwithconst(Umpy, ixa->data.isop.op2, datasize);
+
+        ixa->data.isop.datasize /= datasize;
+    }
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_00451764, @function
 func_00451764:
@@ -6536,3 +6514,271 @@ glabel constarith
     .size constarith, .-constarith
     .end constarith
 )"");
+
+#if 0
+void constarith(void) {
+    u8 sp52; // s1
+    s32 sp4C;
+    s32 sp48;
+    s32 temp_t2;
+    s32 temp_t4;
+    s32 temp_v0_3;
+    struct Graphnode *temp_v0_4;
+    struct Graphnode *temp_v1_2;
+    u32 temp_t3;
+    u32 temp_t3_2;
+    u32 temp_t5;
+    u32 temp_t7;
+    u8 temp_v0;
+    u8 temp_v0_2;
+    void *temp_a0_2;
+    void *temp_a1;
+    void *temp_a1_2;
+    void *temp_a1_3;
+    struct Statement *phi_s0;
+    int *phi_a2;
+    int *phi_a3;
+    s32 phi_t2;
+    s32 phi_t4;
+    u8 phi_v0;
+
+    curlocpg = 0;
+    curlocln = 0;
+    sp4C = curlocpg;
+    sp48 = curlocln;
+    phi_s0 = curgraphnode->stat_head;
+    phi_a2 = &curlocpg;
+    phi_a3 = &curlocln;
+loop_1:
+    if (phi_s0->opc == Ustr) {
+        func_00451764((u8)0x60U, phi_s0->expr + 0x34, phi_a2, phi_a3);
+        if (phi_s0->expr->data.isop.unk34->type == isop) {
+            if (phi_s0->expr->data.isop.unk34->unk20 == Uixa) {
+                reduceixa(phi_s0->expr->data.isop.unk34);
+            }
+        }
+        phi_a2 = &curlocpg;
+        phi_a3 = &curlocln;
+        goto block_69;
+    }
+block_6:
+    temp_t2 = (u32) phi_s0->opc < 0xA0U;
+    phi_t2 = temp_t2;
+    if (temp_t2 == 0) {
+        goto block_8;
+    }
+    phi_t2 = (*(&D_10010BD8 + (((s32) phi_s0->opc >> 5) * 4)) << phi_s0->opc) < 0;
+block_8:
+    if (phi_t2 != 0) {
+        goto block_26;
+    }
+    func_00451764((u8)0x60U, phi_s0 + 4, phi_a2, phi_a3);
+    temp_a1 = phi_s0->expr;
+    if (temp_a1->unk0 != 4) {
+        goto block_12;
+    }
+    if (temp_a1->unk20 != Uixa) {
+        goto block_12;
+    }
+    reduceixa(temp_a1, temp_a1);
+block_12:
+    temp_t5 = phi_s0->opc - 0x20;
+    temp_t4 = temp_t5 < 0x40U;
+    phi_t4 = temp_t4;
+    if (temp_t4 == 0) {
+        goto block_14;
+    }
+    phi_t4 = (*(&D_10010BD0 + (((s32) temp_t5 >> 5) * 4)) << temp_t5) < 0;
+block_14:
+    if (phi_t4 == 0) {
+        goto block_25;
+    }
+    func_00451764((u8)0x60U, phi_s0 + 0x14);
+    temp_t3 = phi_s0->opc - 0x40;
+    if (((-(s32) (temp_t3 < 0x20U) & 0xC0) << temp_t3) >= 0) {
+        goto block_19;
+    }
+    temp_a0_2 = phi_s0->u.store.expr;
+    if (temp_a0_2->unk0 != 4) {
+        goto block_19;
+    }
+    if (temp_a0_2->unk20 != 0x41) {
+        goto block_19;
+    }
+    reduceixa(temp_a0_2);
+block_19:
+    if (phi_s0->opc != 0x3F) {
+        goto block_25;
+    }
+    temp_a1_2 = phi_s0->expr;
+    if (temp_a1_2->unk0 != 1) {
+        goto block_25;
+    }
+    if ((temp_a1_2->unk32 & 7) != 4) {
+        goto block_24;
+    }
+    if (is_gp_relative((u32) temp_a1_2->unk30 >> 0xB, temp_a1_2) != 0) {
+        goto block_24;
+    }
+    if (dokpicopt != 0) {
+        goto block_25;
+    }
+block_24:
+    istrfold(phi_s0);
+block_25:
+    phi_a2 = &curlocpg;
+    phi_a3 = &curlocln;
+    goto block_69;
+block_26:
+    if (phi_s0->opc == Ufjp) {
+        goto block_28;
+    }
+    if (phi_s0->opc != Utjp) {
+        goto block_37;
+    }
+block_28:
+    if (func_00451764((u8)0x60U, phi_s0 + 4, phi_a2, phi_a3) == 0) {
+        goto block_36;
+    }
+    temp_a1_3 = phi_s0->expr;
+    if (temp_a1_3->unk0 != 2) {
+        goto block_36;
+    }
+    temp_v0_3 = temp_a1_3->unk20;
+    if (temp_v0_3 == 0) {
+        goto block_32;
+    }
+    if (phi_s0->opc == Ufjp) {
+        goto block_34;
+    }
+block_32:
+    if (temp_v0_3 != 0) {
+        goto block_35;
+    }
+    if (phi_s0->opc != Utjp) {
+        goto block_35;
+    }
+block_34:
+    phi_s0->opc = Unop;
+    temp_v0_4 = curgraphnode;
+    temp_v1_2 = temp_v0_4->successors->graphnode;
+    temp_v1_2->predecessors = temp_v1_2->predecessors->next;
+    temp_v0_4->successors = temp_v0_4->successors->next;
+    goto block_36;
+block_35:
+    phi_s0->opc = 0x88;
+    filteringout = 1;
+block_36:
+    phi_a2 = &curlocpg;
+    phi_a3 = &curlocln;
+    goto block_69;
+block_37:
+    temp_t3_2 = phi_s0->opc - 0x80;
+    if (phi_s0->opc != 0xF) {
+        goto block_42;
+    }
+    if (func_00451764((u8)0x60U, phi_s0 + 4, phi_a2, phi_a3) == 0) {
+        goto block_41;
+    }
+    if (phi_s0->expr->unk20 != 1) {
+        goto block_41;
+    }
+    phi_s0->opc = 0x60;
+block_41:
+    phi_a2 = &curlocpg;
+    phi_a3 = &curlocln;
+    goto block_69;
+block_42:
+    if (((-(s32) (temp_t3_2 < 0x20U) & 0xFC000000) << temp_t3_2) >= 0) {
+        goto block_67;
+    }
+    if (func_00451764((u8)0x60U, phi_s0 + 4, phi_a2, phi_a3) == 0) {
+        goto block_66;
+    }
+    if (func_00451764((u8)0x60U, phi_s0 + 0x14) == 0) {
+        goto block_66;
+    }
+    temp_v0 = phi_s0->u.store.u.istr.dtype;
+    if (((-(s32) ((u32) temp_v0 < 0x20U) & 0xE0000) << temp_v0) < 0) {
+        goto block_66;
+    }
+    temp_t7 = phi_s0->opc - 0x80;
+    if (temp_t7 >= 6U) {
+        goto block_62;
+    }
+    goto **(&jtbl_1000CEDC + (temp_t7 * 4)) + saved_reg_gp;
+case 0:
+    sp52 = (phi_s0->u.store.expr->unk20 == phi_s0->expr->unk20) & 0xFF;
+    goto block_63;
+case 5:
+    sp52 = (phi_s0->u.store.expr->unk20 != phi_s0->expr->unk20) & 0xFF;
+    goto block_63;
+case 4:
+    if (temp_v0 != 6) {
+        goto block_52;
+    }
+    sp52 = (phi_s0->expr->unk20 < phi_s0->u.store.expr->unk20) & 0xFF;
+    goto block_63;
+block_52:
+    sp52 = ((u32) phi_s0->expr->unk20 < (u32) phi_s0->u.store.expr->unk20) & 0xFF;
+    goto block_63;
+case 3:
+    if (temp_v0 != 6) {
+        goto block_55;
+    }
+    sp52 = ((phi_s0->u.store.expr->unk20 < phi_s0->expr->unk20) ^ 1) & 0xFF;
+    goto block_63;
+block_55:
+    sp52 = (((u32) phi_s0->u.store.expr->unk20 < (u32) phi_s0->expr->unk20) ^ 1) & 0xFF;
+    goto block_63;
+case 2:
+    if (temp_v0 != 6) {
+        goto block_58;
+    }
+    sp52 = (phi_s0->u.store.expr->unk20 < phi_s0->expr->unk20) & 0xFF;
+    goto block_63;
+block_58:
+    sp52 = ((u32) phi_s0->u.store.expr->unk20 < (u32) phi_s0->expr->unk20) & 0xFF;
+    goto block_63;
+case 1:
+    if (temp_v0 != 6) {
+        goto block_61;
+    }
+    sp52 = ((phi_s0->expr->unk20 < phi_s0->u.store.expr->unk20) ^ 1) & 0xFF;
+    goto block_63;
+block_61:
+    sp52 = (((u32) phi_s0->expr->unk20 < (u32) phi_s0->u.store.expr->unk20) ^ 1) & 0xFF;
+    goto block_63;
+block_62:
+    caseerror(1, 0x605, "uoptloc.p", 9);
+block_63:
+    if (sp52 == 0) {
+        goto block_65;
+    }
+    boundswarning();
+    goto block_66;
+block_65:
+    phi_s0->opc = 0x60;
+block_66:
+    phi_a2 = &curlocpg;
+    phi_a3 = &curlocln;
+    goto block_69;
+block_67:
+    if (phi_s0->opc != 0x51) {
+        goto block_69;
+    }
+    *phi_a2 = (void *) phi_s0->u.store.expr;
+    *phi_a3 = (s32) phi_s0->u.store.var_access_list_item;
+block_69:
+    if (outofmem != 0) {
+        goto block_72;
+    }
+    phi_s0 = phi_s0->next;
+    if (phi_s0 != 0) {
+        goto loop_1;
+    }
+    *phi_a2 = sp4C;
+    *phi_a3 = sp48;
+block_72:
+}
+#endif

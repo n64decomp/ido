@@ -172,7 +172,7 @@ struct Proc *searchproc(int id, int level) {
         new_proc->unkB = lang == LANG_COBOL;
         new_proc->unkD = lang == LANG_COBOL;
         new_proc->unkE = 0;
-        new_proc->unkF = 0;
+        new_proc->nonlocal_goto = false;
         new_proc->unk14 = 0;
         new_proc->unk15 = 0;
         new_proc->num_bbs = 0;
@@ -279,7 +279,7 @@ struct Label *updatelab(unsigned int addr, struct Label **pos, bool arg2) {
             pos = &label->right;
         } else {
             if (arg2) {
-                if (!label->unk8 && (u.Ucode.Opc == Ufjp || u.Ucode.Opc == Utjp)) {
+                if (!label->unk8 && (OPC == Ufjp || OPC == Utjp)) {
                     label->branched_back = true;
                 }
                 label->unk8 = true;
@@ -707,12 +707,12 @@ bool insertcallee(struct Proc *proc, struct ProcList **callee_list) {
 */
 void check_gp_relative(void) {
     if (o3opt) {
-        if (((u.Ucode.Lexlev >> 4) & 0xf) == 2) {
-            enter_gp_rel_tab(u.Ucode.I1);
+        if (((LEXLEV >> 4) & 0xf) == 2) {
+            enter_gp_rel_tab(IONE);
         }
     } else {
-        if (u.intarray[2] != 0 && g_num >= u.intarray[2]) {
-            enter_gp_rel_tab(u.Ucode.I1);
+        if (LENGTH != 0 && g_num >= LENGTH) {
+            enter_gp_rel_tab(IONE);
         }
     }
 }
@@ -728,21 +728,21 @@ void oneinstruction(void) {
     bool lexlev1;
     bool unk;
 
-    switch (u.Ucode.Opc) {
+    switch (OPC) {
         case Ubgn:
             if (u.intarray[2] != 7 || u.intarray[3] != 10) {
             }
             break;
 
         case Uoptn:
-            if (u.Ucode.I1 == 1) { // UCO_VARARGS?
+            if (IONE == UCO_VARARGS) {
                 var.memtype = Pmt;
                 var.blockno = curproc->id;
-                var.addr = u.intarray[2];
+                var.addr = LENGTH;
                 insertvar(var, 8000, Ldt, &curproc->vartree, false, true, false);
                 curproc->unkB = true;
-            } else if (u.Ucode.I1 == UCO_SOURCE && !fortran_lang) {
-                switch (u.intarray[2]) {
+            } else if (IONE == UCO_SOURCE && !fortran_lang) {
+                switch (LENGTH) {
                     case PASCAL_SOURCE:
                         lang = LANG_PASCAL;
                         break;
@@ -773,14 +773,14 @@ void oneinstruction(void) {
 
         case Ucsym:
             var.memtype = Smt;
-            var.blockno = u.Ucode.I1;
+            var.blockno = IONE;
             var.addr = 0;
             if (lang == LANG_FORTRAN || (lang == LANG_PASCAL && nopalias)) {
                 if (!nof77alias) {
-                    insertlda(var, u.intarray[2]);
+                    insertlda(var, LENGTH);
                 }
             } else {
-                insertlda(var, u.intarray[2]);
+                insertlda(var, LENGTH);
             }
             check_gp_relative();
             break;
@@ -791,7 +791,7 @@ void oneinstruction(void) {
             break;
 
         case Ufsym:
-            enterfsymtab(u.Ucode.I1);
+            enterfsymtab(IONE);
             check_gp_relative();
             break;
 
@@ -799,18 +799,18 @@ void oneinstruction(void) {
         case Ugsym:
             var.memtype = Smt;
             var.addr = 0;
-            var.blockno = u.Ucode.I1;
-            if (u.intarray[2] == 0) {
+            var.blockno = IONE;
+            if (LENGTH == 0) {
                 insertlda(var, 0x7FFFFFFF);
             } else {
-                insertlda(var, u.intarray[2]);
+                insertlda(var, LENGTH);
             }
             check_gp_relative();
             break;
 
         case Usdef:
-            if (!o3opt && u.intarray[2] != 0 && g_num >= u.intarray[2]) {
-                enter_gp_rel_tab(u.Ucode.I1);
+            if (!o3opt && LENGTH != 0 && g_num >= LENGTH) {
+                enter_gp_rel_tab(IONE);
             }
             break;
 
@@ -818,26 +818,26 @@ void oneinstruction(void) {
             break;
 
         case Uvreg:
-            var.memtype = u.Ucode.Mtype;
-            var.blockno = u.Ucode.I1;
-            var.addr = u.intarray[3];
-            insertvar(var, u.intarray[2], u.Ucode.Dtype, &curproc->vartree, false, false, true);
+            var.memtype = MTYPE;
+            var.blockno = IONE;
+            var.addr = OFFSET;
+            insertvar(var, LENGTH, DTYPE, &curproc->vartree, false, false, true);
             break;
 
         case Ustr:
         case Uisld:
         case Uisst:
         case Ulod:
-            var.memtype = u.Ucode.Mtype;
-            var.blockno = u.Ucode.I1;
-            var.addr = u.intarray[3];
+            var.memtype = MTYPE;
+            var.blockno = IONE;
+            var.addr = OFFSET;
             if (var.memtype == Rmt) {
                 var.blockno = 0;
             }
-            lexlev1 = (u.Ucode.Lexlev & 1) != 0;
-            unk = lexlev1 || (in_exception_block > 0 && u.Ucode.Mtype != Rmt);
-            insertvar(var, u.intarray[2], u.Ucode.Dtype, &curproc->vartree, u.Ucode.Opc == Uisld || u.Ucode.Opc == Ulod, unk, u.Ucode.Mtype == Rmt);
-            if (u.Ucode.Opc == Uisld || u.Ucode.Opc == Ulod) {
+            lexlev1 = (LEXLEV & 1) != 0;
+            unk = lexlev1 || (in_exception_block > 0 && MTYPE != Rmt);
+            insertvar(var, LENGTH, DTYPE, &curproc->vartree, OPC == Uisld || OPC == Ulod, unk, MTYPE == Rmt);
+            if (OPC == Uisld || OPC == Ulod) {
                 curproc->bvsize++;
             }
             break;
@@ -845,41 +845,41 @@ void oneinstruction(void) {
         case Uldap:
         case Uldsp:
             var.memtype = Rmt;
-            var.blockno = u.Ucode.Opc == Uldap;
-            var.addr = 29;
+            var.blockno = OPC == Uldap;
+            var.addr = 29; // sp
             insertvar(var, 4, Adt, &curproc->vartree, true, true, false);
             break;
 
         case Uilda:
         case Ulda:
-            var.memtype = u.Ucode.Mtype;
-            var.blockno = u.Ucode.I1;
-            var.addr = u.intarray[4];
+            var.memtype = MTYPE;
+            var.blockno = IONE;
+            var.addr = OFFSET2;
             if (var.memtype == Rmt) {
                 var.blockno = 0;
             }
-            if (lang == LANG_ADA && u.intarray[2] == -1) {
+            if (lang == LANG_ADA && LENGTH == -1) {
                 if (var.memtype == Mmt) {
-                    u.intarray[2] = -4 - u.intarray[3];
-                    var.addr = u.intarray[3];
+                    LENGTH = -4 - OFFSET;
+                    var.addr = OFFSET;
                 } else {
-                    u.intarray[2] = 0x7FFFFFFF;
+                    LENGTH = 0x7FFFFFFF;
                 }
             }
-            insertlda(var, u.intarray[2]);
+            insertlda(var, LENGTH);
             break;
 
         case Ucup:
-            proc = searchproc(u.Ucode.I1, u.Ucode.Lexlev);
+            proc = searchproc(IONE, LEXLEV);
             insertcallee(proc, &curproc->callees);
             if (!proc->unk8 || proc == curproc) {
                 proc->o3opt = false;
             }
-            if ((u.intarray[3] & NOSIDEEFFECT_ATTR) && (lang == LANG_FORTRAN || lang == LANG_C || lang == LANG_PL1 || lang == LANG_COBOL)) {
+            if ((LEXLEV & NOSIDEEFFECT_ATTR) && (lang == LANG_FORTRAN || lang == LANG_C || lang == LANG_PL1 || lang == LANG_COBOL)) {
                 proc->unkE = true;
             }
-            if (u.intarray[3] & GOTO_ATTR) {
-                curproc->unkF = true;
+            if (LEXLEV & GOTO_ATTR) {
+                curproc->nonlocal_goto = true;
             }
             curproc->num_bbs++;
             break;
@@ -892,7 +892,7 @@ void oneinstruction(void) {
 
         case Ucia:
             curproc->num_bbs++;
-            if (lang == LANG_ADA && o3opt && (u.Ucode.Lexlev & 1)) {
+            if (lang == LANG_ADA && o3opt && (LEXLEV & 1)) {
                 o3opt = false;
                 change_to_o2(prochead);
                 if (warn_flag != 1) {
@@ -903,16 +903,16 @@ void oneinstruction(void) {
                     warned = true;
                 }
                 // why isn't insertcallee called here?
-            } else if (u.Ucode.Lexlev & 1) {
+            } else if (LEXLEV & 1) {
                 insertcallee(indirprocs, &curproc->callees);
             }
             break;
 
         case Uldc:
-            if (u.Ucode.Dtype == Gdt) {
-                updatelab(u.intarray[4], &curproc->labels, true);
-            } else if (u.Ucode.Dtype == Fdt) {
-                proc = searchproc(u.intarray[4], 2);
+            if (DTYPE == Gdt) {
+                updatelab(CONSTVAL.swpart.Ival, &curproc->labels, true);
+            } else if (DTYPE == Fdt) {
+                proc = searchproc(CONSTVAL.swpart.Ival, 2);
                 proc->unkB = true;
                 proc->unkD = true;
                 insertcallee(proc, &curproc->callees);
@@ -920,12 +920,12 @@ void oneinstruction(void) {
             break;
 
         case Uinit:
-            if (u.Ucode.Dtype == Fdt) {
-                proc = searchproc(u.Ucode.Uopcde.uiequ1.uop2.uinit.initval.swpart.Ival, 2);
+            if (DTYPE == Fdt) {
+                proc = searchproc(INITVAL.swpart.Ival, 2);
                 proc->unkB = true;
                 proc->unkD = true;
                 if (lang == LANG_FORTRAN) {
-                    del_fsymtab(u.Ucode.Uopcde.uiequ1.uop2.uinit.initval.swpart.Ival);
+                    del_fsymtab(INITVAL.swpart.Ival);
                 }
             }
             break;
@@ -933,43 +933,43 @@ void oneinstruction(void) {
         case Ulab:
         case Uldef:
         case Uclab:
-            if (maxlabnam < u.Ucode.I1) {
-                maxlabnam = u.Ucode.I1;
+            if (maxlabnam < IONE) {
+                maxlabnam = IONE;
             }
-            if (u.Ucode.Opc == Ulab) {
-                unk = u.Ucode.Lexlev != 0;
+            if (OPC == Ulab) {
+                unk = LEXLEV != 0;
                 curproc->num_bbs++;
-                if (u.Ucode.Lexlev & 7) {
+                if (LEXLEV & 7) {
                     curproc->unk14 = true;
                 }
                 if (!unk) {
-                    unk = u.intarray[2] != 0;
+                    unk = LENGTH != 0;
                 }
-                label = updatelab(u.Ucode.I1, &curproc->labels, unk);
-                if (lab_just_defined != 0 && u.Ucode.Lexlev == 0 && u.intarray[2] == 0) {
+                label = updatelab(IONE, &curproc->labels, unk);
+                if (lab_just_defined != 0 && LEXLEV == 0 && LENGTH == 0) {
                     label->len = lab_just_defined;
                     updatelab(lab_just_defined, &curproc->labels, true);
                 } else {
-                    lab_just_defined = u.Ucode.I1;
+                    lab_just_defined = IONE;
                 }
-                if ((lang == LANG_ADA || lang == LANG_C) && (u.Ucode.Lexlev & EXCEPTION_ATTR)) {
+                if ((lang == LANG_ADA || lang == LANG_C) && IS_EXCEPTION_ATTR(LEXLEV)) {
                     in_exception_block++;
                 }
-                if ((lang == LANG_ADA || lang == LANG_C) && (u.Ucode.Lexlev & EXCEPTION_END_ATTR)) {
+                if ((lang == LANG_ADA || lang == LANG_C) && IS_EXCEPTION_END_ATTR(LEXLEV)) {
                     in_exception_block--;
                 }
-                if (lang == LANG_C && (u.Ucode.Lexlev & 0x80)) {
+                if (lang == LANG_C && (LEXLEV & 0x80)) {
                     in_exception_frame++;
                 }
-                if (lang == LANG_C && (u.Ucode.Lexlev & 0x100)) {
+                if (lang == LANG_C && (LEXLEV & 0x100)) {
                     in_exception_frame--;
                 }
-            } else if (u.Ucode.Opc == Uldef) {
-                updatelab(u.Ucode.I1, &curproc->labels, true)->len = 0;
+            } else if (OPC == Uldef) {
+                updatelab(IONE, &curproc->labels, true)->len = 0;
             }
-            if (u.Ucode.Opc == Ulab || u.Ucode.Opc == Uldef) {
-                if (u.Ucode.Lexlev & IJP_ATTR) {
-                    insertijplab(u.Ucode.I1, &curproc->ijp_labels);
+            if (OPC == Ulab || OPC == Uldef) {
+                if (LEXLEV & IJP_ATTR) {
+                    insertijplab(IONE, &curproc->ijp_labels);
                 }
             }
             break;
@@ -1000,17 +1000,17 @@ void oneinstruction(void) {
 
         case Uilod:
         case Uistr:
-            curproc->unk38 = MAX(u.intarray[3], curproc->unk38);
+            curproc->unk38 = MAX(OFFSET, curproc->unk38);
             break;
     }
 
-    if (u.Ucode.Opc == Ufjp || u.Ucode.Opc == Utjp || u.Ucode.Opc == Uujp) {
-        updatelab(u.Ucode.I1, &curproc->labels, true);
-    } else if (u.Ucode.Opc == Uxjp) {
-        updatelab(u.intarray[2], &curproc->labels, true);
+    if (OPC == Ufjp || OPC == Utjp || OPC == Uujp) {
+        updatelab(IONE, &curproc->labels, true);
+    } else if (OPC == Uxjp) {
+        updatelab(LENGTH, &curproc->labels, true);
     }
 
-    switch (u.Ucode.Opc) {
+    switch (OPC) {
         case Ulab:
         case Ulbdy:
         case Ulbgn:
@@ -1033,30 +1033,30 @@ void oneprocprepass(void) {
     int i;
     int len;
 
-    curproc = searchproc(u.Ucode.I1, u.Ucode.Lexlev);
+    curproc = searchproc(IONE, LEXLEV);
     curproc->unk8 = true;
-    if (!curproc->unkB && IS_EXTERNAL_ATTR(u.Ucode.Uopcde.uent.Extrnal)) {
+    if (!curproc->unkB && IS_EXTERNAL_ATTR(EXTRNAL)) {
         curproc->unkB = true;
         curproc->unkD = true;
     }
     if (!someusefp) {
-        someusefp = IS_FRAMEPTR_ATTR(u.Ucode.Uopcde.uent.Extrnal);
+        someusefp = IS_FRAMEPTR_ATTR(EXTRNAL);
     }
     in_exception_block = 0;
-    if ((lang == LANG_ADA || lang == LANG_PL1 || lang == LANG_COBOL) && !IS_EXTERNAL_ATTR(u.Ucode.Uopcde.uent.Extrnal)) {
+    if ((lang == LANG_ADA || lang == LANG_PL1 || lang == LANG_COBOL) && !IS_EXTERNAL_ATTR(EXTRNAL)) {
         var.memtype = Mmt;
-        var.blockno = u.Ucode.I1;
+        var.blockno = IONE;
         var.addr = -4;
         insertvar(var, 4, Adt, &curproc->vartree, true, false, true);
     }
     readuinstr(&u, ustrptr);
-    if (u.Ucode.Opc == Ueof) {
+    if (OPC == Ueof) {
         write_string(err.c_file, "uopt: Error: unexpected EOF in input ucode; giving up..", 55, 55);
         writeln(err.c_file);
         fflush(err.c_file);
         abort();
     }
-    len = u.Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival;
+    len = CONSTVAL.swpart.Ival;
     for (i = 0; i < len; i++) {
         entnam0[i] = ustrptr[i];
     }
@@ -1066,16 +1066,16 @@ void oneprocprepass(void) {
     }
     lab_just_defined = 0;
     readuinstr(&u, ustrptr);
-    if (u.Ucode.Opc == Ueof) {
+    if (OPC == Ueof) {
         write_string(err.c_file, "uopt: Error: unexpected EOF in input ucode; giving up...", 56, 56);
         writeln(err.c_file);
         fflush(err.c_file);
         abort();
     }
-    while (u.Ucode.Opc != Uend) {
+    while (OPC != Uend) {
         oneinstruction();
         readuinstr(&u, ustrptr);
-        if (u.Ucode.Opc == Ueof) {
+        if (OPC == Ueof) {
             write_string(err.c_file, "uopt: Error: unexpected EOF in input ucode; giving up....", 57, 57);
             writeln(err.c_file);
             fflush(err.c_file);
@@ -1241,11 +1241,11 @@ static void func_0045BCA8(struct Proc *proc, int *regs_counter) { // originally 
         }
 
         if (lang == LANG_PASCAL) {
-            stop = proc->unkF;
+            stop = proc->nonlocal_goto;
             callee = proc->callees;
             while (!stop && callee != NULL) {
-                if (callee->proc->unkF) {
-                    proc->unkF = true;
+                if (callee->proc->nonlocal_goto) {
+                    proc->nonlocal_goto = true;
                     stop = true;
                 } else {
                     callee = callee->next;
@@ -1348,7 +1348,7 @@ void prepass(void) {
     proc->o3opt = false;
     proc->unkD = true;
     proc->unkE = false;
-    proc->unkF = false;
+    proc->nonlocal_goto = false;
     proc->unk14 = false;
     proc->unk15 = false;
     proc->unk9 = true;
@@ -1373,7 +1373,7 @@ void prepass(void) {
     proc->o3opt = false;
     proc->unkD = true;
     proc->unkE = false;
-    proc->unkF = false;
+    proc->nonlocal_goto = false;
     proc->unk14 = false;
     proc->unk15 = false;
     proc->unk9 = true;
@@ -1390,11 +1390,11 @@ void prepass(void) {
 
     readuinstr(&u, ustrptr);
 
-    while (u.Ucode.Opc != Ueof && u.Ucode.Opc != Ustp) {
-        while (u.Ucode.Opc != Uent && u.Ucode.Opc != Ustp) {
+    while (OPC != Ueof && OPC != Ustp) {
+        while (OPC != Uent && OPC != Ustp) {
             oneinstruction();
             readuinstr(&u, ustrptr);
-            if (u.Ucode.Opc == Ueof) {
+            if (OPC == Ueof) {
                 write_string(err.c_file, "uopt: Error: unexpected EOF in input ucode; giving up.....", 58, 58);
                 writeln(err.c_file);
                 fflush(err.c_file);
@@ -1402,7 +1402,7 @@ void prepass(void) {
             }
         }
 
-        if (u.Ucode.Opc == Uent) {
+        if (OPC == Uent) {
             oneprocprepass();
             readuinstr(&u, ustrptr);
         }

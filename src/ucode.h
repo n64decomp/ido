@@ -152,26 +152,26 @@
 #define SET_TEMP_REGISTERS_INTACT_ATTR(x)  x = ((x) | TEMP_REGISTERS_INTACT_ATTR)
 
 
-  enum
-  Datatype {
-      /* 0  */ Adt,                              /* address (pointer)                 */
-      /* 1  */ Cdt,                              /* pointer to readonly data          */
-      /* 2  */ Fdt,                              /* C pointer to function             */
-      /* 3  */ Gdt,                              /* address of label                  */
-      /* 4  */ Hdt,                              /* address that only points to heap  */
-      /* 5  */ Idt,                              /* integer, double word              */
-      /* 6  */ Jdt,                              /* integer, single word              */
-      /* 7  */ Kdt,                              /* unsigned integer, double word     */
-      /* 8  */ Ldt,                              /* non-negative integer, single word */
-      /* 9  */ Mdt,                              /* array or record                   */
-      /* 10 */ Ndt,                              /* non-local labels                  */
-      /* 11 */ Pdt,                              /* procedure, untyped                */
-      /* 12 */ Qdt,                              /* real, double word                 */
-      /* 13 */ Rdt,                              /* real, single word                 */
-      /* 14 */ Sdt,                              /* set                               */
-      /* 15 */ Wdt,                              /* 64 bit wide pointer               */
-      /* 16 */ Xdt,                              /* extended precision                */
-      /* 17 */ Zdt}                              /* undefined                         */
+enum Datatype {
+      /* 0  */ Adt, /* address (pointer)                 */
+      /* 1  */ Cdt, /* pointer to readonly data          */
+      /* 2  */ Fdt, /* C pointer to function             */
+      /* 3  */ Gdt, /* address of label                  */
+      /* 4  */ Hdt, /* address that only points to heap  */
+      /* 5  */ Idt, /* integer, double word              */
+      /* 6  */ Jdt, /* integer, single word              */
+      /* 7  */ Kdt, /* unsigned integer, double word     */
+      /* 8  */ Ldt, /* non-negative integer, single word */
+      /* 9  */ Mdt, /* array or record                   */
+      /* 10 */ Ndt, /* non-local labels                  */
+      /* 11 */ Pdt, /* procedure, untyped                */
+      /* 12 */ Qdt, /* real, double word                 */
+      /* 13 */ Rdt, /* real, single word                 */
+      /* 14 */ Sdt, /* set                               */
+      /* 15 */ Wdt, /* 64 bit wide pointer               */
+      /* 16 */ Xdt, /* extended precision                */
+      /* 17 */ Zdt, /* undefined                         */
+}
 #ifdef __GNUC__
 __attribute__((packed))
 #endif
@@ -184,17 +184,16 @@ typedef unsigned char Datatype;
 #endif
 
 
-enum
-Memtype
- {    Zmt,                              /*                                   */
-      Mmt,                              /* complex variables (local?)        */
-      Pmt,                              /* parameters                        */
-      Rmt,                              /* register                          */
-      Smt,                              /* statically allocated memory       */
-      Amt,                              /* Parameter build area              */
-      Tmt,                              /* used internally by ugen           */
-      Kmt                               /* static class data member in C++   */
- } ;
+enum Memtype {
+    /* 0 */ Zmt, /* undefined                         */
+    /* 1 */ Mmt, /* complex variables (local?)        */
+    /* 2 */ Pmt, /* parameters                        */
+    /* 3 */ Rmt, /* register                          */
+    /* 4 */ Smt, /* statically allocated memory       */
+    /* 5 */ Amt, /* Parameter build area              */
+    /* 6 */ Tmt, /* used internally by ugen           */
+    /* 7 */ Kmt, /* static class data member in C++   */
+};
 
 
 
