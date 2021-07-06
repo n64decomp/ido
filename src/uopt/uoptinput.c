@@ -1846,7 +1846,8 @@ void readnxtinst(void) {
                 CONSTVAL.swpart.Ival = cutbits(CONSTVAL.swpart.Ival, LENGTH * 8, DTYPE);
                 LENGTH = sizeoftyp(DTYPE);
             } else if ((DTYPE == Idt || DTYPE == Kdt) && LENGTH < sizeoftyp(DTYPE)) {
-                CONSTVAL.dwval = cutbits64(CONSTVAL.dwval,(int)(LENGTH * 8LL), DTYPE);
+                // XXX: never happens in oot
+                CONSTVAL.dwval = cutbits64(CONSTVAL.dwval, (int)(LENGTH * 8LL), DTYPE);
                 LENGTH = sizeoftyp(DTYPE);
             }
 
@@ -2996,8 +2997,9 @@ void readnxtinst(void) {
                     }
                 }
             }
+
             if (lang != LANG_FORTRAN) {
-                if ((graphhead == curgraphnode || (lang == LANG_ADA && stattail->opc == Ulab && (stattail->u.label.flags & 2) == 0)) &&
+                if ((graphhead == curgraphnode || (lang == LANG_ADA && stattail->opc == Ulab && IS_EXCEPTION_ATTR(stattail->u.label.flags))) &&
                         ustack->expr->type == isvar &&
                         ustack->expr->data.isvar_issvar.var_data.memtype == Rmt &&
                         ustack->expr->data.isvar_issvar.var_data.addr == 2)
@@ -3016,10 +3018,12 @@ void readnxtinst(void) {
                     return;
                 }
             }
+
             expr = readnxtinst_searchloop(isvarhash(var), &var, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
+
             if (OPC == Uisst) {
                 if (ustack->down->expr->type == isvar) {
                     func_0043CBFC(ustack->down);
@@ -3030,6 +3034,7 @@ void readnxtinst(void) {
                     ustack->down->expr->var_access_list->unk8 = true;
                 }
             }
+
             if (ustack->expr == expr && expr->data.isvar_issvar.var_data.memtype != Rmt && expr->data.isvar_issvar.var_data.memtype != Amt) {
                 decreasecount(expr);
                 ustack = ustack->down;
@@ -3041,6 +3046,7 @@ void readnxtinst(void) {
                 stattail->expr = NULL;
                 return;
             }
+
             unk1C = true;
             unk1E = true;
             if (expr->type != empty) {
@@ -3099,6 +3105,7 @@ void readnxtinst(void) {
                     unk1E = false;
                 }
             }
+
             if (expr->type == empty) {
                 if (OPC == Ustr) {
                     expr->type = isvar;
@@ -3128,17 +3135,16 @@ void readnxtinst(void) {
                 expr->var_access_list = NULL;
                 expr->data.isvar_issvar.is_volatile = IS_OVERFLOW_ATTR(LEXLEV);
             }
+
             if (expr->data.isvar_issvar.unk21) {
                 unk1C = false;
                 unk1E = false;
             }
             if (lang != LANG_C ||
-                    ((expr->datatype == Adt || expr->datatype == Idt || expr->datatype == Jdt || expr->datatype == Kdt || expr->datatype == Ldt) &&
-                     expr->data.isvar_issvar.size >= 4))
-            {
+                    ((expr->datatype == Adt || expr->datatype == Idt || expr->datatype == Jdt || expr->datatype == Kdt || expr->datatype == Ldt) && expr->data.isvar_issvar.size >= 4)) {
                 if (!checkincre(ustack->expr, expr, &increment_result)) {
                     increment_result = -1;
-                }
+                } 
             } else {
                 increment_result = -1;
             }
@@ -3166,6 +3172,7 @@ void readnxtinst(void) {
             if (lang == LANG_ADA && (ustack->expr->type == islda || ustack->expr->type == isilda)) {
                 use_c_semantics = true;
             }
+
             if (ustack->expr->type == isvar && ustack->expr->data.isvar_issvar.var_data.memtype == Amt && !in_outparlist(ustack->expr->data.isvar_issvar.var_data.addr)) { 
                 stattail->unk3 = true;
                 lastmst->u.mst.loc = ustack->expr->data.isvar_issvar.var_data.addr;
@@ -3305,6 +3312,7 @@ void readnxtinst(void) {
                     caseerror(1, 2945, "uoptinput.p", 11);
                     break;
             }
+
             stattail->u.label.blockno = IONE;
             target_graphnode = ingraph(IONE);
             if (target_graphnode == NULL) {
@@ -3317,6 +3325,7 @@ void readnxtinst(void) {
             } else if (OPC == Ulab) {
                 target_graphnode->bvs.init.line = curlocln;
             }
+
             if (OPC != Ulab) {
                 predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
                 if (predecessors == NULL) {
@@ -3342,6 +3351,7 @@ void readnxtinst(void) {
             if (stattail->prev->opc == Ulbdy) {
                 target_graphnode->unkBb4 = true;
             }
+
             target_graphnode->blockno = IONE;
             target_graphnode->unk4 = (LEXLEV & 0x1F7) != 0;
             if (curgraphnode != NULL) {
@@ -3369,6 +3379,7 @@ void readnxtinst(void) {
                         successors = successors->next;
                     }
                 }
+
                 if (!found) {
                     predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
                     if (predecessors == NULL) {
@@ -3389,6 +3400,7 @@ void readnxtinst(void) {
                     curgraphnode->successors = successors;
                 }
             }
+
             curgraphnode = target_graphnode;
             curgraphnode->stat_head = stattail;
             stattail->graphnode = curgraphnode;
@@ -3419,47 +3431,44 @@ void readnxtinst(void) {
                 stattail->u.store.unk1C = true;
             }
             endblock_saved = endblock;
-            if (LENGTH > 0) {
-                i = 0;
-                do {
-                    getop();
-                    if (OPC != Uujp) {
-                        copyline();
-                    } else {
-                        extendstat(OPC);
+            for (i = 0; OPC != Uujp || i != LENGTH; i++) {
+                getop();
+                if (OPC != Uujp) {
+                    copyline();
+                } else {
+                    extendstat(OPC);
+                    if (outofmem) {
+                        return;
+                    }
+                    stattail->u.jp.target_blockno = IONE;
+                    target_graphnode = ingraph(IONE);
+                    if (target_graphnode == NULL) {
+                        appendgraph();
                         if (outofmem) {
                             return;
                         }
-                        stattail->u.jp.target_blockno = IONE;
-                        target_graphnode = ingraph(IONE);
-                        if (target_graphnode == NULL) {
-                            appendgraph();
-                            if (outofmem) {
-                                return;
-                            }
-                            target_graphnode = graphtail;
-                            target_graphnode->blockno = IONE;
-                        }
-                        if (IONE != graphnode->blockno) {
-                            predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                            if (predecessors == NULL) {
-                                outofmem = true;
-                                return;
-                            }
-                            predecessors->graphnode = graphnode;
-                            predecessors->next = target_graphnode->predecessors;
-                            target_graphnode->predecessors = predecessors;
-                        }
-                        successors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                        if (successors == NULL) {
+                        target_graphnode = graphtail;
+                        target_graphnode->blockno = IONE;
+                    }
+                    if (IONE != graphnode->blockno) {
+                        predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+                        if (predecessors == NULL) {
                             outofmem = true;
                             return;
                         }
-                        successors->graphnode = target_graphnode;
-                        successors->next = graphnode->successors;
-                        graphnode->successors = successors;
+                        predecessors->graphnode = graphnode;
+                        predecessors->next = target_graphnode->predecessors;
+                        target_graphnode->predecessors = predecessors;
                     }
-                } while (OPC != Uujp || ++i != LENGTH);
+                    successors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+                    if (successors == NULL) {
+                        outofmem = true;
+                        return;
+                    }
+                    successors->graphnode = target_graphnode;
+                    successors->next = graphnode->successors;
+                    graphnode->successors = successors;
+                }
             }
             endblock = endblock_saved;
             return;
@@ -4163,6 +4172,7 @@ void readnxtinst(void) {
             ustack->down->value = stval1;
             return;
 
+        // alternate entry point to function
         case Uaent: // XXX: untested
             extendstat(Uaent);
             if (outofmem) {

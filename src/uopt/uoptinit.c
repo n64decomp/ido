@@ -717,7 +717,7 @@ void optinit(void) {
     stack_reversed = false;
     strictieee = false;
     fp32reg = false;
-    varreflimit = 0x14;
+    varreflimit = 20;
     dbugno = 0;
     proc_to_print[0] = ' ';
     ctrl_head = NULL;

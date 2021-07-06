@@ -2204,122 +2204,54 @@ void getoption(int uopt_option, int n) {
     }
 }
 
-__asm__(R""(
-.set noat
-.set noreorder
+/* 
+00425618 func_00425618
+0043CFCC readnxtinst
+0044F3C0 unaryfold
+0047DFDC cutbits64
+*/
+int cutbits(int val, int length, enum Datatype dtype) {
+    int result;
 
-glabel cutbits
-    .ent cutbits
-    # 00425618 func_00425618
-    # 0043CFCC readnxtinst
-    # 0044F3C0 unaryfold
-    # 0047DFDC cutbits64
-/* 0047DFA0 240E0001 */  li    $t6, 1
-/* 0047DFA4 00AE7804 */  sllv  $t7, $t6, $a1
-/* 0047DFA8 25F8FFFF */  addiu $t8, $t7, -1
-/* 0047DFAC 00981024 */  and   $v0, $a0, $t8
-/* 0047DFB0 24010006 */  li    $at, 6
-/* 0047DFB4 AFA60008 */  sw    $a2, 8($sp)
-/* 0047DFB8 14C10006 */  bne   $a2, $at, .L0047DFD4
-/* 0047DFBC 00401825 */   move  $v1, $v0
-/* 0047DFC0 24B9001F */  addiu $t9, $a1, 0x1f
-/* 0047DFC4 24080001 */  li    $t0, 1
-/* 0047DFC8 03282004 */  sllv  $a0, $t0, $t9
-/* 0047DFCC 00444826 */  xor   $t1, $v0, $a0
-/* 0047DFD0 01241823 */  subu  $v1, $t1, $a0
-.L0047DFD4:
-/* 0047DFD4 03E00008 */  jr    $ra
-/* 0047DFD8 00601025 */   move  $v0, $v1
-    .type cutbits, @function
-    .size cutbits, .-cutbits
-    .end cutbits
+    // XXX: undefined behavior, mips sllv automatically masks the lowest 5 bits
+    result = val & ((1 << (length & 31)) - 1);
+    if (dtype == Jdt) {
+        val = 1 << ((length + 31) & 31);
+        result = (result ^ val) - val;
+    }
+    return result;
+}
 
-glabel cutbits64
-    .ent cutbits64
-    # 0043CFCC readnxtinst
-/* 0047DFDC 3C1C0FBA */  .cpload $t9
-/* 0047DFE0 279CC2B4 */
-/* 0047DFE4 0399E021 */
-/* 0047DFE8 27BDFFD0 */  addiu $sp, $sp, -0x30
-/* 0047DFEC AFB00014 */  sw    $s0, 0x14($sp)
-/* 0047DFF0 28C10021 */  slti  $at, $a2, 0x21
-/* 0047DFF4 00C08025 */  move  $s0, $a2
-/* 0047DFF8 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047DFFC AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047E000 AFA40030 */  sw    $a0, 0x30($sp)
-/* 0047E004 AFA50034 */  sw    $a1, 0x34($sp)
-/* 0047E008 AFA7003C */  sw    $a3, 0x3c($sp)
-/* 0047E00C AFA40020 */  sw    $a0, 0x20($sp)
-/* 0047E010 14200014 */  bnez  $at, .L0047E064
-/* 0047E014 AFA50024 */   sw    $a1, 0x24($sp)
-/* 0047E018 24010007 */  li    $at, 7
-/* 0047E01C 14E10009 */  bne   $a3, $at, .L0047E044
-/* 0047E020 00000000 */   nop
-/* 0047E024 8F9986A8 */  lw    $t9, %call16(cutbits)($gp)
-/* 0047E028 24C5FFE0 */  addiu $a1, $a2, -0x20
-/* 0047E02C 24060008 */  li    $a2, 8
-/* 0047E030 0320F809 */  jalr  $t9
-/* 0047E034 00000000 */   nop
-/* 0047E038 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047E03C 10000028 */  b     .L0047E0E0
-/* 0047E040 AFA20020 */   sw    $v0, 0x20($sp)
-.L0047E044:
-/* 0047E044 8F9986A8 */  lw    $t9, %call16(cutbits)($gp)
-/* 0047E048 8FA40020 */  lw    $a0, 0x20($sp)
-/* 0047E04C 2605FFE0 */  addiu $a1, $s0, -0x20
-/* 0047E050 0320F809 */  jalr  $t9
-/* 0047E054 24060006 */   li    $a2, 6
-/* 0047E058 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047E05C 10000020 */  b     .L0047E0E0
-/* 0047E060 AFA20020 */   sw    $v0, 0x20($sp)
-.L0047E064:
-/* 0047E064 24010020 */  li    $at, 32
-/* 0047E068 16010008 */  bne   $s0, $at, .L0047E08C
-/* 0047E06C 24010007 */   li    $at, 7
-/* 0047E070 14E10003 */  bne   $a3, $at, .L0047E080
-/* 0047E074 8FB80024 */   lw    $t8, 0x24($sp)
-/* 0047E078 10000019 */  b     .L0047E0E0
-/* 0047E07C AFA00020 */   sw    $zero, 0x20($sp)
-.L0047E080:
-/* 0047E080 0018CFC3 */  sra   $t9, $t8, 0x1f
-/* 0047E084 10000016 */  b     .L0047E0E0
-/* 0047E088 AFB90020 */   sw    $t9, 0x20($sp)
-.L0047E08C:
-/* 0047E08C 24010007 */  li    $at, 7
-/* 0047E090 14E1000A */  bne   $a3, $at, .L0047E0BC
-/* 0047E094 00000000 */   nop
-/* 0047E098 8F9986A8 */  lw    $t9, %call16(cutbits)($gp)
-/* 0047E09C 8FA40024 */  lw    $a0, 0x24($sp)
-/* 0047E0A0 02002825 */  move  $a1, $s0
-/* 0047E0A4 0320F809 */  jalr  $t9
-/* 0047E0A8 24060008 */   li    $a2, 8
-/* 0047E0AC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047E0B0 AFA20024 */  sw    $v0, 0x24($sp)
-/* 0047E0B4 1000000A */  b     .L0047E0E0
-/* 0047E0B8 AFA00020 */   sw    $zero, 0x20($sp)
-.L0047E0BC:
-/* 0047E0BC 8F9986A8 */  lw    $t9, %call16(cutbits)($gp)
-/* 0047E0C0 8FA40024 */  lw    $a0, 0x24($sp)
-/* 0047E0C4 02002825 */  move  $a1, $s0
-/* 0047E0C8 0320F809 */  jalr  $t9
-/* 0047E0CC 24060006 */   li    $a2, 6
-/* 0047E0D0 00024FC3 */  sra   $t1, $v0, 0x1f
-/* 0047E0D4 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047E0D8 AFA20024 */  sw    $v0, 0x24($sp)
-/* 0047E0DC AFA90020 */  sw    $t1, 0x20($sp)
-.L0047E0E0:
-/* 0047E0E0 8FA20020 */  lw    $v0, 0x20($sp)
-/* 0047E0E4 8FA30024 */  lw    $v1, 0x24($sp)
-/* 0047E0E8 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047E0EC 8FB00014 */  lw    $s0, 0x14($sp)
-/* 0047E0F0 AFA20028 */  sw    $v0, 0x28($sp)
-/* 0047E0F4 AFA3002C */  sw    $v1, 0x2c($sp)
-/* 0047E0F8 03E00008 */  jr    $ra
-/* 0047E0FC 27BD0030 */   addiu $sp, $sp, 0x30
-    .type cutbits64, @function
-    .size cutbits64, .-cutbits64
-    .end cutbits64
-)"");
+/* 
+0043CFCC readnxtinst
+*/
+long long int cutbits64(long long val, int length, enum Datatype dtype) {
+    union Valu t;
+    t.dwval = val;
+
+    if (length > 32) {
+        if (dtype == Kdt) {
+            t.dwpart.dwval_h = cutbits(t.dwpart.dwval_h, length - 32, Ldt);
+        } else {
+            t.dwpart.dwval_h = cutbits(t.dwpart.dwval_h, length - 32, Jdt);
+        }
+    } else if (length == 32) {
+        if (dtype == Kdt) {
+            t.dwpart.dwval_h = 0;
+        } else {
+            // sign extend
+            t.dwpart.dwval_h = t.dwpart.dwval_l >> 31;
+        }
+    } else if (dtype == Kdt) {
+        t.dwpart.dwval_l = cutbits(t.dwpart.dwval_l, length, Ldt);
+        t.dwpart.dwval_h = 0;
+    } else {
+        t.dwpart.dwval_l = cutbits(t.dwpart.dwval_l, length, Jdt);
+        // sign extend
+        t.dwpart.dwval_h = t.dwpart.dwval_l >> 31;
+    }
+    return t.dwval;
+}
 
 /*
 0043B334 func_0043B334

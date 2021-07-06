@@ -10,12 +10,12 @@
 #include "uoptmtag.h"
 
 /*
-# 004150E4 func_004150E4
-# 0041550C func_0041550C
-# 004175BC copypropagate
-# 00445E44 exprimage
-# 0046BA10 change_to_const_eq
-# 0046BD90 change_to_var_eq
+004150E4 func_004150E4
+0041550C func_0041550C
+004175BC copypropagate
+00445E44 exprimage
+0046BA10 change_to_const_eq
+0046BD90 change_to_var_eq
 */
 int isconstihash(int value) {
     int hash = value % 0x653;
@@ -24,8 +24,8 @@ int isconstihash(int value) {
 }
 
 /*
-# 0041550C func_0041550C
-# 00445E44 exprimage
+0041550C func_0041550C
+00445E44 exprimage
 */
 int realihash(union Constant value) {
     // only the u16 at value+0x2 is used, but 8 bytes are always passed to this function, see func_0041550C asm
@@ -35,11 +35,11 @@ int realihash(union Constant value) {
 }
 
 /*
-# 0041550C func_0041550C
-# 004175BC copypropagate
-# 0042020C gen_static_link
-# 00445E44 exprimage
-# 004471AC codeimage
+0041550C func_0041550C
+004175BC copypropagate
+0042020C gen_static_link
+00445E44 exprimage
+004471AC codeimage
 */
 int isvarihash(struct VariableInner var) {
     int hash = (((var.memtype << 6) + var.blockno + var.addr) << 4) % 0x653;
@@ -48,9 +48,9 @@ int isvarihash(struct VariableInner var) {
 }
 
 /*
-# 0041550C func_0041550C
-# 00445E44 exprimage
-# 0046BA10 change_to_const_eq
+0041550C func_0041550C
+00445E44 exprimage
+0046BA10 change_to_const_eq
 */
 int isldaihash(struct VariableInner var, unsigned int addr) {
     int hash = (((var.memtype << 6) + var.blockno + addr) << 4) % 0x653;
@@ -59,13 +59,13 @@ int isldaihash(struct VariableInner var, unsigned int addr) {
 }
 
 /*
-# 00410204 codemotion
-# 0041550C func_0041550C
-# 004175BC copypropagate
-# 00445E44 exprimage
-# 004471AC codeimage
-# 0046BA10 change_to_const_eq
-# 0046BD90 change_to_var_eq
+00410204 codemotion
+0041550C func_0041550C
+004175BC copypropagate
+00445E44 exprimage
+004471AC codeimage
+0046BA10 change_to_const_eq
+0046BD90 change_to_var_eq
 */
 int isopihash(Uopcode opc, struct IChain *op1, struct IChain *op2) {
     int hash;
@@ -81,10 +81,10 @@ int isopihash(Uopcode opc, struct IChain *op1, struct IChain *op2) {
 }
 
 /*
-# 004150E4 func_004150E4
-# 0041550C func_0041550C
-# 00445AEC trep_image
-# 00445E44 exprimage
+004150E4 func_004150E4
+0041550C func_0041550C
+00445AEC trep_image
+00445E44 exprimage
 */
 int opvalihash(Uopcode opc, struct IChain *ichain, unsigned short number) {
     int hash = ((opc * 8) + ((ichain->table_index + number) * (ichain->chain_index + 2))) % 0x653;
@@ -136,13 +136,13 @@ struct IChain *appendichain(unsigned short table_index, bool not_isop) {
 }
 
 /*
-# 004150E4 func_004150E4
-# 0041550C func_0041550C
-# 004175BC copypropagate
-# 00445E44 exprimage
-# 004471AC codeimage
-# 0046BA10 change_to_const_eq
-# 0046BD90 change_to_var_eq
+004150E4 func_004150E4
+0041550C func_0041550C
+004175BC copypropagate
+00445E44 exprimage
+004471AC codeimage
+0046BA10 change_to_const_eq
+0046BD90 change_to_var_eq
 */
 struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct IChain *op1, struct IChain *op2) {
     struct IChain *ichain; // s0
@@ -670,11 +670,11 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                 expr->type == isilda ||
                 expr->type == issvar) {
 
-            ichain->bitpos = newbit(ichain, 0);
+            ichain->bitpos = newbit(ichain, NULL);
 
             if (expr->type == isvar || expr->type == issvar) {
                 setbit(&varbits, ichain->bitpos);
-                ichain->isvar_issvar.assignbit = newbit(ichain, 0);
+                ichain->isvar_issvar.assignbit = newbit(ichain, NULL);
                 setbit(&asgnbits, ichain->isvar_issvar.assignbit);
 
                 if (expr->type == issvar) {
@@ -746,9 +746,9 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
 }
 
 /* 
-# 0041550C func_0041550C
-# 00445E44 exprimage
-# 0046BD90 change_to_var_eq
+0041550C func_0041550C
+00445E44 exprimage
+0046BD90 change_to_var_eq
 */
 void trep_image(struct Expression *expr, bool op1, bool ant, bool av, bool arg4) {
     unsigned short cg1hash; // sp3C
@@ -808,7 +808,7 @@ void trep_image(struct Expression *expr, bool op1, bool ant, bool av, bool arg4)
                 ichain->isop.op1 = op->ichain;
                 ichain->expr = NULL;
                 ichain->isop.size = expr->graphnode->num;
-                ichain->bitpos = newbit(ichain, 0);
+                ichain->bitpos = newbit(ichain, NULL);
                 setbit(&trepexp, ichain->bitpos);
             }
 
@@ -834,8 +834,8 @@ void trep_image(struct Expression *expr, bool op1, bool ant, bool av, bool arg4)
 }
 
 /*
-# 00445E44 exprimage
-# 004471AC codeimage
+00445E44 exprimage
+004471AC codeimage
 */
 struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *available) {
     struct IChain *ichain;      // sp84
@@ -1186,8 +1186,8 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
 }
 
 /*
-# 004175BC copypropagate
-# 004471AC codeimage
+004175BC copypropagate
+004471AC codeimage
 */
 struct IChain *searchstore(unsigned short hash, Uopcode opc /* sp3f */, struct IChain *op1, struct IChain *op2, int unk1, int size) {
     struct IChain *ichain;      // s0
