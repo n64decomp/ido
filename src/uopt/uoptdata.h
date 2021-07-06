@@ -717,7 +717,7 @@ struct Expression {
             Datatype datatype; // 0x23
             struct Expression *op1; // 0x24
             struct Expression *op2; // 0x28
-            int datasize; // calculated result? seems to also sometimes be size in bits of the datatype
+            int datasize; // calculated result? seems to also sometimes be size in bits of the datatype. Also used as offset in bytes for ilod
             int unk30;
             struct Expression *unk34; // return value from findbaseaddr
             union {

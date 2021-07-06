@@ -648,7 +648,7 @@ static void ustack_push(struct Expression *expr) {
 /*
 0043CFCC readnxtinst
 */
-static void func_0043B1DC(void) {
+static void ustack_add_value(void) {
     int value = ustack->value;
 
     if (value != 0) {
@@ -659,11 +659,12 @@ static void func_0043B1DC(void) {
 
 /* 
 0043CFCC readnxtinst
+    used for ilod and istr
 */
-static void func_0043B23C(void) {
+static void ustack_add_index(void) {
     int value = ustack->value;
 
-    if (value < -0x8000 || value >= 0x8000) {
+    if (value < -0x8000 || value > 0x7FFF) {
         ustack->value = value - (value & 0xFFFF8000);
         ustack->expr = binopwithconst(Uadd, ustack->expr, (value & 0xFFFF8000));
     }
@@ -2232,7 +2233,7 @@ void readnxtinst(void) {
             }
 
             if (OPC != Uadd && OPC != Usub) {
-                func_0043B1DC();
+                ustack_add_value();
                 stexpr1 = ustack->expr;
             }
 
@@ -2406,7 +2407,7 @@ void readnxtinst(void) {
                 if (stval2 != 0) {
                     stexpr2 = binopwithconst(Uadd, stexpr2, stval2);
                 }
-                func_0043B1DC();
+                ustack_add_value();
                 OPC = Umpy;
                 stexpr1 = ustack->expr;
                 expr = readnxtinst_searchloop(isophash(Umpy, stexpr1, stexpr2), &var, stexpr1, stexpr2);
@@ -2538,7 +2539,7 @@ void readnxtinst(void) {
                 if (OPC == Uneg && !IS_OVERFLOW_ATTR(LEXLEV)) {
                     ustack->value = -ustack->value;
                 } else {
-                    func_0043B1DC();
+                    ustack_add_value();
                 }
 
                 stexpr1 = ustack->expr;
@@ -2591,7 +2592,7 @@ void readnxtinst(void) {
             if (eliminated) {
                 return;
             }
-            func_0043B1DC();
+            ustack_add_value();
             stexpr1 = ustack->expr;
             expr = readnxtinst_searchloop(opvalhash(OPC, stexpr1, IONE), &var, stexpr1, stexpr2);
             if (outofmem) {
@@ -2639,7 +2640,8 @@ void readnxtinst(void) {
             } else if ((DTYPE2 == Idt || DTYPE2 == Kdt) && (DTYPE == Idt || DTYPE == Kdt) && ustack->expr->type == isvar && ustack->expr->data.isvar_issvar.size == 8) {
                 return;
             }
-            func_0043B1DC();
+
+            ustack_add_value();
             stexpr1 = ustack->expr;
             expr = readnxtinst_searchloop(isophash(OPC, stexpr1, NULL), &var, stexpr1, stexpr2);
             if (outofmem) {
@@ -2665,7 +2667,7 @@ void readnxtinst(void) {
             return;
 
         case Uadj: // XXX: untested
-            func_0043B1DC();
+            ustack_add_value();
             stexpr1 = ustack->expr;
             expr = readnxtinst_searchloop(opvalhash(OPC, stexpr1, OFFSET), &var, stexpr1, stexpr2);
             if (outofmem) {
@@ -2692,7 +2694,7 @@ void readnxtinst(void) {
             return;
 
         case Uchkn: // XXX: untested
-            func_0043B1DC();
+            ustack_add_value();
             stexpr1 = ustack->expr;
             expr = readnxtinst_searchloop(isophash(OPC, stexpr1, NULL), &var, stexpr1, stexpr2);
             if (outofmem) {
@@ -2718,7 +2720,7 @@ void readnxtinst(void) {
 
         case Uildv:
         case Uilod:
-            func_0043B23C();
+            ustack_add_index();
             stexpr1 = ustack->expr;
             stval1 = ustack->value;
             ustack->value = 0;
@@ -2790,7 +2792,7 @@ void readnxtinst(void) {
 
         case Uirld: // XXX: untested
         case Uirlv: // XXX: untested
-            func_0043B1DC();
+            ustack_add_value();
             stexpr1 = ustack->expr;
             if (OPC == Uirld && stexpr1->count >= 2 && LENGTH >= 4 && func_0043CE64(stexpr1, IONE)) {
                 return;
@@ -2869,10 +2871,10 @@ void readnxtinst(void) {
         case Uileq: // XXX: untested
         case Uiles: // XXX: untested
         case Uineq: // XXX: untested
-            func_0043B1DC();
+            ustack_add_value();
             stexpr2 = ustack->expr;
             ustack = ustack->down;
-            func_0043B1DC();
+            ustack_add_value();
             stexpr1 = ustack->expr;
             expr = readnxtinst_searchloop(isophash(OPC, stexpr1, stexpr2), &var, stexpr1, stexpr2);
             if (outofmem) {
@@ -2974,7 +2976,7 @@ void readnxtinst(void) {
                 return;
             }
 
-            func_0043B1DC();
+            ustack_add_value();
             if (ustack->expr->type == isop && ustack->expr->data.isop.opc == Ucvtl && ustack->expr->data.isop.datasize >= LENGTH * 8) {
                 stexpr1 = ustack->expr->data.isop.op1;
                 stexpr1->count++;
@@ -3243,7 +3245,7 @@ void readnxtinst(void) {
 
         case Uchkt: // XXX: untested
             extendstat(Uchkt);
-            func_0043B1DC();
+            ustack_add_value();
             stattail->u.chkt.unk18 = 0;
             stattail->expr = ustack->expr;
             ustack = ustack->down;
@@ -3255,7 +3257,7 @@ void readnxtinst(void) {
             if (outofmem) {
                 return;
             }
-            func_0043B1DC();
+            ustack_add_value();
             stattail->expr = ustack->expr;
             ustack = ustack->down;
             usefp = true;
@@ -3289,7 +3291,7 @@ void readnxtinst(void) {
                 case Ufjp:
                 case Utjp:
                     loc_not_yet_seen = false;
-                    func_0043B1DC();
+                    ustack_add_value();
                     if (ustack->expr->type == isvar) {
                         ustack->expr = binopwithconst(Uneq, ustack->expr, 0);
                         ustack->expr->data.isop.aux.unk38_int = 0;
@@ -3353,7 +3355,7 @@ void readnxtinst(void) {
             }
 
             target_graphnode->blockno = IONE;
-            target_graphnode->unk4 = (LEXLEV & 0x1F7) != 0;
+            target_graphnode->unk4 = (LEXLEV & (GOOB_TARGET | EXCEPTION_ATTR | EXTERN_LAB_ATTR | EXCEPTION_END_ATTR | EXCEPTION_FRAME_START_ATTR | EXCEPTION_FRAME_END_ATTR | 0x1c0)) != 0;
             if (curgraphnode != NULL) {
                 if (curgraphnode->stat_tail->opc == Ufjp || curgraphnode->stat_tail->opc == Utjp) {
                     if (curgraphnode->stat_tail->u.jp.target_blockno == IONE)  {
@@ -3370,6 +3372,7 @@ void readnxtinst(void) {
                         }
                     }
                 }
+
                 found = false;
                 successors = curgraphnode->successors;
                 while (successors != NULL && !found) {
@@ -3412,6 +3415,7 @@ void readnxtinst(void) {
             if (outofmem) {
                 return;
             }
+
             // xjp
             stattail->u.label.blockno = IONE;
             stattail->u.label.length = LENGTH;
@@ -3430,6 +3434,7 @@ void readnxtinst(void) {
                 graphnode->stat_tail->u.xjp.case_stmts = stattail;
                 stattail->u.store.unk1C = true;
             }
+
             endblock_saved = endblock;
             for (i = 0; OPC != Uujp || i != LENGTH; i++) {
                 getop();
@@ -3478,10 +3483,12 @@ void readnxtinst(void) {
             if (outofmem) {
                 return;
             }
-            func_0043B1DC();
+
+            ustack_add_value();
             if (ustack->expr->type == isvar) {
                 ustack->expr = binopwithconst(Uadd, ustack->expr, 0);
             }
+
             stattail->expr = ustack->expr;
             ustack = ustack->down;
             stattail->u.xjp.dtype = DTYPE;
@@ -3492,6 +3499,7 @@ void readnxtinst(void) {
             stattail->u.xjp.hbound_l = HBOUND_L;
             stattail->u.xjp.hbound_h = HBOUND_H;
             graphnode = ingraph(IONE);
+
             if (graphnode != NULL) {
                 graphnode->stat_head->u.label.unk1C = true;
                 stattail->u.xjp.case_stmts = graphnode->stat_head;
@@ -3534,6 +3542,7 @@ void readnxtinst(void) {
                 graphnode = graphtail;
                 graphnode->blockno = LENGTH;
             }
+
             predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
             if (predecessors == NULL) {
                 outofmem = true;
@@ -3551,6 +3560,7 @@ void readnxtinst(void) {
             successors->graphnode = graphnode;
             successors->next = curgraphnode->successors;
             curgraphnode->successors = successors;
+
             loc_not_yet_seen = false;
             curlocln = 0;
             return;
@@ -3561,7 +3571,7 @@ void readnxtinst(void) {
             if (outofmem) {
                 return;
             }
-            func_0043B1DC();
+            ustack_add_value();
             stattail->expr = ustack->expr;
             ustack = ustack->down;
             link_ijp_labels(curproc->ijp_labels);
@@ -3591,7 +3601,7 @@ void readnxtinst(void) {
                 return;
             }
             if (OPC == Upar) {
-                func_0043B1DC();
+                ustack_add_value();
             }
 
             stattail->expr = ustack->expr;
@@ -3634,7 +3644,8 @@ void readnxtinst(void) {
             if (outofmem) {
                 return;
             }
-            func_0043B1DC();
+
+            ustack_add_value();
             stattail->expr = ustack->expr;
             ustack = ustack->down;
             stattail->u.store.u.mov.offset = OFFSET;
@@ -3651,13 +3662,15 @@ void readnxtinst(void) {
         case Uistr:
         case Uistv:
             loc_not_yet_seen = false;
-            func_0043B1DC();
+            ustack_add_value();
+
             if (ustack->expr->type == isop && ustack->expr->data.isop.opc == Ucvtl && ustack->expr->data.isop.datasize >= LENGTH * 8) {
                 stexpr1 = ustack->expr->data.isop.op1;
                 stexpr1->count++;
                 decreasecount(ustack->expr);
                 ustack->expr = stexpr1;
             }
+
             found = false;
             if (OPC == Uistr) {
                 for (stmt = curgraphnode->stat_head; stmt != NULL && !found; stmt = stmt->next) {
@@ -3682,15 +3695,18 @@ void readnxtinst(void) {
             if (found) {
                 return;
             }
+
             extendstat(OPC);
             if (outofmem) {
                 return;
             }
+
             stattail->u.store.u.istr.dtype = DTYPE;
             stattail->u.store.u.istr.unk2D = LEXLEV & ~7;
             if (stattail->u.store.u.istr.unk2D == 0) {
                 stattail->u.store.u.istr.unk2D = LENGTH * 8;
             }
+
             expr = ustack->down->expr;
             if (expr->type == isconst) {
                 if (expr->data.isconst.number.intval % (unsigned)(stattail->u.store.u.istr.unk2D / 8) != 0) {
@@ -3711,15 +3727,17 @@ void readnxtinst(void) {
                     }
                 }
             }
+
             stattail->u.store.u.istr.offset = (unsigned short)OFFSET;
             stattail->u.store.expr = ustack->expr;
             ustack = ustack->down;
-            func_0043B23C();
+            ustack_add_index();
             stattail->expr = ustack->expr;
             stattail->u.store.u.istr.s.word = IONE + ustack->value;
             stattail->u.store.size = LENGTH;
             ustack = ustack->down;
             stattail->u.store.baseaddr = findbaseaddr(stattail->expr);
+
             if (OPC == Uistr) {
                 stattail->u.store.unk1C = !strlkilled(stattail, curgraphnode->varlisthead);
                 stattail->u.store.unk1D = true;
@@ -3739,22 +3757,25 @@ void readnxtinst(void) {
         case Uirst: // XXX: untested
         case Uirsv: // XXX: untested
             loc_not_yet_seen = false;
-            func_0043B1DC();
+            ustack_add_value();
             if (ustack->expr->type == isop && ustack->expr->data.isop.opc == Ucvtl && ustack->expr->data.isop.datasize >= LENGTH * 8) {
                 expr = ustack->expr->data.isop.op1;
                 expr->count++;
                 decreasecount(ustack->expr);
                 ustack->expr = expr;
             }
+
             extendstat(OPC);
             if (outofmem) {
                 return;
             }
+
             stattail->u.store.u.istr.dtype = DTYPE;
             stattail->u.store.u.istr.unk2D = LEXLEV & ~7;
             if (stattail->u.store.u.istr.unk2D == 0) {
                 stattail->u.store.u.istr.unk2D = (unsigned char)(LENGTH * 8);
             }
+
             expr = ustack->down->expr;
             if (expr->type == isconst) {
                 if (expr->data.isconst.number.intval % (stattail->u.store.u.istr.unk2D / 8) != 0) {
@@ -3775,10 +3796,11 @@ void readnxtinst(void) {
                     }
                 }
             }
+
             stattail->u.store.u.istr.offset = OFFSET;
             stattail->u.store.expr = ustack->expr;
             ustack = ustack->down;
-            func_0043B1DC();
+            ustack_add_value();
             stattail->expr = ustack->expr;
             stattail->u.store.u.istr.s.word = IONE;
             stattail->u.store.size = LENGTH;
@@ -3806,10 +3828,10 @@ void readnxtinst(void) {
             if (outofmem) {
                 return;
             }
-            func_0043B1DC();
+            ustack_add_value();
             stattail->u.store.expr = ustack->expr;
             ustack = ustack->down;
-            func_0043B1DC();
+            ustack_add_value();
             stattail->expr = ustack->expr;
             ustack = ustack->down;
             if (stattail->u.store.expr == stattail->expr && OPC == Umov) {
@@ -3849,7 +3871,7 @@ void readnxtinst(void) {
             if (outofmem) {
                 return;
             }
-            func_0043B1DC();
+            ustack_add_value();
             stattail->expr = ustack->expr;
             ustack = ustack->down;
             usefp = true;
@@ -3867,10 +3889,10 @@ void readnxtinst(void) {
                 ustack->value = -ustack->down->value;
                 ustack->down->value = 0;
             }
-            func_0043B1DC();
+            ustack_add_value();
             stexpr2 = ustack->expr;
             ustack = ustack->down;
-            func_0043B1DC();
+            ustack_add_value();
             stexpr1 = ustack->expr;
             ustack = ustack->down;
             eliminated = false;
@@ -4042,7 +4064,7 @@ void readnxtinst(void) {
                 if (outofmem) {
                     return;
                 }
-                func_0043B1DC();
+                ustack_add_value();
                 stattail->u.pop.unk15 = 1;
                 stattail->expr = ustack->expr;
                 stattail->graphnode = stattail->prev->graphnode;
