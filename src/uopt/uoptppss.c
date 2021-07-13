@@ -171,7 +171,7 @@ struct Proc *searchproc(int id, int level) {
         new_proc->unk8 = false;
         new_proc->unkB = lang == LANG_COBOL;
         new_proc->unkD = lang == LANG_COBOL;
-        new_proc->unkE = 0;
+        new_proc->no_sideeffects = false;
         new_proc->nonlocal_goto = false;
         new_proc->unk14 = 0;
         new_proc->unk15 = 0;
@@ -876,7 +876,7 @@ void oneinstruction(void) {
                 proc->o3opt = false;
             }
             if ((LEXLEV & NOSIDEEFFECT_ATTR) && (lang == LANG_FORTRAN || lang == LANG_C || lang == LANG_PL1 || lang == LANG_COBOL)) {
-                proc->unkE = true;
+                proc->no_sideeffects = true;
             }
             if (LEXLEV & GOTO_ATTR) {
                 curproc->nonlocal_goto = true;
@@ -1347,7 +1347,7 @@ void prepass(void) {
     proc->unkB = true;
     proc->o3opt = false;
     proc->unkD = true;
-    proc->unkE = false;
+    proc->no_sideeffects = false;
     proc->nonlocal_goto = false;
     proc->unk14 = false;
     proc->unk15 = false;
@@ -1372,7 +1372,7 @@ void prepass(void) {
     proc->unkB = true;
     proc->o3opt = false;
     proc->unkD = true;
-    proc->unkE = false;
+    proc->no_sideeffects = false;
     proc->nonlocal_goto = false;
     proc->unk14 = false;
     proc->unk15 = false;

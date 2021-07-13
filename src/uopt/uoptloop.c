@@ -967,7 +967,7 @@ static void find_increment_expr(struct Interval *intv, struct Graphnode* childNo
                     return;
                 }
 
-                *loopIncrement = varlist->data.store->expr->data.isvar_issvar.unk34;
+                *loopIncrement = varlist->data.store->expr->data.isvar_issvar.assigned_value;
             }
             varlist = varlist->next;
         }
@@ -1141,8 +1141,8 @@ static void determine_if_unrollable(struct Interval *child, struct Interval *out
         }
 
         if (find_loopvar_init(loopFirstNode, loopVar->ichain, &loopVarInit)) {
-            loopJump->u.jp.unk20 = loopVarInit->expr->data.isvar_issvar.unk34;
-            if (loopVarInit->expr->data.isvar_issvar.unk34->type == isconst) {
+            loopJump->u.jp.unk20 = loopVarInit->expr->data.isvar_issvar.assigned_value;
+            if (loopVarInit->expr->data.isvar_issvar.assigned_value->type == isconst) {
                 loopJump->u.jp.has_const_init = true;
             } else {
                 loopJump->u.jp.has_const_init = false;

@@ -469,7 +469,6 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
         }
     }
 
-    expr->type = expr->type;
     if (found == false) {
         ichain = appendichain(hash, expr->type != isop);
         if (ichain == NULL) {
@@ -1370,7 +1369,7 @@ void codeimage(void) {
                     }
                 }
 
-                store_ichain = exprimage(stat->expr->data.isvar_issvar.unk34, &storeant, &storeav);
+                store_ichain = exprimage(stat->expr->data.isvar_issvar.assigned_value, &storeant, &storeav);
                 if (outofmem) return;
                 if (store_ichain == NULL) {
                     dbgerror(0x1AC);

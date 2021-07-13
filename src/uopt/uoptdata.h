@@ -30,7 +30,7 @@ struct livbb {
 
 struct optabrec {
     bool ends_bb;
-    bool unk1;
+    bool executable;
     bool is_binary_op;
 };
 
@@ -51,7 +51,7 @@ struct LabelMap {
 };
 
 // See insertvar
-struct VariableInner {
+struct VariableInner { // TODO: rename to 'location', 'address', or something
     int addr; // can be negative, stack offset?
               // register number if memtype == Rmt. see exprimage, checks for 2, 29, 32, 33, 34.
     unsigned int blockno: 21;
@@ -306,8 +306,8 @@ struct Proc {
     bool unkB; // set to lang == LANG_COBOL
     bool o3opt; // written to allcallersave in procinit
     bool unkD; // set to lang == LANG_COBOL
-    bool unkE; // bool or char?
-    bool nonlocal_goto; // bool or char?
+    bool no_sideeffects;
+    bool nonlocal_goto;
     unsigned char level; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass
     unsigned short num_bbs; // 0x12
     bool unk14; // bool or char?
@@ -482,7 +482,7 @@ struct Statement {
 
         struct {
             struct Proc *proc; // 0x14
-            Datatype dtype; // 0x18 TODO: rename to returntype
+            Datatype returntype; // 0x18
             unsigned char level; // 0x19
             unsigned short extrnal_flags; // 0x1A, EXTRNAL
             unsigned char pop; // 0x1C, POP
@@ -494,7 +494,7 @@ struct Statement {
         struct {
             int strp_pos; // 0x14
             unsigned char flags; // 0x18, LEXLEV
-            Datatype dtype; // 0x19 TODO: rename to returntype
+            Datatype returntype; // 0x19
             int unk1C; // LENGTH
             int unk20; // OFFSET
             int len; // 0x24, CONSTVAL.swpart.Ival
@@ -502,7 +502,7 @@ struct Statement {
         } cia;
 
         struct {
-            Datatype dtype; // 0x14 TODO: rename to returntype
+            Datatype returntype; // 0x14
             unsigned char pop; // 0x15, POP
             unsigned char push; // 0x16, PUSH
             unsigned char extrnal_flags; // 0x17, EXTRNAL
@@ -542,15 +542,15 @@ union Constant {
 
 
 enum ExpressionType {
-    empty, // 0
-    islda, // 1
-    isconst, // 2
-    isvar, // 3
-    isop, // 4
-    isilda, // 5
-    issvar, // 6
-    dumped, // 7
-    isrconst // 8
+    /* 0 */ empty,
+    /* 1 */ islda,
+    /* 2 */ isconst,
+    /* 3 */ isvar,
+    /* 4 */ isop,
+    /* 5 */ isilda,
+    /* 6 */ issvar, // shared var
+    /* 7 */ dumped,
+    /* 8 */ isrconst
 }
 #ifdef __GNUC__
 __attribute__((packed));
@@ -675,8 +675,8 @@ struct Expression {
     bool unk3; // not varkilled
     bool unk4; // bool or unsigned char?
     bool unk5; // bool or unsigned char?
-    unsigned short count; // some counter, see exprdelete
-    unsigned short table_index; // 0x8
+    unsigned short count; // use count, see exprdelete
+    unsigned short table_index; // 0x8, identifies the expression
     int chain_index; // 0xC
     struct Graphnode *graphnode; // 0x10
     struct IChain *ichain; // 0x14
@@ -706,8 +706,8 @@ struct Expression {
             struct Expression *unk24;
             struct VariableInner var_data; // 0x28
             struct Expression *unk30;
-            struct Expression *unk34; // used in analoop
-            struct Statement *unk38; // a bit unsure about this type, see delentry
+            struct Expression *assigned_value; // 0x34 used in analoop
+            struct Statement *assignment; // 0x38 a bit unsure about this type, see delentry
             int unk3C;
         } isvar_issvar;
         struct {

@@ -516,9 +516,9 @@ void processargs(void) {
 /*
 0043771C optinit
 */
-static void set_optab_entry(enum Uopcode op, bool ends_bb, bool b, bool is_binary_op) {
+static void set_optab_entry(enum Uopcode op, bool ends_bb, bool executable, bool is_binary_op) {
     optab[op].ends_bb = ends_bb;
-    optab[op].unk1 = b; // true = actual code, false = meta?
+    optab[op].executable = executable;
     optab[op].is_binary_op = is_binary_op;
 }
 /*

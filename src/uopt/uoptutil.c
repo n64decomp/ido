@@ -485,6 +485,9 @@ struct Expression *appendchain(unsigned short table_index) {
         outofmem = true;
         return NULL; // originally some unused stack slot value was returned
     }
+#ifdef AVOID_UB
+    *new_entry = (struct Expression){0};
+#endif
     new_entry->type = empty;
     new_entry->ichain = NULL;
     new_entry->chain_index = chain_index;
@@ -954,7 +957,7 @@ void fixcorr(struct Expression *expr) {
 */
 void delentry(struct Expression *entry) {
     if (entry->type == isvar || entry->type == issvar) {
-        if (entry->data.isvar_issvar.unk38 != NULL && entry->data.isvar_issvar.unk38->opc != Unop) {
+        if (entry->data.isvar_issvar.assignment != NULL && entry->data.isvar_issvar.assignment->opc != Unop) {
             return;
         }
     }
@@ -1023,8 +1026,7 @@ void decreasecount(struct Expression *expr) {
                 expr->count--;
                 if (expr->count == 0) {
                     expr->var_access_list->type = 0;
-                    if (expr->data.isvar_issvar.unk38 == 0 
-                            || expr->data.isvar_issvar.unk38->opc == Unop) {
+                    if (expr->data.isvar_issvar.assignment == NULL || expr->data.isvar_issvar.assignment->opc == Unop) {
                         decreasecount(expr->data.isvar_issvar.unk24);
                     } else {
                         delentry(expr);
@@ -1099,22 +1101,22 @@ void increasecount(struct Expression *expr) {
 
         case issvar:
             expr->count++;
-            if (expr->count >= 2) {
-                decreasecount(expr->data.isop.op1);
+            if (expr->count > 1) {
+                decreasecount(expr->data.isvar_issvar.unk24);
             }
             return;
 
         case isilda:
             expr->count++;
-            if (expr->count >= 2) {
-                decreasecount(expr->data.isop.unk34);
+            if (expr->count > 1) {
+                decreasecount(expr->data.islda_isilda.unk34);
             }
             return;
 
         case isop:
             expr->count++;
-            numlcse = numlcse + 1;
-            if (expr->count >= 2) {
+            numlcse++; // local common subexpressions
+            if (expr->count > 1) {
                 decreasecount(expr->data.isop.op1);
                 if (optab[expr->data.isop.opc].is_binary_op) {
                     decreasecount(expr->data.isop.op2);
