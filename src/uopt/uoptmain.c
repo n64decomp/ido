@@ -186,8 +186,8 @@ void oneproc(void) {
     bool unconditional_jump;
     union Bcode u_copy;
 
-    curproc = getproc(u.Ucode.I1);
-    usefp = (u.intarray[3] & 2) != 0;
+    curproc = getproc(IONE);
+    usefp = IS_FRAMEPTR_ATTR(EXTRNAL);
     procinit();
     lasttime = getclock();
     copyline();
@@ -215,7 +215,7 @@ void oneproc(void) {
                 getop();
                 if (!optab[OPC].executable) {
                     copyline();
-                } else if (OPC == Ulab && (u.Ucode.Lexlev & 4)) {
+                } else if (OPC == Ulab && IS_EXTERNAL_ATTR(LEXLEV)) {
                     uwrite(&u);
                 }
             } while (OPC != Uend);

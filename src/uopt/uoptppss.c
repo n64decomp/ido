@@ -834,7 +834,7 @@ void oneinstruction(void) {
             if (var.memtype == Rmt) {
                 var.blockno = 0;
             }
-            lexlev1 = (LEXLEV & 1) != 0;
+            lexlev1 = IS_VOLATILE_ATTR(LEXLEV);
             unk = lexlev1 || (in_exception_block > 0 && MTYPE != Rmt);
             insertvar(var, LENGTH, DTYPE, &curproc->vartree, OPC == Uisld || OPC == Ulod, unk, MTYPE == Rmt);
             if (OPC == Uisld || OPC == Ulod) {
@@ -846,7 +846,7 @@ void oneinstruction(void) {
         case Uldsp:
             var.memtype = Rmt;
             var.blockno = OPC == Uldap;
-            var.addr = 29; // sp
+            var.addr = r_sp;
             insertvar(var, 4, Adt, &curproc->vartree, true, true, false);
             break;
 

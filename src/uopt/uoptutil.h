@@ -25,4 +25,15 @@ bool in_indmults(struct IChain *ichain);
 int findincre(struct Expression *entry);
 struct Expression *appendchain(unsigned short table_index);
 
+
+bool addovfw_signed(int a, int b);
+bool subovfw_signed(int a, int b);
+bool mpyovfw_signed(int a, int b);
+bool addovfw_unsigned(unsigned int a, unsigned int b);
+bool subovfw_unsigned(unsigned int a, unsigned int b);
+bool mpyovfw_unsigned(unsigned int a, unsigned int b);
+bool addovfw(enum Datatype t, int a, int b);
+bool subovfw(enum Datatype t, int a, int b);
+bool mpyovfw(enum Datatype t, int a, int b);
+
 #endif

@@ -3666,6 +3666,7 @@ int val_when_exponent0(int a, int exponent10) { // returns a * 10^exponent10
     }
 }
 
+
 /*
 0041F048 genrop
 0041F6F0 base_in_reg
@@ -3682,10 +3683,17 @@ int val_when_exponent0(int a, int exponent10) { // returns a * 10^exponent10
 0047FDB4 in_reg_masks
 */
 int coloroffset(int index) {
-    static unsigned char coloroffsettable[35] = {
-        0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x1f,
-        0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x1e,0x1f,0x20,0x22,0x2c,
-        0x2e,0x30,0x32,0x34,0x36,0x38,0x3a,0x3c,0x3e
+    static MipsRegister coloroffsettable[35] = {
+        // class 0 (23), general purpose registers
+        // 1     2     3     4     5     6     7     8     9    10    11    12    13
+        r_v0, r_v1, r_a0, r_a1, r_a2, r_a3, r_t0, r_t1, r_t2, r_t3, r_t4, r_t5, r_ra,   // caller-saved registers ("er"regs)
+        //14    15    16    17    18    19    20    21    22    23
+        r_s0, r_s1, r_s2, r_s3, r_s4, r_s5, r_s6, r_s7, r_fp, r_ra,                     // callee-saved registers ("ee"regs)
+        // class 1 (12), floating point registers
+        //24     25      26     27     28     29
+        r_f0,  r_f2,  r_f12, r_f14, r_f16, r_f18,   // caller-saved fp registers
+        //30     31      32     33     34     35
+        r_f20, r_f22, r_f24, r_f26, r_f28, r_f30,   // callee-saved fp registers
     };
     return coloroffsettable[index - 1];
 }
@@ -3713,23 +3721,23 @@ int in_reg_masks(int index, int arg1, int arg2) {
 0047FF7C skipproc
 */
 static bool func_0047FE1C(void) {
-    if (lastcopiedu.Ucode.Opc != u.Ucode.Opc) {
+    if (lastcopiedu.Ucode.Opc != OPC) {
         return false;
     }
 
-    switch (u.Ucode.Opc) {
+    switch (OPC) {
         case Ucsym:
         case Uesym:
         case Ufsym:
         case Ugsym:
         case Ulsym:
-            return lastcopiedu.Ucode.I1 == u.Ucode.I1;
+            return lastcopiedu.Ucode.I1 == IONE;
 
         case Usdef:
-            return lastcopiedu.Ucode.I1 == u.Ucode.I1 && lastcopiedu.intarray[2] == u.intarray[2];
+            return lastcopiedu.Ucode.I1 == IONE && lastcopiedu.intarray[2] == u.intarray[2];
 
         case Uvreg:
-            return lastcopiedu.Ucode.I1 == u.Ucode.I1 && lastcopiedu.intarray[3] == u.intarray[3];
+            return lastcopiedu.Ucode.I1 == IONE && lastcopiedu.intarray[3] == u.intarray[3];
 
         default:
             caseerror(1, 1619, "uoptutil.p", 10);
@@ -3779,25 +3787,25 @@ void skipproc(int reason) {
         initur(sourcename);
         do {
             readuinstr(&u, ustrptr);
-            if (u.Ucode.Opc == Ueof) {
+            if (OPC == Ueof) {
                 write_string(err.c_file, "uopt: Error: unexpected EOF in input ucode; giving up......", 59, 59);
                 writeln(err.c_file);
                 fflush(err.c_file);
                 abort();
             }
-        } while (!(u.Ucode.Opc == Uent && curblk == u.Ucode.I1));
+        } while (!(OPC == Uent && curblk == IONE));
     }
     unk = lastcopiedu.Ucode.Opc != Unop;
     do {
         readuinstr(&u, ustrptr);
-        if (u.Ucode.Opc == Ueof) {
+        if (OPC == Ueof) {
             write_string(err.c_file, "uopt: Error: unexpected EOF in input ucode; giving up.......", 60, 60);
             writeln(err.c_file);
             fflush(err.c_file);
             abort();
         }
         if (unk) {
-            switch (u.Ucode.Opc) {
+            switch (OPC) {
                 case Ucsym:
                 case Uesym:
                 case Ufsym:
@@ -3807,7 +3815,7 @@ void skipproc(int reason) {
                 case Usdef:
                 case Uvreg:
                     unk = !func_0047FE1C();
-                    if (u.Ucode.Opc == Uvreg) {
+                    if (OPC == Uvreg) {
                         uwrite(&u);
                     }
                     break;
@@ -3820,7 +3828,7 @@ void skipproc(int reason) {
             // was originally the same BB as the default case above
             uwrite(&u);
         }
-    } while (u.Ucode.Opc != Uend);
+    } while (OPC != Uend);
 }
 
 __asm__(R""(

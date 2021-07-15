@@ -1516,12 +1516,12 @@ void readnxtinst(void) {
             OPC = Ulod;
             DTYPE = Adt;
             MTYPE = Rmt;
-            OFFSET = 29; // $sp
+            OFFSET = r_sp;
             LENGTH = 4;
 
             var.memtype = Rmt;
             var.blockno = IONE;
-            var.addr = 29;
+            var.addr = r_sp;
 
             expr = readnxtinst_searchloop(isvarhash(var), &var, stexpr1, stexpr2);
             if (outofmem) {
@@ -2995,7 +2995,7 @@ void readnxtinst(void) {
             var.addr = OFFSET;
             if (var.memtype == Rmt) {
                 var.blockno = 0;
-                if (curmst != NULL && curmst->u.mst.cup_level && OFFSET == 2) {
+                if (curmst != NULL && curmst->u.mst.cup_level && OFFSET == r_v0) {
                     if (ustack->expr->type == isvar) {
                         func_0043CBFC(ustack);
                     } else if (ustack->expr->type == issvar) {
@@ -3010,7 +3010,7 @@ void readnxtinst(void) {
                 if ((graphhead == curgraphnode || (lang == LANG_ADA && stattail->opc == Ulab && IS_EXCEPTION_ATTR(stattail->u.label.flags))) &&
                         ustack->expr->type == isvar &&
                         ustack->expr->data.isvar_issvar.var_data.memtype == Rmt &&
-                        ustack->expr->data.isvar_issvar.var_data.addr == 2)
+                        ustack->expr->data.isvar_issvar.var_data.addr == r_v0)
                 {
                     TRAP_IF(staticlinkloc != 0);
                     staticlinkloc = var.addr;

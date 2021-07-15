@@ -935,7 +935,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
 
                 // Most iffy part... compiler originally added 1 to r2bb and subtracted 4/8 from r2bitpos/setofr2bbs.
                 if (expr->data.isvar_issvar.var_data.memtype == Rmt) {
-                    if (expr->data.isvar_issvar.var_data.addr != 29) { // $sp?
+                    if (expr->data.isvar_issvar.var_data.addr != r_sp) {
                         switch (expr->data.isvar_issvar.var_data.addr) {
                             case 0x02:      // $v0?
                                 r2bb = 0;

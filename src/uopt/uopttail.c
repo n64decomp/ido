@@ -37,7 +37,7 @@ bool next_stmt_is_ret1(struct Statement *stmt, int addr) {
             }
             if (stmt->expr->type == isvar) {
                 if (stmt->expr->data.isvar_issvar.var_data.memtype == Rmt) {
-                    if (stmt->expr->data.isvar_issvar.var_data.addr != 2) {
+                    if (stmt->expr->data.isvar_issvar.var_data.addr != r_v0) {
                         continue;
                     }
                 }
@@ -74,12 +74,12 @@ bool next_stmt_is_ret(struct Statement *stmt) {
             if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.var_data.memtype != Rmt) {
                 return false;
             }
-            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.var_data.addr != 2) {
+            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.var_data.addr != r_v0) {
                 return false;
             }
             if (stmt->expr->type == isvar) {
                 if (stmt->expr->data.isvar_issvar.var_data.memtype == Rmt) {
-                    if (stmt->expr->data.isvar_issvar.var_data.addr == 2) {
+                    if (stmt->expr->data.isvar_issvar.var_data.addr == r_v0) {
                         continue;
                     }
                 }
