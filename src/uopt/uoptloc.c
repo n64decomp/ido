@@ -20,50 +20,6 @@ RO_1000CBA0:
     # 0044DF30 binaryovfw
     .asciz "uoptloc.p"
 
-    .balign 4
-jtbl_1000CBAC:
-    # 0044DF30 binaryovfw
-    .gpword .L0044DF98
-    .gpword .L0044E1C8
-    .gpword .L0044E1C8
-    .gpword .L0044E1C0
-
-    .balign 4
-jtbl_1000CBBC:
-    # 0044DF30 binaryovfw
-    .gpword .L0044E1C0
-    .gpword .L0044E108
-
-    .balign 4
-jtbl_1000CBC4:
-    # 0044DF30 binaryovfw
-    .gpword .L0044E1C0
-    .gpword .L0044E1C0
-    .gpword .L0044E160
-    .gpword .L0044E1C8
-    .gpword .L0044E1C8
-    .gpword .L0044E1C8
-    .gpword .L0044E0E0
-    .gpword .L0044E1C8
-    .gpword .L0044E1C0
-    .gpword .L0044E1C8
-    .gpword .L0044E1C0
-
-    .balign 4
-jtbl_1000CBF0:
-    # 0044DF30 binaryovfw
-    .gpword .L0044E170
-    .gpword .L0044E170
-    .gpword .L0044E190
-
-    .balign 4
-jtbl_1000CBFC:
-    # 0044DF30 binaryovfw
-    .gpword .L0044E1C0
-    .gpword .L0044E1C8
-    .gpword .L0044E1C8
-    .gpword .L0044E1C0
-
 RO_1000CC0C:
     # 0044E410 unaryovfw
     .asciz "uoptloc.p"
@@ -86,48 +42,6 @@ jtbl_1000CC20:
 RO_1000CC34:
     # 0044E604 binaryfold
     .asciz "uoptloc.p"
-
-#    .balign 4
-#jtbl_1000CC40:
-#    # 0044E604 binaryfold
-#    .gpword .L0044E6B8
-#    .gpword .L0044EB14
-#    .gpword .L0044EB14
-#    .gpword .L0044E85C
-#
-#    .balign 4
-#jtbl_1000CC50:
-#    # 0044E604 binaryfold
-#    .gpword .L0044E92C
-#    .gpword .L0044E980
-#
-#    .balign 4
-#jtbl_1000CC58:
-#    # 0044E604 binaryfold
-#    .gpword .L0044E9D4
-#    .gpword .L0044EA28
-#
-#    .balign 4
-#jtbl_1000CC60:
-#    # 0044E604 binaryfold
-#    .gpword .L0044EAC8
-#    .gpword .L0044EA7C
-#    .gpword .L0044E744
-#    .gpword .L0044EB14
-#    .gpword .L0044EB14
-#    .gpword .L0044EB14
-#    .gpword .L0044E6C8
-#    .gpword .L0044EB14
-#    .gpword .L0044EB14
-#    .gpword .L0044EB14
-#    .gpword .L0044E904
-#
-#    .balign 4
-#jtbl_1000CC8C:
-#    # 0044E604 binaryfold
-#    .gpword .L0044E874
-#    .gpword .L0044E87C
-#    .gpword .L0044E8AC
 
 RO_1000CC98:
     # 0044F3C0 unaryfold
@@ -221,151 +135,6 @@ RO_1000CD57:
     # 0044FF6C mergeconst
     .ascii "uoptloc.p"
 
-#RO_1000CD60:
-#    # 00451764 func_00451764
-#    .ascii "uoptloc.p"
-#
-#RO_1000CD69:
-#    # 00451764 func_00451764
-#    .ascii "uoptloc.p"
-#
-#RO_1000CD72:
-#    # 00451764 func_00451764
-#    .ascii "uoptloc.p"
-#
-#RO_1000CD7B:
-#    # 00451764 func_00451764
-#    .ascii "uoptloc.p"
-#
-#    .balign 4
-#jtbl_1000CD84:
-#    # 00451764 func_00451764
-#    .gpword .L004528D8
-#    .gpword .L0045184C
-#    .gpword .L00452A6C
-#    .gpword .L00452B7C
-#    .gpword .L00451E24
-#
-#    .balign 4
-#jtbl_1000CD98:
-#    # 00451764 func_00451764
-#    .gpword .L004528D8
-#    .gpword .L004528D8
-#    .gpword .L004528A8
-#
-#    .balign 4
-#jtbl_1000CDA4:
-#    # 00451764 func_00451764
-#    .gpword .L00452804
-#    .gpword .L004528D8
-#    .gpword .L00452980
-#    .gpword .L00452B7C
-#    .gpword .L0045246C
-#    .gpword .L00451C74
-#
-#    .balign 4
-#jtbl_1000CDBC:
-#    # 00451764 func_00451764
-#    .gpword .L0045246C
-#    .gpword .L0045246C
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L00452A90
-#    .gpword .L00452A90
-#    .gpword .L00452A90
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L0045265C
-#    .gpword .L00452A90
-#    .gpword .L00452A90
-#    .gpword .L0045265C
-#    .gpword .L00452980
-#    .gpword .L00452A90
-#    .gpword .L00452B7C
-#    .gpword .L0045246C
-#    .gpword .L0045184C
-#    .gpword .L00451E24
-#
-#    .balign 4
-#jtbl_1000CE10:
-#    # 00451764 func_00451764
-#    .gpword .L0045246C
-#    .gpword .L0045246C
-#    .gpword .L00452B7C
-#    .gpword .L004528D8
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L0045246C
-#    .gpword .L0045246C
-#    .gpword .L0045246C
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L0045184C
-#    .gpword .L00452B7C
-#    .gpword .L0045246C
-#    .gpword .L004528D8
-#    .gpword .L0045246C
-#    .gpword .L00452B7C
-#    .gpword .L004528D8
-#    .gpword .L004528D8
-#
-#    .balign 4
-#jtbl_1000CE68:
-#    # 00451764 func_00451764
-#    .gpword .L004528A8
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L004528A8
-#    .gpword .L0045246C
-#    .gpword .L0045246C
-#    .gpword .L0045246C
-#    .gpword .L004528D8
-#    .gpword .L00452A6C
-#
-#    .balign 4
-#jtbl_1000CE90:
-#    # 00451764 func_00451764
-#    .gpword .L004528A8
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L0045184C
-#    .gpword .L00452B7C
-#    .gpword .L00452B7C
-#    .gpword .L0045246C
-#
-#    .balign 4
-#jtbl_1000CEB0:
-#    # 00451764 func_00451764
-#    .gpword .L004517E0
-#    .gpword .L004517F4
-#    .gpword .L004517D8
-#    .gpword .L00451828
-#    .gpword .L004517EC
-#    .gpword .L004517D8
-#    .gpword .L00452D74
-#    .gpword .L004517D8
-
-#RO_1000CED0:
-#    # 00452DAC constarith
-#    .asciz "uoptloc.p"
-#
-#    .balign 4
-#jtbl_1000CEDC:
-#    # 00452DAC constarith
-#    .gpword .L0045321C
-#    .gpword .L00453324
-#    .gpword .L004532E4
-#    .gpword .L0045329C
-#    .gpword .L0045325C
-#    .gpword .L0045323C
-
 .data
 D_10010B10:
     # 0044F738 linearize
@@ -446,312 +215,96 @@ D_10010BD8:
 .set noreorder # don't insert nops after branches
 
 .text
-glabel binaryovfw
-    .ent binaryovfw
-    # 0041550C func_0041550C
-    # 0044FF6C mergeconst
-    # 004510A0 distrlaw
-    # 00451764 func_00451764
-/* 0044DF30 3C1C0FBD */  .cpload $t9
-/* 0044DF34 279CC360 */  
-/* 0044DF38 0399E021 */  
-/* 0044DF3C 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0044DF40 2CA1003D */  sltiu $at, $a1, 0x3d
-/* 0044DF44 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0044DF48 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0044DF4C AFA40028 */  sw    $a0, 0x28($sp)
-/* 0044DF50 AFA5002C */  sw    $a1, 0x2c($sp)
-/* 0044DF54 142000C2 */  bnez  $at, .L0044E260
-/* 0044DF58 AFA60030 */   sw    $a2, 0x30($sp)
-/* 0044DF5C 2CA1006A */  sltiu $at, $a1, 0x6a
-/* 0044DF60 142000B0 */  bnez  $at, .L0044E224
-/* 0044DF64 2CA1007E */   sltiu $at, $a1, 0x7e
-/* 0044DF68 142000A1 */  bnez  $at, .L0044E1F0
-/* 0044DF6C 24AEFF76 */   addiu $t6, $a1, -0x8a
-/* 0044DF70 2DC10004 */  sltiu $at, $t6, 4
-/* 0044DF74 10200094 */  beqz  $at, .L0044E1C8
-/* 0044DF78 00000000 */   nop   
-/* 0044DF7C 8F818044 */  lw    $at, %got(jtbl_1000CBFC)($gp)
-/* 0044DF80 000E7080 */  sll   $t6, $t6, 2
-/* 0044DF84 002E0821 */  addu  $at, $at, $t6
-/* 0044DF88 8C2ECBFC */  lw    $t6, %lo(jtbl_1000CBFC)($at)
-/* 0044DF8C 01DC7021 */  addu  $t6, $t6, $gp
-/* 0044DF90 01C00008 */  jr    $t6
-/* 0044DF94 00000000 */   nop   
-.L0044DF98:
-/* 0044DF98 8FAF0030 */  lw    $t7, 0x30($sp)
-/* 0044DF9C 24030001 */  li    $v1, 1
-/* 0044DFA0 91E20000 */  lbu   $v0, ($t7)
-/* 0044DFA4 14620006 */  bne   $v1, $v0, .L0044DFC0
-/* 0044DFA8 00000000 */   nop   
-/* 0044DFAC 90F80000 */  lbu   $t8, ($a3)
-/* 0044DFB0 14780003 */  bne   $v1, $t8, .L0044DFC0
-/* 0044DFB4 00000000 */   nop   
-/* 0044DFB8 100000E3 */  b     .L0044E348
-/* 0044DFBC 24030001 */   li    $v1, 1
-.L0044DFC0:
-/* 0044DFC0 1462000A */  bne   $v1, $v0, .L0044DFEC
-/* 0044DFC4 8FB90030 */   lw    $t9, 0x30($sp)
-/* 0044DFC8 8F250020 */  lw    $a1, 0x20($t9)
-/* 0044DFCC 8F998688 */  lw    $t9, %call16(addovfw)($gp)
-/* 0044DFD0 00002025 */  move  $a0, $zero
-/* 0044DFD4 8CE60020 */  lw    $a2, 0x20($a3)
-/* 0044DFD8 0320F809 */  jalr  $t9
-/* 0044DFDC 00000000 */   nop   
-/* 0044DFE0 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0044DFE4 100000D8 */  b     .L0044E348
-/* 0044DFE8 304300FF */   andi  $v1, $v0, 0xff
-.L0044DFEC:
-/* 0044DFEC 90E80000 */  lbu   $t0, ($a3)
-/* 0044DFF0 8FA90030 */  lw    $t1, 0x30($sp)
-/* 0044DFF4 93A4002B */  lbu   $a0, 0x2b($sp)
-/* 0044DFF8 14680009 */  bne   $v1, $t0, .L0044E020
-/* 0044DFFC 00000000 */   nop   
-/* 0044E000 8F998688 */  lw    $t9, %call16(addovfw)($gp)
-/* 0044E004 00002025 */  move  $a0, $zero
-/* 0044E008 8CE50020 */  lw    $a1, 0x20($a3)
-/* 0044E00C 0320F809 */  jalr  $t9
-/* 0044E010 8D260020 */   lw    $a2, 0x20($t1)
-/* 0044E014 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0044E018 100000CB */  b     .L0044E348
-/* 0044E01C 304300FF */   andi  $v1, $v0, 0xff
-.L0044E020:
-/* 0044E020 8F998688 */  lw    $t9, %call16(addovfw)($gp)
-/* 0044E024 8FAA0030 */  lw    $t2, 0x30($sp)
-/* 0044E028 8CE60020 */  lw    $a2, 0x20($a3)
-/* 0044E02C 0320F809 */  jalr  $t9
-/* 0044E030 8D450020 */   lw    $a1, 0x20($t2)
-/* 0044E034 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0044E038 100000C3 */  b     .L0044E348
-/* 0044E03C 304300FF */   andi  $v1, $v0, 0xff
-.L0044E040:
-/* 0044E040 91620000 */  lbu   $v0, ($t3)
-/* 0044E044 24030001 */  li    $v1, 1
-/* 0044E048 14620006 */  bne   $v1, $v0, .L0044E064
-/* 0044E04C 00000000 */   nop   
-/* 0044E050 90EC0000 */  lbu   $t4, ($a3)
-/* 0044E054 146C0003 */  bne   $v1, $t4, .L0044E064
-/* 0044E058 00000000 */   nop   
-/* 0044E05C 100000BA */  b     .L0044E348
-/* 0044E060 00001825 */   move  $v1, $zero
-.L0044E064:
-/* 0044E064 14620009 */  bne   $v1, $v0, .L0044E08C
-/* 0044E068 00002025 */   move  $a0, $zero
-/* 0044E06C 8F99868C */  lw    $t9, %call16(subovfw)($gp)
-/* 0044E070 8FAD0030 */  lw    $t5, 0x30($sp)
-/* 0044E074 8CE60020 */  lw    $a2, 0x20($a3)
-/* 0044E078 0320F809 */  jalr  $t9
-/* 0044E07C 8DA50020 */   lw    $a1, 0x20($t5)
-/* 0044E080 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0044E084 100000B0 */  b     .L0044E348
-/* 0044E088 304300FF */   andi  $v1, $v0, 0xff
-.L0044E08C:
-/* 0044E08C 90EE0000 */  lbu   $t6, ($a3)
-/* 0044E090 8FAF0030 */  lw    $t7, 0x30($sp)
-/* 0044E094 93A4002B */  lbu   $a0, 0x2b($sp)
-/* 0044E098 146E0009 */  bne   $v1, $t6, .L0044E0C0
-/* 0044E09C 00000000 */   nop   
-/* 0044E0A0 8F99868C */  lw    $t9, %call16(subovfw)($gp)
-/* 0044E0A4 00002025 */  move  $a0, $zero
-/* 0044E0A8 8DE50020 */  lw    $a1, 0x20($t7)
-/* 0044E0AC 0320F809 */  jalr  $t9
-/* 0044E0B0 8CE60020 */   lw    $a2, 0x20($a3)
-/* 0044E0B4 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0044E0B8 100000A3 */  b     .L0044E348
-/* 0044E0BC 304300FF */   andi  $v1, $v0, 0xff
-.L0044E0C0:
-/* 0044E0C0 8F99868C */  lw    $t9, %call16(subovfw)($gp)
-/* 0044E0C4 8FB80030 */  lw    $t8, 0x30($sp)
-/* 0044E0C8 8CE60020 */  lw    $a2, 0x20($a3)
-/* 0044E0CC 0320F809 */  jalr  $t9
-/* 0044E0D0 8F050020 */   lw    $a1, 0x20($t8)
-/* 0044E0D4 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0044E0D8 1000009B */  b     .L0044E348
-/* 0044E0DC 304300FF */   andi  $v1, $v0, 0xff
-.L0044E0E0:
-/* 0044E0E0 8FB90030 */  lw    $t9, 0x30($sp)
-/* 0044E0E4 93A4002B */  lbu   $a0, 0x2b($sp)
-/* 0044E0E8 8CE60020 */  lw    $a2, 0x20($a3)
-/* 0044E0EC 8F250020 */  lw    $a1, 0x20($t9)
-/* 0044E0F0 8F998690 */  lw    $t9, %call16(mpyovfw)($gp)
-/* 0044E0F4 0320F809 */  jalr  $t9
-/* 0044E0F8 00000000 */   nop   
-/* 0044E0FC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0044E100 10000091 */  b     .L0044E348
-/* 0044E104 304300FF */   andi  $v1, $v0, 0xff
-.L0044E108:
-/* 0044E108 8CE30020 */  lw    $v1, 0x20($a3)
-.L0044E10C:
-/* 0044E10C 93A8002B */  lbu   $t0, 0x2b($sp)
-/* 0044E110 3C010600 */  lui   $at, 0x600
-/* 0044E114 2C620001 */  sltiu $v0, $v1, 1
-/* 0044E118 1440000F */  bnez  $v0, .L0044E158
-/* 0044E11C 2D090020 */   sltiu $t1, $t0, 0x20
-/* 0044E120 00095023 */  negu  $t2, $t1
-/* 0044E124 01415824 */  and   $t3, $t2, $at
-/* 0044E128 010B2004 */  sllv  $a0, $t3, $t0
-/* 0044E12C 28820000 */  slti  $v0, $a0, 0
-/* 0044E130 10400009 */  beqz  $v0, .L0044E158
-/* 0044E134 00000000 */   nop   
-/* 0044E138 24620001 */  addiu $v0, $v1, 1
-/* 0044E13C 2C420001 */  sltiu $v0, $v0, 1
-/* 0044E140 10400005 */  beqz  $v0, .L0044E158
-/* 0044E144 8FAC0030 */   lw    $t4, 0x30($sp)
-/* 0044E148 8D820020 */  lw    $v0, 0x20($t4)
-/* 0044E14C 3C018000 */  lui   $at, 0x8000
-/* 0044E150 00411026 */  xor   $v0, $v0, $at
-/* 0044E154 2C420001 */  sltiu $v0, $v0, 1
-.L0044E158:
-/* 0044E158 1000007B */  b     .L0044E348
-/* 0044E15C 304300FF */   andi  $v1, $v0, 0xff
-.L0044E160:
-/* 0044E160 8CE30020 */  lw    $v1, 0x20($a3)
-/* 0044E164 2C630001 */  sltiu $v1, $v1, 1
-/* 0044E168 10000077 */  b     .L0044E348
-/* 0044E16C 306300FF */   andi  $v1, $v1, 0xff
-.L0044E170:
-/* 0044E170 8CE30020 */  lw    $v1, 0x20($a3)
-/* 0044E174 28620000 */  slti  $v0, $v1, 0
-/* 0044E178 14400003 */  bnez  $v0, .L0044E188
-/* 0044E17C 00000000 */   nop   
-/* 0044E180 28620020 */  slti  $v0, $v1, 0x20
-/* 0044E184 38420001 */  xori  $v0, $v0, 1
-.L0044E188:
-/* 0044E188 1000006F */  b     .L0044E348
-/* 0044E18C 304300FF */   andi  $v1, $v0, 0xff
-.L0044E190:
-/* 0044E190 8FAD0030 */  lw    $t5, 0x30($sp)
-/* 0044E194 3C018000 */  lui   $at, 0x8000
-/* 0044E198 8DA20020 */  lw    $v0, 0x20($t5)
-/* 0044E19C 00411026 */  xor   $v0, $v0, $at
-/* 0044E1A0 2C420001 */  sltiu $v0, $v0, 1
-/* 0044E1A4 10400004 */  beqz  $v0, .L0044E1B8
-/* 0044E1A8 00000000 */   nop   
-/* 0044E1AC 8CE20020 */  lw    $v0, 0x20($a3)
-/* 0044E1B0 28420000 */  slti  $v0, $v0, 0
-/* 0044E1B4 38420001 */  xori  $v0, $v0, 1
-.L0044E1B8:
-/* 0044E1B8 10000063 */  b     .L0044E348
-/* 0044E1BC 304300FF */   andi  $v1, $v0, 0xff
-.L0044E1C0:
-/* 0044E1C0 10000061 */  b     .L0044E348
-/* 0044E1C4 00001825 */   move  $v1, $zero
-.L0044E1C8:
-/* 0044E1C8 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0044E1CC 8F868044 */  lw    $a2, %got(RO_1000CBA0)($gp)
-/* 0044E1D0 24040001 */  li    $a0, 1
-/* 0044E1D4 2405003B */  li    $a1, 59
-/* 0044E1D8 24070009 */  li    $a3, 9
-/* 0044E1DC 0320F809 */  jalr  $t9
-/* 0044E1E0 24C6CBA0 */   addiu $a2, %lo(RO_1000CBA0) # addiu $a2, $a2, -0x3460
-/* 0044E1E4 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0044E1E8 10000057 */  b     .L0044E348
-/* 0044E1EC 93A30027 */   lbu   $v1, 0x27($sp)
-.L0044E1F0:
-/* 0044E1F0 2CA10076 */  sltiu $at, $a1, 0x76
-/* 0044E1F4 1020004F */  beqz  $at, .L0044E334
-/* 0044E1F8 24AEFF8D */   addiu $t6, $a1, -0x73
-/* 0044E1FC 2DC10003 */  sltiu $at, $t6, 3
-/* 0044E200 1020FFF1 */  beqz  $at, .L0044E1C8
-/* 0044E204 00000000 */   nop   
-/* 0044E208 8F818044 */  lw    $at, %got(jtbl_1000CBF0)($gp)
-/* 0044E20C 000E7080 */  sll   $t6, $t6, 2
-/* 0044E210 002E0821 */  addu  $at, $at, $t6
-/* 0044E214 8C2ECBF0 */  lw    $t6, %lo(jtbl_1000CBF0)($at)
-/* 0044E218 01DC7021 */  addu  $t6, $t6, $gp
-/* 0044E21C 01C00008 */  jr    $t6
-/* 0044E220 00000000 */   nop   
-.L0044E224:
-/* 0044E224 2CA1004F */  sltiu $at, $a1, 0x4f
-/* 0044E228 14200038 */  bnez  $at, .L0044E30C
-/* 0044E22C 2CA10060 */   sltiu $at, $a1, 0x60
-/* 0044E230 1020003B */  beqz  $at, .L0044E320
-/* 0044E234 24AFFFAB */   addiu $t7, $a1, -0x55
-/* 0044E238 2DE1000B */  sltiu $at, $t7, 0xb
-/* 0044E23C 1020FFE2 */  beqz  $at, .L0044E1C8
-/* 0044E240 00000000 */   nop   
-/* 0044E244 8F818044 */  lw    $at, %got(jtbl_1000CBC4)($gp)
-/* 0044E248 000F7880 */  sll   $t7, $t7, 2
-/* 0044E24C 002F0821 */  addu  $at, $at, $t7
-/* 0044E250 8C2FCBC4 */  lw    $t7, %lo(jtbl_1000CBC4)($at)
-/* 0044E254 01FC7821 */  addu  $t7, $t7, $gp
-/* 0044E258 01E00008 */  jr    $t7
-/* 0044E25C 00000000 */   nop   
-.L0044E260:
-/* 0044E260 2CA1001E */  sltiu $at, $a1, 0x1e
-/* 0044E264 1420000A */  bnez  $at, .L0044E290
-/* 0044E268 24010023 */   li    $at, 35
-/* 0044E26C 10A1FFD4 */  beq   $a1, $at, .L0044E1C0
-/* 0044E270 00000000 */   nop   
-/* 0044E274 2CA1002A */  sltiu $at, $a1, 0x2a
-/* 0044E278 1020001F */  beqz  $at, .L0044E2F8
-/* 0044E27C 2CA10028 */   sltiu $at, $a1, 0x28
-/* 0044E280 1020FFCF */  beqz  $at, .L0044E1C0
-/* 0044E284 00000000 */   nop   
-/* 0044E288 1000FFCF */  b     .L0044E1C8
-/* 0044E28C 00000000 */   nop   
-.L0044E290:
-/* 0044E290 2CA10005 */  sltiu $at, $a1, 5
-/* 0044E294 1420000D */  bnez  $at, .L0044E2CC
-/* 0044E298 24010009 */   li    $at, 9
-/* 0044E29C 10A1FFC8 */  beq   $a1, $at, .L0044E1C0
-/* 0044E2A0 24B8FFE4 */   addiu $t8, $a1, -0x1c
-/* 0044E2A4 2F010002 */  sltiu $at, $t8, 2
-/* 0044E2A8 1020FFC7 */  beqz  $at, .L0044E1C8
-/* 0044E2AC 00000000 */   nop   
-/* 0044E2B0 8F818044 */  lw    $at, %got(jtbl_1000CBBC)($gp)
-/* 0044E2B4 0018C080 */  sll   $t8, $t8, 2
-/* 0044E2B8 00380821 */  addu  $at, $at, $t8
-/* 0044E2BC 8C38CBBC */  lw    $t8, %lo(jtbl_1000CBBC)($at)
-/* 0044E2C0 031CC021 */  addu  $t8, $t8, $gp
-/* 0044E2C4 03000008 */  jr    $t8
-/* 0044E2C8 00000000 */   nop   
-.L0044E2CC:
-/* 0044E2CC 24B9FFFF */  addiu $t9, $a1, -1
-/* 0044E2D0 2F210004 */  sltiu $at, $t9, 4
-/* 0044E2D4 1020FFBC */  beqz  $at, .L0044E1C8
-/* 0044E2D8 00000000 */   nop   
-/* 0044E2DC 8F818044 */  lw    $at, %got(jtbl_1000CBAC)($gp)
-/* 0044E2E0 0019C880 */  sll   $t9, $t9, 2
-/* 0044E2E4 00390821 */  addu  $at, $at, $t9
-/* 0044E2E8 8C39CBAC */  lw    $t9, %lo(jtbl_1000CBAC)($at)
-/* 0044E2EC 033CC821 */  addu  $t9, $t9, $gp
-/* 0044E2F0 03200008 */  jr    $t9
-/* 0044E2F4 00000000 */   nop   
-.L0044E2F8:
-/* 0044E2F8 2CA1003A */  sltiu $at, $a1, 0x3a
-/* 0044E2FC 1020FFB0 */  beqz  $at, .L0044E1C0
-/* 0044E300 00000000 */   nop   
-/* 0044E304 1000FFB0 */  b     .L0044E1C8
-/* 0044E308 00000000 */   nop   
-.L0044E30C:
-/* 0044E30C 2CA1004D */  sltiu $at, $a1, 0x4d
-/* 0044E310 1020FFAB */  beqz  $at, .L0044E1C0
-/* 0044E314 00000000 */   nop   
-/* 0044E318 1000FFAB */  b     .L0044E1C8
-/* 0044E31C 00000000 */   nop   
-.L0044E320:
-/* 0044E320 24010069 */  li    $at, 105
-/* 0044E324 50A1FF79 */  beql  $a1, $at, .L0044E10C
-/* 0044E328 8CE30020 */   lw    $v1, 0x20($a3)
-/* 0044E32C 1000FFA6 */  b     .L0044E1C8
-/* 0044E330 00000000 */   nop   
-.L0044E334:
-/* 0044E334 2401007D */  li    $at, 125
-/* 0044E338 10A1FF41 */  beq   $a1, $at, .L0044E040
-/* 0044E33C 8FAB0030 */   lw    $t3, 0x30($sp)
-/* 0044E340 1000FFA1 */  b     .L0044E1C8
-/* 0044E344 00000000 */   nop   
-.L0044E348:
-/* 0044E348 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0044E34C 27BD0028 */  addiu $sp, $sp, 0x28
-/* 0044E350 00601025 */  move  $v0, $v1
-/* 0044E354 03E00008 */  jr    $ra
-/* 0044E358 00000000 */   nop   
-    .type binaryovfw, @function
-    .size binaryovfw, .-binaryovfw
-    .end binaryovfw
 )"");
+
+/* 
+0041550C func_0041550C
+0044FF6C mergeconst
+004510A0 distrlaw
+00451764 func_00451764
+*/
+bool binaryovfw(Datatype dtype, Uopcode opc, struct Expression *left, struct Expression *right) {
+    bool overflow;
+
+    switch (opc) {
+        case Uadd:
+            if (left->type == islda && right->type == islda) {
+                overflow = true;
+            } else if (left->type == islda) {
+                overflow = addovfw(Adt, left->data.islda_isilda.addr, right->data.isconst.number.intval);
+            } else if (right->type == islda) {
+                overflow = addovfw(Adt, right->data.islda_isilda.addr, left->data.isconst.number.intval);
+            } else {
+                overflow = addovfw(dtype, left->data.isconst.number.intval, right->data.isconst.number.intval);
+            }
+            break;
+
+        case Usub:
+            if (left->type == islda && right->type == islda) {
+                overflow = false;
+            } else if (left->type == islda) {
+                overflow = subovfw(Adt, left->data.islda_isilda.addr, right->data.isconst.number.intval);
+            } else if (right->type == islda) {
+                overflow = subovfw(Adt, left->data.isconst.number.intval, right->data.islda_isilda.addr);
+            } else {
+                overflow = subovfw(dtype, left->data.isconst.number.intval, right->data.isconst.number.intval);
+            }
+            break;
+
+        case Umpy:
+            overflow = mpyovfw(dtype, left->data.isconst.number.intval, right->data.isconst.number.intval);
+            break;
+
+        case Udiv:
+        case Urem:
+            if (right->data.isconst.number.intval == 0) {
+                overflow = true;
+            } else if (dtype == Idt || dtype == Jdt) {
+                overflow = left->data.isconst.number.intval == 0x80000000 && right->data.isconst.number.intval == -1;
+            }
+            break;
+
+        case Umod:
+            overflow = right->data.isconst.number.intval == 0;
+            break;
+
+        case Ushl:
+        case Ushr:
+            overflow = right->data.isconst.number.intval < 0 || right->data.isconst.number.intval >= 32;
+            break;
+
+        case Usign:
+            overflow = left->data.isconst.number.intval == 0x80000000 && right->data.isconst.number.intval >= 0;
+            break;
+
+        case Uand:
+        case Ubsub:
+        case Udif:
+        case Uequ:
+        case Ugeq:
+        case Ugrt:
+        case Uinn:
+        case Uint:
+        case Uior:
+        case Uleq:
+        case Ules:
+        case Umax:
+        case Umin:
+        case Umus:
+        case Uneq:
+        case Uuni:
+        case Uxor:
+            overflow = false;
+            break;
+
+        default:
+            caseerror(1, 59, "uoptloc.p", 9);
+            overflow = false; // idk
+            break;
+    }
+
+    return overflow;
+}
 
 /* 
 0041550C func_0041550C
@@ -1146,7 +699,7 @@ struct Expression *ilodfold(struct Expression *ilod) {
     }
     hash = isvarhash(var);
     phi_s0 = table[hash];
-    found = 0;
+    found = false;
     phi_s3 = NULL;
     while (!found && phi_s0 != 0) {
         if (phi_s0->type == isvar && addreq(phi_s0->data.isvar_issvar.var_data, var)) {
@@ -1176,8 +729,8 @@ struct Expression *ilodfold(struct Expression *ilod) {
         } else {
             phi_s0->type = isvar;
             phi_s0->datatype = ilod->datatype;
-            phi_s0->unk4 = 0;
-            phi_s0->unk5 = 0;
+            phi_s0->unk4 = false;
+            phi_s0->unk5 = false;
             phi_s0->data.isvar_issvar.unk21 = false;
             phi_s0->data.isvar_issvar.unk22 = false;
             phi_s0->data.isvar_issvar.var_data = var;
@@ -1185,7 +738,7 @@ struct Expression *ilodfold(struct Expression *ilod) {
             phi_s0->data.isvar_issvar.size = ilod->data.isop.aux2.v1.unk3C;
             phi_s0->data.isvar_issvar.var_data.level = blktolev(var.blockno);
             phi_s0->data.isvar_issvar.unk3C = 0;
-            phi_s0->data.isvar_issvar.is_volatile = 0;
+            phi_s0->data.isvar_issvar.is_volatile = false;
         }
         phi_s0->count = 1;
         phi_s0->data.isvar_issvar.unk30 = NULL;
@@ -1238,9 +791,9 @@ void istrfold(struct Statement *stmt) {
         sp48->type = isvar;
         sp48->datatype = stmt->u.store.u.istr.dtype;
         sp48->unk2 = !stmt->u.store.unk1F;
-        sp48->unk3 = 0;
-        sp48->unk4 = 0;
-        sp48->unk5 = 0;
+        sp48->unk3 = false;
+        sp48->unk4 = false;
+        sp48->unk5 = false;
         sp48->count = 0;
         sp48->graphnode = stmt->graphnode;
         sp48->var_access_list = NULL;
@@ -1261,10 +814,10 @@ void istrfold(struct Statement *stmt) {
         stmt->unk1 = false;
         stmt->expr = sp48;
         if (checkincre(sp48->data.isvar_issvar.assigned_value, sp48, &increment) && increment == 1) {
-            stmt->unk1 = 1;
+            stmt->unk1 = true;
         }
-        stmt->unk2 = 0;
-        stmt->unk3 = 0;
+        stmt->unk2 = false;
+        stmt->unk3 = false;
         stmt->u.store.var_access_list_item->unk8 = 0;
         stmt->u.store.u.str.unk2C = 0;
         stmt->u.store.u.str.unk30 = 0;
@@ -2558,7 +2111,6 @@ void reduceixa(struct Expression *ixa) {
     }
     if (datasize > 1) {
         ixa->data.isop.op2 = binopwithconst(Umpy, ixa->data.isop.op2, datasize);
-
         ixa->data.isop.datasize /= datasize;
     }
 }
@@ -2585,27 +2137,27 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
         case isvar:
         case issvar:
         case isrconst:
-            sp53 = 0;
+            sp53 = false;
             break;
 
         case islda:
-            sp53 = 1;
+            sp53 = true;
             break;
 
         case isilda:
-            sp53 = 0;
+            sp53 = false;
             break;
 
         case isconst:
             if (expr_s0->datatype == Adt || expr_s0->datatype == Hdt || expr_s0->datatype == Jdt || expr_s0->datatype == Ldt) {
-                sp53 = 1;
+                sp53 = true;
             } else {
-                sp53 = 0;
+                sp53 = false;
             }
             break;
 
         case isop:
-            sp53 = 0;
+            sp53 = false;
             if (expr_s0->unk5 == 1) {
                 return false;
             }
@@ -2627,16 +2179,16 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                     if (expr_s0->data.isop.opc == Udec || expr_s0->data.isop.opc == Uinc) {
                         if (sp51) {
                             if (unaryovfw(*expr)) {
-                                sp53 = 0;
+                                sp53 = false;
                                 if (expr_s0->data.isop.aux2.v1.overflow_attr) {
                                     ovfwwarning(expr_s0->data.isop.opc);
                                 }
                             } else {
-                                sp53 = 1;
+                                sp53 = true;
                                 unaryfold(*expr);
                             }
                         } else {
-                            sp53 = 0;
+                            sp53 = false;
                             mergeconst(*expr);
                             if (outofmem) {
                                 return false;
@@ -2647,33 +2199,33 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                             }
                         }
                     } else if (expr_s0->data.isop.opc == Uint || expr_s0->data.isop.opc == Uuni) {
-                        sp53 = 0;
+                        sp53 = false;
                     } else if (sp51 && expr_s0->data.isop.op2->type == isconst) {
                         if (expr_s0->datatype == Adt || expr_s0->datatype == Hdt || expr_s0->datatype == Jdt || expr_s0->datatype == Ldt) {
                             if (expr_s0->data.isop.opc == Uixa) {
                                 if (ixaovfw(*expr, expr_s0->data.isop.op1, expr_s0->data.isop.op2)) {
-                                    sp53 = 0;
+                                    sp53 = false;
                                     ovfwwarning(Uixa);
                                 } else {
-                                    sp53 = 1;
+                                    sp53 = true;
                                     ixafold(*expr, expr_s0->data.isop.op1, expr_s0->data.isop.op2, *expr);
                                 }
                             } else if (expr_s0->data.isop.op1->type == islda && expr_s0->data.isop.op2->type == islda) {
-                                sp53 = 0;
+                                sp53 = false;
                             } else if (binaryovfw(expr_s0->datatype, expr_s0->data.isop.opc, expr_s0->data.isop.op1, expr_s0->data.isop.op2)) {
-                                sp53 = 0;
+                                sp53 = false;
                                 if (expr_s0->data.isop.aux2.v1.overflow_attr) {
                                     ovfwwarning(expr_s0->data.isop.opc);
                                 }
                             } else {
-                                sp53 = 1;
+                                sp53 = true;
                                 binaryfold(expr_s0->data.isop.opc, expr_s0->datatype, expr_s0->data.isop.op1, expr_s0->data.isop.op2, *expr);
                             }
                         } else {
-                            sp53 = 0;
+                            sp53 = false;
                         }
                     } else if (sp51 == 0) {
-                        sp53 = 0;
+                        sp53 = false;
                         if (expr_s0->data.isop.op2->type == isconst) {
                             mergeconst(*expr);
                         }
@@ -2690,7 +2242,7 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                             }
                         }
                     } else {
-                        sp53 = 0;
+                        sp53 = false;
                         distrlaw(opc, *expr);
                         if (outofmem) {
                             return false;
@@ -2709,7 +2261,7 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                             return false;
                         }
 
-                        sp53 = 0;
+                        sp53 = false;
                         if (!func_00451764(expr_s0->data.isop.opc, &expr_s0->data.isop.op1) && expr_s0->data.isop.op2->type == isconst) {
                             mergeconst(*expr);
                         }
@@ -2717,16 +2269,16 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                         sp51 = func_00451764(Unop, &expr_s0->data.isop.op2);
                         if (sp51 && func_00451764(Unop, &expr_s0->data.isop.op1)) {
                             if (binaryovfw(expr_s0->datatype, expr_s0->data.isop.opc, expr_s0->data.isop.op1, expr_s0->data.isop.op2)) {
-                                sp53 = 0;
+                                sp53 = false;
                                 if (expr_s0->data.isop.aux2.v1.overflow_attr) {
                                     ovfwwarning(expr_s0->data.isop.opc);
                                 }
                             } else {
-                                sp53 = 1;
+                                sp53 = true;
                                 binaryfold(expr_s0->data.isop.opc, expr_s0->datatype, expr_s0->data.isop.op1, expr_s0->data.isop.op2, *expr);
                             }
                         } else {
-                            sp53 = 0;
+                            sp53 = false;
                         }
                     }
                     break;
@@ -2742,20 +2294,20 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
 
                     sp28 = expr_s0->data.isop.op2;
                     if (sp52 && (sp28->type == isconst && (sp28->datatype == Adt || sp28->datatype == Hdt || sp28->datatype == Jdt || sp28->datatype == Ldt))) {
-                        sp53 = 1;
+                        sp53 = true;
                         binaryfold(expr_s0->data.isop.opc, expr_s0->datatype, expr_s0->data.isop.op1, sp28, *expr);
                     } else if (sp52) {
                         switch (expr_s0->data.isop.opc) {
                             case Uand:
                                 if (expr_s0->data.isop.op1->data.isconst.number.intval == 0) {
-                                    sp53 = 1;
+                                    sp53 = true;
                                     decreasecount(sp28);
                                     copycoderep(*expr, expr_s0->data.isop.op1);
                                 } else if (expr_s0->data.isop.op1->data.isconst.number.intval == -1) {
                                     if (sp28->count != 1) {
-                                        sp53 = 0;
+                                        sp53 = false;
                                     } else {
-                                        sp53 = 0;
+                                        sp53 = false;
                                         sp28->count = expr_s0->count;
                                         sp28 = expr_s0->data.isop.op2;
                                         sp4C = expr_s0->data.isop.op2;
@@ -2779,20 +2331,20 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                                         delentry(sp4C);
                                     }
                                 } else {
-                                    sp53 = 0;
+                                    sp53 = false;
                                 }
                                 break;
 
                             case Uior:
                                 if (expr_s0->data.isop.op1->data.isconst.number.intval == -1) {
-                                    sp53 = 1;
+                                    sp53 = true;
                                     decreasecount(sp28);
                                     copycoderep(*expr, expr_s0->data.isop.op1);
                                 } else if (expr_s0->data.isop.op1->data.isconst.number.intval == 0) {
                                     if (sp28->count != 1) {
-                                        sp53 = 0;
+                                        sp53 = false;
                                     } else {
-                                        sp53 = 0;
+                                        sp53 = false;
                                         sp28->count = expr_s0->count;
                                         sp28 = expr_s0->data.isop.op2;
                                         sp4C = expr_s0->data.isop.op2;
@@ -2815,7 +2367,7 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                                         delentry(sp4C);
                                     }
                                 } else {
-                                    sp53 = 0;
+                                    sp53 = false;
                                 }
                                 break;
 
@@ -2827,15 +2379,15 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                         switch (expr_s0->data.isop.opc) {
                             case Uand:
                                 if (sp28->data.isconst.number.intval == 0) {
-                                    sp53 = 1;
+                                    sp53 = true;
                                     decreasecount(expr_s0->data.isop.op1);
                                     copycoderep(*expr, expr_s0->data.isop.op2);
                                 } else if (sp28->data.isconst.number.intval == -1) {
                                     if (expr_s0->data.isop.op1->count != 1) {
-                                        sp53 = 0;
+                                        sp53 = false;
                                     } else {
                                         expr_s0->data.isop.op1->count = expr_s0->count;
-                                        sp53 = 0;
+                                        sp53 = false;
                                         sp4C = expr_s0->data.isop.op1;
                                         copycoderep(*expr, expr_s0->data.isop.op1);
                                         if (sp4C->type == isvar) {
@@ -2856,21 +2408,21 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                                         delentry(sp4C);
                                     }
                                 } else {
-                                    sp53 = 0;
+                                    sp53 = false;
                                 }
                                 break;
 
                             case Uior:
                                 if (sp28->data.isconst.number.intval == -1) {
-                                    sp53 = 1;
+                                    sp53 = true;
                                     decreasecount(expr_s0->data.isop.op1);
                                     copycoderep(*expr, expr_s0->data.isop.op2);
                                 } else if (sp28->data.isconst.number.intval == 0) {
                                     if (expr_s0->data.isop.op1->count != 1) {
-                                        sp53 = 0;
+                                        sp53 = false;
                                     } else {
                                         expr_s0->data.isop.op1->count = expr_s0->count;
-                                        sp53 = 0;
+                                        sp53 = false;
                                         sp4C = expr_s0->data.isop.op1;
                                         copycoderep(*expr, expr_s0->data.isop.op1);
                                         if (sp4C->type == isvar) {
@@ -2890,7 +2442,7 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                                         delentry(sp4C);
                                     }
                                 } else {
-                                    sp53 = 0;
+                                    sp53 = false;
                                 }
                                 break;
 
@@ -2899,7 +2451,7 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                                 break;
                         }
                     } else {
-                        sp53 = 0;
+                        sp53 = false;
                     }
                     break;
 
@@ -2937,24 +2489,24 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                     if (sp52 && sp51 && (expr_s0->data.isop.opc != Udif && expr_s0->data.isop.opc != Uinn && expr_s0->data.isop.opc != Umus)) {
                         if (expr_s0->data.isop.op1->type == islda && expr_s0->data.isop.op2->type == islda
                                 && expr_s0->data.isop.op2->data.islda_isilda.var_data.blockno != expr_s0->data.isop.op1->data.islda_isilda.var_data.blockno) {
-                            sp53 = 0;
+                            sp53 = false;
                         } else if (binaryovfw(expr_s0->datatype, expr_s0->data.isop.opc, expr_s0->data.isop.op1, expr_s0->data.isop.op2)) {
-                            sp53 = 0;
+                            sp53 = false;
                             if (expr_s0->data.isop.aux2.v1.overflow_attr) {
                                 ovfwwarning(expr_s0->data.isop.opc);
                             }
                         } else {
-                            sp53 = 1;
+                            sp53 = true;
                             binaryfold(expr_s0->data.isop.opc, expr_s0->datatype, expr_s0->data.isop.op1, expr_s0->data.isop.op2, *expr);
                         }
                     } else {
-                        sp53 = 0;
+                        sp53 = false;
                     }
                     break;
 
                 case Uildv:
                 case Uilod:
-                    sp53 = 0;
+                    sp53 = false;
                     if (func_00451764(Unop, &expr_s0->data.isop.op1)) {
                         if (expr_s0->data.isop.opc == Uilod && expr_s0->data.isop.op1->type == islda) {
                             if (expr_s0->data.isop.op1->data.islda_isilda.var_data.memtype != Smt || is_gp_relative(expr_s0->data.isop.op1->data.islda_isilda.var_data.blockno) || !dokpicopt) {
@@ -2981,7 +2533,7 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                 case Uirld:
                 case Uirlv:
                     func_00451764(Unop, &expr_s0->data.isop.op1);
-                    sp53 = 0;
+                    sp53 = false;
                     break;
 
                 case Ucvt:
@@ -2989,13 +2541,13 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                             && (expr_s0->datatype == Adt || expr_s0->datatype == Hdt || expr_s0->datatype == Jdt || expr_s0->datatype == Ldt)
                             && (expr_s0->data.isop.aux.cvtfrom == Adt || expr_s0->data.isop.aux.cvtfrom == Hdt || expr_s0->data.isop.aux.cvtfrom == Jdt || expr_s0->data.isop.aux.cvtfrom == Ldt)) {
                         if (expr_s0->data.isop.op1->type == islda) {
-                            sp53 = 0;
+                            sp53 = false;
                         } else {
-                            sp53 = 1;
+                            sp53 = true;
                             cvtfold(*expr);
                         }
                     } else {
-                        sp53 = 0;
+                        sp53 = false;
                     }
                     break;
 
@@ -3006,7 +2558,7 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                     if (func_00451764(Unop, &expr_s0->data.isop.op1)) {
                         noop = false;
                     }
-                    sp53 = 0;
+                    sp53 = false;
                     break;
 
                 case Uabs:
@@ -3021,16 +2573,16 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                     if (func_00451764(Unop, &expr_s0->data.isop.op1)
                             && (expr_s0->datatype == Adt || expr_s0->datatype == Hdt || expr_s0->datatype == Jdt || expr_s0->datatype == Ldt)) {
                         if (unaryovfw(*expr)) {
-                            sp53 = 0;
+                            sp53 = false;
                             if (expr_s0->data.isop.aux2.v1.overflow_attr) {
                                 ovfwwarning(expr_s0->data.isop.opc);
                             }
                         } else {
-                            sp53 = 1;
+                            sp53 = true;
                             unaryfold(*expr);
                         }
                     } else {
-                        sp53 = 0;
+                        sp53 = false;
                     }
                     break;
 
@@ -3038,16 +2590,16 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                 case Uinc:
                     if (func_00451764(expr_s0->data.isop.opc, &expr_s0->data.isop.op1)) {
                         if (unaryovfw(*expr)) {
-                            sp53 = 0;
+                            sp53 = false;
                             if (expr_s0->data.isop.aux2.v1.overflow_attr) {
                                 ovfwwarning(expr_s0->data.isop.opc);
                             }
                         } else {
-                            sp53 = 1;
+                            sp53 = true;
                             unaryfold(*expr);
                         }
                     } else {
-                        sp53 = 0;
+                        sp53 = false;
                         mergeconst(*expr);
                         if (outofmem) {
                             return false;
@@ -3062,7 +2614,7 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                 case Uadj:
                 case Usqrt:
                     func_00451764(Unop, &expr_s0->data.isop.op1);
-                    sp53 = 0;
+                    sp53 = false;
                     break;
 
                 case Uiequ:
@@ -3087,7 +2639,7 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
                     if (expr_s0->data.isop.op2->type == isop && expr_s0->data.isop.op2->data.isop.opc == Uixa) {
                         reduceixa(expr_s0->data.isop.op2);
                     } else {
-                        sp53 = 0;
+                        sp53 = false;
                     }
                     break;
 
@@ -3097,7 +2649,7 @@ bool func_00451764(Uopcode opc, struct Expression **expr) {
             }
 
             if (expr_s0->type == isop) {
-                expr_s0->unk5 = 1;
+                expr_s0->unk5 = true;
             }
             break;
 
