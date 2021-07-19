@@ -369,12 +369,11 @@ void ixafold(struct Expression *ixa, struct Expression *left, struct Expression 
 00451764 restructure
 */
 struct Expression *ilodfold(struct Expression *ilod) {
-    struct VariableInner var; // sp6C
-    //s32 sp6C;
-    unsigned short hash; //sp68
+    struct VariableInner var;
+    unsigned short hash;
     struct Expression *left;
-    struct Expression *phi_s0;
-    struct Expression *phi_s3;
+    struct Expression *expr;
+    struct Expression *prev;
     bool found;
 
     left = ilod->data.isop.op1;
@@ -384,75 +383,75 @@ struct Expression *ilodfold(struct Expression *ilod) {
         return ilod;
     }
     hash = isvarhash(var);
-    phi_s0 = table[hash];
+    expr = table[hash];
     found = false;
-    phi_s3 = NULL;
-    while (!found && phi_s0 != 0) {
-        if (phi_s0->type == isvar && addreq(phi_s0->data.isvar_issvar.var_data, var)) {
-            found = ilod->graphnode == phi_s0->graphnode &&
-                ilod->unk2 == phi_s0->unk2 &&
-                ilod->unk3 == phi_s0->unk3 &&
-                (phi_s0->data.isvar_issvar.unk30 == NULL || nocopy == phi_s0->data.isvar_issvar.unk30);
+    prev = NULL;
+    while (!found && expr != 0) {
+        if (expr->type == isvar && addreq(expr->data.isvar_issvar.var_data, var)) {
+            found = ilod->graphnode == expr->graphnode &&
+                ilod->unk2 == expr->unk2 &&
+                ilod->unk3 == expr->unk3 &&
+                (expr->data.isvar_issvar.unk30 == NULL || nocopy == expr->data.isvar_issvar.unk30);
 
-            phi_s3 = phi_s0;
-            if (found && phi_s0->unk2 && !phi_s0->unk3) {
+            prev = expr;
+            if (found && expr->unk2 && !expr->unk3) {
                 found = false;
             }
         }
 
         if (!found) {
-            phi_s0 = phi_s0->next;
+            expr = expr->next;
         }
     }
 
     if (!found) {
-        phi_s0 = appendchain(hash);
+        expr = appendchain(hash);
         if (outofmem != 0) {
             return NULL;
         }
-        if (!inlopt && phi_s3 != NULL) {
-            copycoderep(phi_s0, phi_s3);
+        if (!inlopt && prev != NULL) {
+            copycoderep(expr, prev);
         } else {
-            phi_s0->type = isvar;
-            phi_s0->datatype = ilod->datatype;
-            phi_s0->unk4 = false;
-            phi_s0->unk5 = false;
-            phi_s0->data.isvar_issvar.unk21 = false;
-            phi_s0->data.isvar_issvar.unk22 = false;
-            phi_s0->data.isvar_issvar.var_data = var;
-            phi_s0->data.isvar_issvar.unk24 = NULL;
-            phi_s0->data.isvar_issvar.size = ilod->data.isop.aux2.v1.unk3C;
-            phi_s0->data.isvar_issvar.var_data.level = blktolev(var.blockno);
-            phi_s0->data.isvar_issvar.unk3C = 0;
-            phi_s0->data.isvar_issvar.is_volatile = false;
+            expr->type = isvar;
+            expr->datatype = ilod->datatype;
+            expr->unk4 = false;
+            expr->unk5 = false;
+            expr->data.isvar_issvar.unk21 = false;
+            expr->data.isvar_issvar.unk22 = false;
+            expr->data.isvar_issvar.var_data = var;
+            expr->data.isvar_issvar.unk24 = NULL;
+            expr->data.isvar_issvar.size = ilod->data.isop.aux2.v1.unk3C;
+            expr->data.isvar_issvar.var_data.level = blktolev(var.blockno);
+            expr->data.isvar_issvar.unk3C = 0;
+            expr->data.isvar_issvar.is_volatile = false;
         }
-        phi_s0->count = 1;
-        phi_s0->data.isvar_issvar.unk30 = NULL;
-        phi_s0->data.isvar_issvar.assignment = NULL;
-        phi_s0->data.isvar_issvar.assigned_value = NULL;
-        phi_s0->graphnode = ilod->graphnode;
-        phi_s0->unk3 = ilod->unk3;
-        phi_s0->unk2 = ilod->unk2;
+        expr->count = 1;
+        expr->data.isvar_issvar.unk30 = NULL;
+        expr->data.isvar_issvar.assignment = NULL;
+        expr->data.isvar_issvar.assigned_value = NULL;
+        expr->graphnode = ilod->graphnode;
+        expr->unk3 = ilod->unk3;
+        expr->unk2 = ilod->unk2;
     } else {
-        increasecount(phi_s0);
+        increasecount(expr);
     }
 
-    if (!found || phi_s0->var_access_list == NULL) {
-        phi_s0->var_access_list = alloc_new(sizeof(struct VarAccessList), &perm_heap);
-        phi_s0->var_access_list->prev = ilod->var_access_list->prev;
-        if (phi_s0->var_access_list->prev != 0) {
-            phi_s0->var_access_list->prev->next = phi_s0->var_access_list;
+    if (!found || expr->var_access_list == NULL) {
+        expr->var_access_list = alloc_new(sizeof(struct VarAccessList), &perm_heap);
+        expr->var_access_list->prev = ilod->var_access_list->prev;
+        if (expr->var_access_list->prev != 0) {
+            expr->var_access_list->prev->next = expr->var_access_list;
         } else {
-            phi_s0->graphnode->varlisthead = phi_s0->var_access_list;
+            expr->graphnode->varlisthead = expr->var_access_list;
         }
-        phi_s0->var_access_list->next = ilod->var_access_list;
-        ilod->var_access_list->prev = phi_s0->var_access_list;
-        phi_s0->var_access_list->unk8 = false;
-        phi_s0->var_access_list->type = 2;
-        phi_s0->var_access_list->data.var = phi_s0;
+        expr->var_access_list->next = ilod->var_access_list;
+        ilod->var_access_list->prev = expr->var_access_list;
+        expr->var_access_list->unk8 = false;
+        expr->var_access_list->type = 2;
+        expr->var_access_list->data.var = expr;
     }
     decreasecount(ilod);
-    return phi_s0;
+    return expr;
 }
 
 /* 
@@ -461,52 +460,51 @@ struct Expression *ilodfold(struct Expression *ilod) {
 */
 void istrfold(struct Statement *stmt) {
     struct VariableInner var;
-    struct Expression *sp48;
-    int increment;
     struct Expression *expr;
+    int increment;
+    struct Expression *istr;
 
-    expr = stmt->expr;
-    var = expr->data.islda_isilda.var_data;
-    var.addr = expr->data.islda_isilda.addr + stmt->u.store.u.istr.s.word;
+    istr = stmt->expr;
+    var = istr->data.islda_isilda.var_data;
+    var.addr = istr->data.islda_isilda.addr + stmt->u.store.u.istr.s.word;
     if (insertvar(var, stmt->u.store.size, stmt->u.store.u.istr.dtype, &curproc->vartree, 0, 0, 0)->unk1 == 0) {
-        sp48 = appendchain(isvarhash(var));
+        expr = appendchain(isvarhash(var));
         if (outofmem) {
             return;
         }
-        sp48->type = isvar;
-        sp48->datatype = stmt->u.store.u.istr.dtype;
-        sp48->unk2 = !stmt->u.store.unk1F;
-        sp48->unk3 = false;
-        sp48->unk4 = false;
-        sp48->unk5 = false;
-        sp48->count = 0;
-        sp48->graphnode = stmt->graphnode;
-        sp48->var_access_list = NULL;
+        expr->type = isvar;
+        expr->datatype = stmt->u.store.u.istr.dtype;
+        expr->unk2 = !stmt->u.store.unk1F;
+        expr->unk3 = false;
+        expr->unk4 = false;
+        expr->unk5 = false;
+        expr->count = 0;
+        expr->graphnode = stmt->graphnode;
+        expr->var_access_list = NULL;
 
-        sp48->data.isvar_issvar.size = stmt->u.store.size;
-        sp48->data.isvar_issvar.unk21 = false;
-        sp48->data.isvar_issvar.unk22 = false;
-        sp48->data.isvar_issvar.is_volatile = false;
-        sp48->data.isvar_issvar.unk24 = NULL;
-        sp48->data.isvar_issvar.var_data = var;
-        sp48->data.isvar_issvar.var_data.level = blktolev(var.blockno);
-        sp48->data.isvar_issvar.unk30 = NULL;
-        sp48->data.isvar_issvar.assigned_value = stmt->u.store.expr;
-        sp48->data.isvar_issvar.assignment = stmt;
-        sp48->data.isvar_issvar.unk3C = 0;
+        expr->data.isvar_issvar.size = stmt->u.store.size;
+        expr->data.isvar_issvar.unk21 = false;
+        expr->data.isvar_issvar.unk22 = false;
+        expr->data.isvar_issvar.is_volatile = false;
+        expr->data.isvar_issvar.unk24 = NULL;
+        expr->data.isvar_issvar.var_data = var;
+        expr->data.isvar_issvar.var_data.level = blktolev(var.blockno);
+        expr->data.isvar_issvar.unk30 = NULL;
+        expr->data.isvar_issvar.assigned_value = stmt->u.store.expr;
+        expr->data.isvar_issvar.assignment = stmt;
+        expr->data.isvar_issvar.unk3C = 0;
 
         stmt->opc = Ustr;
         stmt->unk1 = false;
-        stmt->expr = sp48;
-        if (checkincre(sp48->data.isvar_issvar.assigned_value, sp48, &increment) && increment == 1) {
+        stmt->expr = expr;
+        if (checkincre(expr->data.isvar_issvar.assigned_value, expr, &increment) && increment == 1) {
             stmt->unk1 = true;
         }
         stmt->unk2 = false;
         stmt->unk3 = false;
-        stmt->u.store.var_access_list_item->unk8 = 0;
+        stmt->u.store.var_access_list_item->unk8 = NULL;
         stmt->u.store.u.str.unk2C = 0;
         stmt->u.store.u.str.unk30 = 0;
-
     }
 }
 
@@ -696,7 +694,7 @@ void linearize(struct Expression *expr) {
             left = expr->data.isop.op1;
             switch (expr->data.isop.op1->data.isop.opc) {
                 case Usub:
-                    expr->data.isop.opc = 1;
+                    expr->data.isop.opc = Uadd;
                     break;
 
                 case Uadd:
@@ -723,7 +721,7 @@ void linearize(struct Expression *expr) {
                     expr->data.isop.datatype = left->data.isop.datatype;
                     expr->data.isop.datasize = -left->data.isop.datasize;
                     left->data.isop.opc = Usub;
-                    expr->data.isop.op1->datatype = 0;
+                    expr->data.isop.op1->datatype = Adt;
                     break;
 
                 default:
@@ -737,18 +735,18 @@ void linearize(struct Expression *expr) {
             switch (expr->data.isop.op1->data.isop.opc) {
                 case Usub:
                     expr->data.isop.opc = Usub;
-                    left->data.isop.opc = 1;
+                    left->data.isop.opc = Uadd;
                     break;
 
                 case Udec:
-                    left->data.isop.opc = 1;
+                    left->data.isop.opc = Uadd;
                     expr->data.isop.opc = Udec;
                     expr->data.isop.op2 = NULL;
                     expr->data.isop.datasize = expr->data.isop.op1->data.isop.datasize;
                     break;
 
                 case Uinc:
-                    left->data.isop.opc = 1;
+                    left->data.isop.opc = Uadd;
                     expr->data.isop.opc = Uinc;
                     expr->data.isop.op2 = NULL;
                     expr->data.isop.datasize = expr->data.isop.op1->data.isop.datasize;
@@ -759,8 +757,8 @@ void linearize(struct Expression *expr) {
                     expr->datatype = left->datatype;
                     expr->data.isop.datatype = left->data.isop.datatype;
                     expr->data.isop.datasize = left->data.isop.datasize;
-                    left->data.isop.opc = 1;
-                    expr->data.isop.op1->datatype = 0;
+                    left->data.isop.opc = Uadd;
+                    expr->data.isop.op1->datatype = Adt;
                     break;
 
                 default:
@@ -1249,7 +1247,7 @@ void mergeconst(struct Expression *expr) {
 00451764 restructure
 */
 void distrlaw(Uopcode opc, struct Expression *expr) {
-    struct Expression *sp48;
+    struct Expression *newExpr;
     Datatype dtype;
     Uopcode tempopc;
     struct Expression *left;     // s1
@@ -1283,13 +1281,13 @@ void distrlaw(Uopcode opc, struct Expression *expr) {
                         if (binaryovfw(dtype, expr->data.isop.opc, left->data.isop.op2, right)) {
                             return;
                         }
-                        sp48 = appendchain(right->table_index);
+                        newExpr = appendchain(right->table_index);
                         if (outofmem) {
                             return;
                         }
-                        binaryfold(expr->data.isop.opc, dtype, left->data.isop.op2, right, sp48);
+                        binaryfold(expr->data.isop.opc, dtype, left->data.isop.op2, right, newExpr);
                         left->data.isop.op2 = right;
-                        expr->data.isop.op2 = sp48;
+                        expr->data.isop.op2 = newExpr;
                         tempopc = expr->data.isop.opc;
                         expr->data.isop.opc = left->data.isop.opc;
                         left->data.isop.opc = tempopc;
@@ -1298,17 +1296,17 @@ void distrlaw(Uopcode opc, struct Expression *expr) {
                         if (binaryovfw(dtype, expr->data.isop.opc, left->data.isop.op1, right)) {
                             return;
                         }
-                        sp48 = appendchain(right->table_index);
+                        newExpr = appendchain(right->table_index);
                         if (outofmem) {
                             return;
                         }
-                        binaryfold(expr->data.isop.opc, dtype, left->data.isop.op1, right, sp48);
+                        binaryfold(expr->data.isop.opc, dtype, left->data.isop.op1, right, newExpr);
                         left->data.isop.op1 = left->data.isop.op2;
                         left->data.isop.op2 = right;
                         tempopc = left->data.isop.opc;
                         left->data.isop.opc = expr->data.isop.opc;
                         expr->data.isop.opc = tempopc;
-                        expr->data.isop.op1 = sp48;
+                        expr->data.isop.op1 = newExpr;
                         expr->data.isop.op2 = left;
                     }
                 }
@@ -1332,13 +1330,13 @@ void distrlaw(Uopcode opc, struct Expression *expr) {
                         if (binaryovfw(dtype, expr->data.isop.opc, left, right->data.isop.op1)) {
                             return;
                         }
-                        sp48 = appendchain(right->table_index);
+                        newExpr = appendchain(right->table_index);
                         if (outofmem) {
                             return;
                         }
-                        binaryfold(expr->data.isop.opc, dtype, left, right->data.isop.op1, sp48);
+                        binaryfold(expr->data.isop.opc, dtype, left, right->data.isop.op1, newExpr);
                         right->data.isop.op1 = left;
-                        expr->data.isop.op1 = sp48;
+                        expr->data.isop.op1 = newExpr;
                         tempopc = expr->data.isop.opc;
                         expr->data.isop.opc = right->data.isop.opc;
                         right->data.isop.opc = tempopc;
@@ -1348,18 +1346,18 @@ void distrlaw(Uopcode opc, struct Expression *expr) {
                             return;
                         }
 
-                        sp48 = appendchain(right->table_index);
+                        newExpr = appendchain(right->table_index);
                         if (outofmem) {
                             return;
                         }
-                        binaryfold(expr->data.isop.opc, dtype, left, right->data.isop.op2, sp48);
+                        binaryfold(expr->data.isop.opc, dtype, left, right->data.isop.op2, newExpr);
                         right->data.isop.op2 = right->data.isop.op1;
                         right->data.isop.op1 = left;
                         tempopc = right->data.isop.opc;
                         right->data.isop.opc = expr->data.isop.opc;
                         expr->data.isop.opc = tempopc;
                         expr->data.isop.op1 = right;
-                        expr->data.isop.op2 = sp48;
+                        expr->data.isop.op2 = newExpr;
                     }
                 }
             }
@@ -1389,11 +1387,12 @@ void reduceixa(struct Expression *ixa) {
 00452DAC constarith
 */
 bool restructure(Uopcode opc, struct Expression **expr) {
-    bool sp53 = false;
-    bool sp52; // op1
-    bool sp51; // op2
+    bool result = false;
+    bool leftResult; // op1
+    bool rightResult; // op2
     struct Expression *sp4C;
-    struct Expression *sp28;
+    struct Expression *left;
+    struct Expression *right;
     struct Expression *expr2;
     struct Expression *expr_s0;
 
@@ -1406,27 +1405,27 @@ bool restructure(Uopcode opc, struct Expression **expr) {
         case isvar:
         case issvar:
         case isrconst:
-            sp53 = false;
+            result = false;
             break;
 
         case islda:
-            sp53 = true;
+            result = true;
             break;
 
         case isilda:
-            sp53 = false;
+            result = false;
             break;
 
         case isconst:
             if (expr_s0->datatype == Adt || expr_s0->datatype == Hdt || expr_s0->datatype == Jdt || expr_s0->datatype == Ldt) {
-                sp53 = true;
+                result = true;
             } else {
-                sp53 = false;
+                result = false;
             }
             break;
 
         case isop:
-            sp53 = false;
+            result = false;
             if (expr_s0->unk5 == 1) {
                 return false;
             }
@@ -1440,24 +1439,24 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                 case Uuni:
                     restructure(expr_s0->data.isop.opc, &expr_s0->data.isop.op2);
                     linearize(*expr);
-                    sp51 = restructure(expr_s0->data.isop.opc, &expr_s0->data.isop.op1);
+                    leftResult = restructure(expr_s0->data.isop.opc, &expr_s0->data.isop.op1);
                     if (outofmem) {
                         return false;
                     }
 
                     if (expr_s0->data.isop.opc == Udec || expr_s0->data.isop.opc == Uinc) {
-                        if (sp51) {
+                        if (leftResult) {
                             if (unaryovfw(*expr)) {
-                                sp53 = false;
+                                result = false;
                                 if (expr_s0->data.isop.aux2.v1.overflow_attr) {
                                     ovfwwarning(expr_s0->data.isop.opc);
                                 }
                             } else {
-                                sp53 = true;
+                                result = true;
                                 unaryfold(*expr);
                             }
                         } else {
-                            sp53 = false;
+                            result = false;
                             mergeconst(*expr);
                             if (outofmem) {
                                 return false;
@@ -1468,33 +1467,33 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                             }
                         }
                     } else if (expr_s0->data.isop.opc == Uint || expr_s0->data.isop.opc == Uuni) {
-                        sp53 = false;
-                    } else if (sp51 && expr_s0->data.isop.op2->type == isconst) {
+                        result = false;
+                    } else if (leftResult && expr_s0->data.isop.op2->type == isconst) {
                         if (expr_s0->datatype == Adt || expr_s0->datatype == Hdt || expr_s0->datatype == Jdt || expr_s0->datatype == Ldt) {
                             if (expr_s0->data.isop.opc == Uixa) {
                                 if (ixaovfw(*expr, expr_s0->data.isop.op1, expr_s0->data.isop.op2)) {
-                                    sp53 = false;
+                                    result = false;
                                     ovfwwarning(Uixa);
                                 } else {
-                                    sp53 = true;
+                                    result = true;
                                     ixafold(*expr, expr_s0->data.isop.op1, expr_s0->data.isop.op2, *expr);
                                 }
                             } else if (expr_s0->data.isop.op1->type == islda && expr_s0->data.isop.op2->type == islda) {
-                                sp53 = false;
+                                result = false;
                             } else if (binaryovfw(expr_s0->datatype, expr_s0->data.isop.opc, expr_s0->data.isop.op1, expr_s0->data.isop.op2)) {
-                                sp53 = false;
+                                result = false;
                                 if (expr_s0->data.isop.aux2.v1.overflow_attr) {
                                     ovfwwarning(expr_s0->data.isop.opc);
                                 }
                             } else {
-                                sp53 = true;
+                                result = true;
                                 binaryfold(expr_s0->data.isop.opc, expr_s0->datatype, expr_s0->data.isop.op1, expr_s0->data.isop.op2, *expr);
                             }
                         } else {
-                            sp53 = false;
+                            result = false;
                         }
-                    } else if (sp51 == 0) {
-                        sp53 = false;
+                    } else if (!leftResult) {
+                        result = false;
                         if (expr_s0->data.isop.op2->type == isconst) {
                             mergeconst(*expr);
                         }
@@ -1511,7 +1510,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                             }
                         }
                     } else {
-                        sp53 = false;
+                        result = false;
                         distrlaw(opc, *expr);
                         if (outofmem) {
                             return false;
@@ -1530,24 +1529,24 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                             return false;
                         }
 
-                        sp53 = false;
+                        result = false;
                         if (!restructure(expr_s0->data.isop.opc, &expr_s0->data.isop.op1) && expr_s0->data.isop.op2->type == isconst) {
                             mergeconst(*expr);
                         }
                     } else {
-                        sp51 = restructure(Unop, &expr_s0->data.isop.op2);
-                        if (sp51 && restructure(Unop, &expr_s0->data.isop.op1)) {
+                        rightResult = restructure(Unop, &expr_s0->data.isop.op2);
+                        if (rightResult && restructure(Unop, &expr_s0->data.isop.op1)) {
                             if (binaryovfw(expr_s0->datatype, expr_s0->data.isop.opc, expr_s0->data.isop.op1, expr_s0->data.isop.op2)) {
-                                sp53 = false;
+                                result = false;
                                 if (expr_s0->data.isop.aux2.v1.overflow_attr) {
                                     ovfwwarning(expr_s0->data.isop.opc);
                                 }
                             } else {
-                                sp53 = true;
+                                result = true;
                                 binaryfold(expr_s0->data.isop.opc, expr_s0->datatype, expr_s0->data.isop.op1, expr_s0->data.isop.op2, *expr);
                             }
                         } else {
-                            sp53 = false;
+                            result = false;
                         }
                     }
                     break;
@@ -1556,29 +1555,29 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                 case Uior:
                     restructure(expr_s0->data.isop.opc, &expr_s0->data.isop.op2);
                     linearize(*expr);
-                    sp52 = restructure(expr_s0->data.isop.opc, &expr_s0->data.isop.op1);
+                    leftResult = restructure(expr_s0->data.isop.opc, &expr_s0->data.isop.op1);
                     if (outofmem) {
                         return false;
                     }
 
-                    sp28 = expr_s0->data.isop.op2;
-                    if (sp52 && (sp28->type == isconst && (sp28->datatype == Adt || sp28->datatype == Hdt || sp28->datatype == Jdt || sp28->datatype == Ldt))) {
-                        sp53 = true;
-                        binaryfold(expr_s0->data.isop.opc, expr_s0->datatype, expr_s0->data.isop.op1, sp28, *expr);
-                    } else if (sp52) {
+                    right = expr_s0->data.isop.op2;
+                    if (leftResult && (right->type == isconst && (right->datatype == Adt || right->datatype == Hdt || right->datatype == Jdt || right->datatype == Ldt))) {
+                        result = true;
+                        binaryfold(expr_s0->data.isop.opc, expr_s0->datatype, expr_s0->data.isop.op1, right, *expr);
+                    } else if (leftResult) {
                         switch (expr_s0->data.isop.opc) {
                             case Uand:
                                 if (expr_s0->data.isop.op1->data.isconst.number.intval == 0) {
-                                    sp53 = true;
-                                    decreasecount(sp28);
+                                    result = true;
+                                    decreasecount(right);
                                     copycoderep(*expr, expr_s0->data.isop.op1);
                                 } else if (expr_s0->data.isop.op1->data.isconst.number.intval == -1) {
-                                    if (sp28->count != 1) {
-                                        sp53 = false;
+                                    if (right->count != 1) {
+                                        result = false;
                                     } else {
-                                        sp53 = false;
-                                        sp28->count = expr_s0->count;
-                                        sp28 = expr_s0->data.isop.op2;
+                                        result = false;
+                                        right->count = expr_s0->count;
+                                        right = expr_s0->data.isop.op2;
                                         sp4C = expr_s0->data.isop.op2;
                                         copycoderep(*expr, expr_s0->data.isop.op2);
 
@@ -1600,22 +1599,22 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                                         delentry(sp4C);
                                     }
                                 } else {
-                                    sp53 = false;
+                                    result = false;
                                 }
                                 break;
 
                             case Uior:
                                 if (expr_s0->data.isop.op1->data.isconst.number.intval == -1) {
-                                    sp53 = true;
-                                    decreasecount(sp28);
+                                    result = true;
+                                    decreasecount(right);
                                     copycoderep(*expr, expr_s0->data.isop.op1);
                                 } else if (expr_s0->data.isop.op1->data.isconst.number.intval == 0) {
-                                    if (sp28->count != 1) {
-                                        sp53 = false;
+                                    if (right->count != 1) {
+                                        result = false;
                                     } else {
-                                        sp53 = false;
-                                        sp28->count = expr_s0->count;
-                                        sp28 = expr_s0->data.isop.op2;
+                                        result = false;
+                                        right->count = expr_s0->count;
+                                        right = expr_s0->data.isop.op2;
                                         sp4C = expr_s0->data.isop.op2;
                                         copycoderep(*expr, expr_s0->data.isop.op2);
                                         if (sp4C->type == isvar) {
@@ -1635,7 +1634,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                                         delentry(sp4C);
                                     }
                                 } else {
-                                    sp53 = false;
+                                    result = false;
                                 }
                                 break;
 
@@ -1643,19 +1642,19 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                                 caseerror(1, 1245, "uoptloc.p", 9);
                                 break;
                         }
-                    } else if (sp28->type == isconst && (sp28->datatype == Adt || sp28->datatype == Hdt || sp28->datatype == Jdt || sp28->datatype == Ldt)) {
+                    } else if (right->type == isconst && (right->datatype == Adt || right->datatype == Hdt || right->datatype == Jdt || right->datatype == Ldt)) {
                         switch (expr_s0->data.isop.opc) {
                             case Uand:
-                                if (sp28->data.isconst.number.intval == 0) {
-                                    sp53 = true;
+                                if (right->data.isconst.number.intval == 0) {
+                                    result = true;
                                     decreasecount(expr_s0->data.isop.op1);
                                     copycoderep(*expr, expr_s0->data.isop.op2);
-                                } else if (sp28->data.isconst.number.intval == -1) {
+                                } else if (right->data.isconst.number.intval == -1) {
                                     if (expr_s0->data.isop.op1->count != 1) {
-                                        sp53 = false;
+                                        result = false;
                                     } else {
                                         expr_s0->data.isop.op1->count = expr_s0->count;
-                                        sp53 = false;
+                                        result = false;
                                         sp4C = expr_s0->data.isop.op1;
                                         copycoderep(*expr, expr_s0->data.isop.op1);
                                         if (sp4C->type == isvar) {
@@ -1676,21 +1675,21 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                                         delentry(sp4C);
                                     }
                                 } else {
-                                    sp53 = false;
+                                    result = false;
                                 }
                                 break;
 
                             case Uior:
-                                if (sp28->data.isconst.number.intval == -1) {
-                                    sp53 = true;
+                                if (right->data.isconst.number.intval == -1) {
+                                    result = true;
                                     decreasecount(expr_s0->data.isop.op1);
                                     copycoderep(*expr, expr_s0->data.isop.op2);
-                                } else if (sp28->data.isconst.number.intval == 0) {
+                                } else if (right->data.isconst.number.intval == 0) {
                                     if (expr_s0->data.isop.op1->count != 1) {
-                                        sp53 = false;
+                                        result = false;
                                     } else {
                                         expr_s0->data.isop.op1->count = expr_s0->count;
-                                        sp53 = false;
+                                        result = false;
                                         sp4C = expr_s0->data.isop.op1;
                                         copycoderep(*expr, expr_s0->data.isop.op1);
                                         if (sp4C->type == isvar) {
@@ -1710,7 +1709,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                                         delentry(sp4C);
                                     }
                                 } else {
-                                    sp53 = false;
+                                    result = false;
                                 }
                                 break;
 
@@ -1719,7 +1718,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                                 break;
                         }
                     } else {
-                        sp53 = false;
+                        result = false;
                     }
                     break;
 
@@ -1740,12 +1739,12 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                 case Ushr:
                 case Usign:
                 case Uxor:
-                    sp52 = restructure(Unop, &expr_s0->data.isop.op1);
+                    leftResult = restructure(Unop, &expr_s0->data.isop.op1);
                     if (expr_s0->data.isop.op1->type == isop && expr_s0->data.isop.op1->data.isop.opc == Uixa) {
                         reduceixa(expr_s0->data.isop.op1);
                     }
 
-                    sp51 = restructure(Unop, &expr_s0->data.isop.op2);
+                    rightResult = restructure(Unop, &expr_s0->data.isop.op2);
                     if (outofmem) {
                         return false;
                     }
@@ -1754,32 +1753,32 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                         reduceixa(expr_s0->data.isop.op2);
                     }
 
-                    if (sp52 && sp51 && (expr_s0->data.isop.opc != Udif && expr_s0->data.isop.opc != Uinn && expr_s0->data.isop.opc != Umus)) {
+                    if (leftResult && rightResult && (expr_s0->data.isop.opc != Udif && expr_s0->data.isop.opc != Uinn && expr_s0->data.isop.opc != Umus)) {
                         if (expr_s0->data.isop.op1->type == islda && expr_s0->data.isop.op2->type == islda
                                 && expr_s0->data.isop.op2->data.islda_isilda.var_data.blockno != expr_s0->data.isop.op1->data.islda_isilda.var_data.blockno) {
-                            sp53 = false;
+                            result = false;
                         } else if (binaryovfw(expr_s0->datatype, expr_s0->data.isop.opc, expr_s0->data.isop.op1, expr_s0->data.isop.op2)) {
-                            sp53 = false;
+                            result = false;
                             if (expr_s0->data.isop.aux2.v1.overflow_attr) {
                                 ovfwwarning(expr_s0->data.isop.opc);
                             }
                         } else {
-                            sp53 = true;
+                            result = true;
                             binaryfold(expr_s0->data.isop.opc, expr_s0->datatype, expr_s0->data.isop.op1, expr_s0->data.isop.op2, *expr);
                         }
                     } else {
-                        sp53 = false;
+                        result = false;
                     }
                     break;
 
                 case Uildv:
                 case Uilod:
-                    sp53 = false;
+                    result = false;
                     if (restructure(Unop, &expr_s0->data.isop.op1)) {
                         if (expr_s0->data.isop.opc == Uilod && expr_s0->data.isop.op1->type == islda) {
                             if (expr_s0->data.isop.op1->data.islda_isilda.var_data.memtype != Smt || is_gp_relative(expr_s0->data.isop.op1->data.islda_isilda.var_data.blockno) || !dokpicopt) {
                                 *expr = ilodfold(*expr);
-                                return 0;
+                                return false;
                             }
                         }
                     } else if (expr_s0->data.isop.op1->type == isop && (expr_s0->data.isop.op1->data.isop.opc == Udec || expr_s0->data.isop.op1->data.isop.opc == Uinc)) {
@@ -1801,7 +1800,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                 case Uirld:
                 case Uirlv:
                     restructure(Unop, &expr_s0->data.isop.op1);
-                    sp53 = false;
+                    result = false;
                     break;
 
                 case Ucvt:
@@ -1809,13 +1808,13 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                             && (expr_s0->datatype == Adt || expr_s0->datatype == Hdt || expr_s0->datatype == Jdt || expr_s0->datatype == Ldt)
                             && (expr_s0->data.isop.aux.cvtfrom == Adt || expr_s0->data.isop.aux.cvtfrom == Hdt || expr_s0->data.isop.aux.cvtfrom == Jdt || expr_s0->data.isop.aux.cvtfrom == Ldt)) {
                         if (expr_s0->data.isop.op1->type == islda) {
-                            sp53 = false;
+                            result = false;
                         } else {
-                            sp53 = true;
+                            result = true;
                             cvtfold(*expr);
                         }
                     } else {
-                        sp53 = false;
+                        result = false;
                     }
                     break;
 
@@ -1826,7 +1825,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                     if (restructure(Unop, &expr_s0->data.isop.op1)) {
                         noop = false;
                     }
-                    sp53 = false;
+                    result = false;
                     break;
 
                 case Uabs:
@@ -1841,16 +1840,16 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                     if (restructure(Unop, &expr_s0->data.isop.op1)
                             && (expr_s0->datatype == Adt || expr_s0->datatype == Hdt || expr_s0->datatype == Jdt || expr_s0->datatype == Ldt)) {
                         if (unaryovfw(*expr)) {
-                            sp53 = false;
+                            result = false;
                             if (expr_s0->data.isop.aux2.v1.overflow_attr) {
                                 ovfwwarning(expr_s0->data.isop.opc);
                             }
                         } else {
-                            sp53 = true;
+                            result = true;
                             unaryfold(*expr);
                         }
                     } else {
-                        sp53 = false;
+                        result = false;
                     }
                     break;
 
@@ -1858,16 +1857,16 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                 case Uinc:
                     if (restructure(expr_s0->data.isop.opc, &expr_s0->data.isop.op1)) {
                         if (unaryovfw(*expr)) {
-                            sp53 = false;
+                            result = false;
                             if (expr_s0->data.isop.aux2.v1.overflow_attr) {
                                 ovfwwarning(expr_s0->data.isop.opc);
                             }
                         } else {
-                            sp53 = true;
+                            result = true;
                             unaryfold(*expr);
                         }
                     } else {
-                        sp53 = false;
+                        result = false;
                         mergeconst(*expr);
                         if (outofmem) {
                             return false;
@@ -1882,7 +1881,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                 case Uadj:
                 case Usqrt:
                     restructure(Unop, &expr_s0->data.isop.op1);
-                    sp53 = false;
+                    result = false;
                     break;
 
                 case Uiequ:
@@ -1907,7 +1906,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
                     if (expr_s0->data.isop.op2->type == isop && expr_s0->data.isop.op2->data.isop.opc == Uixa) {
                         reduceixa(expr_s0->data.isop.op2);
                     } else {
-                        sp53 = false;
+                        result = false;
                     }
                     break;
 
@@ -1927,7 +1926,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
             break;
     }
 
-    return sp53;
+    return result;
 }
 
 /* 
