@@ -937,19 +937,19 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 if (expr->data.isvar_issvar.var_data.memtype == Rmt) {
                     if (expr->data.isvar_issvar.var_data.addr != r_sp) {
                         switch (expr->data.isvar_issvar.var_data.addr) {
-                            case 0x02:      // $v0?
+                            case r_v0:
                                 r2bb = 0;
                                 break;
 
-                            case 0x20:      // $f0?
+                            case r_f0:
                                 r2bb = 1;
                                 break;
 
-                            case 0x22:      // $f2?
+                            case r_f2:
                                 r2bb = 2;
                                 break;
 
-                            case 0x21:      // $f1?
+                            case r_f1:
                             default:
                                 dbgerror(0x202);
                                 break;

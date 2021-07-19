@@ -333,7 +333,7 @@ static void find_loop_relations(struct Interval *intv, int depth) {
         }
 
         // some kind of weight?
-        if (usefeedback == 0 || curproc->unk34 == NULL) {
+        if (usefeedback == 0 || curproc->feedback_data == NULL) {
             node->unk2C = power_10(intv->loopdepth - 1);
         }
     } else if (depth == 0) {
@@ -437,7 +437,7 @@ static void find_loops(struct Interval *child, struct Interval *parent) {
                 find_loop_body(pred->intv, parent);
                 loopFirstNode = interval_first_node(child);
                 if (loopFirstNode->unk4 == 0) {
-                    if (usefeedback == 0 || curproc->unk34 == NULL || node_has_higher_weight(loopFirstNode)) {
+                    if (usefeedback == 0 || curproc->feedback_data == NULL || node_has_higher_weight(loopFirstNode)) {
                         loopFirstNode->unk5 = 1; // loopfirstbb
                     }
                 }

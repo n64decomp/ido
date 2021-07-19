@@ -178,7 +178,7 @@ struct Proc *searchproc(int id, int level) {
         new_proc->num_bbs = 0;
         new_proc->ijp_labels = NULL;
         new_proc->bvsize = 0;
-        new_proc->unk34 = NULL;
+        new_proc->feedback_data = NULL;
         new_proc->unk38 = 0;
         new_proc->level = level;
         new_proc->o3opt = o3opt;
@@ -1358,7 +1358,7 @@ void prepass(void) {
     proc->callees = NULL;
     proc->ijp_labels = NULL;
     proc->bvsize = 0;
-    proc->unk34 = NULL;
+    proc->feedback_data = NULL;
     proc->unk38 = 0;
     proc->left = NULL;
     proc->right = NULL;
@@ -1383,7 +1383,7 @@ void prepass(void) {
     proc->callees = NULL;
     proc->ijp_labels = NULL;
     proc->bvsize = 0;
-    proc->unk34 = NULL;
+    proc->feedback_data = NULL;
     proc->unk38 = 0;
     proc->left = NULL;
     proc->right = NULL;

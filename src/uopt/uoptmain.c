@@ -294,7 +294,7 @@ void oneproc(void) {
             }
 
             if (usefeedback) {
-                if (curproc->unk34 != NULL) {
+                if (curproc->feedback_data != NULL) {
                     bb_frequencies();
                 } else if (warn_flag != 1) {
                     warned = true;

@@ -349,7 +349,7 @@ struct Proc {
     struct Label *labels; // sent to searchlab
     struct Proc *left; // binary search tree left (root is prochead)
     struct Proc *right; // binary search tree right (root is prochead)
-    void *unk34; // related to usefeedback
+    void *feedback_data; // related to usefeedback
     int unk38; // mtag uses this
 };
 
