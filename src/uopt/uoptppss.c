@@ -1498,7 +1498,7 @@ bool in_fsym(int num) {
 
 /*
 0043CFCC readnxtinst
-00451764 func_00451764
+00451764 restructure
 00452DAC constarith
 */
 bool is_gp_relative(int num) {

@@ -1527,7 +1527,7 @@ int numintval;
 /*
 00425618 func_00425618
 00426FA4 func_00426FA4
-00451764 func_00451764
+00451764 restructure
 0045FBB4 func_0045FBB4
 */
 int noop;
@@ -2093,7 +2093,7 @@ bool kpic_flag;
 00434720 processargs
 0043771C optinit
 0043CFCC readnxtinst
-00451764 func_00451764
+00451764 restructure
 00452DAC constarith
 */
 bool dokpicopt;
@@ -2124,7 +2124,7 @@ bool dokpicopt;
 0044F738 linearize
 0044FF6C mergeconst
 004510A0 distrlaw
-00451764 func_00451764
+00451764 restructure
 00452DAC constarith
 00456310 func_00456310
 00456A2C oneproc

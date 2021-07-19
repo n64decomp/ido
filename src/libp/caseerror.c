@@ -51,7 +51,7 @@
 0044F3C0 unaryfold
 0044F738 linearize
 0044FF6C mergeconst
-00451764 func_00451764
+00451764 restructure
 00452DAC constarith
 00454F00 func_00454F00
 00458B88 assign_mtag

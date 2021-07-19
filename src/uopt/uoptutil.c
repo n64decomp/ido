@@ -269,7 +269,7 @@ void boundswarning(void) {
 0041550C func_0041550C
 00425618 func_00425618
 0044F738 linearize
-00451764 func_00451764
+00451764 restructure
 */
 void ovfwwarning(Uopcode opc) {
     if (warn_flag != 1) {
@@ -700,7 +700,7 @@ glabel copycoderep
     # 0044EDF8 ilodfold
     # 0044F3C0 unaryfold
     # 0044FF6C mergeconst
-    # 00451764 func_00451764
+    # 00451764 restructure
     # 0047C53C fixcorr
 /* 0047C284 3C1C0FBA */  .cpload $t9
 /* 0047C288 279CE00C */
@@ -951,7 +951,7 @@ void fixcorr(struct Expression *expr) {
 0041550C func_0041550C
 0043CFCC readnxtinst
 0044FF6C mergeconst
-00451764 func_00451764
+00451764 restructure
 0047C6E8 decreasecount
 0047D878 deccount
 */
@@ -974,7 +974,7 @@ void delentry(struct Expression *entry) {
 0043CE64 func_0043CE64
 0043CFCC readnxtinst
 0044EDF8 ilodfold
-00451764 func_00451764
+00451764 restructure
 0046C654 del_orig_cond
 0046D158 unroll_check_istr_propcopy
 0046D2C0 unroll_check_irst_propcopy
