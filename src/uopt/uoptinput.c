@@ -4,11 +4,12 @@
 #include "libu/libu.h"
 #include "uoptions.h"
 #include "ucode.h"
-#include "uoptinput.h"
 #include "uoptdata.h"
+#include "uoptinput.h"
 #include "uoptutil.h"
 #include "uoptppss.h"
 #include "uoptkill.h"
+#include "uoptcontrolflow.h"
 
 struct ParameterList {
     int key;
@@ -141,6 +142,7 @@ restart: // TODO: change to tail recursion when O2 works
             }
             break;
     }
+
     if (optab[op].ends_bb) {
         endblock = true;
         return;
@@ -170,7 +172,7 @@ restart: // TODO: change to tail recursion when O2 works
             }
         }
     } else if (curmst == NULL && ustackbot == ustack) {
-        // block ends if > 20 var refs (default limit)
+        // block ends if >= 20 var refs (default limit)
         endblock = varrefs >= curvarreflimit;
     }
 }
@@ -494,7 +496,7 @@ void incroccurrence(struct Expression **entry) {
             stat = list->data.store;
             if (list->type == 1 &&
                 (stat->opc == Uisst || stat->opc == Ustr) &&
-                *entry == stat->expr->data.isvar_issvar.unk34 &&
+                *entry == stat->expr->data.isvar_issvar.assigned_value &&
                 !stat->expr->unk2 &&
                 stat->expr->data.isvar_issvar.var_data.memtype != Rmt &&
                 stat->expr->data.isvar_issvar.size >= 4 &&
@@ -502,7 +504,7 @@ void incroccurrence(struct Expression **entry) {
             {
                 if ((!stat->expr->data.isvar_issvar.unk22 ||
                     curblk != stat->expr->data.isvar_issvar.var_data.blockno) &&
-                    !doingcopy && !curproc->unk15)
+                    !doingcopy && !curproc->has_trap)
                 {
                     stat->u.store.unk1D = false;
                     done = true;
@@ -794,7 +796,7 @@ static struct Expression *readnxtinst_searchloop(unsigned short tableIdx, struct
                     }
 
                     sp33 = curgraphnode == expr->graphnode && !expr->unk2 &&
-                        !expr->data.isvar_issvar.unk24->data.isvar_issvar.unk21;
+                             !expr->data.isvar_issvar.unk24->data.isvar_issvar.unk21;
                     //                                            ^   isop?   ^
                     if (expr->data.isvar_issvar.unk22) {
                         sp30 = true;
@@ -1077,6 +1079,7 @@ next:
                 expr->unk3 = true;
         }
     }
+
     return expr;
 }
 
@@ -1135,7 +1138,7 @@ static void cvt_to_float(struct UstackEntry *ustackHead, struct VariableInner *v
         expr->datatype = DTYPE;
         if (realdispmod + CONSTVAL.swpart.Ival >= 0x100) {
             realdispmod = 0;
-            realdispdiv += 1;
+            realdispdiv++;
             currealpool->next = alloc_new(sizeof(struct RealstoreData), &perm_heap);
             currealpool = currealpool->next;
             currealpool->next = NULL;
@@ -1259,7 +1262,7 @@ static struct Expression *transform_float_div(int real_significand, bool negativ
         expr->datatype = DTYPE;
         if (realdispmod + CONSTVAL.swpart.Ival >= 0x100) {
             realdispmod = 0;
-            realdispdiv += 1;
+            realdispdiv++;
             currealpool->next = alloc_new(sizeof(struct RealstoreData), &perm_heap);
             currealpool = currealpool->next;
             currealpool->next = NULL;
@@ -1367,7 +1370,7 @@ static void func_0043CBFC(struct UstackEntry *head) { // XXX: never called in oo
 
         if (var->type == empty) {
             var->type = isvar;
-            var->data.isvar_issvar.unk38 = NULL;
+            var->data.isvar_issvar.assignment = NULL;
             var->datatype = Adt;
             var->data.isvar_issvar.size = 4;
             var->count = 0;
@@ -1459,7 +1462,7 @@ void readnxtinst(void) {
     struct GraphnodeList *new_graphnode_list_item;
     struct ParstackEntry *parstack_entry;
 
-    if (!optab[OPC].unk1) {
+    if (!optab[OPC].executable) {
         copyline();
         extendstat(Unop);
         return;
@@ -1467,7 +1470,7 @@ void readnxtinst(void) {
 
     if (ustackbot != ustack && ustack->expr->type == isvar && ustack->expr->data.isvar_issvar.var_data.memtype == Amt && OPC != Ustr) {
         // XXX: untested (Amt doesn't exist in C)
-        TRAP_IF(ustack->expr->data.isvar_issvar.unk38 != NULL);
+        TRAP_IF(ustack->expr->data.isvar_issvar.assignment != NULL);
         ustack->expr->unk2 = true;
         expr = appendchain(ustack->expr->table_index);
         expr->type = isvar;
@@ -1484,7 +1487,7 @@ void readnxtinst(void) {
         expr->data.isvar_issvar.var_data = ustack->expr->data.isvar_issvar.var_data;
         expr->data.isvar_issvar.var_data.level = ustack->expr->data.isvar_issvar.var_data.level;
         expr->data.isvar_issvar.unk30 = NULL;
-        expr->data.isvar_issvar.unk34 = ustack->expr;
+        expr->data.isvar_issvar.assigned_value = ustack->expr;
 
         extendstat(Ustr);
         stattail->unk3 = true;
@@ -1500,7 +1503,7 @@ void readnxtinst(void) {
         stattail->u.store.unk1F = false;
         stattail->u.store.u.str.unk2C = 0;
         stattail->u.store.u.str.unk30 = 0;
-        expr->data.isvar_issvar.unk38 = NULL;
+        expr->data.isvar_issvar.assignment = NULL;
         appendstorelist();
         curgraphnode->varlisttail->unk8 = true;
         ustack_push(expr);
@@ -1514,12 +1517,12 @@ void readnxtinst(void) {
             OPC = Ulod;
             DTYPE = Adt;
             MTYPE = Rmt;
-            OFFSET = 29; // $sp
+            OFFSET = r_sp;
             LENGTH = 4;
 
             var.memtype = Rmt;
             var.blockno = IONE;
-            var.addr = 29;
+            var.addr = r_sp;
 
             expr = readnxtinst_searchloop(isvarhash(var), &var, stexpr1, stexpr2);
             if (outofmem) {
@@ -1529,7 +1532,7 @@ void readnxtinst(void) {
             if (expr->type == empty) {
                 expr->type = isvar;
                 expr->data.isvar_issvar.var_data = var;
-                expr->data.isvar_issvar.unk38 = NULL;
+                expr->data.isvar_issvar.assignment = NULL;
                 expr->datatype = Adt;
                 expr->data.isvar_issvar.size = 4;
                 expr->count = 0;
@@ -1615,7 +1618,7 @@ void readnxtinst(void) {
                     expr->type = issvar;
                 }
                 expr->data.isvar_issvar.var_data = var;
-                expr->data.isvar_issvar.unk38 = NULL;
+                expr->data.isvar_issvar.assignment = NULL;
                 expr->datatype = DTYPE;
                 expr->data.isvar_issvar.size = LENGTH;
                 expr->data.isvar_issvar.var_data.level = blktolev(var.blockno);
@@ -1648,31 +1651,34 @@ void readnxtinst(void) {
                 ustack = ustack->down;
             }
 
-            if (expr->data.isvar_issvar.unk38 == NULL || !expr->data.isvar_issvar.unk38->u.store.unk1F) {
+            if (expr->data.isvar_issvar.assignment == NULL || !expr->data.isvar_issvar.assignment->u.store.unk1F) {
                 ustack_push(expr);
                 increasecount(expr);
+
+                // unk22 == true if variable was used?
                 if (!expr->data.isvar_issvar.unk22) {
                     lodkillprev(expr);
                 }
+
                 if (expr->count == 1 && MTYPE != Amt) {
                     appendbbvarlst(expr);
                     if (expr->data.isvar_issvar.unk22) {
                         curgraphnode->varlisttail->unk8 = true;
                     }
                 }
+
                 if (!expr->data.isvar_issvar.unk21) {
                     varrefs++;
                 }
                 return;
-            } else if ((bigtree(expr->data.isvar_issvar.unk34, 20) || treekilled(expr->data.isvar_issvar.unk34))
-                    || (expr->data.isvar_issvar.unk34->type == isop && expr->data.isvar_issvar.unk34->count == 1
-                        && ((!((expr->data.isvar_issvar.unk22 && expr->data.isvar_issvar.var_data.blockno == curblk)
-                                    || doingcopy || curproc->unk15)
-                                || has_ilod(expr->data.isvar_issvar.unk34))
-                            && !constexp(expr->data.isvar_issvar.unk34))))
-            {
+            } else if ((bigtree(expr->data.isvar_issvar.assigned_value, 20) || treekilled(expr->data.isvar_issvar.assigned_value))
+                    || (expr->data.isvar_issvar.assigned_value->type == isop && expr->data.isvar_issvar.assigned_value->count == 1
+                        && (!((expr->data.isvar_issvar.unk22 && expr->data.isvar_issvar.var_data.blockno == curblk)
+                                || doingcopy || curproc->has_trap)
+                            || has_ilod(expr->data.isvar_issvar.assigned_value))
+                        && !constexp(expr->data.isvar_issvar.assigned_value))) {
                 ustack_push(expr);
-                expr->data.isvar_issvar.unk38->u.store.unk1D = false;
+                expr->data.isvar_issvar.assignment->u.store.unk1D = false;
 
                 if (expr->count == 0) {
                     if (!expr->data.isvar_issvar.unk22) {
@@ -1686,6 +1692,7 @@ void readnxtinst(void) {
                         }
                     }
                 }
+
                 increasecount(expr);
                 if (!expr->data.isvar_issvar.unk21) {
                     varrefs++;
@@ -1693,20 +1700,20 @@ void readnxtinst(void) {
                 return;
             }
 
-            switch (expr->data.isvar_issvar.unk34->type) {
+            switch (expr->data.isvar_issvar.assigned_value->type) {
                 case islda:
                 case isconst:
                 case isrconst:
-                    ustack_push(expr->data.isvar_issvar.unk34);
+                    ustack_push(expr->data.isvar_issvar.assigned_value);
                     if (expr->data.isvar_issvar.size < 4) {
                         createcvtl(expr->data.isvar_issvar.size * 8, expr->datatype);
                     }
                     return;
 
                 case isvar:
-                    ustack_push(expr->data.isvar_issvar.unk34);
-                    expr->data.isvar_issvar.unk34->count++;
-                    if (expr->data.isvar_issvar.size < expr->data.isvar_issvar.unk34->data.isvar_issvar.size) {
+                    ustack_push(expr->data.isvar_issvar.assigned_value);
+                    expr->data.isvar_issvar.assigned_value->count++;
+                    if (expr->data.isvar_issvar.size < expr->data.isvar_issvar.assigned_value->data.isvar_issvar.size) {
                         createcvtl(expr->data.isvar_issvar.size * 8, expr->datatype);
                     }
                     return;
@@ -1714,42 +1721,42 @@ void readnxtinst(void) {
                 case isop:
                 case isilda:
                 case issvar:
-                    switch (expr->data.isvar_issvar.unk34->type) {
+                    switch (expr->data.isvar_issvar.assigned_value->type) {
                         case isop:
                             if (expr->data.isvar_issvar.size < 4) {
-                                expr->data.isvar_issvar.unk34->count++;
-                                ustack_push(expr->data.isvar_issvar.unk34);
-                                if (expr->data.isvar_issvar.unk34->data.isop.opc != Ucvtl || expr->data.isvar_issvar.size * 8 < expr->data.isvar_issvar.unk34->data.isop.datasize) {
-                                    if ((expr->data.isvar_issvar.unk34->data.isop.opc != Uildv && expr->data.isvar_issvar.unk34->data.isop.opc != Uilod) ||
-                                            expr->data.isvar_issvar.size < expr->data.isvar_issvar.unk34->data.isop.aux2.v1.unk3C)
+                                expr->data.isvar_issvar.assigned_value->count++;
+                                ustack_push(expr->data.isvar_issvar.assigned_value);
+                                if (expr->data.isvar_issvar.assigned_value->data.isop.opc != Ucvtl || expr->data.isvar_issvar.size * 8 < expr->data.isvar_issvar.assigned_value->data.isop.datasize) {
+                                    if ((expr->data.isvar_issvar.assigned_value->data.isop.opc != Uildv && expr->data.isvar_issvar.assigned_value->data.isop.opc != Uilod) ||
+                                            expr->data.isvar_issvar.size < expr->data.isvar_issvar.assigned_value->data.isop.aux2.v1.unk3C)
                                     {
                                         createcvtl(expr->data.isvar_issvar.size * 8, expr->datatype);
                                     }
                                 }
                             } else {
-                                dtype = expr->data.isvar_issvar.unk34->datatype;
-                                if (expr->data.isvar_issvar.unk34->data.isop.opc == Uadd &&
-                                        expr->data.isvar_issvar.unk34->data.isop.op2->type == isconst &&
+                                dtype = expr->data.isvar_issvar.assigned_value->datatype;
+                                if (expr->data.isvar_issvar.assigned_value->data.isop.opc == Uadd &&
+                                        expr->data.isvar_issvar.assigned_value->data.isop.op2->type == isconst &&
                                         (dtype == Adt || dtype == Hdt || dtype == Jdt || dtype == Ldt)) {
-                                    expr->data.isvar_issvar.unk34->data.isop.op1->count++;
-                                    ustack_push(expr->data.isvar_issvar.unk34->data.isop.op1);
-                                    ustack->value = expr->data.isvar_issvar.unk34->data.isop.op2->data.isconst.number.intval;
+                                    expr->data.isvar_issvar.assigned_value->data.isop.op1->count++;
+                                    ustack_push(expr->data.isvar_issvar.assigned_value->data.isop.op1);
+                                    ustack->value = expr->data.isvar_issvar.assigned_value->data.isop.op2->data.isconst.number.intval;
                                 } else {
-                                    expr->data.isvar_issvar.unk34->count += 1;
-                                    ustack_push(expr->data.isvar_issvar.unk34);
+                                    expr->data.isvar_issvar.assigned_value->count++;
+                                    ustack_push(expr->data.isvar_issvar.assigned_value);
                                 }
                             }
                             return;
 
                         case isilda:
-                            expr->data.isvar_issvar.unk34->count++;
-                            ustack_push(expr->data.isvar_issvar.unk34);
+                            expr->data.isvar_issvar.assigned_value->count++;
+                            ustack_push(expr->data.isvar_issvar.assigned_value);
                             return;
 
                         case issvar:
-                            expr->data.isvar_issvar.unk34->count++;
-                            ustack_push(expr->data.isvar_issvar.unk34);
-                            if (expr->data.isvar_issvar.size < expr->data.isvar_issvar.unk34->data.isvar_issvar.size) {
+                            expr->data.isvar_issvar.assigned_value->count++;
+                            ustack_push(expr->data.isvar_issvar.assigned_value);
+                            if (expr->data.isvar_issvar.size < expr->data.isvar_issvar.assigned_value->data.isvar_issvar.size) {
                                 createcvtl(expr->data.isvar_issvar.size * 8, expr->datatype);
                             }
                             return;
@@ -2989,7 +2996,7 @@ void readnxtinst(void) {
             var.addr = OFFSET;
             if (var.memtype == Rmt) {
                 var.blockno = 0;
-                if (curmst != NULL && curmst->u.mst.cup_level && OFFSET == 2) {
+                if (curmst != NULL && curmst->u.mst.cup_level && OFFSET == r_v0) {
                     if (ustack->expr->type == isvar) {
                         func_0043CBFC(ustack);
                     } else if (ustack->expr->type == issvar) {
@@ -3004,7 +3011,7 @@ void readnxtinst(void) {
                 if ((graphhead == curgraphnode || (lang == LANG_ADA && stattail->opc == Ulab && IS_EXCEPTION_ATTR(stattail->u.label.flags))) &&
                         ustack->expr->type == isvar &&
                         ustack->expr->data.isvar_issvar.var_data.memtype == Rmt &&
-                        ustack->expr->data.isvar_issvar.var_data.addr == 2)
+                        ustack->expr->data.isvar_issvar.var_data.addr == r_v0)
                 {
                     TRAP_IF(staticlinkloc != 0);
                     staticlinkloc = var.addr;
@@ -3037,6 +3044,7 @@ void readnxtinst(void) {
                 }
             }
 
+            // eliminate redundant stores (x = x)
             if (ustack->expr == expr && expr->data.isvar_issvar.var_data.memtype != Rmt && expr->data.isvar_issvar.var_data.memtype != Amt) {
                 decreasecount(expr);
                 ustack = ustack->down;
@@ -3052,7 +3060,7 @@ void readnxtinst(void) {
             unk1C = true;
             unk1E = true;
             if (expr->type != empty) {
-                stmt = expr->data.isvar_issvar.unk38;
+                stmt = expr->data.isvar_issvar.assignment;
                 if (stmt == NULL) {
                     expr->unk2 = true;
                     expr2 = expr;
@@ -3066,24 +3074,24 @@ void readnxtinst(void) {
                     expr->data.isvar_issvar.unk21 = expr2->data.isvar_issvar.unk21;
                     unk1C = false;
                     unk1E = true;
-                } else if (expr->data.isvar_issvar.unk34 != NULL && stmt->u.store.unk1D) {
+                } else if (expr->data.isvar_issvar.assigned_value != NULL && stmt->u.store.unk1D) {
                     stmt->u.store.var_access_list_item->type = 0;
-                    if (has_volt_ovfw(stmt->expr->data.isvar_issvar.unk34)) {
+                    if (has_volt_ovfw(stmt->expr->data.isvar_issvar.assigned_value)) {
 
                         stmt->opc = Upop;
                         stmt->u.pop.dtype = expr->datatype;
                         stmt->u.pop.unk15 = 0;
-                        stmt->expr = stmt->expr->data.isvar_issvar.unk34;
+                        stmt->expr = stmt->expr->data.isvar_issvar.assigned_value;
                     } else {
                         if (stmt->opc == Uisst) {
                             decreasecount(stmt->u.store.expr);
                         }
-                        decreasecount(expr->data.isvar_issvar.unk34);
+                        decreasecount(expr->data.isvar_issvar.assigned_value);
                         stmt->opc = Unop;
                     }
                     unk1C = stmt->u.store.unk1C;
                     unk1E = stmt->u.store.unk1E;
-                } else if (ustack->expr == expr->data.isvar_issvar.unk34 && stmt->u.store.unk1F) {
+                } else if (ustack->expr == expr->data.isvar_issvar.assigned_value && stmt->u.store.unk1F) {
                     decreasecount(ustack->expr);
                     ustack = ustack->down;
                     if (OPC == Uisst) {
@@ -3121,6 +3129,7 @@ void readnxtinst(void) {
                 expr->unk3 = false;
                 expr->count = 0;
                 expr->data.isvar_issvar.unk30 = NULL;
+
                 if (OPC == Uisst) {
                     expr->data.isvar_issvar.unk3C = 0;
                     expr->unk4 = false;
@@ -3150,12 +3159,14 @@ void readnxtinst(void) {
             } else {
                 increment_result = -1;
             }
+
             extendstat(OPC);
             if (outofmem) {
                 return;
             }
-            expr->data.isvar_issvar.unk34 = ustack->expr;
 
+            expr->data.isvar_issvar.assigned_value = ustack->expr;
+            
             if (lang == LANG_FORTRAN) {
                 if (ustack->expr->type == islda &&
                         (curblk == ustack->expr->data.islda_isilda.var_data.blockno ||
@@ -3190,7 +3201,7 @@ void readnxtinst(void) {
             }
 
             stattail->expr = expr;
-            expr->data.isvar_issvar.unk38 = stattail;
+            expr->data.isvar_issvar.assignment = stattail;
             if (!stattail->unk3) {
                 stattail->u.store.unk1C = unk1C;
                 if (!expr->data.isvar_issvar.unk22 && unk1C) {
@@ -3205,7 +3216,7 @@ void readnxtinst(void) {
                 }
                 stattail->u.store.unk1D = !expr->data.isvar_issvar.unk21;
                 stattail->u.store.unk1F = !expr->data.isvar_issvar.unk21;
-                if (increment_result == 1 && !hasvolatile(expr->data.isvar_issvar.unk34)) {
+                if (increment_result == 1 && !hasvolatile(expr->data.isvar_issvar.assigned_value)) {
                     switch (stattail->expr->datatype) {
                         case Adt:
                         case Hdt:
@@ -3294,8 +3305,8 @@ void readnxtinst(void) {
                     ustack_add_value();
                     if (ustack->expr->type == isvar) {
                         ustack->expr = binopwithconst(Uneq, ustack->expr, 0);
-                        ustack->expr->data.isop.aux.unk38_int = 0;
-                        ustack->expr->data.isop.aux2.v2.unk3C = 0;
+                        ustack->expr->data.isvar_issvar.assignment = NULL;
+                        ustack->expr->data.isvar_issvar.unk3C = 0;
                     }
                     stattail->expr = ustack->expr;
                     ustack = ustack->down;
@@ -3432,7 +3443,7 @@ void readnxtinst(void) {
             } else {
                 graphnode = graphnode->predecessors->graphnode;
                 graphnode->stat_tail->u.xjp.case_stmts = stattail;
-                stattail->u.store.unk1C = true;
+                stattail->u.label.unk1C = true;
             }
 
             endblock_saved = endblock;
@@ -4074,7 +4085,7 @@ void readnxtinst(void) {
             if (outofmem) {
                 return;
             }
-            stattail->u.call.dtype = DTYPE;
+            stattail->u.call.returntype = DTYPE;
             if (OPC == Ucup) {
                 stattail->u.call.proc = getproc(IONE);
                 stattail->u.call.level = LEXLEV;
@@ -4114,7 +4125,7 @@ void readnxtinst(void) {
             }
             for (i = 0; i < POP; i++) {
                 if (lang == LANG_C || lang == LANG_RESERVED1 || parstack->par->opc == Upmov || parstack->par->opc == Uxpar ||
-                        (lang == LANG_PL1 && !stattail->u.call.proc->unkE) ||
+                        (lang == LANG_PL1 && !stattail->u.call.proc->no_sideeffects) ||
                         (parstack->par->u.par.dtype != Adt && ((lang != LANG_PASCAL && lang != LANG_ADA) || parstack->par->u.par.dtype != Fdt) && (lang != LANG_ADA || parstack->par->u.par.baseaddr == NULL)))
                 {
                     parstack = parstack->down;
@@ -4135,7 +4146,7 @@ void readnxtinst(void) {
         case Ucia: // XXX: untested (Ada only?)
             extendstat(Ucia);
             stattail->u.cia.flags = LEXLEV;
-            stattail->u.cia.dtype = DTYPE;
+            stattail->u.cia.returntype = DTYPE;
             for (i = 0; i < CONSTVAL.swpart.Ival; i++) {
                 write_char(strp.c_file, ustrptr[i], 1);
             }
@@ -4201,7 +4212,7 @@ void readnxtinst(void) {
                 return;
             }
 
-            stattail->u.aent.dtype = DTYPE;
+            stattail->u.aent.returntype = DTYPE;
             stattail->u.aent.blockno = IONE;
             stattail->u.aent.pop = POP;
             stattail->u.aent.push = PUSH;

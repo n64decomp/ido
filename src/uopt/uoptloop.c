@@ -333,7 +333,7 @@ static void find_loop_relations(struct Interval *intv, int depth) {
         }
 
         // some kind of weight?
-        if (usefeedback == 0 || curproc->unk34 == NULL) {
+        if (usefeedback == 0 || curproc->feedback_data == NULL) {
             node->unk2C = power_10(intv->loopdepth - 1);
         }
     } else if (depth == 0) {
@@ -437,7 +437,7 @@ static void find_loops(struct Interval *child, struct Interval *parent) {
                 find_loop_body(pred->intv, parent);
                 loopFirstNode = interval_first_node(child);
                 if (loopFirstNode->unk4 == 0) {
-                    if (usefeedback == 0 || curproc->unk34 == NULL || node_has_higher_weight(loopFirstNode)) {
+                    if (usefeedback == 0 || curproc->feedback_data == NULL || node_has_higher_weight(loopFirstNode)) {
                         loopFirstNode->unk5 = 1; // loopfirstbb
                     }
                 }
@@ -967,7 +967,7 @@ static void find_increment_expr(struct Interval *intv, struct Graphnode* childNo
                     return;
                 }
 
-                *loopIncrement = varlist->data.store->expr->data.isvar_issvar.unk34;
+                *loopIncrement = varlist->data.store->expr->data.isvar_issvar.assigned_value;
             }
             varlist = varlist->next;
         }
@@ -1141,8 +1141,8 @@ static void determine_if_unrollable(struct Interval *child, struct Interval *out
         }
 
         if (find_loopvar_init(loopFirstNode, loopVar->ichain, &loopVarInit)) {
-            loopJump->u.jp.unk20 = loopVarInit->expr->data.isvar_issvar.unk34;
-            if (loopVarInit->expr->data.isvar_issvar.unk34->type == isconst) {
+            loopJump->u.jp.unk20 = loopVarInit->expr->data.isvar_issvar.assigned_value;
+            if (loopVarInit->expr->data.isvar_issvar.assigned_value->type == isconst) {
                 loopJump->u.jp.has_const_init = true;
             } else {
                 loopJump->u.jp.has_const_init = false;

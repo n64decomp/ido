@@ -516,9 +516,9 @@ void processargs(void) {
 /*
 0043771C optinit
 */
-static void set_optab_entry(enum Uopcode op, bool ends_bb, bool b, bool is_binary_op) {
+static void set_optab_entry(enum Uopcode op, bool ends_bb, bool executable, bool is_binary_op) {
     optab[op].ends_bb = ends_bb;
-    optab[op].unk1 = b; // true = actual code, false = meta?
+    optab[op].executable = executable;
     optab[op].is_binary_op = is_binary_op;
 }
 /*
@@ -734,8 +734,8 @@ void optinit(void) {
     multibbunroll = true;
     unroll_times = 4;
     unroll_limit = 320;
-    actnuminterregs = 9;
-    actnuminteeregs = 0xA;
+    actnuminterregs = 9;  // excludes a0-a4 ?
+    actnuminteeregs = 10;
     processargs();
     if (verbose != 0) {
         write_string(err.c_file, "uopt: ", 6, 6);
@@ -748,20 +748,24 @@ void optinit(void) {
     nocopy = alloc_new(sizeof (struct Expression), &perm_heap);
     nota_candof = alloc_new(0x1C, &perm_heap);
     constprop = alloc_new(0x10, &perm_heap);
-    regsinclass1 = 0x17;
+
+    // see coloroffset
+    regsinclass1 = 23;
     firsterreg[0] = 1;
-    firsteereg[0] = 0xE;
+    firsteereg[0] = 14;
     firstparmreg[0] = 3;
-    regsinclass[1] = 0xC;
-    firsterreg[1] = 0x18;
-    firstparmreg[1] = 0x1A;
+
+    regsinclass[1] = 12;
+    firsterreg[1] = 24;
+    firstparmreg[1] = 26;
     numoferregs[1] = 6;
-    lasterreg[1] = (6 + 0x17);
-    firsteereg[1] = (6 + 0x18);
-    lasteereg[1] = 0x23;
+    lasterreg[1] = 29;
+    firsteereg[1] = 30;
+    lasteereg[1] = 35;
     seterregs[1] = GENMASK(firsterreg[1], lasterreg[1] + 1);
     seteeregs[1] = GENMASK(firsteereg[1], lasteereg[1] + 1);
     setregs[1] = (seterregs[1] | seteeregs[1]);
+
     gsptr = alloc_new(0x34, &perm_heap);
     *(unsigned char *)gsptr = 123;
     dft_livbb = (struct livbb *)alloc_new(0x18, &perm_heap);
@@ -919,9 +923,9 @@ void procinit(void) {
 00456A2C oneproc
 */
 void procinit_regs(void) {
-    regscantpass = BIT(firsterreg[0]) | BIT(firsterreg[0] + 1) |
-                   BIT(firsterreg[1]) | BIT(firsterreg[1] + 1) |
-                   BIT(regsinclass1) | BIT(13);
+    regscantpass = BIT(firsterreg[0]) | BIT(firsterreg[0] + 1) | // v0, v1
+                   BIT(firsterreg[1]) | BIT(firsterreg[1] + 1) | // f0, f2
+                   BIT(regsinclass1) | BIT(13);                  // ra (both uses)
 
     if (allcallersave) {
         curproc->regstaken_parregs->regstaken[firsterreg[0] - 1] = true;
@@ -959,6 +963,7 @@ void procinit_regs(void) {
         numoferregs[0] = 13;
         lasteereg[0] = regsinclass[0];
     }
+
     lasterreg[0] = numoferregs[0];
     seterregs[0] = GENMASK(firsterreg[0], lasterreg[0] + 1);
     seteeregs[0] = GENMASK(firsteereg[0], lasteereg[0] + 1);
@@ -980,11 +985,11 @@ void procinit_regs(void) {
         }
         dftregsused = BIT(2) | BIT(21);
     }
-    dftregsused = GENMASK(3, 6 + 1);
+    dftregsused = GENMASK(3, 6 + 1); // a0 to a3
     if (actnuminterregs != 9) {
-        dftregsused = GENMASK(1, 13 + 1);
+        dftregsused = GENMASK(1, 13 + 1); // v0 to ra
         if (actnuminterregs > 0) {
-            dftregsused = GENMASK(7, MIN(actnuminterregs, 6) + 6 + 1);
+            dftregsused = GENMASK(7, MIN(actnuminterregs, 6) + 6 + 1); // t0 to t5
             if (actnuminterregs == 7) {
                 dftregsused &= ~BIT(2);
             } else if (actnuminterregs == 8) {

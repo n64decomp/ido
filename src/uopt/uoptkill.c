@@ -3699,7 +3699,7 @@ void cupkillprev(int level, struct Proc *proc) {
             }
         } else if (item->type == 3) {
             if (item->data.store->u.store.unk1F) {
-                item->data.store->u.store.unk1F = !cmkilled(level, proc, item->data.store->u.store);
+                item->data.store->u.store.unk1F = !cmkilled(level, proc, item->data.store->u.store.expr);
             }
             if (!item->data.store->u.store.unk1F) {
                 item->data.store->u.store.unk1D = false;

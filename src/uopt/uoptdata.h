@@ -8,6 +8,36 @@
 
 #include "bitvector.h"
 
+enum MipsRegister {
+    r_zero,
+    r_at,
+    r_v0, r_v1,
+    r_a0, r_a1, r_a2, r_a3,
+    r_t0, r_t1, r_t2, r_t3, r_t4, r_t5, r_t6, r_t7,
+    r_s0, r_s1, r_s2, r_s3, r_s4, r_s5, r_s6, r_s7,
+    r_t8, r_t9,
+    r_k0, r_k1,
+    r_gp,
+    r_sp, r_fp, r_s8=r_fp,
+    r_ra,
+    r_f0, r_f1, r_f2, r_f3,
+    r_f4, r_f5, r_f6, r_f7, r_f8, r_f9, r_f10, r_f11,
+    r_f12, r_f13, r_f14, r_f15,
+    r_f16, r_f17, r_f18, r_f19,
+    r_f20, r_f21, r_f22, r_f23, r_f24,
+    r_f25, r_f26, r_f27, r_f28, r_f29, r_f30, r_f31,
+}
+#ifdef __GNUC__
+__attribute__((packed))
+#endif
+;
+
+#ifdef __GNUC__
+typedef enum MipsRegister MipsRegister;
+#else
+typedef unsigned char MipsRegister;
+#endif
+
 struct StrList {
     char str[1024];
     int len;
@@ -30,7 +60,7 @@ struct livbb {
 
 struct optabrec {
     bool ends_bb;
-    bool unk1;
+    bool executable;
     bool is_binary_op;
 };
 
@@ -51,7 +81,7 @@ struct LabelMap {
 };
 
 // See insertvar
-struct VariableInner {
+struct VariableInner { // TODO: rename to 'location', 'address', or something
     int addr; // can be negative, stack offset?
               // register number if memtype == Rmt. see exprimage, checks for 2, 29, 32, 33, 34.
     unsigned int blockno: 21;
@@ -306,12 +336,12 @@ struct Proc {
     bool unkB; // set to lang == LANG_COBOL
     bool o3opt; // written to allcallersave in procinit
     bool unkD; // set to lang == LANG_COBOL
-    bool unkE; // bool or char?
-    bool nonlocal_goto; // bool or char?
+    bool no_sideeffects;
+    bool nonlocal_goto;
     unsigned char level; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass
     unsigned short num_bbs; // 0x12
     bool unk14; // bool or char?
-    bool unk15;
+    bool has_trap;
     struct ProcList *callees; // linked list of Procs (see oneprocprepass, insertcallee)
     struct IjpLabel *ijp_labels; // 0x1C, sorted tree
     unsigned int bvsize; // 0x20
@@ -319,7 +349,7 @@ struct Proc {
     struct Label *labels; // sent to searchlab
     struct Proc *left; // binary search tree left (root is prochead)
     struct Proc *right; // binary search tree right (root is prochead)
-    void *unk34; // related to usefeedback
+    void *feedback_data; // related to usefeedback
     int unk38; // mtag uses this
 };
 
@@ -482,7 +512,7 @@ struct Statement {
 
         struct {
             struct Proc *proc; // 0x14
-            Datatype dtype; // 0x18 TODO: rename to returntype
+            Datatype returntype; // 0x18
             unsigned char level; // 0x19
             unsigned short extrnal_flags; // 0x1A, EXTRNAL
             unsigned char pop; // 0x1C, POP
@@ -494,7 +524,7 @@ struct Statement {
         struct {
             int strp_pos; // 0x14
             unsigned char flags; // 0x18, LEXLEV
-            Datatype dtype; // 0x19 TODO: rename to returntype
+            Datatype returntype; // 0x19
             int unk1C; // LENGTH
             int unk20; // OFFSET
             int len; // 0x24, CONSTVAL.swpart.Ival
@@ -502,7 +532,7 @@ struct Statement {
         } cia;
 
         struct {
-            Datatype dtype; // 0x14 TODO: rename to returntype
+            Datatype returntype; // 0x14
             unsigned char pop; // 0x15, POP
             unsigned char push; // 0x16, PUSH
             unsigned char extrnal_flags; // 0x17, EXTRNAL
@@ -542,15 +572,15 @@ union Constant {
 
 
 enum ExpressionType {
-    empty, // 0
-    islda, // 1
-    isconst, // 2
-    isvar, // 3
-    isop, // 4
-    isilda, // 5
-    issvar, // 6
-    dumped, // 7
-    isrconst // 8
+    /* 0 */ empty,
+    /* 1 */ islda,
+    /* 2 */ isconst,
+    /* 3 */ isvar,
+    /* 4 */ isop,
+    /* 5 */ isilda,
+    /* 6 */ issvar, // shared var
+    /* 7 */ dumped,
+    /* 8 */ isrconst
 }
 #ifdef __GNUC__
 __attribute__((packed));
@@ -675,8 +705,8 @@ struct Expression {
     bool unk3; // not varkilled
     bool unk4; // bool or unsigned char?
     bool unk5; // bool or unsigned char?
-    unsigned short count; // some counter, see exprdelete
-    unsigned short table_index; // 0x8
+    unsigned short count; // use count, see exprdelete
+    unsigned short table_index; // 0x8, identifies the expression
     int chain_index; // 0xC
     struct Graphnode *graphnode; // 0x10
     struct IChain *ichain; // 0x14
@@ -706,8 +736,8 @@ struct Expression {
             struct Expression *unk24;
             struct VariableInner var_data; // 0x28
             struct Expression *unk30;
-            struct Expression *unk34; // used in analoop
-            struct Statement *unk38; // a bit unsure about this type, see delentry
+            struct Expression *assigned_value; // 0x34 used in analoop
+            struct Statement *assignment; // 0x38 a bit unsure about this type, see delentry
             int unk3C;
         } isvar_issvar;
         struct {

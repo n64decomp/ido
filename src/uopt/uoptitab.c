@@ -469,7 +469,6 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
         }
     }
 
-    expr->type = expr->type;
     if (found == false) {
         ichain = appendichain(hash, expr->type != isop);
         if (ichain == NULL) {
@@ -936,21 +935,21 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
 
                 // Most iffy part... compiler originally added 1 to r2bb and subtracted 4/8 from r2bitpos/setofr2bbs.
                 if (expr->data.isvar_issvar.var_data.memtype == Rmt) {
-                    if (expr->data.isvar_issvar.var_data.addr != 29) { // $sp?
+                    if (expr->data.isvar_issvar.var_data.addr != r_sp) {
                         switch (expr->data.isvar_issvar.var_data.addr) {
-                            case 0x02:      // $v0?
+                            case r_v0:
                                 r2bb = 0;
                                 break;
 
-                            case 0x20:      // $f0?
+                            case r_f0:
                                 r2bb = 1;
                                 break;
 
-                            case 0x22:      // $f2?
+                            case r_f2:
                                 r2bb = 2;
                                 break;
 
-                            case 0x21:      // $f1?
+                            case r_f1:
                             default:
                                 dbgerror(0x202);
                                 break;
@@ -1370,7 +1369,7 @@ void codeimage(void) {
                     }
                 }
 
-                store_ichain = exprimage(stat->expr->data.isvar_issvar.unk34, &storeant, &storeav);
+                store_ichain = exprimage(stat->expr->data.isvar_issvar.assigned_value, &storeant, &storeav);
                 if (outofmem) return;
                 if (store_ichain == NULL) {
                     dbgerror(0x1AC);

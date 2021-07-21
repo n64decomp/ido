@@ -2,6 +2,7 @@
 #include "uoptutil.h"
 #include "uoptitab.h"
 #include "uoptcopy.h"
+#include "uoptkill.h"
 #include "uoptinput.h"
 #include "uoptcontrolflow.h"
 
@@ -180,7 +181,7 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
         phi_s1 = phi_s3;
     } else {
         sp78 = enter_const(incre, phi_s3->datatype, body);
-        hash = isophash(1, phi_s3, sp78);
+        hash = isophash(Uadd, phi_s3, sp78);
         phi_s1 = table[hash];
 
         while (phi_s1 != 0) {
@@ -252,11 +253,11 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
             if (phi_s0->type == isop && sp57 == phi_s0->data.isop.opc && loopCond->datatype == phi_s0->datatype
                     && phi_s1 == phi_s0->data.isop.op1
                     && phi_s0->data.isop.op2 == loopCond->data.isop.op2) {
-                found = 1;
+                found = true;
             } else {
                 phi_s0 = phi_s0->next;
             }
-            if (found != 0) {
+            if (found) {
                 break;
             }
         }
@@ -311,8 +312,8 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
             || (loopCond->data.isop.opc == Ugeq && loop_if_true == 0)) {
         phi_s3_2 = phi_s1->ichain;
     } else {
-        sp58 = isearchloop(isconstihash(incre) & 0xFFFF, sp78, NULL, NULL);
-        phi_s3_2 = isearchloop(isopihash(1, phi_s3->ichain, sp58) & 0xFFFF, phi_s1, phi_s3->ichain, sp58);
+        sp58 = isearchloop(isconstihash(incre), sp78, NULL, NULL);
+        phi_s3_2 = isearchloop(isopihash(Uadd, phi_s3->ichain, sp58), phi_s1, phi_s3->ichain, sp58);
         if (phi_s1->data.isop.unk21) {
             setbit(&body->bvs.stage1.antlocs, phi_s3_2->bitpos);
         }
@@ -326,9 +327,9 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
     }
 
     if (inc_var_op1) {
-        temp_s1_2 = isearchloop(isopihash(sp57, loopCond->ichain->isop.op1, phi_s3_2) & 0xFFFF, phi_s0, loopCond->ichain->isop.op1, phi_s3_2);
+        temp_s1_2 = isearchloop(isopihash(sp57, loopCond->ichain->isop.op1, phi_s3_2), phi_s0, loopCond->ichain->isop.op1, phi_s3_2);
     } else {
-        temp_s1_2 = isearchloop(isopihash(sp57, phi_s3_2, loopCond->ichain->isop.op2) & 0xFFFF, phi_s0, phi_s3_2, loopCond->ichain->isop.op2);
+        temp_s1_2 = isearchloop(isopihash(sp57, phi_s3_2, loopCond->ichain->isop.op2), phi_s0, phi_s3_2, loopCond->ichain->isop.op2);
     }
 
     if (phi_s0->data.isop.unk21) {
@@ -619,18 +620,18 @@ struct Expression *unroll_searchloop(unsigned short tableIdx, struct Expression 
                         break;
 
                     default:
-                        caseerror(1, 0x197, "uoptroll.p" /* not null-terminated */, 0xA);
+                        caseerror(1, 407, "uoptroll.p", 10);
                         break;
                 }
                 break;
 
             default:
-                caseerror(1, 0x186, "uoptroll.p" /* not null-terminated */, 0xA);
+                caseerror(1, 390, "uoptroll.p", 10);
                 break;
         }
 
 block_137:
-        if (sp33 == 0) {
+        if (!sp33) {
             phi_s0 = phi_s0->next;
         }
     }
@@ -648,7 +649,7 @@ block_137:
         }
 
         if (sp32) {
-            phi_s0->unk3 = 0;
+            phi_s0->unk3 = false;
         } else {
             if (expr->type == isvar || expr->type == issvar ||
                     (expr->type == isop &&
@@ -662,7 +663,7 @@ block_137:
                       expr->data.isop.opc == Uildv ||
                       expr->data.isop.opc == Uirld ||
                       expr->data.isop.opc == Uirlv))) {
-                phi_s0->unk3 = 1;
+                phi_s0->unk3 = true;
             }
         }
     }
@@ -778,16 +779,16 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
             if (expr->type == issvar) {
                 sp5C = oneloopblockexpr(expr->data.isvar_issvar.unk24, &sp54);
             }
-            sp60 = unroll_searchloop(expr->table_index, expr, 0, 0);
+            sp60 = unroll_searchloop(expr->table_index, expr, NULL, NULL);
 
             if (sp60->type == empty) {
                 sp60->type = expr->type;
                 sp60->data.isvar_issvar.var_data = expr->data.isvar_issvar.var_data;
-                sp60->data.isvar_issvar.unk38 = 0;
+                sp60->data.isvar_issvar.assignment = NULL;
                 sp60->datatype = expr->datatype;
                 sp60->data.isvar_issvar.size = expr->data.isvar_issvar.size;
                 sp60->count = 0;
-                sp60->data.isvar_issvar.unk30 = 0;
+                sp60->data.isvar_issvar.unk30 = NULL;
                 if (expr->type == issvar) {
                     sp60->data.isvar_issvar.unk3C = 0;
                     sp60->unk4 = 0;
@@ -809,26 +810,26 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                 sp60->data.isvar_issvar.is_volatile = expr->data.isvar_issvar.is_volatile;
             }
 
-            if (sp60->data.isvar_issvar.unk38 == NULL || !sp60->data.isvar_issvar.unk38->u.store.unk1F) {
+            if (sp60->data.isvar_issvar.assignment == NULL || !sp60->data.isvar_issvar.assignment->u.store.unk1F) {
                 increasecount(sp60);
-                if (sp60->data.isvar_issvar.unk22 == 0) {
+                if (!sp60->data.isvar_issvar.unk22) {
                     lodkillprev(sp60);
                 }
-                if ((sp60->count == 1) && (sp60->data.isvar_issvar.var_data.memtype != 5)) {
+                if (sp60->count == 1 && sp60->data.isvar_issvar.var_data.memtype != Amt) {
                     appendbbvarlst(sp60);
-                    if (sp60->data.isvar_issvar.unk22 != 0) {
+                    if (sp60->data.isvar_issvar.unk22) {
                         curgraphnode->varlisttail->unk8 = 1;
                     }
                 }
             } else {
-                sp60->data.isvar_issvar.unk38->u.store.unk1D = 0;
+                sp60->data.isvar_issvar.assignment->u.store.unk1D = false;
                 if (sp60->count == 0) {
-                    if (sp60->data.isvar_issvar.unk22 == 0) {
+                    if (!sp60->data.isvar_issvar.unk22) {
                         lodkillprev(sp60);
                     }
                     if (sp60->data.isvar_issvar.var_data.memtype != 5) {
                         appendbbvarlst(sp60);
-                        if (sp60->data.isvar_issvar.unk22 != 0) {
+                        if (sp60->data.isvar_issvar.unk22) {
                             curgraphnode->varlisttail->unk8 = 1;
                         }
                     }
@@ -845,7 +846,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
 
         case isilda:
             sp5C = oneloopblockexpr(expr->data.islda_isilda.unk34, &sp54);
-            sp60 = unroll_searchloop(expr->table_index, expr, sp5C, 0);
+            sp60 = unroll_searchloop(expr->table_index, expr, sp5C, NULL);
             if (sp60->type == empty) {
                 sp60->type = isilda;
                 sp60->unk4 = 0;
@@ -952,7 +953,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         }
                     }
 
-                    sp60 = unroll_searchloop(isophash(expr->data.isop.opc, sp5C, sp58) & 0xffff, expr, sp5C, sp58);
+                    sp60 = unroll_searchloop(isophash(expr->data.isop.opc, sp5C, sp58), expr, sp5C, sp58);
                     if (sp60->type == empty) {
                         sp60->type = isop;
                         sp60->datatype = expr->datatype;
@@ -1040,7 +1041,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         *arg1 = -sp54;
                     }
 
-                    sp60 = unroll_searchloop(expr->table_index, expr, sp5C, 0);
+                    sp60 = unroll_searchloop(expr->table_index, expr, sp5C, NULL);
                     if (sp60->type == empty) {
                         sp60->type = isop;
                         sp60->datatype = expr->datatype;
@@ -1074,7 +1075,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                 case Uadj:
                     sp5C = oneloopblockexpr(expr->data.isop.op1, &sp54);
                     *arg1 = 0;
-                    sp60 = unroll_searchloop(expr->table_index, expr, sp5C, 0);
+                    sp60 = unroll_searchloop(expr->table_index, expr, sp5C, NULL);
                     if (sp60->type == empty) {
                         sp60->type = isop;
                         sp60->datatype = expr->datatype;
@@ -1208,7 +1209,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         sp60->data.isop.aux2.v1.unk3C = expr->data.isop.aux2.v1.unk3C;
 
                         sp60->data.isop.unk34 = findbaseaddr(sp5C);
-                        sp60->data.isop.aux.cvtfrom = findbaseaddr(sp58);
+                        sp60->data.isop.aux.unk38 = findbaseaddr(sp58);
                         if (sp60->unk3 != 0) {
                             sp60->unk3 = varkilled(sp60, curgraphnode->varlisthead) == 0;
                         }
@@ -1275,10 +1276,10 @@ void oneloopblockstmt(struct Statement *stat) {
     switch (stat->opc) {
         case Uisst:
         case Ustr:
-            sp5C = unroll_resetincr(oneloopblockexpr(stat->expr->data.isvar_issvar.unk34, &sp54), sp54);
+            sp5C = unroll_resetincr(oneloopblockexpr(stat->expr->data.isvar_issvar.assigned_value, &sp54), sp54);
             sp60 = unroll_searchloop(stat->expr->table_index, stat->expr, 0, 0);
             if (sp60->type != empty) {
-                if (sp60->data.isvar_issvar.unk38 == NULL) {
+                if (sp60->data.isvar_issvar.assignment == NULL) {
                     sp60->unk2 = true;
                     phi_s1 = appendchain(sp60->table_index);
                     phi_s1->graphnode = curgraphnode;
@@ -1287,16 +1288,16 @@ void oneloopblockstmt(struct Statement *stat) {
                     phi_s1->data.isvar_issvar.unk21 = sp60->data.isvar_issvar.unk21;
                     sp5B = false;
                     sp5A = true;
-                } else if (sp60->data.isvar_issvar.unk34 != NULL && sp60->data.isvar_issvar.unk38->u.store.unk1D) {
-                    s0 = sp60->data.isvar_issvar.unk38;
+                } else if (sp60->data.isvar_issvar.assigned_value != NULL && sp60->data.isvar_issvar.assignment->u.store.unk1D) {
+                    s0 = sp60->data.isvar_issvar.assignment;
                     s0->u.store.var_access_list_item->type = 0;
-                    if (has_volt_ovfw(s0->expr->data.isvar_issvar.unk34)) {
+                    if (has_volt_ovfw(s0->expr->data.isvar_issvar.assigned_value)) {
                         s0->opc = Upop;
                         s0->u.pop.dtype = sp60->datatype;
                         s0->u.pop.unk15 = 0;
-                        s0->expr = s0->expr->data.isvar_issvar.unk34;
+                        s0->expr = s0->expr->data.isvar_issvar.assigned_value;
                     } else {
-                        decreasecount(s0->expr->data.isvar_issvar.unk34);
+                        decreasecount(s0->expr->data.isvar_issvar.assigned_value);
                         s0->opc = Unop;
                     }
 
@@ -1304,13 +1305,13 @@ void oneloopblockstmt(struct Statement *stat) {
                     sp5B = s0->u.store.unk1C;
                     sp5A = s0->u.store.unk1E;
                 } else {
-                    if (sp5C == sp60->data.isvar_issvar.unk34) {
+                    if (sp5C == sp60->data.isvar_issvar.assigned_value) {
                         decreasecount(sp5C);
                         return;
                     }
 
                     sp60->unk2 = 1;
-                    sp60->data.isvar_issvar.unk38->u.store.unk1F = 0;
+                    sp60->data.isvar_issvar.assignment->u.store.unk1F = false;
                     phi_s1 = appendchain(sp60->table_index);
                     phi_s1->graphnode = curgraphnode;
                     phi_s1->data.isvar_issvar.unk22 = sp60->data.isvar_issvar.unk22;
@@ -1357,7 +1358,7 @@ void oneloopblockstmt(struct Statement *stat) {
             }
 
             extendstat(stat->opc);
-            phi_s1->data.isvar_issvar.unk34 = sp5C;
+            phi_s1->data.isvar_issvar.assigned_value = sp5C;
             TRAP_IF(stat->unk3 != 0);
             stattail->unk3 = 0;
             if (stattail->opc == Uisst) {
@@ -1365,16 +1366,16 @@ void oneloopblockstmt(struct Statement *stat) {
             }
 
             stattail->expr = phi_s1;
-            phi_s1->data.isvar_issvar.unk38 = stattail;
+            phi_s1->data.isvar_issvar.assignment = stattail;
             if (stattail->unk3 == 0) {
                 stattail->u.store.unk1C = sp5B;
                 if (phi_s1->data.isvar_issvar.unk22 == 0 && sp5B != 0) {
-                    stattail->u.store.unk1C = strlkilled(stattail, curgraphnode->varlisthead, sp5A) == 0;
+                    stattail->u.store.unk1C = strlkilled(stattail, curgraphnode->varlisthead) == 0;
                 }
 
                 stattail->u.store.unk1E = sp5A;
                 if (phi_s1->data.isvar_issvar.unk22 == 0 && sp5A != 0) {
-                    stattail->u.store.unk1E = strskilled(stattail, curgraphnode->varlisthead, sp5A) == 0;
+                    stattail->u.store.unk1E = strskilled(stattail, curgraphnode->varlisthead) == 0;
                 }
 
                 stattail->u.store.unk1D = phi_s1->data.isvar_issvar.unk21 == 0;
@@ -1577,7 +1578,7 @@ void oneloopblockstmt(struct Statement *stat) {
                             break;
 
                         default:
-                            caseerror(1, 1250, "uoptroll.p" /* not null-terminated */, 0xA);
+                            caseerror(1, 1250, "uoptroll.p", 10);
                             break;
 
                         case 0:
@@ -1671,7 +1672,7 @@ void oneloopblockstmt(struct Statement *stat) {
             return;
 
         default:
-            caseerror(1, 0x3D8, "uoptroll.p" /* not null-terminated */, 0xA);
+            caseerror(1, 984, "uoptroll.p", 10);
             return;
 
         case Unop: // ignored 19
@@ -1859,7 +1860,7 @@ void link_jump_in_loop(struct Statement *stat, bool arg1) {
             return;
 
         default:
-            caseerror(1, 0x599, "uoptroll.p" /* not null-terminated */, 0xA);
+            caseerror(1, 1433, "uoptroll.p", 10);
             break;
     }
 }
@@ -2112,7 +2113,7 @@ int estimate_instr(struct Graphnode *body, struct Graphnode *bodyend) {
         }
 
         if (stat->opc == Uisst || stat->opc == Ustr) {
-            ret += expr_instr(stat->expr->data.isvar_issvar.unk34);
+            ret += expr_instr(stat->expr->data.isvar_issvar.assigned_value);
         } else {
             if (stat->opc != Uret && stat->opc != Uujp) {
                 ret += expr_instr(stat->expr);
@@ -2387,9 +2388,6 @@ struct Expression *form_neg(struct Expression *expr) {
 
     if (found == false) {
         neg = appendchain(hash);
-#ifdef AVOID_UB
-        *neg = (struct Expression){0};
-#endif
         neg->type = isop;
         neg->data.isop.opc = Uneg;
         neg->datatype = expr->datatype;
@@ -2445,7 +2443,7 @@ struct Expression *str_to_temporary(int addr, struct Expression *store) {
     ret->data.isvar_issvar.var_data.level = curlevel;
 
     extendstat(Ustr);
-    ret->data.isvar_issvar.unk34 = store;
+    ret->data.isvar_issvar.assigned_value = store;
 
     stattail->unk3 = 0;
     stattail->expr = ret;
@@ -2457,7 +2455,7 @@ struct Expression *str_to_temporary(int addr, struct Expression *store) {
     stattail->u.store.u.str.unk2C = 0;
     stattail->u.store.u.str.unk30 = 0;
     stattail->unk2 = 0;
-    ret->data.isvar_issvar.unk38 = stattail;
+    ret->data.isvar_issvar.assignment = stattail;
     appendstorelist();
     curgraphnode->varlisttail->unk8 = 1;
     return ret;
@@ -2506,7 +2504,7 @@ void reset_images(struct Expression *expr) {
         case empty:
         case dumped:
         default:
-            caseerror(1, 0x776, "uoptroll.p", 0xA);
+            caseerror(1, 1910, "uoptroll.p", 10);
             return;
     }
 }
@@ -2961,7 +2959,7 @@ void loopunroll(void) {
                     maxlabnam++;
                     node_s1->blockno = maxlabnam;
                     spB8 = maxlabnam;
-                    curgraphnode = alloc_new(0x174, &perm_heap);
+                    curgraphnode = alloc_new(sizeof(struct Graphnode), &perm_heap);
                     init_graphnode(curgraphnode);
                     curgraphnode->terminal = 1;
                     curgraphnode->unk7 = 2;

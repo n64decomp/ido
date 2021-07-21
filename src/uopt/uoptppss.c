@@ -171,14 +171,14 @@ struct Proc *searchproc(int id, int level) {
         new_proc->unk8 = false;
         new_proc->unkB = lang == LANG_COBOL;
         new_proc->unkD = lang == LANG_COBOL;
-        new_proc->unkE = 0;
+        new_proc->no_sideeffects = false;
         new_proc->nonlocal_goto = false;
         new_proc->unk14 = 0;
-        new_proc->unk15 = 0;
+        new_proc->has_trap = 0;
         new_proc->num_bbs = 0;
         new_proc->ijp_labels = NULL;
         new_proc->bvsize = 0;
-        new_proc->unk34 = NULL;
+        new_proc->feedback_data = NULL;
         new_proc->unk38 = 0;
         new_proc->level = level;
         new_proc->o3opt = o3opt;
@@ -834,7 +834,7 @@ void oneinstruction(void) {
             if (var.memtype == Rmt) {
                 var.blockno = 0;
             }
-            lexlev1 = (LEXLEV & 1) != 0;
+            lexlev1 = IS_VOLATILE_ATTR(LEXLEV);
             unk = lexlev1 || (in_exception_block > 0 && MTYPE != Rmt);
             insertvar(var, LENGTH, DTYPE, &curproc->vartree, OPC == Uisld || OPC == Ulod, unk, MTYPE == Rmt);
             if (OPC == Uisld || OPC == Ulod) {
@@ -846,7 +846,7 @@ void oneinstruction(void) {
         case Uldsp:
             var.memtype = Rmt;
             var.blockno = OPC == Uldap;
-            var.addr = 29; // sp
+            var.addr = r_sp;
             insertvar(var, 4, Adt, &curproc->vartree, true, true, false);
             break;
 
@@ -876,7 +876,7 @@ void oneinstruction(void) {
                 proc->o3opt = false;
             }
             if ((LEXLEV & NOSIDEEFFECT_ATTR) && (lang == LANG_FORTRAN || lang == LANG_C || lang == LANG_PL1 || lang == LANG_COBOL)) {
-                proc->unkE = true;
+                proc->no_sideeffects = true;
             }
             if (LEXLEV & GOTO_ATTR) {
                 curproc->nonlocal_goto = true;
@@ -991,7 +991,7 @@ void oneinstruction(void) {
         case Utple:
         case Utplt:
         case Utpne:
-            curproc->unk15 = true;
+            curproc->has_trap = true;
             break;
 
         case Uaos:
@@ -1347,10 +1347,10 @@ void prepass(void) {
     proc->unkB = true;
     proc->o3opt = false;
     proc->unkD = true;
-    proc->unkE = false;
+    proc->no_sideeffects = false;
     proc->nonlocal_goto = false;
     proc->unk14 = false;
-    proc->unk15 = false;
+    proc->has_trap = false;
     proc->unk9 = true;
     proc->unkA = true;
     proc->level = 2;
@@ -1358,7 +1358,7 @@ void prepass(void) {
     proc->callees = NULL;
     proc->ijp_labels = NULL;
     proc->bvsize = 0;
-    proc->unk34 = NULL;
+    proc->feedback_data = NULL;
     proc->unk38 = 0;
     proc->left = NULL;
     proc->right = NULL;
@@ -1372,10 +1372,10 @@ void prepass(void) {
     proc->unkB = true;
     proc->o3opt = false;
     proc->unkD = true;
-    proc->unkE = false;
+    proc->no_sideeffects = false;
     proc->nonlocal_goto = false;
     proc->unk14 = false;
-    proc->unk15 = false;
+    proc->has_trap = false;
     proc->unk9 = true;
     proc->unkA = true;
     proc->level = 2;
@@ -1383,7 +1383,7 @@ void prepass(void) {
     proc->callees = NULL;
     proc->ijp_labels = NULL;
     proc->bvsize = 0;
-    proc->unk34 = NULL;
+    proc->feedback_data = NULL;
     proc->unk38 = 0;
     proc->left = NULL;
     proc->right = NULL;
@@ -1498,7 +1498,7 @@ bool in_fsym(int num) {
 
 /*
 0043CFCC readnxtinst
-00451764 func_00451764
+00451764 restructure
 00452DAC constarith
 */
 bool is_gp_relative(int num) {

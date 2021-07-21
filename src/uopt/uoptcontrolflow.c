@@ -870,7 +870,7 @@ void controlflow() {
 
                         if (stat->opc == Uisst || stat->opc == Ustr) {
                             if (stat->unk3 == false) {
-                                decreasecount(stat->expr->data.isvar_issvar.unk34);
+                                decreasecount(stat->expr->data.isvar_issvar.assigned_value);
                             }
                             if (stat->opc == Uisst) {
                                 decreasecount(stat->u.store.expr);

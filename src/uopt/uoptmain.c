@@ -31,14 +31,16 @@
 /*
 00456A2C oneproc
 */
-static void func_00456310(bool *sp4F) { // originally embedded func
+static void one_block(bool *unconditional_jump) { // originally embedded func
     struct Statement *statpos;
     struct GraphnodeList *graphnode_list;
 
-    if (filteringout || *sp4F) {
+    if (filteringout || *unconditional_jump) {
         curgraphnode = NULL;
+
+        // remove dead code, skip to the next label or the end of the function
         while (!(OPC == Uaent || OPC == Uend || OPC == Ulab)) {
-            if (!optab[OPC].unk1) {
+            if (!optab[OPC].executable) {
                 copyline();
             } else if (OPC == Ubgnb || OPC == Udef || OPC == Uendb) {
                 readnxtinst();
@@ -60,12 +62,14 @@ static void func_00456310(bool *sp4F) { // originally embedded func
             getop();
         }
     }
+
     if (OPC != Uend) {
         if (!(OPC == Uaent || OPC == Ulab) || (OPC == Ulab && (stattail->opc == Ufjp || stattail->opc == Utjp))) {
             appendgraph();
             if (outofmem) {
                 return;
             }
+
             if (curgraphnode != NULL) {
                 graphnode_list = (struct GraphnodeList *)alloc_new(sizeof(struct GraphnodeList), &perm_heap);
                 graphtail->predecessors = graphnode_list;
@@ -78,6 +82,7 @@ static void func_00456310(bool *sp4F) { // originally embedded func
                 curgraphnode->successors = graphnode_list;
             }
             curgraphnode = graphtail;
+
             if (OPC == Ulab) {
                 graphtail->num = (unsigned short)curstaticno++;
                 extendstat(Unop);
@@ -85,15 +90,18 @@ static void func_00456310(bool *sp4F) { // originally embedded func
                 init_node_vectors(curgraphnode);
             }
         }
+
         varrefs = 0;
         curvarreflimit = varreflimit;
         readnxtinst();
         if (outofmem) {
             return;
         }
+
         if (!(OPC == Uaent || OPC == Ulab)) {
             curgraphnode->num = (unsigned short)curstaticno++;
         }
+
         switch (OPC) {
             case Ucia:
             case Ucup:
@@ -110,10 +118,11 @@ static void func_00456310(bool *sp4F) { // originally embedded func
                 endblock = false;
                 break;
         }
+
         if (!endblock) {
             getop();
             while (!endblock) {
-                if (!optab[OPC].unk1) {
+                if (!optab[OPC].executable) {
                     copyline();
                 } else {
                     readnxtinst();
@@ -123,7 +132,8 @@ static void func_00456310(bool *sp4F) { // originally embedded func
                 }
                 getop();
             }
-            *sp4F = (OPC == Uijp || OPC == Uret || OPC == Uujp || OPC == Uxjp) || (OPC == Ucup && (u.intarray[3] & 2) != 0);
+
+            *unconditional_jump = (OPC == Uijp || OPC == Uret || OPC == Uujp || OPC == Uxjp) || (OPC == Ucup && IS_RETURN_ATTR(EXTRNAL));
             switch (OPC) {
                 case Ucia:
                 case Ucup:
@@ -142,22 +152,23 @@ static void func_00456310(bool *sp4F) { // originally embedded func
                     endblock = false;
 
                     getop();
-                    while (!optab[OPC].unk1 && OPC != Uend) {
+                    while (!optab[OPC].executable && OPC != Uend) {
                         copyline();
                         getop();
                     }
                     break;
             }
         } else {
-            *sp4F = (OPC == Uijp || OPC == Uret || OPC == Uujp || OPC == Uxjp) || (OPC == Ucup && (u.intarray[3] & 2) != 0);
+            *unconditional_jump = (OPC == Uijp || OPC == Uret || OPC == Uujp || OPC == Uxjp) || (OPC == Ucup && IS_RETURN_ATTR(EXTRNAL));
             endblock = false;
 
             getop();
-            while (!optab[OPC].unk1 && OPC != Uend) {
+            while (!optab[OPC].executable && OPC != Uend) {
                 copyline();
                 getop();
             }
         }
+
         filteringout = false;
         constarith();
         if (outofmem) {
@@ -172,11 +183,11 @@ static void func_00456310(bool *sp4F) { // originally embedded func
 0045806C main
 */
 void oneproc(void) {
-    bool sp4F;
+    bool unconditional_jump;
     union Bcode u_copy;
 
-    curproc = getproc(u.Ucode.I1);
-    usefp = (u.intarray[3] & 2) != 0;
+    curproc = getproc(IONE);
+    usefp = IS_FRAMEPTR_ATTR(EXTRNAL);
     procinit();
     lasttime = getclock();
     copyline();
@@ -193,28 +204,33 @@ void oneproc(void) {
             write_string(err.c_file, entnam0, 1024, entnam0len);
             fflush(err.c_file);
         }
+
         if (!curproc->unkD) {
             if (verbose) {
                 write_string(err.c_file, "(deleted) ", 10, 10);
                 fflush(err.c_file);
             }
+
             do {
                 getop();
-                if (!optab[OPC].unk1) {
+                if (!optab[OPC].executable) {
                     copyline();
-                } else if (OPC == Ulab && (u.Ucode.Lexlev & 4)) {
+                } else if (OPC == Ulab && IS_EXTERNAL_ATTR(LEXLEV)) {
                     uwrite(&u);
                 }
             } while (OPC != Uend);
+
         } else {
             endblock = false;
             inlopt = true;
             loc_not_yet_seen = false;
+
             getop();
-            while (!optab[OPC].unk1) {
+            while (!optab[OPC].executable) {
                 copyline();
                 getop();
             }
+
             if (OPC == Ulab) {
                 appendgraph();
                 if (outofmem) {
@@ -227,10 +243,11 @@ void oneproc(void) {
                 init_node_vectors(curgraphnode);
                 curstaticno = 1;
             }
-            sp4F = false;
+
+            unconditional_jump = false;
             filteringout = false;
             while (OPC != Uend) {
-                func_00456310(&sp4F);
+                one_block(&unconditional_jump);
                 loc_not_yet_seen = true;
                 if (outofmem) {
                     goto done;
@@ -239,12 +256,14 @@ void oneproc(void) {
             if (ustackbot != ustack) {
                 stackerror();
             }
+
             u_copy = u;
             lastcopiedu.Ucode.Opc = Uend;
             if (verbose) {
                 write_char(err.c_file, '(', 1);
                 write_cardinal(err.c_file, curstaticno, 1, 10);
                 write_char(err.c_file, ')', 1);
+
                 if (allcallersave) {
                     if (propagate_ee_saves) {
                         write_string(err.c_file, "i ", 2, 2);
@@ -256,6 +275,7 @@ void oneproc(void) {
                 }
                 fflush(err.c_file);
             }
+
             time1 = getclock();
             if (listwritten) {
                 write_string(list.c_file, " * * ", 5, 5);
@@ -266,13 +286,15 @@ void oneproc(void) {
                 write_string(list.c_file, entnam0, 1024, entnam0len);
                 writeln(list.c_file);
             }
+
             lopttime += time1 - lasttime;
             lasttime = time1;
             if (dbugno == 1) {
                 printtab();
             }
+
             if (usefeedback) {
-                if (curproc->unk34 != NULL) {
+                if (curproc->feedback_data != NULL) {
                     bb_frequencies();
                 } else if (warn_flag != 1) {
                     warned = true;
@@ -284,9 +306,11 @@ void oneproc(void) {
                     fflush(err.c_file);
                 }
             }
+
             tail_recursion();
             controlflow();
             analoop();
+
             if (dbugno == 8) {
                 print_loop_relations(toplevelloops, 0);
             }
@@ -294,12 +318,14 @@ void oneproc(void) {
             if (dbugno == 8) {
                 print_loop_relations(toplevelloops, 0);
             }
+
             inlopt = false;
             patchvectors();
             procinit_regs();
             if (outofmem) {
                 goto done;
             }
+
             time1 = getclock();
             if (listwritten) {
                 write_string(list.c_file, " * * ", 5, 5);
@@ -311,10 +337,12 @@ void oneproc(void) {
                 writeln(list.c_file);
             }
             lasttime = time1;
+
             copypropagate();
             if (outofmem) {
                 goto done;
             }
+
             time1 = getclock();
             if (listwritten) {
                 write_string(list.c_file, " * * ", 5, 5);
@@ -326,16 +354,19 @@ void oneproc(void) {
                 writeln(list.c_file);
             }
             lasttime = time1;
+
             if (dbugno > 0) {
                 printitab();
             }
             if (dbugno == 2) {
                 printlinfo();
             }
+
             findinduct();
             if (outofmem) {
                 goto done;
             }
+
             codemotion();
             if (outofmem) {
                 goto done;
@@ -343,6 +374,7 @@ void oneproc(void) {
             if (dbugno == 3) {
                 printcm();
             }
+
             time1 = getclock();
             if (listwritten) {
                 write_string(list.c_file, " * * ", 5, 5);
@@ -354,7 +386,9 @@ void oneproc(void) {
                 writeln(list.c_file);
             }
             lasttime = time1;
+
             eliminduct();
+
             time1 = getclock();
             if (listwritten) {
                 write_string(list.c_file, " * * ", 5, 5);
@@ -366,6 +400,7 @@ void oneproc(void) {
                 writeln(list.c_file);
             }
             lasttime = time1;
+
             getexpsources();
             if (outofmem) {
                 goto done;
@@ -373,26 +408,32 @@ void oneproc(void) {
             if (dbugno == 4) {
                 printscm();
             }
+
             if (mipsflag == 3) {
                 find_ix_loadstores();
             }
+
             bvlivransize = ((curstaticno - 1) >> 7) + 1;
             makelivranges();
             if (outofmem) {
                 goto done;
             }
+
             regdataflow();
             if (outofmem) {
                 goto done;
             }
+
             localcolor();
             if (outofmem) {
                 goto done;
             }
+
             spilltemps();
             if (outofmem) {
                 goto done;
             }
+
             time1 = getclock();
             if (listwritten) {
                 write_string(list.c_file, " * * ", 5, 5);
@@ -405,6 +446,7 @@ void oneproc(void) {
             }
             regaloctime += time1 - lasttime;
             lasttime = time1;
+
             globalcolor();
             if (outofmem) {
                 goto done;
@@ -424,6 +466,7 @@ void oneproc(void) {
             if (dbugno == 5) {
                 printregs();
             }
+
             opt_saved_regs();
             reemit();
             if (dbugno == 2) {
@@ -433,6 +476,7 @@ void oneproc(void) {
                 printinterproc();
                 printsav();
             }
+
             time1 = getclock();
             if (listwritten) {
                 write_string(list.c_file, " * * ", 5, 5);
@@ -443,6 +487,7 @@ void oneproc(void) {
                 write_string(list.c_file, entnam0, 1024, entnam0len);
                 writeln(list.c_file);
             }
+
             u = u_copy;
             copyline();
 

@@ -9,7 +9,7 @@
 /*
 00475C80 next_stmt_is_ret
 */
-bool next_stmt_is_ret1(struct Statement *stmt, int arg1) {
+bool next_stmt_is_ret1(struct Statement *stmt, int addr) {
     for (;;) {
         stmt = stmt->next;
         switch (stmt->opc) {
@@ -26,18 +26,18 @@ bool next_stmt_is_ret1(struct Statement *stmt, int arg1) {
             continue;
         }
         if (stmt->opc == Ustr) {
-            if (stmt->expr->data.isvar_issvar.unk34->type != isvar) {
+            if (stmt->expr->data.isvar_issvar.assigned_value->type != isvar) {
                 return false;
             }
-            if (curblk != stmt->expr->data.isvar_issvar.unk34->data.isvar_issvar.var_data.blockno) {
+            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.var_data.blockno != curblk) {
                 return false;
             }
-            if (arg1 != stmt->expr->data.isvar_issvar.unk34->data.isvar_issvar.var_data.addr) {
+            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.var_data.addr != addr) {
                 return false;
             }
             if (stmt->expr->type == isvar) {
                 if (stmt->expr->data.isvar_issvar.var_data.memtype == Rmt) {
-                    if (stmt->expr->data.isvar_issvar.var_data.addr != 2) {
+                    if (stmt->expr->data.isvar_issvar.var_data.addr != r_v0) {
                         continue;
                     }
                 }
@@ -68,18 +68,18 @@ bool next_stmt_is_ret(struct Statement *stmt) {
             continue;
         }
         if (stmt->opc == Ustr) {
-            if (stmt->expr->data.isvar_issvar.unk34->type != isvar) {
+            if (stmt->expr->data.isvar_issvar.assigned_value->type != isvar) {
                 return false;
             }
-            if (stmt->expr->data.isvar_issvar.unk34->data.isvar_issvar.var_data.memtype != Rmt) {
+            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.var_data.memtype != Rmt) {
                 return false;
             }
-            if (stmt->expr->data.isvar_issvar.unk34->data.isvar_issvar.var_data.addr != 2) {
+            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.var_data.addr != r_v0) {
                 return false;
             }
             if (stmt->expr->type == isvar) {
                 if (stmt->expr->data.isvar_issvar.var_data.memtype == Rmt) {
-                    if (stmt->expr->data.isvar_issvar.var_data.addr == 2) {
+                    if (stmt->expr->data.isvar_issvar.var_data.addr == r_v0) {
                         continue;
                     }
                 }
@@ -87,7 +87,7 @@ bool next_stmt_is_ret(struct Statement *stmt) {
             if (stmt->expr->type != isvar) {
                 return false;
             }
-            if (curblk != stmt->expr->data.isvar_issvar.var_data.blockno) {
+            if (stmt->expr->data.isvar_issvar.var_data.blockno != curblk) {
                 return false;
             }
             return next_stmt_is_ret1(stmt, stmt->expr->data.isvar_issvar.var_data.addr);
