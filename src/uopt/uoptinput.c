@@ -4,11 +4,12 @@
 #include "libu/libu.h"
 #include "uoptions.h"
 #include "ucode.h"
-#include "uoptinput.h"
 #include "uoptdata.h"
+#include "uoptinput.h"
 #include "uoptutil.h"
 #include "uoptppss.h"
 #include "uoptkill.h"
+#include "uoptcontrolflow.h"
 
 struct ParameterList {
     int key;
@@ -503,7 +504,7 @@ void incroccurrence(struct Expression **entry) {
             {
                 if ((!stat->expr->data.isvar_issvar.unk22 ||
                     curblk != stat->expr->data.isvar_issvar.var_data.blockno) &&
-                    !doingcopy && !curproc->unk15)
+                    !doingcopy && !curproc->has_trap)
                 {
                     stat->u.store.unk1D = false;
                     done = true;
@@ -1673,7 +1674,7 @@ void readnxtinst(void) {
             } else if ((bigtree(expr->data.isvar_issvar.assigned_value, 20) || treekilled(expr->data.isvar_issvar.assigned_value))
                     || (expr->data.isvar_issvar.assigned_value->type == isop && expr->data.isvar_issvar.assigned_value->count == 1
                         && (!((expr->data.isvar_issvar.unk22 && expr->data.isvar_issvar.var_data.blockno == curblk)
-                                || doingcopy || curproc->unk15)
+                                || doingcopy || curproc->has_trap)
                             || has_ilod(expr->data.isvar_issvar.assigned_value))
                         && !constexp(expr->data.isvar_issvar.assigned_value))) {
                 ustack_push(expr);

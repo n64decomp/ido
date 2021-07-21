@@ -174,7 +174,7 @@ struct Proc *searchproc(int id, int level) {
         new_proc->no_sideeffects = false;
         new_proc->nonlocal_goto = false;
         new_proc->unk14 = 0;
-        new_proc->unk15 = 0;
+        new_proc->has_trap = 0;
         new_proc->num_bbs = 0;
         new_proc->ijp_labels = NULL;
         new_proc->bvsize = 0;
@@ -991,7 +991,7 @@ void oneinstruction(void) {
         case Utple:
         case Utplt:
         case Utpne:
-            curproc->unk15 = true;
+            curproc->has_trap = true;
             break;
 
         case Uaos:
@@ -1350,7 +1350,7 @@ void prepass(void) {
     proc->no_sideeffects = false;
     proc->nonlocal_goto = false;
     proc->unk14 = false;
-    proc->unk15 = false;
+    proc->has_trap = false;
     proc->unk9 = true;
     proc->unkA = true;
     proc->level = 2;
@@ -1375,7 +1375,7 @@ void prepass(void) {
     proc->no_sideeffects = false;
     proc->nonlocal_goto = false;
     proc->unk14 = false;
-    proc->unk15 = false;
+    proc->has_trap = false;
     proc->unk9 = true;
     proc->unkA = true;
     proc->level = 2;

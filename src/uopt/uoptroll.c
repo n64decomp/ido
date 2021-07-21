@@ -2,6 +2,7 @@
 #include "uoptutil.h"
 #include "uoptitab.h"
 #include "uoptcopy.h"
+#include "uoptkill.h"
 #include "uoptinput.h"
 #include "uoptcontrolflow.h"
 
@@ -1208,7 +1209,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         sp60->data.isop.aux2.v1.unk3C = expr->data.isop.aux2.v1.unk3C;
 
                         sp60->data.isop.unk34 = findbaseaddr(sp5C);
-                        sp60->data.isop.aux.cvtfrom = findbaseaddr(sp58);
+                        sp60->data.isop.aux.unk38 = findbaseaddr(sp58);
                         if (sp60->unk3 != 0) {
                             sp60->unk3 = varkilled(sp60, curgraphnode->varlisthead) == 0;
                         }
@@ -1369,12 +1370,12 @@ void oneloopblockstmt(struct Statement *stat) {
             if (stattail->unk3 == 0) {
                 stattail->u.store.unk1C = sp5B;
                 if (phi_s1->data.isvar_issvar.unk22 == 0 && sp5B != 0) {
-                    stattail->u.store.unk1C = strlkilled(stattail, curgraphnode->varlisthead, sp5A) == 0;
+                    stattail->u.store.unk1C = strlkilled(stattail, curgraphnode->varlisthead) == 0;
                 }
 
                 stattail->u.store.unk1E = sp5A;
                 if (phi_s1->data.isvar_issvar.unk22 == 0 && sp5A != 0) {
-                    stattail->u.store.unk1E = strskilled(stattail, curgraphnode->varlisthead, sp5A) == 0;
+                    stattail->u.store.unk1E = strskilled(stattail, curgraphnode->varlisthead) == 0;
                 }
 
                 stattail->u.store.unk1D = phi_s1->data.isvar_issvar.unk21 == 0;

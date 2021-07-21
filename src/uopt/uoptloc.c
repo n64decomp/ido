@@ -1961,7 +1961,7 @@ void constarith(void) {
                             reduceixa(stmt->u.store.expr);
                         }
                     }
-                    if (stmt->opc == Uistr && stmt->expr->type == islda && (stmt->expr->data.islda_isilda.var_data.memtype != Smt || is_gp_relative(stmt->expr->data.islda_isilda.var_data.blockno, stmt->expr) || !dokpicopt)) {
+                    if (stmt->opc == Uistr && stmt->expr->type == islda && (stmt->expr->data.islda_isilda.var_data.memtype != Smt || is_gp_relative(stmt->expr->data.islda_isilda.var_data.blockno) || !dokpicopt)) {
                         istrfold(stmt);
                     }
                     

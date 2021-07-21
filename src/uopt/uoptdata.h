@@ -341,7 +341,7 @@ struct Proc {
     unsigned char level; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass
     unsigned short num_bbs; // 0x12
     bool unk14; // bool or char?
-    bool unk15;
+    bool has_trap;
     struct ProcList *callees; // linked list of Procs (see oneprocprepass, insertcallee)
     struct IjpLabel *ijp_labels; // 0x1C, sorted tree
     unsigned int bvsize; // 0x20
