@@ -132,10 +132,11 @@ struct VarAccessList {
     /* 0x00 */ struct VarAccessList *prev; // towards head
     /* 0x04 */ struct VarAccessList *next; // towards tail
     /* 0x08 */ bool unk8; // or unsigned char?
-    /* 0x09 */ unsigned char type; // 0: none?, 1: store (Statement), 2: var (Expression), 3: ? (see Upmov in readnxtinst)
+    /* 0x09 */ unsigned char type; // 0: none?, 1: store (Statement), 2: load (Expression), 3: move (Statement)
     /* 0x0C */ union {
                    struct Statement *store;
                    struct Expression *var;
+                   struct Statement *move;
                } data;
 };
 

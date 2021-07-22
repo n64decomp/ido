@@ -164,27 +164,27 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Jdt:
                     case Ldt:
                     case Ndt:
-                        if (expr->data.isconst.number.intval == ichain->isconst.number.intval) {
+                        if (ichain->isconst.number.intval == expr->data.isconst.number.intval) {
                             found = true;
                         }
                         break;
 
                     case Idt:
                     case Kdt:
-                        if (ichain->isconst.number.intval == expr->data.isconst.number.intval &&
-                                ichain->isconst.number.intval2 == expr->data.isconst.number.intval2) {
+                        if (ichain->isconst.number.intval  == expr->data.isconst.number.intval &&
+                            ichain->isconst.number.intval2 == expr->data.isconst.number.intval2) {
                             found = true;
                         }
                         break;
 
                     case Mdt:
-                        if (expr->data.isconst.number.string.disp == ichain->isconst.number.string.disp) {
+                        if (ichain->isconst.number.string.disp == expr->data.isconst.number.string.disp) {
                             found = true;
                         }
                         break;
 
                     default:    // Cdt, Pdt, Qdt, Rdt, Sdt, Wdt, Xdt, Zdt
-                        if (expr->data.isconst.number.real.disp == ichain->isconst.number.real.disp) {
+                        if (ichain->isconst.number.real.disp == expr->data.isconst.number.real.disp) {
                             found = true;
                         }
                         break;
@@ -192,48 +192,38 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                 break;
 
             case isrconst:
-                if (ichain->type != isrconst || ichain->dtype != expr->datatype) {
-                    break;
-                }
-                if (expr->data.isrconst.value == ichain->isrconst.unk10) {
+                if (ichain->type == isrconst && ichain->dtype == expr->datatype &&
+                        ichain->isrconst.unk10 == expr->data.isrconst.value) {
                     found = true;
                 }
                 break;
 
             case islda:
-                if (ichain->type != islda || expr->data.islda_isilda.addr != ichain->islda_isilda.addr) {
-                    break;
-                }
-                if (expr->data.islda_isilda.var_data.blockno == ichain->islda_isilda.var_data.blockno) {
+                if (ichain->type == islda && ichain->islda_isilda.addr == expr->data.islda_isilda.addr &&
+                        ichain->islda_isilda.var_data.blockno == expr->data.islda_isilda.var_data.blockno) {
                     found = true;
                 }
                 break;
 
             case isilda:
-                if (ichain->type != isilda ||
-                        expr->data.islda_isilda.addr != ichain->islda_isilda.addr ||
-                        expr->data.islda_isilda.size != ichain->islda_isilda.size) {
-                    break;
-                }
-                if (addreq(ichain->islda_isilda.var_data, expr->data.islda_isilda.var_data)) {
+                if (ichain->type == isilda &&
+                        ichain->islda_isilda.addr == expr->data.islda_isilda.addr &&
+                        ichain->islda_isilda.size == expr->data.islda_isilda.size &&
+                        addreq(ichain->islda_isilda.var_data, expr->data.islda_isilda.var_data)) {
                     found = true;
                 }
                 break;
 
             case isvar:
-                if (ichain->type != isvar) {
-                    break;
-                }
-                if (addreq(ichain->isvar_issvar.var_data, expr->data.isvar_issvar.var_data)) {
+                if (ichain->type == isvar &&
+                        addreq(ichain->isvar_issvar.var_data, expr->data.isvar_issvar.var_data)) {
                     found = true;
                 }
                 break;
 
             case issvar:
-                if (ichain->type != issvar) {
-                    break;
-                }
-                if (addreq(ichain->isvar_issvar.var_data, expr->data.isvar_issvar.var_data)) {
+                if (ichain->type == issvar &&
+                        addreq(ichain->isvar_issvar.var_data, expr->data.isvar_issvar.var_data)) {
                     found = true;
                 }
                 break;
@@ -251,12 +241,10 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Umpy:
                     case Uuni:
                     case Uxor:
-                        if (expr->datatype != ichain->dtype) {
-                            break;
-                        }
-                        if ((ichain->isop.op1 == op1 && ichain->isop.op2 == op2) ||
-                                (ichain->isop.op1 == op2 && ichain->isop.op2 == op1)) {
-                            if (expr->data.isop.aux2.v1.overflow_attr == ichain->isop.overflow_attr) {
+                        if (ichain->dtype == expr->datatype && 
+                                ((ichain->isop.op1 == op1 && ichain->isop.op2 == op2) ||
+                                 (ichain->isop.op1 == op2 && ichain->isop.op2 == op1))) {
+                            if (ichain->isop.overflow_attr == expr->data.isop.aux2.v1.overflow_attr) {
                                 found = true;
                             }
                         }
@@ -265,11 +253,9 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     // Commutative ops
                     case Uequ:
                     case Uneq:
-                        if (expr->datatype != ichain->dtype) {
-                            break;
-                        }
-                        if ((ichain->isop.op1 == op1 && ichain->isop.op2 == op2) ||
-                                (ichain->isop.op1 == op2 && ichain->isop.op2 == op1)) {
+                        if (ichain->dtype == expr->datatype && 
+                                ((ichain->isop.op1 == op1 && ichain->isop.op2 == op2) ||
+                                 (ichain->isop.op1 == op2 && ichain->isop.op2 == op1))) {
                             found = true;
                         }
                         break;
@@ -287,11 +273,9 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Ushl:
                     case Ushr:
                     case Usign:
-                        if (expr->datatype != ichain->dtype) {
-                            break;
-                        }
-                        if (ichain->isop.op1 == op1 && ichain->isop.op2 == op2) {
-                            if (expr->data.isop.aux2.v1.overflow_attr == ichain->isop.overflow_attr) {
+                        if (ichain->dtype == expr->datatype && 
+                                (ichain->isop.op1 == op1 && ichain->isop.op2 == op2)) {
+                            if (ichain->isop.overflow_attr == expr->data.isop.aux2.v1.overflow_attr) {
                                 found = true;
                             }
                         }
@@ -302,33 +286,25 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Ugrt:
                     case Uleq:
                     case Ules:
-                        if (expr->datatype != ichain->dtype) {
-                            break;
-                        }
-                        if (ichain->isop.op1 == op1 && ichain->isop.op2 == op2) {
+                        if (ichain->dtype == expr->datatype && 
+                                ichain->isop.op1 == op1 && ichain->isop.op2 == op2) {
                             found = true;
                         }
                         break;
 
                     case Uinn:
-                        if (expr->datatype != ichain->dtype) {
-                            break;
+                        if (ichain->dtype == expr->datatype && 
+                                ichain->isop.op1 == op1 && ichain->isop.op2 == op2 &&
+                                ichain->isop.s.bit == expr->data.isop.aux2.v1.unk3C) {
+                            found = true;
                         }
-                        if (ichain->isop.op1 == op1 && ichain->isop.op2 == op2) {
-                            if (expr->data.isop.aux2.v1.unk3C == ichain->isop.s.bit) {
-                                found = true;
-                            }
-                        }
+                        
                         break;
 
                     case Uixa:
-                        if (expr->datatype != ichain->dtype) {
-                            break;
-                        }
-                        if (expr->data.isop.datasize != ichain->isop.size) {
-                            break;
-                        }
-                        if (ichain->isop.op1 == op1 && ichain->isop.op2 == op2) {
+                        if (ichain->dtype == expr->datatype && 
+                                ichain->isop.size == expr->data.isop.datasize &&
+                                (ichain->isop.op1 == op1 && ichain->isop.op2 == op2)) {
                             found = true;
                         }
                         break;
@@ -342,16 +318,11 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Usgs:
                     case Usqr:
                     case Usqrt:
-                        if (expr->datatype != ichain->dtype) {
-                            break;
+                        if (ichain->dtype == expr->datatype &&
+                                ichain->isop.op1 == op1 &&
+                                ichain->isop.overflow_attr == expr->data.isop.aux2.v1.overflow_attr) {
+                            found = true;
                         }
-                        if (ichain->isop.op1 != op1) {
-                            break;
-                        }
-                        if (expr->data.isop.aux2.v1.overflow_attr != ichain->isop.overflow_attr) {
-                            break;
-                        }
-                        found = true;
                         break;
 
                     case Uchkh:
@@ -359,50 +330,31 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Ucvtl:
                     case Udec:
                     case Uinc:
-                        if (expr->datatype != ichain->dtype) {
-                            break;
+                        if (ichain->dtype == expr->datatype &&
+                                ichain->isop.op1 == op1 &&
+                                ichain->isop.size == expr->data.isop.datasize &&
+                                ichain->isop.overflow_attr == expr->data.isop.aux2.v1.overflow_attr) {
+                            found = true;
                         }
-                        if (ichain->isop.op1 != op1) {
-                            break;
-                        }
-                        if (expr->data.isop.datasize != ichain->isop.size) {
-                            break;
-                        }
-                        if (expr->data.isop.aux2.v1.overflow_attr != ichain->isop.overflow_attr) {
-                            break;
-                        }
-                        found = true;
                         break;
 
                     case Ucvt:
                     case Urnd:
                     case Utyp:
-                        if (expr->datatype != ichain->dtype) {
-                            break;
+                        if (ichain->dtype == expr->datatype &&
+                                ichain->isop.cvtfrom == expr->data.isop.aux.cvtfrom &&
+                                ichain->isop.op1 == op1 &&
+                                ichain->isop.overflow_attr == expr->data.isop.aux2.v1.overflow_attr) {
+                            found = true;
                         }
-                        if (expr->data.isop.aux.cvtfrom != ichain->isop.cvtfrom) {
-                            break;
-                        }
-                        if (ichain->isop.op1 != op1) {
-                            break;
-                        }
-                        if (expr->data.isop.aux2.v1.overflow_attr != ichain->isop.overflow_attr) {
-                            break;
-                        }
-                        found = true;
                         break;
 
                     case Uadj:
-                        if (expr->data.isop.datasize != ichain->isop.size) {
-                            break;
+                        if (ichain->isop.size == expr->data.isop.datasize &&
+                                ichain->isop.s.bit == expr->data.isop.aux2.v1.unk3C &&
+                                ichain->isop.op1 == op1) {
+                            found = true;
                         }
-                        if (expr->data.isop.aux2.v1.unk3C != ichain->isop.s.bit) {
-                            break;
-                        }
-                        if (ichain->isop.op1 != op1) {
-                            break;
-                        }
-                        found = true;
                         break;
 
                     case Uchkn:
@@ -415,19 +367,12 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Uilod:
                     case Uirld:
                     case Uirlv:
-                        if (expr->datatype != ichain->dtype) {
-                            break;
+                        if (ichain->dtype == expr->datatype &&
+                                ichain->isop.op1 == op1 &&
+                                ichain->isop.size == expr->data.isop.datasize &&
+                                ichain->isop.s.bit == expr->data.isop.aux2.v1.unk3C) {
+                            found = true;
                         }
-                        if (ichain->isop.op1 != op1) {
-                            break;
-                        }
-                        if (expr->data.isop.datasize != ichain->isop.size) {
-                            break;
-                        }
-                        if (expr->data.isop.aux2.v1.unk3C != ichain->isop.s.bit) {
-                            break;
-                        }
-                        found = true;
                         break;
 
                     case Uiequ:
@@ -452,7 +397,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                         break;
 
                     default:
-                        caseerror(1, 177, "uoptitab.p", 0xA);
+                        caseerror(1, 177, "uoptitab.p", 10);
                         break;
 
                 }
@@ -460,7 +405,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
 
             case dumped:
             default:
-                caseerror(1, 123, "uoptitab.p", 0xA);
+                caseerror(1, 123, "uoptitab.p", 10);
                 break;
         }
 
@@ -479,7 +424,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
         ichain->dtype = expr->datatype;
         switch (expr->type) {
             case dumped:
-                write_string(err.c_file, "Warning: kind dumped: ignored", 0x1DU, 0x1DU);
+                write_string(err.c_file, "Warning: kind dumped: ignored", 29, 29);
                 writeln(err.c_file);
                 break;
 
@@ -798,7 +743,7 @@ void trep_image(struct Expression *expr, bool op1, bool ant, bool av, bool arg4)
             trepThing->ichain = NULL;
         } else {
             if (!found) {
-                ichain = appendichain(cg1hash, 0);
+                ichain = appendichain(cg1hash, false);
                 ichain->type = isop;
                 ichain->dtype = op->datatype;
                 ichain->isop.opc = Ucg1;
@@ -887,26 +832,26 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                         //hash = realihash(expr->data.islda_isilda.addr, expr->data.islda_isilda.size);
                         break;
                 }
-                ichain = isearchloop(hash, expr, 0, 0);
+                ichain = isearchloop(hash, expr, NULL, NULL);
                 *anticipated = true;
                 *available = true;
                 break;
 
             case isrconst:
-                ichain = isearchloop(isconstihash(expr->data.isrconst.value), expr, 0, 0);
+                ichain = isearchloop(isconstihash(expr->data.isrconst.value), expr, NULL, NULL);
                 *anticipated = true;
                 *available = true;
                 break;
 
             case islda:
-                ichain = isearchloop(isldaihash(expr->data.islda_isilda.var_data, expr->data.islda_isilda.addr), expr, 0, 0);
+                ichain = isearchloop(isldaihash(expr->data.islda_isilda.var_data, expr->data.islda_isilda.addr), expr, NULL, NULL);
                 *anticipated = true;
                 *available = true;
                 break;
 
             case isilda:
                 exprimage(expr->data.islda_isilda.unk34, anticipated, available);
-                ichain = isearchloop(isvarihash(expr->data.islda_isilda.var_data), expr, 0, 0);
+                ichain = isearchloop(isvarihash(expr->data.islda_isilda.var_data), expr, NULL, NULL);
                 if (outofmem) return NULL; // used to return UB sp8C
 
                 if (expr->data.islda_isilda.unk34->type != issvar) {
@@ -930,7 +875,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 break;
 
             case isvar:
-                ichain = isearchloop(isvarihash(expr->data.isvar_issvar.var_data), expr, 0, 0);
+                ichain = isearchloop(isvarihash(expr->data.isvar_issvar.var_data), expr, NULL, NULL);
                 if (outofmem) return NULL; // used to return UB sp8C
 
                 // Most iffy part... compiler originally added 1 to r2bb and subtracted 4/8 from r2bitpos/setofr2bbs.
@@ -1001,7 +946,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 exprimage(expr->data.isvar_issvar.unk24, anticipated, available);
                 if (outofmem) return NULL; // used to return UB sp8C
 
-                ichain = isearchloop(isvarihash(expr->data.isvar_issvar.var_data), expr, 0, 0);
+                ichain = isearchloop(isvarihash(expr->data.isvar_issvar.var_data), expr, NULL, NULL);
                 if (outofmem) return NULL; // used to return UB sp8C
 
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
@@ -1115,7 +1060,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                             hash = isopihash(expr->data.isop.opc, op1_ichain, NULL);
                             break;
                     }
-                    ichain = isearchloop(hash, expr, op1_ichain, 0);
+                    ichain = isearchloop(hash, expr, op1_ichain, NULL);
 
                     switch (expr->data.isop.opc) {
                         case Uildv:
@@ -1176,7 +1121,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 break;
 
             default:
-                caseerror(1, 584, "uoptitab.p", 0xA);
+                caseerror(1, 584, "uoptitab.p", 10);
                 break;
         }
     }
@@ -1324,7 +1269,7 @@ void codeimage(void) {
                 if (outofmem) return;
             }
 
-            ichain = isearchloop(isvarihash(stat->expr->data.isvar_issvar.var_data), stat->expr, 0, 0);
+            ichain = isearchloop(isvarihash(stat->expr->data.isvar_issvar.var_data), stat->expr, NULL, NULL);
             if (outofmem) return;
 
             if (!stat->unk3) {

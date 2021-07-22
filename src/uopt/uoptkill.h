@@ -14,7 +14,7 @@ void movkillprev(struct Statement *stat);
 void strkillprev(struct Statement *stat);
 void lodkillprev(struct Expression *expr);
 bool clkilled(int level, struct Proc *proc, struct Expression *expr);
-bool cmkilled(int level, struct Proc *proc, struct Expression *expr);
+bool cmkilled(int level, struct Proc *proc, struct Statement *stat);
 bool cskilled(int level, struct Proc *proc, struct Statement *stat);
 void cupkillprev(int level, struct Proc *proc);
 void ciakillprev(void);
