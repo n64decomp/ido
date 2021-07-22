@@ -766,8 +766,9 @@ void optinit(void) {
     seteeregs[1] = GENMASK(firsteereg[1], lasteereg[1] + 1);
     setregs[1] = (seterregs[1] | seteeregs[1]);
 
-    gsptr = alloc_new(0x34, &perm_heap);
-    *(unsigned char *)gsptr = 123;
+    gsptr = alloc_new(sizeof(struct Statement), &perm_heap);
+    gsptr->opc = Ustr;
+
     dft_livbb = (struct livbb *)alloc_new(0x18, &perm_heap);
     dft_livbb->unk10 = 0;
     dft_livbb->unk12 = 0;

@@ -2420,4 +2420,4 @@ struct Proc *ciaprocs;
 0045C8A0 lvalaltered
 0045D208 patchvectors
 */
-void *gsptr; // TODO: fix type (0x34 bytes allocated)
+struct Statement *gsptr;

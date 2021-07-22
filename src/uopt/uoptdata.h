@@ -992,6 +992,6 @@ extern struct LdatabEntry *ldatab[3113];
 extern struct Proc *curproc;
 extern struct Proc *indirprocs;
 extern struct Proc *ciaprocs;
-extern void *gsptr; // TODO: fix type (0x34 bytes allocated)
+extern struct Statement *gsptr;
 
 #endif
