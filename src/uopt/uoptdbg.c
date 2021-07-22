@@ -11,99 +11,6 @@ __asm__(R""(
 .endm
 
 .rdata
-RO_1000A708:
-    # 0041A410 printitab
-    .ascii "    "
-
-RO_1000A70C:
-    # 0041A410 printitab
-    .ascii "\"\"\" "
-
-RO_1000A710:
-    # 0041A410 printitab
-    .ascii "vreg"
-
-RO_1000A714:
-    # 0041A410 printitab
-    .ascii "} "
-
-RO_1000A716:
-    # 0041A410 printitab
-    .ascii "} "
-
-RO_1000A718:
-    # 0041A410 printitab
-    .ascii "ILDA"
-
-RO_1000A71C:
-    # 0041A410 printitab
-    .ascii "} "
-
-RO_1000A71E:
-    # 0041A410 printitab
-    .ascii "uoptdbg.p"
-
-RO_1000A727:
-    # 0041A410 printitab
-    .ascii "isrconst "
-
-RO_1000A730:
-    # 0041A410 printitab
-    .ascii "dumped  "
-
-RO_1000A738:
-    # 0041A410 printitab
-    .ascii "empty   "
-
-RO_1000A740:
-    # 0041A410 printitab
-    .ascii "isop    "
-
-RO_1000A748:
-    # 0041A410 printitab
-    .ascii "issvar   "
-
-RO_1000A751:
-    # 0041A410 printitab
-    .ascii "isilda   "
-
-RO_1000A75A:
-    # 0041A410 printitab
-    .ascii "isvar   "
-
-RO_1000A762:
-    # 0041A410 printitab
-    .ascii "islda   "
-
-RO_1000A76A:
-    # 0041A410 printitab
-    .ascii "isconst "
-
-RO_1000A772:
-    # 0041A410 printitab
-    .ascii "kind    op      l      r  "
-
-RO_1000A78C:
-    # 0041A410 printitab
-    .ascii "  bit "
-
-RO_1000A792:
-    # 0041A410 printitab
-    .ascii " index    "
-
-    .balign 4
-jtbl_1000A79C:
-    # 0041A410 printitab
-    .gpword .L0041A6E8
-    .gpword .L0041A634
-    .gpword .L0041A610
-    .gpword .L0041A658
-    .gpword .L0041A6C4
-    .gpword .L0041A67C
-    .gpword .L0041A6A0
-    .gpword .L0041A70C
-    .gpword .L0041A730
-
 RO_1000A7C0:
     # 0041AC2C printtab
     .ascii " [nil]"
@@ -618,580 +525,115 @@ void printmtyp(enum Memtype type) {
     }
 }
 
+static char uopcode_enum_values[] = "uabs\0   uadd\0   uadj\0   uaent\0  uand\0   uaos\0   uasym\0  ubgn\0   ubgnb\0  ubsub\0  ucg1\0   ucg2\0   uchkh\0  uchkl\0  uchkn\0  uchkt\0  ucia\0   uclab\0  uclbd\0  ucomm\0  ucsym\0  uctrl\0  ucubd\0  ucup\0   ucvt\0   ucvtl\0  udec\0   udef\0   udif\0   udiv\0   udup\0   uend\0   uendb\0  uent\0   ueof\0   uequ\0   uesym\0  ufill\0  ufjp\0   ufsym\0  ugeq\0   ugrt\0   ugsym\0  uhsym\0  uicuf\0  uidx\0   uiequ\0  uigeq\0  uigrt\0  uijp\0   uilda\0  uildv\0  uileq\0  uiles\0  uilod\0  uinc\0   uineq\0  uinit\0  uinn\0   uint\0   uior\0   uisld\0  uisst\0  uistr\0  uistv\0  uixa\0   ulab\0   ulbd\0   ulbdy\0  ulbgn\0  ulca\0   ulda\0   uldap\0  uldc\0   uldef\0  uldsp\0  ulend\0  uleq\0   ules\0   ulex\0   ulnot\0  uloc\0   ulod\0   ulsym\0  ultrm\0  umax\0   umin\0   umod\0   umov\0   umovv\0  umpmv\0  umpy\0   umst\0   umus\0   uneg\0   uneq\0   unop\0   unot\0   uodd\0   uoptn\0  upar\0   updef\0  upmov\0  upop\0   uregs\0  urem\0   uret\0   urlda\0  urldc\0  urlod\0  urnd\0   urpar\0  urstr\0  usdef\0  usgs\0   ushl\0   ushr\0   usign\0  usqr\0   usqrt\0  ussym\0  ustep\0  ustp\0   ustr\0   ustsp\0  usub\0   uswp\0   utjp\0   utpeq\0  utpge\0  utpgt\0  utple\0  utplt\0  utpne\0  utyp\0   uubd\0   uujp\0   uunal\0  uuni\0   uvreg\0  uxjp\0   uxor\0   uxpar\0  umtag\0  ualia\0  uildi\0  uisti\0  uirld\0  uirst\0  uldrc\0  umsym\0  urcuf\0  uksym\0  uosym\0  uirlv\0  uirsv\0\0 ";
+
 /*
 00456A2C oneproc
 */
-#if 0
 void printitab(void) {
     int i;
+    struct IChain *ichain;
 
     if (proc_to_print[0] == ' ' || at_proc_to_print) {
-        write_string(list.c_file, " index    ", 0xA, 0xA);
+        write_string(list.c_file, " index    ", 10, 10);
         write_string(list.c_file, "  bit ", 6, 6);
-        write_string(list.c_file, "kind    op      l      r  ", 0x1A, 0x1A);
+        write_string(list.c_file, "kind    op      l      r  ", 26, 26);
         writeln(list.c_file);
-
         for (i = 0; i < bitposcount; i++) {
+            ichain = bittab[i].ichain;
             write_char(list.c_file, '{', 1);
-            ...
+            write_integer(list.c_file, ichain->table_index, 4, 10);
+            write_char(list.c_file, '|', 1);
+            write_integer(list.c_file, ichain->chain_index, 1, 10);
+            write_char(list.c_file, '}', 1);
+            write_integer(list.c_file, ichain->bitpos, 7, 10);
+            write_char(list.c_file, ' ', 1);
+            switch (ichain->type) {
+                case isconst:
+                    write_string(list.c_file, "isconst ", 8, 8);
+                    break;
+                case islda:
+                    write_string(list.c_file, "islda   ", 8, 8);
+                    break;
+                case isvar:
+                    write_string(list.c_file, "isvar   ", 8, 8);
+                    break;
+                case isilda:
+                    write_string(list.c_file, "isilda   ", 9, 9);
+                    break;
+                case issvar:
+                    write_string(list.c_file, "issvar   ", 9, 9);
+                    break;
+                case isop:
+                    write_string(list.c_file, "isop    ", 8, 8);
+                    break;
+                case empty:
+                    write_string(list.c_file, "empty   ", 8, 8);
+                    break;
+                case dumped:
+                    write_string(list.c_file, "dumped  ", 8, 8);
+                    break;
+                case isrconst:
+                    write_string(list.c_file, "isrconst ", 9, 9);
+                    break;
+                default:
+                    caseerror(1, 70, "uoptdbg.p", 9);
+                    break;
+            }
+            if (ichain->type == isop) {
+                write_enum(list.c_file, ichain->isop.opc, uopcode_enum_values, 0);
+                write_char(list.c_file, '{', 1);
+                write_integer(list.c_file, ichain->isop.op1->table_index, 4, 10);
+                write_char(list.c_file, '|', 1);
+                write_integer(list.c_file, ichain->isop.op1->chain_index, 1, 10);
+                write_string(list.c_file, "} ", 2, 2);
+                if (ichain->isop.op2 != NULL) {
+                    write_char(list.c_file, '{', 1);
+                    write_integer(list.c_file, ichain->isop.op2->table_index, 4, 10);
+                    write_char(list.c_file, '|', 1);
+                    write_integer(list.c_file, ichain->isop.op2->chain_index, 1, 10);
+                    write_char(list.c_file, '}', 1);
+                }
+                writeln(list.c_file);
+            } else if (ichain->type == isilda) {
+                write_string(list.c_file, "ILDA", 4, 4);
+                write_char(list.c_file, '{', 1);
+                write_integer(list.c_file, ichain->islda_isilda.ichain->table_index, 4, 10);
+                write_char(list.c_file, '|', 1);
+                write_integer(list.c_file, ichain->islda_isilda.ichain->chain_index, 1, 10);
+                write_string(list.c_file, "} ", 2, 2);
+                writeln(list.c_file);
+            } else if (ichain->type == isvar || ichain->type == issvar) {
+                printmtyp(ichain->isvar_issvar.var_data.memtype);
+                if (ichain->type == issvar) {
+                    write_char(list.c_file, '{', 1);
+                    write_integer(list.c_file, ichain->isvar_issvar.ichain->table_index, 4, 10);
+                    write_char(list.c_file, '|', 1);
+                    write_integer(list.c_file, ichain->isvar_issvar.ichain->chain_index, 1, 10);
+                    write_string(list.c_file, "} ", 2, 2);
+                }
+                write_integer(list.c_file, ichain->isvar_issvar.var_data.blockno, 5, 10);
+                write_char(list.c_file, ' ', 1);
+                write_integer(list.c_file, ichain->isvar_issvar.var_data.addr, 5, 10);
+                if (ichain->isvar_issvar.unk19) {
+                    write_string(list.c_file, "vreg", 4, 4);
+                    writeln(list.c_file);
+                } else {
+                    writeln(list.c_file);
+                }
+                write_string(list.c_file, "\"\"\" ", 4, 4);
+                write_string(list.c_file, "    ", 4, 4);
+                write_integer(list.c_file, ichain->isvar_issvar.assignbit, 7, 10);
+                writeln(list.c_file);
+                i++; // why skip?
+            }
         }
     }
 }
-#endif
 
 __asm__(R""(
-
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
-
-.text
-
-glabel printitab
-    .ent printitab
-    # 00456A2C oneproc
-/* 0041A410 3C1C0FC0 */  .cpload $t9
-/* 0041A414 279CFE80 */  
-/* 0041A418 0399E021 */  
-/* 0041A41C 8F8E8DE8 */  lw     $t6, %got(proc_to_print)($gp)
-/* 0041A420 27BDFFC8 */  addiu $sp, $sp, -0x38
-/* 0041A424 24010020 */  li    $at, 32
-/* 0041A428 91CE0000 */  lbu   $t6, ($t6)
-/* 0041A42C AFBF0034 */  sw    $ra, 0x34($sp)
-/* 0041A430 AFBC0030 */  sw    $gp, 0x30($sp)
-/* 0041A434 AFB4002C */  sw    $s4, 0x2c($sp)
-/* 0041A438 AFB30028 */  sw    $s3, 0x28($sp)
-/* 0041A43C AFB20024 */  sw    $s2, 0x24($sp)
-/* 0041A440 AFB10020 */  sw    $s1, 0x20($sp)
-/* 0041A444 11C10005 */  beq   $t6, $at, .L0041A45C
-/* 0041A448 AFB0001C */   sw    $s0, 0x1c($sp)
-/* 0041A44C 8F8F8A8C */  lw     $t7, %got(at_proc_to_print)($gp)
-/* 0041A450 91EF0000 */  lbu   $t7, ($t7)
-/* 0041A454 51E001EE */  beql  $t7, $zero, .L0041AC10
-/* 0041A458 8FBF0034 */   lw    $ra, 0x34($sp)
-.L0041A45C:
-/* 0041A45C 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A460 8F928CCC */  lw     $s2, %got(list)($gp)
-/* 0041A464 8F858044 */  lw    $a1, %got(RO_1000A792)($gp)
-/* 0041A468 0000A025 */  move  $s4, $zero
-/* 0041A46C 2406000A */  li    $a2, 10
-/* 0041A470 2407000A */  li    $a3, 10
-/* 0041A474 8E440000 */  lw    $a0, ($s2)
-/* 0041A478 0320F809 */  jalr  $t9
-/* 0041A47C 24A5A792 */   addiu $a1, %lo(RO_1000A792) # addiu $a1, $a1, -0x586e
-/* 0041A480 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A484 8E440000 */  lw    $a0, ($s2)
-/* 0041A488 24060006 */  li    $a2, 6
-/* 0041A48C 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A490 8F858044 */  lw    $a1, %got(RO_1000A78C)($gp)
-/* 0041A494 24070006 */  li    $a3, 6
-/* 0041A498 0320F809 */  jalr  $t9
-/* 0041A49C 24A5A78C */   addiu $a1, %lo(RO_1000A78C) # addiu $a1, $a1, -0x5874
-/* 0041A4A0 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A4A4 8E440000 */  lw    $a0, ($s2)
-/* 0041A4A8 2406001A */  li    $a2, 26
-/* 0041A4AC 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A4B0 8F858044 */  lw    $a1, %got(RO_1000A772)($gp)
-/* 0041A4B4 2407001A */  li    $a3, 26
-/* 0041A4B8 0320F809 */  jalr  $t9
-/* 0041A4BC 24A5A772 */   addiu $a1, %lo(RO_1000A772) # addiu $a1, $a1, -0x588e
-/* 0041A4C0 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A4C4 8E440000 */  lw    $a0, ($s2)
-/* 0041A4C8 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 0041A4CC 0320F809 */  jalr  $t9
-/* 0041A4D0 00000000 */   nop   
-/* 0041A4D4 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A4D8 001498C0 */  sll   $s3, $s4, 3
-/* 0041A4DC 8F9889E0 */  lw     $t8, %got(bitposcount)($gp)
-/* 0041A4E0 8F180000 */  lw    $t8, ($t8)
-/* 0041A4E4 530001CA */  beql  $t8, $zero, .L0041AC10
-/* 0041A4E8 8FBF0034 */   lw    $ra, 0x34($sp)
-.L0041A4EC:
-/* 0041A4EC 8F9989EC */  lw     $t9, %got(bittab)($gp)
-/* 0041A4F0 8E500000 */  lw    $s0, ($s2)
-/* 0041A4F4 2405007B */  li    $a1, 123
-/* 0041A4F8 8F390000 */  lw    $t9, ($t9)
-/* 0041A4FC 24060001 */  li    $a2, 1
-/* 0041A500 2407000A */  li    $a3, 10
-/* 0041A504 03334021 */  addu  $t0, $t9, $s3
-/* 0041A508 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A50C 8D110000 */  lw    $s1, ($t0)
-/* 0041A510 02002025 */  move  $a0, $s0
-/* 0041A514 0320F809 */  jalr  $t9
-/* 0041A518 00000000 */   nop   
-/* 0041A51C 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A520 02002025 */  move  $a0, $s0
-/* 0041A524 96250004 */  lhu   $a1, 4($s1)
-/* 0041A528 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041A52C 24060004 */  li    $a2, 4
-/* 0041A530 2407000A */  li    $a3, 10
-/* 0041A534 0320F809 */  jalr  $t9
-/* 0041A538 00000000 */   nop   
-/* 0041A53C 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A540 8E500000 */  lw    $s0, ($s2)
-/* 0041A544 2405007C */  li    $a1, 124
-/* 0041A548 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A54C 24060001 */  li    $a2, 1
-/* 0041A550 2407000A */  li    $a3, 10
-/* 0041A554 0320F809 */  jalr  $t9
-/* 0041A558 02002025 */   move  $a0, $s0
-/* 0041A55C 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A560 02002025 */  move  $a0, $s0
-/* 0041A564 96250006 */  lhu   $a1, 6($s1)
-/* 0041A568 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041A56C 24060001 */  li    $a2, 1
-/* 0041A570 2407000A */  li    $a3, 10
-/* 0041A574 0320F809 */  jalr  $t9
-/* 0041A578 00000000 */   nop   
-/* 0041A57C 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A580 8E500000 */  lw    $s0, ($s2)
-/* 0041A584 2405007D */  li    $a1, 125
-/* 0041A588 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A58C 24060001 */  li    $a2, 1
-/* 0041A590 2407000A */  li    $a3, 10
-/* 0041A594 0320F809 */  jalr  $t9
-/* 0041A598 02002025 */   move  $a0, $s0
-/* 0041A59C 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A5A0 02002025 */  move  $a0, $s0
-/* 0041A5A4 96250002 */  lhu   $a1, 2($s1)
-/* 0041A5A8 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041A5AC 24060007 */  li    $a2, 7
-/* 0041A5B0 2407000A */  li    $a3, 10
-/* 0041A5B4 0320F809 */  jalr  $t9
-/* 0041A5B8 00000000 */   nop   
-/* 0041A5BC 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A5C0 8E500000 */  lw    $s0, ($s2)
-/* 0041A5C4 24050020 */  li    $a1, 32
-/* 0041A5C8 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A5CC 24060001 */  li    $a2, 1
-/* 0041A5D0 2407000A */  li    $a3, 10
-/* 0041A5D4 0320F809 */  jalr  $t9
-/* 0041A5D8 02002025 */   move  $a0, $s0
-/* 0041A5DC 92220000 */  lbu   $v0, ($s1)
-/* 0041A5E0 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A5E4 24040001 */  li    $a0, 1
-/* 0041A5E8 2C410009 */  sltiu $at, $v0, 9
-/* 0041A5EC 10200059 */  beqz  $at, .L0041A754
-/* 0041A5F0 24050046 */   li    $a1, 70
-/* 0041A5F4 8F818044 */  lw    $at, %got(jtbl_1000A79C)($gp)
-/* 0041A5F8 00024880 */  sll   $t1, $v0, 2
-/* 0041A5FC 00290821 */  addu  $at, $at, $t1
-/* 0041A600 8C29A79C */  lw    $t1, %lo(jtbl_1000A79C)($at)
-/* 0041A604 013C4821 */  addu  $t1, $t1, $gp
-/* 0041A608 01200008 */  jr    $t1
-/* 0041A60C 00000000 */   nop   
-.L0041A610:
-/* 0041A610 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A614 8F858044 */  lw    $a1, %got(RO_1000A76A)($gp)
-/* 0041A618 02002025 */  move  $a0, $s0
-/* 0041A61C 24060008 */  li    $a2, 8
-/* 0041A620 24070008 */  li    $a3, 8
-/* 0041A624 0320F809 */  jalr  $t9
-/* 0041A628 24A5A76A */   addiu $a1, %lo(RO_1000A76A) # addiu $a1, $a1, -0x5896
-/* 0041A62C 1000004F */  b     .L0041A76C
-/* 0041A630 8FBC0030 */   lw    $gp, 0x30($sp)
-.L0041A634:
-/* 0041A634 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A638 8F858044 */  lw    $a1, %got(RO_1000A762)($gp)
-/* 0041A63C 02002025 */  move  $a0, $s0
-/* 0041A640 24060008 */  li    $a2, 8
-/* 0041A644 24070008 */  li    $a3, 8
-/* 0041A648 0320F809 */  jalr  $t9
-/* 0041A64C 24A5A762 */   addiu $a1, %lo(RO_1000A762) # addiu $a1, $a1, -0x589e
-/* 0041A650 10000046 */  b     .L0041A76C
-/* 0041A654 8FBC0030 */   lw    $gp, 0x30($sp)
-.L0041A658:
-/* 0041A658 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A65C 8F858044 */  lw    $a1, %got(RO_1000A75A)($gp)
-/* 0041A660 02002025 */  move  $a0, $s0
-/* 0041A664 24060008 */  li    $a2, 8
-/* 0041A668 24070008 */  li    $a3, 8
-/* 0041A66C 0320F809 */  jalr  $t9
-/* 0041A670 24A5A75A */   addiu $a1, %lo(RO_1000A75A) # addiu $a1, $a1, -0x58a6
-/* 0041A674 1000003D */  b     .L0041A76C
-/* 0041A678 8FBC0030 */   lw    $gp, 0x30($sp)
-.L0041A67C:
-/* 0041A67C 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A680 8F858044 */  lw    $a1, %got(RO_1000A751)($gp)
-/* 0041A684 02002025 */  move  $a0, $s0
-/* 0041A688 24060009 */  li    $a2, 9
-/* 0041A68C 24070009 */  li    $a3, 9
-/* 0041A690 0320F809 */  jalr  $t9
-/* 0041A694 24A5A751 */   addiu $a1, %lo(RO_1000A751) # addiu $a1, $a1, -0x58af
-/* 0041A698 10000034 */  b     .L0041A76C
-/* 0041A69C 8FBC0030 */   lw    $gp, 0x30($sp)
-.L0041A6A0:
-/* 0041A6A0 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A6A4 8F858044 */  lw    $a1, %got(RO_1000A748)($gp)
-/* 0041A6A8 02002025 */  move  $a0, $s0
-/* 0041A6AC 24060009 */  li    $a2, 9
-/* 0041A6B0 24070009 */  li    $a3, 9
-/* 0041A6B4 0320F809 */  jalr  $t9
-/* 0041A6B8 24A5A748 */   addiu $a1, %lo(RO_1000A748) # addiu $a1, $a1, -0x58b8
-/* 0041A6BC 1000002B */  b     .L0041A76C
-/* 0041A6C0 8FBC0030 */   lw    $gp, 0x30($sp)
-.L0041A6C4:
-/* 0041A6C4 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A6C8 8F858044 */  lw    $a1, %got(RO_1000A740)($gp)
-/* 0041A6CC 02002025 */  move  $a0, $s0
-/* 0041A6D0 24060008 */  li    $a2, 8
-/* 0041A6D4 24070008 */  li    $a3, 8
-/* 0041A6D8 0320F809 */  jalr  $t9
-/* 0041A6DC 24A5A740 */   addiu $a1, %lo(RO_1000A740) # addiu $a1, $a1, -0x58c0
-/* 0041A6E0 10000022 */  b     .L0041A76C
-/* 0041A6E4 8FBC0030 */   lw    $gp, 0x30($sp)
-.L0041A6E8:
-/* 0041A6E8 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A6EC 8F858044 */  lw    $a1, %got(RO_1000A738)($gp)
-/* 0041A6F0 02002025 */  move  $a0, $s0
-/* 0041A6F4 24060008 */  li    $a2, 8
-/* 0041A6F8 24070008 */  li    $a3, 8
-/* 0041A6FC 0320F809 */  jalr  $t9
-/* 0041A700 24A5A738 */   addiu $a1, %lo(RO_1000A738) # addiu $a1, $a1, -0x58c8
-/* 0041A704 10000019 */  b     .L0041A76C
-/* 0041A708 8FBC0030 */   lw    $gp, 0x30($sp)
-.L0041A70C:
-/* 0041A70C 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A710 8F858044 */  lw    $a1, %got(RO_1000A730)($gp)
-/* 0041A714 02002025 */  move  $a0, $s0
-/* 0041A718 24060008 */  li    $a2, 8
-/* 0041A71C 24070008 */  li    $a3, 8
-/* 0041A720 0320F809 */  jalr  $t9
-/* 0041A724 24A5A730 */   addiu $a1, %lo(RO_1000A730) # addiu $a1, $a1, -0x58d0
-/* 0041A728 10000010 */  b     .L0041A76C
-/* 0041A72C 8FBC0030 */   lw    $gp, 0x30($sp)
-.L0041A730:
-/* 0041A730 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A734 8F858044 */  lw    $a1, %got(RO_1000A727)($gp)
-/* 0041A738 02002025 */  move  $a0, $s0
-/* 0041A73C 24060009 */  li    $a2, 9
-/* 0041A740 24070009 */  li    $a3, 9
-/* 0041A744 0320F809 */  jalr  $t9
-/* 0041A748 24A5A727 */   addiu $a1, %lo(RO_1000A727) # addiu $a1, $a1, -0x58d9
-/* 0041A74C 10000007 */  b     .L0041A76C
-/* 0041A750 8FBC0030 */   lw    $gp, 0x30($sp)
-.L0041A754:
-/* 0041A754 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0041A758 8F868044 */  lw    $a2, %got(RO_1000A71E)($gp)
-/* 0041A75C 24070009 */  li    $a3, 9
-/* 0041A760 0320F809 */  jalr  $t9
-/* 0041A764 24C6A71E */   addiu $a2, %lo(RO_1000A71E) # addiu $a2, $a2, -0x58e2
-/* 0041A768 8FBC0030 */  lw    $gp, 0x30($sp)
-.L0041A76C:
-/* 0041A76C 92220000 */  lbu   $v0, ($s1)
-/* 0041A770 24010004 */  li    $at, 4
-/* 0041A774 00003825 */  move  $a3, $zero
-/* 0041A778 14410062 */  bne   $v0, $at, .L0041A904
-/* 0041A77C 240A000A */   li    $t2, 10
-/* 0041A780 8F998870 */  lw    $t9, %call16(write_enum)($gp)
-/* 0041A784 8E500000 */  lw    $s0, ($s2)
-/* 0041A788 8F868044 */  lw    $a2, %got(D_1000FF70)($gp)
-/* 0041A78C 92250010 */  lbu   $a1, 0x10($s1)
-/* 0041A790 AFAA0010 */  sw    $t2, 0x10($sp)
-/* 0041A794 02002025 */  move  $a0, $s0
-/* 0041A798 0320F809 */  jalr  $t9
-/* 0041A79C 24C6FF70 */   addiu $a2, %lo(D_1000FF70) # addiu $a2, $a2, -0x90
-/* 0041A7A0 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A7A4 02002025 */  move  $a0, $s0
-/* 0041A7A8 2405007B */  li    $a1, 123
-/* 0041A7AC 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A7B0 24060001 */  li    $a2, 1
-/* 0041A7B4 2407000A */  li    $a3, 10
-/* 0041A7B8 0320F809 */  jalr  $t9
-/* 0041A7BC 00000000 */   nop   
-/* 0041A7C0 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A7C4 8E2B0014 */  lw    $t3, 0x14($s1)
-/* 0041A7C8 02002025 */  move  $a0, $s0
-/* 0041A7CC 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041A7D0 24060004 */  li    $a2, 4
-/* 0041A7D4 2407000A */  li    $a3, 10
-/* 0041A7D8 0320F809 */  jalr  $t9
-/* 0041A7DC 95650004 */   lhu   $a1, 4($t3)
-/* 0041A7E0 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A7E4 8E500000 */  lw    $s0, ($s2)
-/* 0041A7E8 2405007C */  li    $a1, 124
-/* 0041A7EC 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A7F0 24060001 */  li    $a2, 1
-/* 0041A7F4 2407000A */  li    $a3, 10
-/* 0041A7F8 0320F809 */  jalr  $t9
-/* 0041A7FC 02002025 */   move  $a0, $s0
-/* 0041A800 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A804 8E2C0014 */  lw    $t4, 0x14($s1)
-/* 0041A808 02002025 */  move  $a0, $s0
-/* 0041A80C 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041A810 24060001 */  li    $a2, 1
-/* 0041A814 2407000A */  li    $a3, 10
-/* 0041A818 0320F809 */  jalr  $t9
-/* 0041A81C 95850006 */   lhu   $a1, 6($t4)
-/* 0041A820 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A824 8E440000 */  lw    $a0, ($s2)
-/* 0041A828 24060002 */  li    $a2, 2
-/* 0041A82C 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A830 8F858044 */  lw    $a1, %got(RO_1000A71C)($gp)
-/* 0041A834 24070002 */  li    $a3, 2
-/* 0041A838 0320F809 */  jalr  $t9
-/* 0041A83C 24A5A71C */   addiu $a1, %lo(RO_1000A71C) # addiu $a1, $a1, -0x58e4
-/* 0041A840 8E2D0018 */  lw    $t5, 0x18($s1)
-/* 0041A844 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A848 2405007B */  li    $a1, 123
-/* 0041A84C 11A00027 */  beqz  $t5, .L0041A8EC
-/* 0041A850 24060001 */   li    $a2, 1
-/* 0041A854 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A858 8E500000 */  lw    $s0, ($s2)
-/* 0041A85C 2407000A */  li    $a3, 10
-/* 0041A860 0320F809 */  jalr  $t9
-/* 0041A864 02002025 */   move  $a0, $s0
-/* 0041A868 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A86C 8E2E0018 */  lw    $t6, 0x18($s1)
-/* 0041A870 02002025 */  move  $a0, $s0
-/* 0041A874 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041A878 24060004 */  li    $a2, 4
-/* 0041A87C 2407000A */  li    $a3, 10
-/* 0041A880 0320F809 */  jalr  $t9
-/* 0041A884 95C50004 */   lhu   $a1, 4($t6)
-/* 0041A888 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A88C 8E500000 */  lw    $s0, ($s2)
-/* 0041A890 2405007C */  li    $a1, 124
-/* 0041A894 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A898 24060001 */  li    $a2, 1
-/* 0041A89C 2407000A */  li    $a3, 10
-/* 0041A8A0 0320F809 */  jalr  $t9
-/* 0041A8A4 02002025 */   move  $a0, $s0
-/* 0041A8A8 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A8AC 8E2F0018 */  lw    $t7, 0x18($s1)
-/* 0041A8B0 02002025 */  move  $a0, $s0
-/* 0041A8B4 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041A8B8 24060001 */  li    $a2, 1
-/* 0041A8BC 2407000A */  li    $a3, 10
-/* 0041A8C0 0320F809 */  jalr  $t9
-/* 0041A8C4 95E50006 */   lhu   $a1, 6($t7)
-/* 0041A8C8 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A8CC 8E440000 */  lw    $a0, ($s2)
-/* 0041A8D0 2405007D */  li    $a1, 125
-/* 0041A8D4 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A8D8 24060001 */  li    $a2, 1
-/* 0041A8DC 2407000A */  li    $a3, 10
-/* 0041A8E0 0320F809 */  jalr  $t9
-/* 0041A8E4 00000000 */   nop   
-/* 0041A8E8 8FBC0030 */  lw    $gp, 0x30($sp)
-.L0041A8EC:
-/* 0041A8EC 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 0041A8F0 8E440000 */  lw    $a0, ($s2)
-/* 0041A8F4 0320F809 */  jalr  $t9
-/* 0041A8F8 00000000 */   nop   
-/* 0041A8FC 100000BD */  b     .L0041ABF4
-/* 0041A900 8FBC0030 */   lw    $gp, 0x30($sp)
-.L0041A904:
-/* 0041A904 24010005 */  li    $at, 5
-/* 0041A908 14410038 */  bne   $v0, $at, .L0041A9EC
-/* 0041A90C 2C480020 */   sltiu $t0, $v0, 0x20
-/* 0041A910 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A914 8F858044 */  lw    $a1, %got(RO_1000A718)($gp)
-/* 0041A918 8E440000 */  lw    $a0, ($s2)
-/* 0041A91C 24060004 */  li    $a2, 4
-/* 0041A920 24070004 */  li    $a3, 4
-/* 0041A924 0320F809 */  jalr  $t9
-/* 0041A928 24A5A718 */   addiu $a1, %lo(RO_1000A718) # addiu $a1, $a1, -0x58e8
-/* 0041A92C 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A930 8E500000 */  lw    $s0, ($s2)
-/* 0041A934 2405007B */  li    $a1, 123
-/* 0041A938 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A93C 24060001 */  li    $a2, 1
-/* 0041A940 2407000A */  li    $a3, 10
-/* 0041A944 0320F809 */  jalr  $t9
-/* 0041A948 02002025 */   move  $a0, $s0
-/* 0041A94C 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A950 8E380020 */  lw    $t8, 0x20($s1)
-/* 0041A954 02002025 */  move  $a0, $s0
-/* 0041A958 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041A95C 24060004 */  li    $a2, 4
-/* 0041A960 2407000A */  li    $a3, 10
-/* 0041A964 0320F809 */  jalr  $t9
-/* 0041A968 97050004 */   lhu   $a1, 4($t8)
-/* 0041A96C 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A970 8E500000 */  lw    $s0, ($s2)
-/* 0041A974 2405007C */  li    $a1, 124
-/* 0041A978 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041A97C 24060001 */  li    $a2, 1
-/* 0041A980 2407000A */  li    $a3, 10
-/* 0041A984 0320F809 */  jalr  $t9
-/* 0041A988 02002025 */   move  $a0, $s0
-/* 0041A98C 8E390020 */  lw    $t9, 0x20($s1)
-/* 0041A990 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A994 02002025 */  move  $a0, $s0
-/* 0041A998 97250006 */  lhu   $a1, 6($t9)
-/* 0041A99C 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041A9A0 24060001 */  li    $a2, 1
-/* 0041A9A4 2407000A */  li    $a3, 10
-/* 0041A9A8 0320F809 */  jalr  $t9
-/* 0041A9AC 00000000 */   nop   
-/* 0041A9B0 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A9B4 8E440000 */  lw    $a0, ($s2)
-/* 0041A9B8 24060002 */  li    $a2, 2
-/* 0041A9BC 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041A9C0 8F858044 */  lw    $a1, %got(RO_1000A716)($gp)
-/* 0041A9C4 24070002 */  li    $a3, 2
-/* 0041A9C8 0320F809 */  jalr  $t9
-/* 0041A9CC 24A5A716 */   addiu $a1, %lo(RO_1000A716) # addiu $a1, $a1, -0x58ea
-/* 0041A9D0 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041A9D4 8E440000 */  lw    $a0, ($s2)
-/* 0041A9D8 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 0041A9DC 0320F809 */  jalr  $t9
-/* 0041A9E0 00000000 */   nop   
-/* 0041A9E4 10000083 */  b     .L0041ABF4
-/* 0041A9E8 8FBC0030 */   lw    $gp, 0x30($sp)
-.L0041A9EC:
-/* 0041A9EC 00084823 */  negu  $t1, $t0
-/* 0041A9F0 3C011200 */  lui   $at, 0x1200
-/* 0041A9F4 01215024 */  and   $t2, $t1, $at
-/* 0041A9F8 004A5804 */  sllv  $t3, $t2, $v0
-/* 0041A9FC 0561007D */  bgez  $t3, .L0041ABF4
-/* 0041AA00 00000000 */   nop   
-/* 0041AA04 8F99822C */  lw    $t9, %call16(printmtyp)($gp)
-/* 0041AA08 92240016 */  lbu   $a0, 0x16($s1)
-/* 0041AA0C 0320F809 */  jalr  $t9
-/* 0041AA10 30840007 */   andi  $a0, $a0, 7
-/* 0041AA14 922C0000 */  lbu   $t4, ($s1)
-/* 0041AA18 24010006 */  li    $at, 6
-/* 0041AA1C 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041AA20 15810028 */  bne   $t4, $at, .L0041AAC4
-/* 0041AA24 2405007B */   li    $a1, 123
-/* 0041AA28 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041AA2C 8E500000 */  lw    $s0, ($s2)
-/* 0041AA30 24060001 */  li    $a2, 1
-/* 0041AA34 2407000A */  li    $a3, 10
-/* 0041AA38 0320F809 */  jalr  $t9
-/* 0041AA3C 02002025 */   move  $a0, $s0
-/* 0041AA40 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041AA44 8E2D001C */  lw    $t5, 0x1c($s1)
-/* 0041AA48 02002025 */  move  $a0, $s0
-/* 0041AA4C 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041AA50 24060004 */  li    $a2, 4
-/* 0041AA54 2407000A */  li    $a3, 10
-/* 0041AA58 0320F809 */  jalr  $t9
-/* 0041AA5C 95A50004 */   lhu   $a1, 4($t5)
-/* 0041AA60 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041AA64 8E500000 */  lw    $s0, ($s2)
-/* 0041AA68 2405007C */  li    $a1, 124
-/* 0041AA6C 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041AA70 24060001 */  li    $a2, 1
-/* 0041AA74 2407000A */  li    $a3, 10
-/* 0041AA78 0320F809 */  jalr  $t9
-/* 0041AA7C 02002025 */   move  $a0, $s0
-/* 0041AA80 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041AA84 8E2E001C */  lw    $t6, 0x1c($s1)
-/* 0041AA88 02002025 */  move  $a0, $s0
-/* 0041AA8C 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041AA90 24060001 */  li    $a2, 1
-/* 0041AA94 2407000A */  li    $a3, 10
-/* 0041AA98 0320F809 */  jalr  $t9
-/* 0041AA9C 95C50006 */   lhu   $a1, 6($t6)
-/* 0041AAA0 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041AAA4 8E440000 */  lw    $a0, ($s2)
-/* 0041AAA8 24060002 */  li    $a2, 2
-/* 0041AAAC 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041AAB0 8F858044 */  lw    $a1, %got(RO_1000A714)($gp)
-/* 0041AAB4 24070002 */  li    $a3, 2
-/* 0041AAB8 0320F809 */  jalr  $t9
-/* 0041AABC 24A5A714 */   addiu $a1, %lo(RO_1000A714) # addiu $a1, $a1, -0x58ec
-/* 0041AAC0 8FBC0030 */  lw    $gp, 0x30($sp)
-.L0041AAC4:
-/* 0041AAC4 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041AAC8 8E250014 */  lw    $a1, 0x14($s1)
-/* 0041AACC 8E440000 */  lw    $a0, ($s2)
-/* 0041AAD0 24060005 */  li    $a2, 5
-/* 0041AAD4 2407000A */  li    $a3, 10
-/* 0041AAD8 0320F809 */  jalr  $t9
-/* 0041AADC 00052AC2 */   srl   $a1, $a1, 0xb
-/* 0041AAE0 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041AAE4 8E500000 */  lw    $s0, ($s2)
-/* 0041AAE8 24050020 */  li    $a1, 32
-/* 0041AAEC 8F998868 */  lw    $t9, %call16(write_char)($gp)
-/* 0041AAF0 24060001 */  li    $a2, 1
-/* 0041AAF4 2407000A */  li    $a3, 10
-/* 0041AAF8 0320F809 */  jalr  $t9
-/* 0041AAFC 02002025 */   move  $a0, $s0
-/* 0041AB00 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041AB04 02002025 */  move  $a0, $s0
-/* 0041AB08 8E250010 */  lw    $a1, 0x10($s1)
-/* 0041AB0C 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041AB10 24060005 */  li    $a2, 5
-/* 0041AB14 2407000A */  li    $a3, 10
-/* 0041AB18 0320F809 */  jalr  $t9
-/* 0041AB1C 00000000 */   nop   
-/* 0041AB20 922F0019 */  lbu   $t7, 0x19($s1)
-/* 0041AB24 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041AB28 24060004 */  li    $a2, 4
-/* 0041AB2C 11E0000D */  beqz  $t7, .L0041AB64
-/* 0041AB30 24070004 */   li    $a3, 4
-/* 0041AB34 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041AB38 8F858044 */  lw    $a1, %got(RO_1000A710)($gp)
-/* 0041AB3C 8E440000 */  lw    $a0, ($s2)
-/* 0041AB40 0320F809 */  jalr  $t9
-/* 0041AB44 24A5A710 */   addiu $a1, %lo(RO_1000A710) # addiu $a1, $a1, -0x58f0
-/* 0041AB48 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041AB4C 8E440000 */  lw    $a0, ($s2)
-/* 0041AB50 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 0041AB54 0320F809 */  jalr  $t9
-/* 0041AB58 00000000 */   nop   
-/* 0041AB5C 10000006 */  b     .L0041AB78
-/* 0041AB60 8FBC0030 */   lw    $gp, 0x30($sp)
-.L0041AB64:
-/* 0041AB64 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 0041AB68 8E440000 */  lw    $a0, ($s2)
-/* 0041AB6C 0320F809 */  jalr  $t9
-/* 0041AB70 00000000 */   nop   
-/* 0041AB74 8FBC0030 */  lw    $gp, 0x30($sp)
-.L0041AB78:
-/* 0041AB78 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041AB7C 8F858044 */  lw    $a1, %got(RO_1000A70C)($gp)
-/* 0041AB80 8E440000 */  lw    $a0, ($s2)
-/* 0041AB84 24060004 */  li    $a2, 4
-/* 0041AB88 24070004 */  li    $a3, 4
-/* 0041AB8C 0320F809 */  jalr  $t9
-/* 0041AB90 24A5A70C */   addiu $a1, %lo(RO_1000A70C) # addiu $a1, $a1, -0x58f4
-/* 0041AB94 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041AB98 8E440000 */  lw    $a0, ($s2)
-/* 0041AB9C 24060004 */  li    $a2, 4
-/* 0041ABA0 8F99886C */  lw    $t9, %call16(write_string)($gp)
-/* 0041ABA4 8F858044 */  lw    $a1, %got(RO_1000A708)($gp)
-/* 0041ABA8 24070004 */  li    $a3, 4
-/* 0041ABAC 0320F809 */  jalr  $t9
-/* 0041ABB0 24A5A708 */   addiu $a1, %lo(RO_1000A708) # addiu $a1, $a1, -0x58f8
-/* 0041ABB4 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041ABB8 8E440000 */  lw    $a0, ($s2)
-/* 0041ABBC 96250024 */  lhu   $a1, 0x24($s1)
-/* 0041ABC0 8F998874 */  lw    $t9, %call16(write_integer)($gp)
-/* 0041ABC4 24060007 */  li    $a2, 7
-/* 0041ABC8 2407000A */  li    $a3, 10
-/* 0041ABCC 0320F809 */  jalr  $t9
-/* 0041ABD0 00000000 */   nop   
-/* 0041ABD4 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041ABD8 8E440000 */  lw    $a0, ($s2)
-/* 0041ABDC 8F998864 */  lw    $t9, %call16(writeln)($gp)
-/* 0041ABE0 0320F809 */  jalr  $t9
-/* 0041ABE4 00000000 */   nop   
-/* 0041ABE8 8FBC0030 */  lw    $gp, 0x30($sp)
-/* 0041ABEC 26940001 */  addiu $s4, $s4, 1
-/* 0041ABF0 26730008 */  addiu $s3, $s3, 8
-.L0041ABF4:
-/* 0041ABF4 8F9889E0 */  lw     $t8, %got(bitposcount)($gp)
-/* 0041ABF8 26940001 */  addiu $s4, $s4, 1
-/* 0041ABFC 26730008 */  addiu $s3, $s3, 8
-/* 0041AC00 8F180000 */  lw    $t8, ($t8)
-/* 0041AC04 1698FE39 */  bne   $s4, $t8, .L0041A4EC
-/* 0041AC08 00000000 */   nop   
-/* 0041AC0C 8FBF0034 */  lw    $ra, 0x34($sp)
-.L0041AC10:
-/* 0041AC10 8FB0001C */  lw    $s0, 0x1c($sp)
-/* 0041AC14 8FB10020 */  lw    $s1, 0x20($sp)
-/* 0041AC18 8FB20024 */  lw    $s2, 0x24($sp)
-/* 0041AC1C 8FB30028 */  lw    $s3, 0x28($sp)
-/* 0041AC20 8FB4002C */  lw    $s4, 0x2c($sp)
-/* 0041AC24 03E00008 */  jr    $ra
-/* 0041AC28 27BD0038 */   addiu $sp, $sp, 0x38
-    .type printitab, @function
-    .size printitab, .-printitab
-    .end printitab
 
 glabel printtab
     .ent printtab
@@ -1890,37 +1332,37 @@ void printlinfo(void) {
     if (proc_to_print[0] == ' ' || at_proc_to_print) {
         node = graphhead;
         while (node != NULL) {
-            write_string(list.c_file, "! ! ! ! ! node", 0xEU, 0xEU);
-            write_integer(list.c_file, node->num, 0xC, 0xAU);
-            write_string(list.c_file, " ! ! ! ! !", 0xAU, 0xAU);
+            write_string(list.c_file, "! ! ! ! ! node", 14, 14);
+            write_integer(list.c_file, node->num, 12, 10);
+            write_string(list.c_file, " ! ! ! ! !", 10, 10);
             writeln(list.c_file);
-            write_string(list.c_file, "antlocs --", 0xAU, 0xAU);
+            write_string(list.c_file, "antlocs --", 10, 10);
             printbv(&node->bvs.stage1.antlocs);
-            write_string(list.c_file, "avlocs --", 9U, 9U);
+            write_string(list.c_file, "avlocs --", 9, 9);
             printbv(&node->bvs.stage1.avlocs);
-            write_string(list.c_file, "alters --", 9U, 9U);
+            write_string(list.c_file, "alters --", 9, 9);
             printbv(&node->bvs.stage1.alters);
-            write_string(list.c_file, "pavlocs --", 0xAU, 0xAU);
+            write_string(list.c_file, "pavlocs --", 10, 10);
             printbv(&node->bvs.stage1.u.precm.pavlocs);
-            write_string(list.c_file, "absalters --", 0xCU, 0xCU);
+            write_string(list.c_file, "absalters --", 12, 12);
             printbv(&node->bvs.stage1.absalters);
-            write_string(list.c_file, "expoccur --", 0xBU, 0xBU);
+            write_string(list.c_file, "expoccur --", 11, 11);
             printbv(&node->bvs.stage1.u.precm.expoccur);
-            write_string(list.c_file, "indiracc --", 0xBU, 0xBU);
+            write_string(list.c_file, "indiracc --", 11, 11);
             printbv(&node->indiracc);
             node = node->next;
         }
-        write_string(list.c_file, "varbits ****", 0xCU, 0xCU);
+        write_string(list.c_file, "varbits ****", 12, 12);
         printbv(&varbits);
-        write_string(list.c_file, "slvarbits ****", 0xEU, 0xEU);
+        write_string(list.c_file, "slvarbits ****", 14, 14);
         printbv(&slvarbits);
-        write_string(list.c_file, "storeop ****", 0xCU, 0xCU);
+        write_string(list.c_file, "storeop ****", 12, 12);
         printbv(&storeop);
-        write_string(list.c_file, "trapop ****", 0xBU, 0xBU);
+        write_string(list.c_file, "trapop ****", 11, 11);
         printbv(&trapop);
-        write_string(list.c_file, "boolexp ****", 0xCU, 0xCU);
+        write_string(list.c_file, "boolexp ****", 12, 12);
         printbv(&boolexp);
-        write_string(list.c_file, "indmults ****", 0xDU, 0xDU);
+        write_string(list.c_file, "indmults ****", 13, 13);
         printbv(&indmults);
     }
 }
@@ -1934,26 +1376,26 @@ void printhoist(bool show_hoistedexp) {
     if (proc_to_print[0] == ' ' || at_proc_to_print) {
         node = graphhead;
         while (node != NULL) {
-            write_string(list.c_file, "! ! ! ! ! node", 0xEU, 0xEU);
-            write_integer(list.c_file, node->num, 0xC, 0xAU);
-            write_string(list.c_file, " ! ! ! ! !", 0xAU, 0xAU);
+            write_string(list.c_file, "! ! ! ! ! node", 14, 14);
+            write_integer(list.c_file, node->num, 12, 10);
+            write_string(list.c_file, " ! ! ! ! !", 10, 10);
             writeln(list.c_file);
-            write_string(list.c_file, "antlocs --", 0xAU, 0xAU);
+            write_string(list.c_file, "antlocs --", 10, 10);
             printbv(&node->bvs.stage1.antlocs);
-            write_string(list.c_file, "avlocs --", 9U, 9U);
+            write_string(list.c_file, "avlocs --", 9, 9);
             printbv(&node->bvs.stage1.avlocs);
-            write_string(list.c_file, "alters --", 9U, 9U);
+            write_string(list.c_file, "alters --", 9, 9);
             printbv(&node->bvs.stage1.alters);
-            write_string(list.c_file, "antin --", 8U, 8U);
+            write_string(list.c_file, "antin --", 8, 8);
             printbv(&node->bvs.stage1.u.precm.antin);
-            write_string(list.c_file, "antout --", 9U, 9U);
+            write_string(list.c_file, "antout --", 9, 9);
             printbv(&node->bvs.stage1.u.precm.antout);
-            write_string(list.c_file, "pavin --", 8U, 8U);
+            write_string(list.c_file, "pavin --", 8, 8);
             printbv(&node->bvs.stage1.u.precm.pavin);
-            write_string(list.c_file, "pavout --", 9U, 9U);
+            write_string(list.c_file, "pavout --", 9, 9);
             printbv(&node->bvs.stage1.u.precm.pavout);
             if (show_hoistedexp) {
-                write_string(list.c_file, "hoistedexp --", 0xDU, 0xDU);
+                write_string(list.c_file, "hoistedexp --", 13, 13);
                 printbv(&node->hoistedexp);
             }
             node = node->next;
@@ -1970,27 +1412,27 @@ void printprecm(void) {
     if (proc_to_print[0] == ' ' || at_proc_to_print) {
         node = graphhead;
         while (node != NULL) {
-            write_string(list.c_file, "! ! ! ! ! node", 0xEU, 0xEU);
-            write_integer(list.c_file, node->num, 0xC, 0xAU);
-            write_string(list.c_file, " ! ! ! ! !", 0xAU, 0xAU);
+            write_string(list.c_file, "! ! ! ! ! node", 14, 14);
+            write_integer(list.c_file, node->num, 12, 10);
+            write_string(list.c_file, " ! ! ! ! !", 10, 10);
             writeln(list.c_file);
-            write_string(list.c_file, "antlocs --", 0xAU, 0xAU);
+            write_string(list.c_file, "antlocs --", 10, 10);
             printbv(&node->bvs.stage1.antlocs);
-            write_string(list.c_file, "avlocs --", 9U, 9U);
+            write_string(list.c_file, "avlocs --", 9, 9);
             printbv(&node->bvs.stage1.avlocs);
-            write_string(list.c_file, "alters --", 9U, 9U);
+            write_string(list.c_file, "alters --", 9, 9);
             printbv(&node->bvs.stage1.alters);
-            write_string(list.c_file, "pavlocs --", 0xAU, 0xAU);
+            write_string(list.c_file, "pavlocs --", 10, 10);
             printbv(&node->bvs.stage1.u.precm.pavlocs);
-            write_string(list.c_file, "absalters --", 0xCU, 0xCU);
+            write_string(list.c_file, "absalters --", 12, 12);
             printbv(&node->bvs.stage1.absalters);
-            write_string(list.c_file, "avin --", 7U, 7U);
+            write_string(list.c_file, "avin --", 7, 7);
             printbv(&node->bvs.stage1.u.precm.avin);
-            write_string(list.c_file, "avout --", 8U, 8U);
+            write_string(list.c_file, "avout --", 8, 8);
             printbv(&node->bvs.stage1.u.precm.avout);
-            write_string(list.c_file, "pavin --", 8U, 8U);
+            write_string(list.c_file, "pavin --", 8, 8);
             printbv(&node->bvs.stage1.u.precm.pavin);
-            write_string(list.c_file, "pavout --", 9U, 9U);
+            write_string(list.c_file, "pavout --", 9, 9);
             printbv(&node->bvs.stage1.u.precm.pavout);
             node = node->next;
         }
@@ -2006,51 +1448,51 @@ void printcm(void) {
     if (proc_to_print[0] == ' ' || at_proc_to_print) {
         node = graphhead;
         while (node != NULL) {
-            write_string(list.c_file, "! ! ! ! ! node", 0xEU, 0xEU);
-            write_integer(list.c_file, node->num, 0xC, 0xAU);
-            write_string(list.c_file, " ! ! ! ! !", 0xAU, 0xAU);
+            write_string(list.c_file, "! ! ! ! ! node", 14, 14);
+            write_integer(list.c_file, node->num, 12, 10);
+            write_string(list.c_file, " ! ! ! ! !", 10, 10);
             writeln(list.c_file);
-            write_string(list.c_file, "antlocs --", 0xAU, 0xAU);
+            write_string(list.c_file, "antlocs --", 10, 10);
             printbv(&node->bvs.stage1.antlocs);
-            write_string(list.c_file, "avlocs --", 9U, 9U);
+            write_string(list.c_file, "avlocs --", 9, 9);
             printbv(&node->bvs.stage1.avlocs);
-            write_string(list.c_file, "alters --", 9U, 9U);
+            write_string(list.c_file, "alters --", 9, 9);
             printbv(&node->bvs.stage1.alters);
-            write_string(list.c_file, "absalters --", 0xCU, 0xCU);
+            write_string(list.c_file, "absalters --", 12, 12);
             printbv(&node->bvs.stage1.absalters);
-            write_string(list.c_file, "antin --", 8U, 8U);
+            write_string(list.c_file, "antin --", 8, 8);
             printbv(&node->bvs.stage1.u.cm.antin);
-            write_string(list.c_file, "antout --", 9U, 9U);
+            write_string(list.c_file, "antout --", 9, 9);
             printbv(&node->bvs.stage1.u.cm.antout);
-            write_string(list.c_file, "iv --", 5U, 5U);
+            write_string(list.c_file, "iv --", 5, 5);
             printbv(&node->bvs.stage1.u.cm.iv);
-            write_string(list.c_file, "cand --", 7U, 7U);
+            write_string(list.c_file, "cand --", 7, 7);
             printbv(&node->bvs.stage1.u.cm.cand);
-            write_string(list.c_file, "ppin --", 7U, 7U);
+            write_string(list.c_file, "ppin --", 7, 7);
             printbv(&node->bvs.stage1.u.cm.ppin);
-            write_string(list.c_file, "ppout --", 8U, 8U);
+            write_string(list.c_file, "ppout --", 8, 8);
             printbv(&node->bvs.stage1.u.cm.ppout);
             if (docodehoist) {
-                write_string(list.c_file, "hoistedexp --", 0xDU, 0xDU);
+                write_string(list.c_file, "hoistedexp --", 13, 13);
                 printbv(&node->hoistedexp);
             }
-            write_string(list.c_file, "insert --", 9U, 9U);
+            write_string(list.c_file, "insert --", 9, 9);
             printbv(&node->bvs.stage1.u.cm.insert);
-            write_string(list.c_file, "delete --", 9U, 9U);
+            write_string(list.c_file, "delete --", 9, 9);
             printbv(&node->bvs.stage1.u.cm.delete);
-            write_string(list.c_file, "subdelete --", 0xCU, 0xCU);
+            write_string(list.c_file, "subdelete --", 12, 12);
             printbv(&node->bvs.stage1.u.cm.subdelete);
-            write_string(list.c_file, "subinsert --", 0xCU, 0xCU);
+            write_string(list.c_file, "subinsert --", 12, 12);
             printbv(&node->bvs.stage1.u.cm.subinsert);
             node = node->next;
         }
-        write_string(list.c_file, "indmults ****", 0xDU, 0xDU);
+        write_string(list.c_file, "indmults ****", 13, 13);
         printbv(&indmults);
-        write_string(list.c_file, "mvarbits ****", 0xDU, 0xDU);
+        write_string(list.c_file, "mvarbits ****", 13, 13);
         printbv(&mvarbits);
-        write_string(list.c_file, "outmodebits ****", 0x10U, 0x10U);
+        write_string(list.c_file, "outmodebits ****", 16, 16);
         printbv(&outmodebits);
-        write_string(list.c_file, "notinmodebits ****", 0x12U, 0x12U);
+        write_string(list.c_file, "notinmodebits ****", 18, 18);
         printbv(&notinmodebits);
     }
 }
@@ -2064,27 +1506,27 @@ void printscm(void) {
     if (proc_to_print[0] == ' ' || at_proc_to_print) {
         node = graphhead;
         while (node != NULL) {
-            write_string(list.c_file, "! ! ! ! ! node", 0xEU, 0xEU);
-            write_integer(list.c_file, node->num, 0xC, 0xAU);
-            write_string(list.c_file, " ! ! ! ! !", 0xAU, 0xAU);
+            write_string(list.c_file, "! ! ! ! ! node", 14, 14);
+            write_integer(list.c_file, node->num, 12, 10);
+            write_string(list.c_file, " ! ! ! ! !", 10, 10);
             writeln(list.c_file);
-            write_string(list.c_file, "antlocs --", 0xAU, 0xAU);
+            write_string(list.c_file, "antlocs --", 10, 10);
             printbv(&node->bvs.stage1.antlocs);
-            write_string(list.c_file, "avlocs --", 9U, 9U);
+            write_string(list.c_file, "avlocs --", 9, 9);
             printbv(&node->bvs.stage1.avlocs);
-            write_string(list.c_file, "alters --", 9U, 9U);
+            write_string(list.c_file, "alters --", 9, 9);
             printbv(&node->bvs.stage1.alters);
-            write_string(list.c_file, "absalters --", 0xCU, 0xCU);
+            write_string(list.c_file, "absalters --", 12, 12);
             printbv(&node->bvs.stage1.absalters);
-            write_string(list.c_file, "source --", 9U, 9U);
+            write_string(list.c_file, "source --", 9, 9);
             printbv(&node->bvs.stage1.u.scm.source);
-            write_string(list.c_file, "sink --", 7U, 7U);
+            write_string(list.c_file, "sink --", 7, 7);
             printbv(&node->bvs.stage1.u.scm.sink);
-            write_string(list.c_file, "region --", 9U, 9U);
+            write_string(list.c_file, "region --", 9, 9);
             printbv(&node->bvs.stage1.u.scm.region);
             node = node->next;
         }
-        write_string(list.c_file, "coloreditems ****", 0x11U, 0x11U);
+        write_string(list.c_file, "coloreditems ****", 17, 17);
         printbv(&coloreditems);
     }
 }
@@ -2937,7 +2379,7 @@ void printinterproc(void) {
 
     if (proc_to_print[0] == ' ' || at_proc_to_print) {
         if (allcallersave) {
-            write_string(list.c_file, "********* regstaken *********", 0x1DU, 0x1DU);
+            write_string(list.c_file, "********* regstaken *********", 29, 29);
             writeln(list.c_file);
             for (i = 1; i <= lasteereg[1]; i++) {
                 if (curproc->regstaken_parregs->regstaken[i - 1]) {
@@ -2945,7 +2387,7 @@ void printinterproc(void) {
                 }
             }
             writeln(list.c_file);
-            write_string(list.c_file, "========= parregs =========", 0x1BU, 0x1BU);
+            write_string(list.c_file, "========= parregs =========", 27, 27);
             writeln(list.c_file);
             for (i = 1; i <= lasteereg[1]; i++) {
                 if (curproc->regstaken_parregs->parregs[i - 1] != -1) {
@@ -2968,13 +2410,13 @@ void printsav(void) {
     if (proc_to_print[0] == ' ' || at_proc_to_print) {
         node = graphhead;
         while (node != NULL) {
-            write_string(list.c_file, "$ $ $ node", 0xAU, 0xAU);
-            write_integer(list.c_file, node->num, 4, 0xAU);
-            write_string(list.c_file, " loopdepth ", 0xBU, 0xBU);
-            write_integer(list.c_file, node->loopdepth, 0xC, 0xAU);
+            write_string(list.c_file, "$ $ $ node", 10, 10);
+            write_integer(list.c_file, node->num, 4, 10);
+            write_string(list.c_file, " loopdepth ", 11, 11);
+            write_integer(list.c_file, node->loopdepth, 12, 10);
             writeln(list.c_file);
             if (node->bvs.stage3.app != 0) {
-                write_string(list.c_file, " app:", 5U, 5U);
+                write_string(list.c_file, " app:", 5, 5);
                 for (i = firsteereg[0]; i < 36; i++) {
                     if (GETBIT32(node->bvs.stage3.app, i - 13)) {
                         write_integer(list.c_file, i, 6, 10);
@@ -2983,7 +2425,7 @@ void printsav(void) {
                 writeln(list.c_file);
             }
             if (node->bvs.stage3.ant != 0) {
-                write_string(list.c_file, " ant:", 5U, 5U);
+                write_string(list.c_file, " ant:", 5, 5);
                 for (i = firsteereg[0]; i < 36; i++) {
                     if (GETBIT32(node->bvs.stage3.ant, i - 13)) {
                         write_integer(list.c_file, i, 6, 10);
@@ -2992,7 +2434,7 @@ void printsav(void) {
                 writeln(list.c_file);
             }
             if (node->bvs.stage3.av != 0) {
-                write_string(list.c_file, " av:", 4U, 4U);
+                write_string(list.c_file, " av:", 4, 4);
                 for (i = firsteereg[0]; i < 36; i++) {
                     if (GETBIT32(node->bvs.stage3.av, i - 13)) {
                         write_integer(list.c_file, i, 6, 10);
@@ -3001,7 +2443,7 @@ void printsav(void) {
                 writeln(list.c_file);
             }
             if (node->bvs.stage3.eeantin != 0) {
-                write_string(list.c_file, " eeantin:", 9U, 9U);
+                write_string(list.c_file, " eeantin:", 9, 9);
                 for (i = firsteereg[0]; i < 36; i++) {
                     if (GETBIT32(node->bvs.stage3.eeantin, i - 13)) {
                         write_integer(list.c_file, i, 6, 10);
@@ -3010,7 +2452,7 @@ void printsav(void) {
                 writeln(list.c_file);
             }
             if (node->bvs.stage3.eeantout != 0) {
-                write_string(list.c_file, " eeantout:", 0xAU, 0xAU);
+                write_string(list.c_file, " eeantout:", 10, 10);
                 for (i = firsteereg[0]; i < 36; i++) {
                     if (GETBIT32(node->bvs.stage3.eeantout, i - 13)) {
                         write_integer(list.c_file, i, 6, 10);
@@ -3019,7 +2461,7 @@ void printsav(void) {
                 writeln(list.c_file);
             }
             if (node->bvs.stage3.eeavin != 0) {
-                write_string(list.c_file, " eeavin:", 8U, 8U);
+                write_string(list.c_file, " eeavin:", 8, 8);
                 for (i = firsteereg[0]; i < 36; i++) {
                     if (GETBIT32(node->bvs.stage3.eeavin, i - 13)) {
                         write_integer(list.c_file, i, 6, 10);
@@ -3028,7 +2470,7 @@ void printsav(void) {
                 writeln(list.c_file);
             }
             if (node->bvs.stage3.eeavout != 0) {
-                write_string(list.c_file, " eeavout:", 9U, 9U);
+                write_string(list.c_file, " eeavout:", 9, 9);
                 for (i = firsteereg[0]; i < 36; i++) {
                     if (GETBIT32(node->bvs.stage3.eeavout, i - 13)) {
                         write_integer(list.c_file, i, 6, 10);
@@ -3037,7 +2479,7 @@ void printsav(void) {
                 writeln(list.c_file);
             }
             if (node->bvs.stage3.strinsertin != 0) {
-                write_string(list.c_file, " strinsertin:", 0xDU, 0xDU);
+                write_string(list.c_file, " strinsertin:", 13, 13);
                 for (i = firsteereg[0]; i < 36; i++) {
                     if (GETBIT32(node->bvs.stage3.strinsertin, i - 13)) {
                         write_integer(list.c_file, i, 6, 10);
@@ -3046,7 +2488,7 @@ void printsav(void) {
                 writeln(list.c_file);
             }
             if (node->bvs.stage3.lodinsertout != 0) {
-                write_string(list.c_file, " lodinsertout:", 0xEU, 0xEU);
+                write_string(list.c_file, " lodinsertout:", 14, 14);
                 for (i = firsteereg[0]; i < 36; i++) {
                     if (GETBIT32(node->bvs.stage3.lodinsertout, i - 13)) {
                         write_integer(list.c_file, i, 6, 10);
@@ -3063,111 +2505,111 @@ void printsav(void) {
 0045806C main
 */
 void printstat(void) {
-    write_string(list.c_file, "numlcse=", 8U, 8U);
-    write_integer(list.c_file, numlcse, 0xC, 0xAU);
-    write_string(list.c_file, " numlrdstr=", 0xBU, 0xBU);
-    write_integer(list.c_file, numlrdstr, 0xC, 0xAU);
+    write_string(list.c_file, "numlcse=", 8, 8);
+    write_integer(list.c_file, numlcse, 12, 10);
+    write_string(list.c_file, " numlrdstr=", 11, 11);
+    write_integer(list.c_file, numlrdstr, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "numgcopy=", 9U, 9U);
-    write_integer(list.c_file, numgcopy, 0xC, 0xAU);
-    write_string(list.c_file, " numrdstr=", 0xAU, 0xAU);
-    write_integer(list.c_file, numrdstr, 0xC, 0xAU);
+    write_string(list.c_file, "numgcopy=", 9, 9);
+    write_integer(list.c_file, numgcopy, 12, 10);
+    write_string(list.c_file, " numrdstr=", 10, 10);
+    write_integer(list.c_file, numrdstr, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "numgcse=", 8U, 8U);
-    write_integer(list.c_file, numgcse, 0xC, 0xAU);
-    write_string(list.c_file, " numinsert=", 0xBU, 0xBU);
-    write_integer(list.c_file, numinsert, 0xC, 0xAU);
+    write_string(list.c_file, "numgcse=", 8, 8);
+    write_integer(list.c_file, numgcse, 12, 10);
+    write_string(list.c_file, " numinsert=", 11, 11);
+    write_integer(list.c_file, numinsert, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "numtstrep=", 0xAU, 0xAU);
-    write_integer(list.c_file, numtstrep, 0xC, 0xAU);
-    write_string(list.c_file, " numsrinc=", 0xAU, 0xAU);
-    write_integer(list.c_file, numsrinc, 0xC, 0xAU);
+    write_string(list.c_file, "numtstrep=", 10, 10);
+    write_integer(list.c_file, numtstrep, 12, 10);
+    write_string(list.c_file, " numsrinc=", 10, 10);
+    write_integer(list.c_file, numsrinc, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "total numexpr=", 0xEU, 0xEU);
-    write_integer(list.c_file, numexpr, 0xC, 0xAU);
-    write_string(list.c_file, " numstr=", 8U, 8U);
-    write_integer(list.c_file, numstr, 0xC, 0xAU);
+    write_string(list.c_file, "total numexpr=", 14, 14);
+    write_integer(list.c_file, numexpr, 12, 10);
+    write_string(list.c_file, " numstr=", 8, 8);
+    write_integer(list.c_file, numstr, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "totvarref=", 0xAU, 0xAU);
-    write_integer(list.c_file, totvarref, 0xC, 0xAU);
-    write_string(list.c_file, " totvarrref=", 0xCU, 0xCU);
-    write_integer(list.c_file, totvarrref, 0xC, 0xAU);
+    write_string(list.c_file, "totvarref=", 10, 10);
+    write_integer(list.c_file, totvarref, 12, 10);
+    write_string(list.c_file, " totvarrref=", 12, 12);
+    write_integer(list.c_file, totvarrref, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "totvarsav=", 0xAU, 0xAU);
-    write_integer(list.c_file, totvarsav, 0xC, 0xAU);
-    write_string(list.c_file, " totvarrsav=", 0xCU, 0xCU);
-    write_integer(list.c_file, totvarrsav, 0xC, 0xAU);
+    write_string(list.c_file, "totvarsav=", 10, 10);
+    write_integer(list.c_file, totvarsav, 12, 10);
+    write_string(list.c_file, " totvarrsav=", 12, 12);
+    write_integer(list.c_file, totvarrsav, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "totexpref=", 0xAU, 0xAU);
-    write_integer(list.c_file, totexpref, 0xC, 0xAU);
-    write_string(list.c_file, " totexprref=", 0xCU, 0xCU);
-    write_integer(list.c_file, totexprref, 0xC, 0xAU);
+    write_string(list.c_file, "totexpref=", 10, 10);
+    write_integer(list.c_file, totexpref, 12, 10);
+    write_string(list.c_file, " totexprref=", 12, 12);
+    write_integer(list.c_file, totexprref, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "totexpsav=", 0xAU, 0xAU);
-    write_integer(list.c_file, totexpsav, 0xC, 0xAU);
-    write_string(list.c_file, " totexprsav=", 0xCU, 0xCU);
-    write_integer(list.c_file, totexprsav, 0xC, 0xAU);
+    write_string(list.c_file, "totexpsav=", 10, 10);
+    write_integer(list.c_file, totexpsav, 12, 10);
+    write_string(list.c_file, " totexprsav=", 12, 12);
+    write_integer(list.c_file, totexprsav, 12, 10);
     writeln(list.c_file);
-    write_integer(list.c_file, totvarrlods + totexprlods, 0xC, 0xAU);
-    write_string(list.c_file, " rlods", 6U, 6U);
-    write_integer(list.c_file, totvarrstrs + totexprstrs, 0xC, 0xAU);
-    write_string(list.c_file, " rstrs", 6U, 6U);
+    write_integer(list.c_file, totvarrlods + totexprlods, 12, 10);
+    write_string(list.c_file, " rlods", 6, 6);
+    write_integer(list.c_file, totvarrstrs + totexprstrs, 12, 10);
+    write_string(list.c_file, " rstrs", 6, 6);
     writeln(list.c_file);
-    write_string(list.c_file, "numcalls=", 9U, 9U);
-    write_integer(list.c_file, numcalls, 0xC, 0xAU);
-    write_string(list.c_file, " contiglr=", 0xAU, 0xAU);
-    write_integer(list.c_file, contiglr, 0xC, 0xAU);
+    write_string(list.c_file, "numcalls=", 9, 9);
+    write_integer(list.c_file, numcalls, 12, 10);
+    write_string(list.c_file, " contiglr=", 10, 10);
+    write_integer(list.c_file, contiglr, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "aliasedlr=", 0xAU, 0xAU);
-    write_integer(list.c_file, aliasedlr, 0xC, 0xAU);
-    write_string(list.c_file, " aliasedlu=", 0xBU, 0xBU);
-    write_integer(list.c_file, aliasedlu, 0xC, 0xAU);
+    write_string(list.c_file, "aliasedlr=", 10, 10);
+    write_integer(list.c_file, aliasedlr, 12, 10);
+    write_string(list.c_file, " aliasedlu=", 11, 11);
+    write_integer(list.c_file, aliasedlu, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "numlr=", 6U, 6U);
-    write_integer(list.c_file, numlr, 0xC, 0xAU);
-    write_string(list.c_file, " finalnumlr=", 0xCU, 0xCU);
-    write_integer(list.c_file, finalnumlr, 0xC, 0xAU);
+    write_string(list.c_file, "numlr=", 6, 6);
+    write_integer(list.c_file, numlr, 12, 10);
+    write_string(list.c_file, " finalnumlr=", 12, 12);
+    write_integer(list.c_file, finalnumlr, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "numlu=", 6U, 6U);
-    write_integer(list.c_file, numlu, 0xC, 0xAU);
-    write_string(list.c_file, " numsplitlu=", 0xCU, 0xCU);
-    write_integer(list.c_file, numsplitlu, 0xC, 0xAU);
+    write_string(list.c_file, "numlu=", 6, 6);
+    write_integer(list.c_file, numlu, 12, 10);
+    write_string(list.c_file, " numsplitlu=", 12, 12);
+    write_integer(list.c_file, numsplitlu, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "numoc=", 6U, 6U);
-    write_integer(list.c_file, numoc, 0xC, 0xAU);
-    write_string(list.c_file, " allococ", 8U, 8U);
-    write_integer(list.c_file, allococ, 0xC, 0xAU);
+    write_string(list.c_file, "numoc=", 6, 6);
+    write_integer(list.c_file, numoc, 12, 10);
+    write_string(list.c_file, " allococ", 8, 8);
+    write_integer(list.c_file, allococ, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "numcoloredlr=", 0xDU, 0xDU);
-    write_integer(list.c_file, numcoloredlr, 0xC, 0xAU);
-    write_string(list.c_file, " numcantcoloredlr=", 0x12U, 0x12U);
-    write_integer(list.c_file, numcantcoloredlr, 0xC, 0xAU);
+    write_string(list.c_file, "numcoloredlr=", 13, 13);
+    write_integer(list.c_file, numcoloredlr, 12, 10);
+    write_string(list.c_file, " numcantcoloredlr=", 18, 18);
+    write_integer(list.c_file, numcantcoloredlr, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "num0occurlr=", 0xCU, 0xCU);
-    write_integer(list.c_file, num0occurlr, 0xC, 0xAU);
-    write_string(list.c_file, " aliasedoc=", 0xBU, 0xBU);
-    write_integer(list.c_file, aliasedoc, 0xC, 0xAU);
+    write_string(list.c_file, "num0occurlr=", 12, 12);
+    write_integer(list.c_file, num0occurlr, 12, 10);
+    write_string(list.c_file, " aliasedoc=", 11, 11);
+    write_integer(list.c_file, aliasedoc, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "numsparselr=", 0xCU, 0xCU);
-    write_integer(list.c_file, numsparselr, 0xC, 0xAU);
-    write_string(list.c_file, " numnotwellformedlr=", 0x14U, 0x14U);
-    write_integer(list.c_file, numnotwellformedlr, 0xC, 0xAU);
+    write_string(list.c_file, "numsparselr=", 12, 12);
+    write_integer(list.c_file, numsparselr, 12, 10);
+    write_string(list.c_file, " numnotwellformedlr=", 20, 20);
+    write_integer(list.c_file, numnotwellformedlr, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "numcalloverheadlr=", 0x12U, 0x12U);
-    write_integer(list.c_file, numcalloverheadlr, 0xC, 0xAU);
+    write_string(list.c_file, "numcalloverheadlr=", 18, 18);
+    write_integer(list.c_file, numcalloverheadlr, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "lopttime=", 9U, 9U);
-    write_integer(list.c_file, lopttime, 0xC, 0xAU);
-    write_string(list.c_file, " dataflowtime=", 0xEU, 0xEU);
-    write_integer(list.c_file, dataflowtime, 0xC, 0xAU);
-    write_string(list.c_file, " regaloctime=", 0xDU, 0xDU);
-    write_integer(list.c_file, regaloctime, 0xC, 0xAU);
+    write_string(list.c_file, "lopttime=", 9, 9);
+    write_integer(list.c_file, lopttime, 12, 10);
+    write_string(list.c_file, " dataflowtime=", 14, 14);
+    write_integer(list.c_file, dataflowtime, 12, 10);
+    write_string(list.c_file, " regaloctime=", 13, 13);
+    write_integer(list.c_file, regaloctime, 12, 10);
     writeln(list.c_file);
-    write_string(list.c_file, "Average data flow iterations:", 0x1DU, 0x1DU);
-    write_real(list.c_file, (float)dataflowiter / (float)numdataflow, 0xF, -1);
-    write_string(list.c_file, " out of", 7U, 7U);
-    write_integer(list.c_file, numdataflow, 0xC, 0xAU);
-    write_string(list.c_file, " flow analysis", 0xEU, 0xEU);
+    write_string(list.c_file, "Average data flow iterations:", 29, 29);
+    write_real(list.c_file, (float)dataflowiter / (float)numdataflow, 15, -1);
+    write_string(list.c_file, " out of", 7, 7);
+    write_integer(list.c_file, numdataflow, 12, 10);
+    write_string(list.c_file, " flow analysis", 14, 14);
     writeln(list.c_file);
 }
 

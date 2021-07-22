@@ -733,6 +733,9 @@ void linearize(struct Expression *expr) {
         case Uadd:
             left = expr->data.isop.op1;
             switch (expr->data.isop.op1->data.isop.opc) {
+                case Uadd:
+                    break;
+
                 case Usub:
                     expr->data.isop.opc = Usub;
                     left->data.isop.opc = Uadd;
@@ -772,6 +775,10 @@ void linearize(struct Expression *expr) {
             datasize = left->data.isop.datasize;
             left->data.isop.datasize = expr->data.isop.datasize;
             switch (expr->data.isop.op1->data.isop.opc) {
+                case Uixa:
+                case Uadd:
+                    break;
+
                 case Usub:
                     expr->data.isop.datasize = -expr->data.isop.datasize;
                     break;
