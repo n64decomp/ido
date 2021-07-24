@@ -1,5 +1,5 @@
 [split]
-#.text            .data             .rodata           .bss              COMMON variables
+#.text            .rodata           .data             .bss              COMMON variables
 
 /crt1.c
 0040B620-0040B748         -                 -                 -         __Argv-__Argc
