@@ -1,7 +1,6 @@
-#ifdef __sgi
-
 #include <stdio.h>
 
+#ifdef __sgi
 void get(FILE *file, int size) {
     int ch;
     int new_count;
@@ -23,5 +22,16 @@ void get(FILE *file, int size) {
         }
     }
 }
-
+#else
+void get(FILE *file, int size) {
+#if 1
+    fseek(file, size, SEEK_CUR);
+#else
+    for (int i = 0; i < size; i++) {
+        if (getc(file) == EOF) {
+            break;
+        }
+    }
+#endif
+}
 #endif
