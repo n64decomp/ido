@@ -14,7 +14,6 @@ double _atod(const char *str) {
 int main1(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
-    puts("main");
     __Argc = argc;
     __Argv = argv;
     output.c_file = stdout;
