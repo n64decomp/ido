@@ -863,7 +863,7 @@ glabel load_table
 # 1001416C
 glabel store_table
     # 0042BDAC eval
-    .ascii "\x00F\x00F\x00L\x00L\x00W\x00W\x00m\x00y\x00z"
+    .ascii "\0F\0F\0L\0L\0W\0W\0m\0y\0z"
     .type store_table, @object
     .size store_table, .-store_table # 18
     .space 2
