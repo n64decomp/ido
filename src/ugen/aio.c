@@ -225,7 +225,7 @@ jtbl_10008ADC:
 glabel reg_name_tab
     # 0040C210 write_instruction
     # 0040D350 write_directive
-    .ascii "$0   $1   $2   $3   $4   $5   $6   $7   $8   $9   $10  $11  $12  $13  $14  $15  $16  $17  $18  $19  $20  $21  $22  $23  $24  $25  $26  $27  $gp  $sp  $30  $31  $f0  $f1  $f2  $f3  $f4  $f5  $f6  $f7  $f8  $f9  $f10 $f11 $f12 $f13 $f14 $f15 $f16 $f17 $f18 $f19 $f20 $f21 $f22 $f23 $f24 $f25 $f26 $f27 $f28 $f29 $f30 $f31 $fcc0$fcc1$fcc2$fcc3$fcc4$fcc5$fcc6$fcc7$0   \x00\x00\x00"
+    .ascii "$0   $1   $2   $3   $4   $5   $6   $7   $8   $9   $10  $11  $12  $13  $14  $15  $16  $17  $18  $19  $20  $21  $22  $23  $24  $25  $26  $27  $gp  $sp  $30  $31  $f0  $f1  $f2  $f3  $f4  $f5  $f6  $f7  $f8  $f9  $f10 $f11 $f12 $f13 $f14 $f15 $f16 $f17 $f18 $f19 $f20 $f21 $f22 $f23 $f24 $f25 $f26 $f27 $f28 $f29 $f30 $f31 $fcc0$fcc1$fcc2$fcc3$fcc4$fcc5$fcc6$fcc7$0   \0\0\0"
     .type reg_name_tab, @object
     .size reg_name_tab, .-reg_name_tab # 368
 

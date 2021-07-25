@@ -906,7 +906,7 @@ glabel unaligned_load_store_tab
 # 10014EF0
 glabel op_tab
     # 00429EE0 get_ops
-    .ascii "\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00M\x00P\x00>\x00>\x00>\x00M\x00P\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>\x00>"
+    .ascii "\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0M\0P\0>\0>\0>\0M\0P\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>\0>"
     .type op_tab, @object
     .size op_tab, .-op_tab # 312
 
@@ -969,7 +969,7 @@ glabel dw_ouop
 # 100159E8
 glabel op_nor
     # 0042BDAC eval
-    .ascii "\x00?"
+    .ascii "\0?"
     .type op_nor, @object
     .size op_nor, .-op_nor # 2
     .space 2
@@ -993,11 +993,11 @@ glabel move_cvt_flag
 
 D_100159F8:
     # 0042BDAC eval
-    .ascii "uabs\x00   uadd\x00   uadj\x00   uaent\x00  uand\x00   uaos\x00   uasym\x00  ubgn\x00   ubgnb\x00  ubsub\x00  ucg1\x00   ucg2\x00   uchkh\x00  uchkl\x00  uchkn\x00  uchkt\x00  ucia\x00   uclab\x00  uclbd\x00  ucomm\x00  ucsym\x00  uctrl\x00  ucubd\x00  ucup\x00   ucvt\x00   ucvtl\x00  udec\x00   udef\x00   udif\x00   udiv\x00   udup\x00   uend\x00   uendb\x00  uent\x00   ueof\x00   uequ\x00   uesym\x00  ufill\x00  ufjp\x00   ufsym\x00  ugeq\x00   ugrt\x00   ugsym\x00  uhsym\x00  uicuf\x00  uidx\x00   uiequ\x00  uigeq\x00  uigrt\x00  uijp\x00   uilda\x00  uildv\x00  uileq\x00  uiles\x00  uilod\x00  uinc\x00   uineq\x00  uinit\x00  uinn\x00   uint\x00   uior\x00   uisld\x00  uisst\x00  uistr\x00  uistv\x00  uixa\x00   ulab\x00   ulbd\x00   ulbdy\x00  ulbgn\x00  ulca\x00   ulda\x00   uldap\x00  uldc\x00   uldef\x00  uldsp\x00  ulend\x00  uleq\x00   ules\x00   ulex\x00   ulnot\x00  uloc\x00   ulod\x00   ulsym\x00  ultrm\x00  umax\x00   umin\x00   umod\x00   umov\x00   umovv\x00  umpmv\x00  umpy\x00   umst\x00   umus\x00   uneg\x00   uneq\x00   unop\x00   unot\x00   uodd\x00   uoptn\x00  upar\x00   updef\x00  upmov\x00  upop\x00   uregs\x00  urem\x00   uret\x00   urlda\x00  urldc\x00  urlod\x00  urnd\x00   urpar\x00  urstr\x00  usdef\x00  usgs\x00   ushl\x00   ushr\x00   usign\x00  usqr\x00   usqrt\x00  ussym\x00  ustep\x00  ustp\x00   ustr\x00   ustsp\x00  usub\x00   uswp\x00   utjp\x00   utpeq\x00  utpge\x00  utpgt\x00  utple\x00  utplt\x00  utpne\x00  utyp\x00   uubd\x00   uujp\x00   uunal\x00  uuni\x00   uvreg\x00  uxjp\x00   uxor\x00   uxpar\x00  umtag\x00  ualia\x00  uildi\x00  uisti\x00  uirld\x00  uirst\x00  uldrc\x00  umsym\x00  urcuf\x00  uksym\x00  uosym\x00  uirlv\x00  uirsv\x00\x00 "
+    .ascii "uabs\0   uadd\0   uadj\0   uaent\0  uand\0   uaos\0   uasym\0  ubgn\0   ubgnb\0  ubsub\0  ucg1\0   ucg2\0   uchkh\0  uchkl\0  uchkn\0  uchkt\0  ucia\0   uclab\0  uclbd\0  ucomm\0  ucsym\0  uctrl\0  ucubd\0  ucup\0   ucvt\0   ucvtl\0  udec\0   udef\0   udif\0   udiv\0   udup\0   uend\0   uendb\0  uent\0   ueof\0   uequ\0   uesym\0  ufill\0  ufjp\0   ufsym\0  ugeq\0   ugrt\0   ugsym\0  uhsym\0  uicuf\0  uidx\0   uiequ\0  uigeq\0  uigrt\0  uijp\0   uilda\0  uildv\0  uileq\0  uiles\0  uilod\0  uinc\0   uineq\0  uinit\0  uinn\0   uint\0   uior\0   uisld\0  uisst\0  uistr\0  uistv\0  uixa\0   ulab\0   ulbd\0   ulbdy\0  ulbgn\0  ulca\0   ulda\0   uldap\0  uldc\0   uldef\0  uldsp\0  ulend\0  uleq\0   ules\0   ulex\0   ulnot\0  uloc\0   ulod\0   ulsym\0  ultrm\0  umax\0   umin\0   umod\0   umov\0   umovv\0  umpmv\0  umpy\0   umst\0   umus\0   uneg\0   uneq\0   unop\0   unot\0   uodd\0   uoptn\0  upar\0   updef\0  upmov\0  upop\0   uregs\0  urem\0   uret\0   urlda\0  urldc\0  urlod\0  urnd\0   urpar\0  urstr\0  usdef\0  usgs\0   ushl\0   ushr\0   usign\0  usqr\0   usqrt\0  ussym\0  ustep\0  ustp\0   ustr\0   ustsp\0  usub\0   uswp\0   utjp\0   utpeq\0  utpge\0  utpgt\0  utple\0  utplt\0  utpne\0  utyp\0   uubd\0   uujp\0   uunal\0  uuni\0   uvreg\0  uxjp\0   uxor\0   uxpar\0  umtag\0  ualia\0  uildi\0  uisti\0  uirld\0  uirst\0  uldrc\0  umsym\0  urcuf\0  uksym\0  uosym\0  uirlv\0  uirsv\0\0 "
 
 D_10015ED8:
     # 0042BDAC eval
-    .ascii "xr0\x00xr1\x00xr2\x00xr3\x00xr4\x00xr5\x00xr6\x00xr7\x00xr8\x00xr9\x00xr10\x00   xr11\x00   xr12\x00   xr13\x00   xr14\x00   xr15\x00   xr16\x00   xr17\x00   xr18\x00   xr19\x00   xr20\x00   xr21\x00   xr22\x00   xr23\x00   xr24\x00   xr25\x00   xr26\x00   xr27\x00   xr28\x00   xr29\x00   xr30\x00   xr31\x00   xfr0\x00   xfr1\x00   xfr2\x00   xfr3\x00   xfr4\x00   xfr5\x00   xfr6\x00   xfr7\x00   xfr8\x00   xfr9\x00   xfr10\x00  xfr11\x00  xfr12\x00  xfr13\x00  xfr14\x00  xfr15\x00  xfr16\x00  xfr17\x00  xfr18\x00  xfr19\x00  xfr20\x00  xfr21\x00  xfr22\x00  xfr23\x00  xfr24\x00  xfr25\x00  xfr26\x00  xfr27\x00  xfr28\x00  xfr29\x00  xfr30\x00  xfr31\x00  xfcc0\x00  xfcc1\x00  xfcc2\x00  xfcc3\x00  xfcc4\x00  xfcc5\x00  xfcc6\x00  xfcc7\x00  xnoreg\x00\x00"
+    .ascii "xr0\0xr1\0xr2\0xr3\0xr4\0xr5\0xr6\0xr7\0xr8\0xr9\0xr10\0   xr11\0   xr12\0   xr13\0   xr14\0   xr15\0   xr16\0   xr17\0   xr18\0   xr19\0   xr20\0   xr21\0   xr22\0   xr23\0   xr24\0   xr25\0   xr26\0   xr27\0   xr28\0   xr29\0   xr30\0   xr31\0   xfr0\0   xfr1\0   xfr2\0   xfr3\0   xfr4\0   xfr5\0   xfr6\0   xfr7\0   xfr8\0   xfr9\0   xfr10\0  xfr11\0  xfr12\0  xfr13\0  xfr14\0  xfr15\0  xfr16\0  xfr17\0  xfr18\0  xfr19\0  xfr20\0  xfr21\0  xfr22\0  xfr23\0  xfr24\0  xfr25\0  xfr26\0  xfr27\0  xfr28\0  xfr29\0  xfr30\0  xfr31\0  xfcc0\0  xfcc1\0  xfcc2\0  xfcc3\0  xfcc4\0  xfcc5\0  xfcc6\0  xfcc7\0  xnoreg\0\0"
 
 D_100160F8:
     # 004231F0 is_end_return

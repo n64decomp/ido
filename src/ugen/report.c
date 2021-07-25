@@ -38,7 +38,7 @@ RO_1000C58B:
 # 10016730
 glabel err_tab
     # 0043D690 report_error
-    .ascii "fix       info      warning   error     internal  \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    .ascii "fix       info      warning   error     internal  \0\0\0\0\0\0\0\0\0\0\0\0\0\0"
     .type err_tab, @object
     .size err_tab, .-err_tab # 64
 

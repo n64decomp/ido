@@ -63,14 +63,14 @@ glabel stmagic
 # 10011B44
 glabel msg_werr
     # 0048E1D8 st_writest
-    .ascii "cannot write pfield\x00"
+    .ascii "cannot write pfield\0"
     .type msg_werr, @object
     .size msg_werr, .-msg_werr # 20
 
 # 10011B58
 glabel msg_err
     # 0048E1D8 st_writest
-    .ascii "cannot write cur table\n\x00"
+    .ascii "cannot write cur table\n\0"
     .type msg_err, @object
     .size msg_err, .-msg_err # 24
 

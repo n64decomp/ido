@@ -248,7 +248,7 @@ glabel mips_cg_regs
 
 # 10016358
 glabel name_tab
-    .ascii "$0   $1   $2   $3   $4   $5   $6   $7   $8   $9   $10  $11  $12  $13  $14  $15  $16  $17  $18  $19  $20  $21  $22  $23  $24  $25  $26  $27  $gp  $sp  $30  $31  $f0  $f1  $f2  $f3  $f4  $f5  $f6  $f7  $f8  $f9  $f10 $f11 $f12 $f13 $f14 $f15 $f16 $f17 $f18 $f19 $f20 $f21 $f22 $f23 $f24 $f25 $f26 $f27 $f28 $f29 $f30 $f31 $fcc0$fcc1$fcc2$fcc3$fcc4$fcc5$fcc6$fcc7none \x00\x00\x00"
+    .ascii "$0   $1   $2   $3   $4   $5   $6   $7   $8   $9   $10  $11  $12  $13  $14  $15  $16  $17  $18  $19  $20  $21  $22  $23  $24  $25  $26  $27  $gp  $sp  $30  $31  $f0  $f1  $f2  $f3  $f4  $f5  $f6  $f7  $f8  $f9  $f10 $f11 $f12 $f13 $f14 $f15 $f16 $f17 $f18 $f19 $f20 $f21 $f22 $f23 $f24 $f25 $f26 $f27 $f28 $f29 $f30 $f31 $fcc0$fcc1$fcc2$fcc3$fcc4$fcc5$fcc6$fcc7none \0\0\0"
     .type name_tab, @object
     .size name_tab, .-name_tab # 368
 
@@ -256,12 +256,12 @@ D_100164C8:
     # 0043A020 dump_reg
     # 0043A1B8 print_regs
     # 0043A888 spill_reg
-    .ascii "xr0\x00xr1\x00xr2\x00xr3\x00xr4\x00xr5\x00xr6\x00xr7\x00xr8\x00xr9\x00xr10\x00   xr11\x00   xr12\x00   xr13\x00   xr14\x00   xr15\x00   xr16\x00   xr17\x00   xr18\x00   xr19\x00   xr20\x00   xr21\x00   xr22\x00   xr23\x00   xr24\x00   xr25\x00   xr26\x00   xr27\x00   xr28\x00   xr29\x00   xr30\x00   xr31\x00   xfr0\x00   xfr1\x00   xfr2\x00   xfr3\x00   xfr4\x00   xfr5\x00   xfr6\x00   xfr7\x00   xfr8\x00   xfr9\x00   xfr10\x00  xfr11\x00  xfr12\x00  xfr13\x00  xfr14\x00  xfr15\x00  xfr16\x00  xfr17\x00  xfr18\x00  xfr19\x00  xfr20\x00  xfr21\x00  xfr22\x00  xfr23\x00  xfr24\x00  xfr25\x00  xfr26\x00  xfr27\x00  xfr28\x00  xfr29\x00  xfr30\x00  xfr31\x00  xfcc0\x00  xfcc1\x00  xfcc2\x00  xfcc3\x00  xfcc4\x00  xfcc5\x00  xfcc6\x00  xfcc7\x00  xnoreg\x00\x00"
+    .ascii "xr0\0xr1\0xr2\0xr3\0xr4\0xr5\0xr6\0xr7\0xr8\0xr9\0xr10\0   xr11\0   xr12\0   xr13\0   xr14\0   xr15\0   xr16\0   xr17\0   xr18\0   xr19\0   xr20\0   xr21\0   xr22\0   xr23\0   xr24\0   xr25\0   xr26\0   xr27\0   xr28\0   xr29\0   xr30\0   xr31\0   xfr0\0   xfr1\0   xfr2\0   xfr3\0   xfr4\0   xfr5\0   xfr6\0   xfr7\0   xfr8\0   xfr9\0   xfr10\0  xfr11\0  xfr12\0  xfr13\0  xfr14\0  xfr15\0  xfr16\0  xfr17\0  xfr18\0  xfr19\0  xfr20\0  xfr21\0  xfr22\0  xfr23\0  xfr24\0  xfr25\0  xfr26\0  xfr27\0  xfr28\0  xfr29\0  xfr30\0  xfr31\0  xfcc0\0  xfcc1\0  xfcc2\0  xfcc3\0  xfcc4\0  xfcc5\0  xfcc6\0  xfcc7\0  xnoreg\0\0"
 
 D_100166E8:
     # 0043A020 dump_reg
     # 0043A888 spill_reg
-    .ascii "no_reg\x00 i_reg\x00  f_reg\x00  d_reg\x00  x_reg\x00  q_reg\x00  di_reg\x00 di_s_reg\x00\x00  \x00\x00\x00\x00"
+    .ascii "no_reg\0 i_reg\0  f_reg\0  d_reg\0  x_reg\0  q_reg\0  di_reg\0 di_s_reg\0\0  \0\0\0\0"
 
 
 
