@@ -1301,7 +1301,7 @@ void codeimage(void) {
                     if (stat_tail->opc == Ucia) {
                         if (lang == LANG_ADA) {
                             setbit(&curgraphnode->bvs.stage1.alters, ichain->isop.s.bit);
-                        } else if (((stat_tail->u.cia.flags & 1) && cskilled(curlevel, indirprocs, stat)) ||
+                        } else if ((IS_CIA_CALLS_ATTR(stat_tail->u.cia.flags) && cskilled(curlevel, indirprocs, stat)) ||
                                 listpskilled(stat_tail->u.cia.parameters, stat, stat->expr->data.isvar_issvar.unk22)) {
                             setbit(&curgraphnode->bvs.stage1.alters, ichain->isop.s.bit);
                         }

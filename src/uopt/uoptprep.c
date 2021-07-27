@@ -357,7 +357,7 @@ bool expaltered(struct IChain *ichain, struct Graphnode *node) {
                     if (lang == LANG_ADA) {
                         sp25 = true;
                     }
-                    else if ((node->stat_tail->u.cia.flags & 1) && cupaltered(ichain, curlevel, indirprocs)) {
+                    else if (IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags) && cupaltered(ichain, curlevel, indirprocs)) {
                         sp25 = true;
                     }
                     else if (listplkilled(node->stat_tail->u.cia.parameters, ichain->expr, ichain->isvar_issvar.unk19)) {
@@ -402,7 +402,7 @@ bool expaltered(struct IChain *ichain, struct Graphnode *node) {
                     if (node->stat_tail->opc == Ucia) {
                         if (lang == LANG_ADA) {
                             sp26 = true;
-                        } else if ((node->stat_tail->u.cia.flags & 1) && cupaltered(ichain, curlevel, indirprocs)) {
+                        } else if (IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags) && cupaltered(ichain, curlevel, indirprocs)) {
                             sp26 = true;
                         } else if (listplkilled(node->stat_tail->u.cia.parameters, ichain->expr, 0)) {
                             sp26 = true;
@@ -461,7 +461,7 @@ void patchvectors(void) {
         if (((node->stat_tail->opc == Ucup ||
               node->stat_tail->opc == Uicuf ||
               node->stat_tail->opc == Urcuf) && !IS_RETURN_ATTR(node->stat_tail->u.call.extrnal_flags))
-          || (node->stat_tail->opc == Ucia && (node->stat_tail->u.cia.flags & 1))) {
+          || (node->stat_tail->opc == Ucia && IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags))) {
             leaf_for_ugen = false;
         }
 
@@ -520,7 +520,7 @@ void patchvectors(void) {
                             if (!(ichain->isop.opc == Uisst || ichain->isop.opc == Ustr)) {
                                 if (node->stat_tail->opc == Ucia) {
                                     if (lang == LANG_ADA ||
-                                            ((node->stat_tail->u.cia.flags & 1) &&
+                                            (IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags) &&
                                              cskilled(curlevel, indirprocs, ichain->isop.stat)) ||
                                             listpskilled(node->stat_tail->u.cia.parameters, ichain->isop.stat, 0) ||
                                             ((ichain->isop.opc == Umov ||

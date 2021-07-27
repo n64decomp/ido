@@ -835,7 +835,7 @@ static bool invariant_var_preserved(struct Interval *intv, struct Expression *in
                     return false;
                 }
             } else if (node->stat_tail->opc == Ucia) {
-                if ((node->stat_tail->u.cia.flags & 1) && clkilled(curlevel, indirprocs, invariantVar)) {
+                if (IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags) && clkilled(curlevel, indirprocs, invariantVar)) {
                     return false;
                 }
                 if (listplkilled(node->stat_tail->u.cia.parameters, invariantVar, 1)) {
@@ -929,7 +929,7 @@ static void find_increment_expr(struct Interval *intv, struct Graphnode* childNo
                 }
             } else if (curnode->stat_tail->opc == Ucia) {
                 //! wtf
-                if ((curnode->stat_tail->u.cia.flags & 1) && cupaltered(loopVar->ichain, curnode->stat_tail->u.call.level, curnode->stat_tail->u.call.proc)) {
+                if (IS_CIA_CALLS_ATTR(curnode->stat_tail->u.cia.flags) && cupaltered(loopVar->ichain, curnode->stat_tail->u.call.level, curnode->stat_tail->u.call.proc)) {
                     *failed = true;
                     return;
                 }
