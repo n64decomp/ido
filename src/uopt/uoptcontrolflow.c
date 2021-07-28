@@ -661,7 +661,7 @@ void init_graphnode(struct Graphnode *node) {
     node->next = NULL;
     node->terminal = false;
     node->unk7 = 0;
-    node->unk4 = false;
+    node->interprocedural_controlflow = false;
     node->unk5 = 0;
     node->unkBb4 = 0;
     node->stat_head = NULL;
@@ -798,7 +798,7 @@ void controlflow() {
     struct GraphnodeList *pred;
     struct GraphnodeList *prev_pred;
 
-    struct GraphnodeList *unk4_nodelist;
+    struct GraphnodeList *interproc_targets;
     struct GraphnodeList *new_list;
 
     struct Statement *stat;
@@ -808,17 +808,17 @@ void controlflow() {
     int i;
 
     visit_successors(graphhead);
-    unk4_nodelist = NULL;
+    interproc_targets = NULL;
 
     curnode = graphhead->next;
     while (curnode != NULL) {
-        if (curnode->unk4 != false) {
+        if (curnode->interprocedural_controlflow) {
             visit_successors(curnode);
-            // unk4_nodelist := GraphnodeList.create(curnode, unk4_nodelist);
+            // interproc_targets := GraphnodeList.create(curnode, interproc_targets);
             new_list = new(sizeof(struct GraphnodeList), false);
             new_list->graphnode = curnode;
-            new_list->next = unk4_nodelist;
-            unk4_nodelist = new_list;
+            new_list->next = interproc_targets;
+            interproc_targets = new_list;
         }
         curnode = curnode->next;
     }
@@ -972,9 +972,9 @@ void controlflow() {
         succ = succ->next;
     }
 
-    while (unk4_nodelist != NULL) {
-        place_graphtail(unk4_nodelist->graphnode);
-        unk4_nodelist = unk4_nodelist->next;
+    while (interproc_targets != NULL) {
+        place_graphtail(interproc_targets->graphnode);
+        interproc_targets = interproc_targets->next;
     }
 
     graphtail->next = NULL;
@@ -1023,7 +1023,7 @@ void controlflow() {
                 }
 
                 pred->graphnode = new_node;
-                new_node->unk4 = false;
+                new_node->interprocedural_controlflow = false;
                 stat = alloc_new(sizeof(struct Statement), &perm_heap);
                 new_node->stat_head = stat;
                 stat->prev = curnode->stat_tail;

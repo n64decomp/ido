@@ -27,7 +27,7 @@ static struct Interval *reduce_control_tree(struct Interval *intvHead) {
     intvHead->type = intv_unreduced;
     child = intvHead->next;
     while (child != NULL) {
-        if (child->unk29 != 0) { // in oot, unk29 is always zero
+        if (child->interprocedural_controlflow != 0) { // in oot, interprocedural_controlflow is always zero
             child->first = child;
             child->type = intv_unreduced;
         }
@@ -62,7 +62,7 @@ static struct Interval *reduce_control_tree(struct Interval *intvHead) {
         child->parent = parent;
         child->type = intv_acyclic;
 
-        parent->unk29 = child->unk29;
+        parent->interprocedural_controlflow = child->interprocedural_controlflow;
         parent->region = alloc_new(sizeof(struct IntervalList), &intv_heap);
         parent->region->intv = child;
 
@@ -436,8 +436,8 @@ static void find_loops(struct Interval *child, struct Interval *parent) {
 
                 find_loop_body(pred->intv, parent);
                 loopFirstNode = interval_first_node(child);
-                if (loopFirstNode->unk4 == 0) {
-                    if (usefeedback == 0 || curproc->feedback_data == NULL || node_has_higher_weight(loopFirstNode)) {
+                if (!loopFirstNode->interprocedural_controlflow) {
+                    if (!usefeedback || curproc->feedback_data == NULL || node_has_higher_weight(loopFirstNode)) {
                         loopFirstNode->unk5 = 1; // loopfirstbb
                     }
                 }
@@ -1216,9 +1216,9 @@ static void determine_if_unrollable(struct Interval *child, struct Interval *out
                      && !complex_control_flow_in_interval(parent)
                      && no_early_exits(parent, loopFirstNode->num, childNode->num)
                      // Local vars, parameters, or function-static vars
-                     && (loopVar->data.isvar_issvar.var_data.memtype == Mmt
-                      || loopVar->data.isvar_issvar.var_data.memtype == Pmt
-                      || in_fsym(loopVar->data.isvar_issvar.var_data.blockno))))) {
+                     && (loopVar->data.isvar_issvar.location.memtype == Mmt
+                      || loopVar->data.isvar_issvar.location.memtype == Pmt
+                      || in_fsym(loopVar->data.isvar_issvar.location.blockno))))) {
             if (loopFirstNode->predecessors->next->next == NULL) { //! redundant check
                 if (loopFirstNode->predecessors->graphnode == childNode && loopFirstNode->predecessors->next->graphnode->successors->next == NULL) {
                     loopFirstNode->unk5 = 2; // canunroll
@@ -1255,7 +1255,7 @@ static void find_unrollable_loops(struct Interval *child, struct Interval *paren
         if (child->type == intv_loop) {
             loopFirstNode = interval_first_node(child);
 
-            if (!loopFirstNode->unk4) {
+            if (!loopFirstNode->interprocedural_controlflow) {
                 region = parent->region;
                 do {
                     if (region->intv->type == intv_loop) {
@@ -1306,7 +1306,7 @@ void analoop() {
     intvRoot->loop = NULL;
     intvRoot->type = intv_unvisited;
     intvRoot->loopdepth = 0;
-    intvRoot->unk29 = 0;
+    intvRoot->interprocedural_controlflow = false;
     intvRoot->graphnode = graphhead;
 
     curIntv = intvRoot;
@@ -1331,7 +1331,7 @@ void analoop() {
         newIntv->loop = NULL;
         newIntv->type = intv_unvisited;
         newIntv->loopdepth = 0;
-        newIntv->unk29 = curnode->unk4; // in oot, always zero
+        newIntv->interprocedural_controlflow = curnode->interprocedural_controlflow; // in oot, always zero
 
         curIntv->next = newIntv;
         curIntv = newIntv;
@@ -1422,7 +1422,7 @@ void analoop() {
         curnode->bvs.stage1.u.precm.pavin.num_blocks = 0;
         curnode->bvs.stage1.u.precm.pavin.blocks = NULL;
         checkinitbvlivran(&curnode->bvs.stage1.u.precm.pavin);
-        if (curnode->predecessors == NULL || curnode->unk4) {
+        if (curnode->predecessors == NULL || curnode->interprocedural_controlflow) {
             setbitbb(&curnode->bvs.stage1.u.precm.pavin, curnode->num);
         } else {
             sp48.words[0] = -1;

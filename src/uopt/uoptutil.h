@@ -5,7 +5,7 @@
 #include "uoptdata.h"
 
 
-bool addreq(struct VariableInner a, struct VariableInner b);
+bool addreq(struct VariableLocation a, struct VariableLocation b);
 void stackerror(void);
 void boundswarning(void);
 void ovfwwarning(Uopcode opc);
@@ -21,7 +21,7 @@ void increasecount(struct Expression *expr);
 
 int isconsthash(int number);
 int realhash(int len);
-int isvarhash(struct VariableInner var);
+int isvarhash(struct VariableLocation loc);
 int isophash(Uopcode opc, struct Expression *op1, struct Expression *op2);
 int opvalhash(Uopcode opc, struct Expression *op1, int value);
 
@@ -40,7 +40,7 @@ bool addovfw(enum Datatype t, int a, int b);
 bool subovfw(enum Datatype t, int a, int b);
 bool mpyovfw(enum Datatype t, int a, int b);
 
-struct Expression *searchvar(unsigned short table_index, struct VariableInner *var);
+struct Expression *searchvar(unsigned short table_index, struct VariableLocation *loc);
 void vartreeinfo(struct Variable *var);
 void entervregveqv(void);
 void getoption(int uopt_option, int n);

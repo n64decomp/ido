@@ -81,7 +81,7 @@ struct LabelMap {
 };
 
 // See insertvar
-struct VariableInner { // TODO: rename to 'location', 'address', or something
+struct VariableLocation {
     int addr; // can be negative, stack offset?
               // register number if memtype == Rmt. see exprimage, checks for 2, 29, 32, 33, 34.
     unsigned int blockno: 21;
@@ -93,7 +93,7 @@ struct Variable {
     Datatype dtype;
     bool unk1;
     bool unk2;
-    struct VariableInner inner;
+    struct VariableLocation location;
     int size;
 
     struct Variable *left; // 0x10
@@ -101,7 +101,7 @@ struct Variable {
 };
 
 struct LdatabEntry {
-    struct VariableInner var;
+    struct VariableLocation var;
     int size;
     struct LdatabEntry *next;
 };
@@ -179,7 +179,7 @@ struct Interval {
     /* 0x20 */ struct Interval *first;
     /* 0x24 */ struct Loop *loop;
     /* 0x28 */ IntervalType type;
-    /* 0x29 */ unsigned char unk29; // Graphnode->unk4
+    /* 0x29 */ unsigned char interprocedural_controlflow;
     /* 0x2A */ unsigned char loopdepth;
 }; // size 0x2C
 
@@ -198,7 +198,7 @@ struct JumpFallthroughBB {
 
 struct Graphnode {
     /* 0x00 */ int blockno;
-    /* 0x04 */ bool unk4;          // first loop bb?
+    /* 0x04 */ bool interprocedural_controlflow;
     /* 0x05 */ unsigned char unk5; // enum: notloopfirstbb, loopfirstbb, canunroll (see printregs)
     /* 0x06 */ bool terminal;
     /* 0x07 */ unsigned char unk7;     // 0 = unseen, 1 = graphhead, 2 = graphtail?
@@ -441,13 +441,13 @@ struct Statement {
         struct {
             Datatype dtype; // 0x14
             unsigned char unk15; // LENGTH
-            struct VariableInner var; // 0x18, OFFSET, IONE, MTYPE
+            struct VariableLocation var; // 0x18, OFFSET, IONE, MTYPE
         } ctrl;
 
         struct {
             int cup_level; // LEXLEV
             int fp_offset; // Upar/Uxpar OFFSET+LENGTH if passbyfp
-            int loc; // 0x1C, VariableInner loc
+            int loc; // 0x1C, VariableLocation loc
             struct Proc *proc; // indirprocs/ciaprocs
         } mst;
 
@@ -578,7 +578,7 @@ enum ExpressionType {
     /* 2 */ isconst,
     /* 3 */ isvar,
     /* 4 */ isop,
-    /* 5 */ isilda,
+    /* 5 */ isilda, // address of shared var
     /* 6 */ issvar, // shared var
     /* 7 */ dumped,
     /* 8 */ isrconst
@@ -606,14 +606,14 @@ struct IChain {
 
     union {
         struct {
-            int addr;   // 0x10
+            int offset;   // 0x10
             int size;   // 0x14
             // missing level
-            struct VariableInner var_data; // 0x18
+            struct VariableLocation address; // 0x18
             struct IChain *ichain;         // 0x20
         } islda_isilda;
         struct {
-            struct VariableInner var_data; // 0x10
+            struct VariableLocation location; // 0x10
             unsigned char size;            // 0x18, expr + 0x20
             // The order of these two bools is swapped from expr's isvar_issvar
             // unk19 = unk22, and unk1A = unk21
@@ -716,11 +716,11 @@ struct Expression {
 
     union {
         struct {
-            int addr; // 0x20
+            int offset; // 0x20 when different from Location.addr, acts as offset from base address
             int size; // 0x24
             int level; // 0x28
-            struct VariableInner var_data; // 0x2C // TODO: rename to prevent confusion during decomp
-            struct Expression *unk34;
+            struct VariableLocation address; // 0x2C absolute address
+            struct Expression *outer_stack;
             int unk38;
         } islda_isilda;
         struct {
@@ -734,9 +734,9 @@ struct Expression {
             bool unk21; // one of these is probably 'dead'
             bool unk22; // one of these is probably 'dead'
             bool is_volatile; // 0x23
-            struct Expression *unk24;
-            struct VariableInner var_data; // 0x28
-            struct Expression *unk30;
+            struct Expression *outer_stack;
+            struct VariableLocation location; // 0x28
+            struct Expression *unk30;   // copypropagate
             struct Expression *assigned_value; // 0x34 used in analoop
             struct Statement *assignment; // 0x38 a bit unsure about this type, see delentry
             int unk3C;

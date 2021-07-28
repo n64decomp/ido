@@ -10,8 +10,8 @@ void trep_image(struct Expression *expr, bool arg1, bool ant, bool av, bool arg4
 
 int isconstihash(int value);
 int realihash(union Constant value);
-int isvarihash(struct VariableInner var);
-int isldaihash(struct VariableInner var, unsigned int addr);
+int isvarihash(struct VariableLocation loc);
+int isldaihash(struct VariableLocation loc, unsigned int addr);
 int isopihash(Uopcode opc, struct IChain *op1, struct IChain *op2);
 int opvalihash(Uopcode opc, struct IChain *ichain, unsigned short number);
 

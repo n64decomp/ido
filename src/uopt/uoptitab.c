@@ -41,8 +41,8 @@ int realihash(union Constant value) {
 00445E44 exprimage
 004471AC codeimage
 */
-int isvarihash(struct VariableInner var) {
-    int hash = (((var.memtype << 6) + var.blockno + var.addr) << 4) % 0x653;
+int isvarihash(struct VariableLocation loc) {
+    int hash = (((loc.memtype << 6) + loc.blockno + loc.addr) << 4) % 0x653;
     if (hash < 0) hash += 0x653;
     return hash;
 }
@@ -52,8 +52,8 @@ int isvarihash(struct VariableInner var) {
 00445E44 exprimage
 0046BA10 change_to_const_eq
 */
-int isldaihash(struct VariableInner var, unsigned int addr) {
-    int hash = (((var.memtype << 6) + var.blockno + addr) << 4) % 0x653;
+int isldaihash(struct VariableLocation loc, unsigned int addr) {
+    int hash = (((loc.memtype << 6) + loc.blockno + addr) << 4) % 0x653;
     if (hash < 0) hash += 0x653;
     return hash;
 }
@@ -199,31 +199,31 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                 break;
 
             case islda:
-                if (ichain->type == islda && ichain->islda_isilda.addr == expr->data.islda_isilda.addr &&
-                        ichain->islda_isilda.var_data.blockno == expr->data.islda_isilda.var_data.blockno) {
+                if (ichain->type == islda && ichain->islda_isilda.offset == expr->data.islda_isilda.offset &&
+                        ichain->islda_isilda.address.blockno == expr->data.islda_isilda.address.blockno) {
                     found = true;
                 }
                 break;
 
             case isilda:
                 if (ichain->type == isilda &&
-                        ichain->islda_isilda.addr == expr->data.islda_isilda.addr &&
+                        ichain->islda_isilda.offset == expr->data.islda_isilda.offset &&
                         ichain->islda_isilda.size == expr->data.islda_isilda.size &&
-                        addreq(ichain->islda_isilda.var_data, expr->data.islda_isilda.var_data)) {
+                        addreq(ichain->islda_isilda.address, expr->data.islda_isilda.address)) {
                     found = true;
                 }
                 break;
 
             case isvar:
                 if (ichain->type == isvar &&
-                        addreq(ichain->isvar_issvar.var_data, expr->data.isvar_issvar.var_data)) {
+                        addreq(ichain->isvar_issvar.location, expr->data.isvar_issvar.location)) {
                     found = true;
                 }
                 break;
 
             case issvar:
                 if (ichain->type == issvar &&
-                        addreq(ichain->isvar_issvar.var_data, expr->data.isvar_issvar.var_data)) {
+                        addreq(ichain->isvar_issvar.location, expr->data.isvar_issvar.location)) {
                     found = true;
                 }
                 break;
@@ -438,21 +438,21 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                 break;
 
             case islda:
-                ichain->islda_isilda.addr = expr->data.islda_isilda.addr;
-                ichain->islda_isilda.var_data = expr->data.islda_isilda.var_data;
+                ichain->islda_isilda.offset = expr->data.islda_isilda.offset;
+                ichain->islda_isilda.address = expr->data.islda_isilda.address;
                 ichain->islda_isilda.size = expr->data.islda_isilda.size;
                 break;
 
             case isilda:
-                ichain->islda_isilda.addr = expr->data.islda_isilda.addr;
-                ichain->islda_isilda.var_data = expr->data.islda_isilda.var_data;
+                ichain->islda_isilda.offset = expr->data.islda_isilda.offset;
+                ichain->islda_isilda.address = expr->data.islda_isilda.address;
                 ichain->islda_isilda.size = expr->data.islda_isilda.size;
 
-                ichain->islda_isilda.ichain = expr->data.islda_isilda.unk34->ichain;
+                ichain->islda_isilda.ichain = expr->data.islda_isilda.outer_stack->ichain;
                 break;
 
             case isvar:
-                ichain->isvar_issvar.var_data = expr->data.isvar_issvar.var_data;
+                ichain->isvar_issvar.location = expr->data.isvar_issvar.location;
                 ichain->isvar_issvar.size = expr->data.isvar_issvar.size;
 
                 // The two bools' order is swapped!
@@ -462,7 +462,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                 break;
 
             case issvar:
-                ichain->isvar_issvar.var_data = expr->data.isvar_issvar.var_data;
+                ichain->isvar_issvar.location = expr->data.isvar_issvar.location;
                 ichain->isvar_issvar.size = expr->data.isvar_issvar.size;
 
                 // The two bools' order is swapped!
@@ -470,7 +470,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                 ichain->isvar_issvar.unk1A = expr->data.isvar_issvar.unk21;
 
                 ichain->expr = expr;
-                ichain->isvar_issvar.ichain = expr->data.isvar_issvar.unk24->ichain;
+                ichain->isvar_issvar.ichain = expr->data.isvar_issvar.outer_stack->ichain;
                 break;
 
             case isop:
@@ -673,14 +673,14 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
         }
     } else {
         if (expr->type == islda) {
-            int expr_varlen = expr->data.islda_isilda.var_data.addr + expr->data.islda_isilda.size;
+            int expr_varlen = expr->data.islda_isilda.address.addr + expr->data.islda_isilda.size;
 
-            if ((ichain->islda_isilda.var_data.addr + ichain->isvar_issvar.size) < expr_varlen) {
-                ichain->islda_isilda.size = (expr_varlen - ichain->islda_isilda.var_data.addr);
+            if ((ichain->islda_isilda.address.addr + ichain->isvar_issvar.size) < expr_varlen) {
+                ichain->islda_isilda.size = (expr_varlen - ichain->islda_isilda.address.addr);
             }
 
-            if (expr->data.islda_isilda.var_data.addr < ichain->islda_isilda.var_data.addr) {
-                ichain->islda_isilda.var_data.addr = expr->data.islda_isilda.var_data.addr;
+            if (expr->data.islda_isilda.address.addr < ichain->islda_isilda.address.addr) {
+                ichain->islda_isilda.address.addr = expr->data.islda_isilda.address.addr;
             }
         }
     }
@@ -829,7 +829,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
 
                     default:    // Cdt, Mdt, Pdt, Qdt, Rdt, Sdt, Wdt, Xdt, Zdt
                         hash = realihash(expr->data.isconst.number);
-                        //hash = realihash(expr->data.islda_isilda.addr, expr->data.islda_isilda.size);
+                        //hash = realihash(expr->data.islda_isilda.offset, expr->data.islda_isilda.size);
                         break;
                 }
                 ichain = isearchloop(hash, expr, NULL, NULL);
@@ -844,22 +844,22 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 break;
 
             case islda:
-                ichain = isearchloop(isldaihash(expr->data.islda_isilda.var_data, expr->data.islda_isilda.addr), expr, NULL, NULL);
+                ichain = isearchloop(isldaihash(expr->data.islda_isilda.address, expr->data.islda_isilda.offset), expr, NULL, NULL);
                 *anticipated = true;
                 *available = true;
                 break;
 
             case isilda:
-                exprimage(expr->data.islda_isilda.unk34, anticipated, available);
-                ichain = isearchloop(isvarihash(expr->data.islda_isilda.var_data), expr, NULL, NULL);
+                exprimage(expr->data.islda_isilda.outer_stack, anticipated, available);
+                ichain = isearchloop(isvarihash(expr->data.islda_isilda.address), expr, NULL, NULL);
                 if (outofmem) return NULL; // used to return UB sp8C
 
-                if (expr->data.islda_isilda.unk34->type != issvar) {
+                if (expr->data.islda_isilda.outer_stack->type != issvar) {
                     *anticipated = true;
                     *available = true;
                 } else {
-                    *anticipated = expr->data.islda_isilda.unk34->unk3;
-                    *available = !expr->data.islda_isilda.unk34->unk2;
+                    *anticipated = expr->data.islda_isilda.outer_stack->unk3;
+                    *available = !expr->data.islda_isilda.outer_stack->unk2;
                 }
 
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
@@ -875,13 +875,13 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 break;
 
             case isvar:
-                ichain = isearchloop(isvarihash(expr->data.isvar_issvar.var_data), expr, NULL, NULL);
+                ichain = isearchloop(isvarihash(expr->data.isvar_issvar.location), expr, NULL, NULL);
                 if (outofmem) return NULL; // used to return UB sp8C
 
                 // Most iffy part... compiler originally added 1 to r2bb and subtracted 4/8 from r2bitpos/setofr2bbs.
-                if (expr->data.isvar_issvar.var_data.memtype == Rmt) {
-                    if (expr->data.isvar_issvar.var_data.addr != r_sp) {
-                        switch (expr->data.isvar_issvar.var_data.addr) {
+                if (expr->data.isvar_issvar.location.memtype == Rmt) {
+                    if (expr->data.isvar_issvar.location.addr != r_sp) {
+                        switch (expr->data.isvar_issvar.location.addr) {
                             case r_v0:
                                 r2bb = 0;
                                 break;
@@ -943,10 +943,10 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 break;
 
             case issvar:
-                exprimage(expr->data.isvar_issvar.unk24, anticipated, available);
+                exprimage(expr->data.isvar_issvar.outer_stack, anticipated, available);
                 if (outofmem) return NULL; // used to return UB sp8C
 
-                ichain = isearchloop(isvarihash(expr->data.isvar_issvar.var_data), expr, NULL, NULL);
+                ichain = isearchloop(isvarihash(expr->data.isvar_issvar.location), expr, NULL, NULL);
                 if (outofmem) return NULL; // used to return UB sp8C
 
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
@@ -1269,7 +1269,7 @@ void codeimage(void) {
                 if (outofmem) return;
             }
 
-            ichain = isearchloop(isvarihash(stat->expr->data.isvar_issvar.var_data), stat->expr, NULL, NULL);
+            ichain = isearchloop(isvarihash(stat->expr->data.isvar_issvar.location), stat->expr, NULL, NULL);
             if (outofmem) return;
 
             if (!stat->unk3) {

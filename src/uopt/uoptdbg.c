@@ -604,7 +604,7 @@ void printitab(void) {
                 write_string(list.c_file, "} ", 2, 2);
                 writeln(list.c_file);
             } else if (ichain->type == isvar || ichain->type == issvar) {
-                printmtyp(ichain->isvar_issvar.var_data.memtype);
+                printmtyp(ichain->isvar_issvar.location.memtype);
                 if (ichain->type == issvar) {
                     write_char(list.c_file, '{', 1);
                     write_integer(list.c_file, ichain->isvar_issvar.ichain->table_index, 4, 10);
@@ -612,9 +612,9 @@ void printitab(void) {
                     write_integer(list.c_file, ichain->isvar_issvar.ichain->chain_index, 1, 10);
                     write_string(list.c_file, "} ", 2, 2);
                 }
-                write_integer(list.c_file, ichain->isvar_issvar.var_data.blockno, 5, 10);
+                write_integer(list.c_file, ichain->isvar_issvar.location.blockno, 5, 10);
                 write_char(list.c_file, ' ', 1);
-                write_integer(list.c_file, ichain->isvar_issvar.var_data.addr, 5, 10);
+                write_integer(list.c_file, ichain->isvar_issvar.location.addr, 5, 10);
                 if (ichain->isvar_issvar.unk19) {
                     write_string(list.c_file, "vreg", 4, 4);
                     writeln(list.c_file);

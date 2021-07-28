@@ -71,7 +71,7 @@ struct Expression *change_to_const_eq(bool loopIfTrue, struct Expression *loopCo
             sp30 = loopCond->data.isop.op2->data.isconst.number.intval + rem;
             condOp2 = enter_const(sp30, loopCond->datatype, node);
         } else {
-            sp30 = loopCond->data.isop.op2->data.islda_isilda.addr + rem;
+            sp30 = loopCond->data.isop.op2->data.islda_isilda.offset + rem;
             condOp2 = enter_lda(sp30, loopCond->data.isop.op2, node);
         }
     }
@@ -123,7 +123,7 @@ struct Expression *change_to_const_eq(bool loopIfTrue, struct Expression *loopCo
         if (condOp2->type == isconst) {
             op2Hash = isconstihash(sp30);
         } else {
-            op2Hash = isldaihash(condOp2->data.islda_isilda.var_data, sp30);
+            op2Hash = isldaihash(condOp2->data.islda_isilda.address, sp30);
         }
         op2ichain = isearchloop(op2Hash, condOp2, NULL, NULL);
     }
@@ -400,16 +400,16 @@ struct Expression *unroll_searchloop(unsigned short tableIdx, struct Expression 
         switch (expr->type) {
             case isilda:
                 if (phi_s0->type == isilda
-                        && expr->data.islda_isilda.addr == phi_s0->data.islda_isilda.addr
+                        && expr->data.islda_isilda.offset == phi_s0->data.islda_isilda.offset
                         && expr->data.islda_isilda.size == phi_s0->data.islda_isilda.size
-                        && addreq(phi_s0->data.islda_isilda.var_data, expr->data.islda_isilda.var_data)) {
+                        && addreq(phi_s0->data.islda_isilda.address, expr->data.islda_isilda.address)) {
                     sp33 = true;
                 }
                 break;
 
             case isvar:
             case issvar:
-                if (phi_s0->type == expr->type && addreq(phi_s0->data.isvar_issvar.var_data, expr->data.isvar_issvar.var_data)) {
+                if (phi_s0->type == expr->type && addreq(phi_s0->data.isvar_issvar.location, expr->data.isvar_issvar.location)) {
                     if (phi_s0->data.isvar_issvar.unk21) {
                         sp30 = true;
                         break;
@@ -777,13 +777,13 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
         case isvar:
         case issvar:
             if (expr->type == issvar) {
-                sp5C = oneloopblockexpr(expr->data.isvar_issvar.unk24, &sp54);
+                sp5C = oneloopblockexpr(expr->data.isvar_issvar.outer_stack, &sp54);
             }
             sp60 = unroll_searchloop(expr->table_index, expr, NULL, NULL);
 
             if (sp60->type == empty) {
                 sp60->type = expr->type;
-                sp60->data.isvar_issvar.var_data = expr->data.isvar_issvar.var_data;
+                sp60->data.isvar_issvar.location = expr->data.isvar_issvar.location;
                 sp60->data.isvar_issvar.assignment = NULL;
                 sp60->datatype = expr->datatype;
                 sp60->data.isvar_issvar.size = expr->data.isvar_issvar.size;
@@ -793,9 +793,9 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                     sp60->data.isvar_issvar.unk3C = 0;
                     sp60->unk4 = 0;
                     sp60->unk5 = 0;
-                    sp60->data.isvar_issvar.unk24 = sp5C;
+                    sp60->data.isvar_issvar.outer_stack = sp5C;
                 } else {
-                    sp60->data.isvar_issvar.unk24 = NULL;
+                    sp60->data.isvar_issvar.outer_stack = NULL;
                 }
 
                 if (sp60->data.isvar_issvar.unk21 == 0) {
@@ -815,7 +815,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                 if (!sp60->data.isvar_issvar.unk22) {
                     lodkillprev(sp60);
                 }
-                if (sp60->count == 1 && sp60->data.isvar_issvar.var_data.memtype != Amt) {
+                if (sp60->count == 1 && sp60->data.isvar_issvar.location.memtype != Amt) {
                     appendbbvarlst(sp60);
                     if (sp60->data.isvar_issvar.unk22) {
                         curgraphnode->varlisttail->unk8 = 1;
@@ -827,7 +827,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                     if (!sp60->data.isvar_issvar.unk22) {
                         lodkillprev(sp60);
                     }
-                    if (sp60->data.isvar_issvar.var_data.memtype != 5) {
+                    if (sp60->data.isvar_issvar.location.memtype != 5) {
                         appendbbvarlst(sp60);
                         if (sp60->data.isvar_issvar.unk22) {
                             curgraphnode->varlisttail->unk8 = 1;
@@ -845,7 +845,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
             return sp60;
 
         case isilda:
-            sp5C = oneloopblockexpr(expr->data.islda_isilda.unk34, &sp54);
+            sp5C = oneloopblockexpr(expr->data.islda_isilda.outer_stack, &sp54);
             sp60 = unroll_searchloop(expr->table_index, expr, sp5C, NULL);
             if (sp60->type == empty) {
                 sp60->type = isilda;
@@ -853,11 +853,11 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                 sp60->unk5 = 0;
                 sp60->count = 1;
                 sp60->datatype = Adt;
-                sp60->data.islda_isilda.var_data = expr->data.islda_isilda.var_data;
-                sp60->data.islda_isilda.addr = expr->data.islda_isilda.addr;
+                sp60->data.islda_isilda.address = expr->data.islda_isilda.address;
+                sp60->data.islda_isilda.offset = expr->data.islda_isilda.offset;
                 sp60->data.islda_isilda.size = expr->data.islda_isilda.size;
                 sp60->var_access_list = NULL;
-                sp60->data.islda_isilda.unk34 = sp5C;
+                sp60->data.islda_isilda.outer_stack = sp5C;
                 sp60->data.islda_isilda.unk38 = 0;
             } else {
                 increasecount(sp60);
@@ -1328,19 +1328,19 @@ void oneloopblockstmt(struct Statement *stat) {
 
             if (phi_s1->type == empty) {
                 phi_s1->type = stat->expr->type;
-                phi_s1->data.isvar_issvar.var_data = stat->expr->data.isvar_issvar.var_data;
+                phi_s1->data.isvar_issvar.location = stat->expr->data.isvar_issvar.location;
                 phi_s1->datatype = stat->expr->datatype;
                 phi_s1->data.isvar_issvar.size = stat->expr->data.isvar_issvar.size;
                 phi_s1->unk3 = 0;
                 phi_s1->count = 0;
                 phi_s1->data.isvar_issvar.unk30 = NULL;
                 if (stat->expr->type == issvar) {
-                    phi_s1->data.isvar_issvar.unk24 = oneloopblockexpr(stat->u.store.expr, &sp54);
+                    phi_s1->data.isvar_issvar.outer_stack = oneloopblockexpr(stat->u.store.expr, &sp54);
                     phi_s1->data.isvar_issvar.unk3C = 0;
                     phi_s1->unk4 = 0;
                     phi_s1->unk5 = 0;
                 } else {
-                    phi_s1->data.isvar_issvar.unk24 = NULL;
+                    phi_s1->data.isvar_issvar.outer_stack = NULL;
                 }
 
                 if (phi_s1->data.isvar_issvar.unk21 == 0) {
@@ -1362,7 +1362,7 @@ void oneloopblockstmt(struct Statement *stat) {
             TRAP_IF(stat->unk3 != 0);
             stattail->unk3 = 0;
             if (stattail->opc == Uisst) {
-                stattail->u.store.expr = phi_s1->data.isvar_issvar.unk24;
+                stattail->u.store.expr = phi_s1->data.isvar_issvar.outer_stack;
             }
 
             stattail->expr = phi_s1;
@@ -2047,9 +2047,9 @@ int expr_instr(struct Expression *expr) {
         case isrconst:
             return 0;
         case issvar:
-            return expr_instr(expr->data.isvar_issvar.unk24) + 1;
+            return expr_instr(expr->data.isvar_issvar.outer_stack) + 1;
         case isilda:
-            return expr_instr(expr->data.islda_isilda.unk34) + 1;
+            return expr_instr(expr->data.islda_isilda.outer_stack) + 1;
         case isop:
             ret = expr_instr(expr->data.isop.op1) + 1;
             if (optab[expr->data.isop.opc].is_binary_op != 0) {
@@ -2416,19 +2416,19 @@ struct Expression *form_neg(struct Expression *expr) {
 */
 struct Expression *str_to_temporary(int addr, struct Expression *store) {
     struct Expression *ret;
-    struct VariableInner var;
+    struct VariableLocation loc;
 
-    var.addr = addr;
-    var.blockno = curblk;
-    var.memtype = Mmt;
-    ret = appendchain(isvarhash(var));
+    loc.addr = addr;
+    loc.blockno = curblk;
+    loc.memtype = Mmt;
+    ret = appendchain(isvarhash(loc));
 
     ret->data.isvar_issvar.unk21 = 0;
     ret->data.isvar_issvar.unk22 = 1;
     ret->unk3 = 0;
     ret->type = isvar;
     ret->graphnode = curgraphnode;
-    ret->data.isvar_issvar.var_data = var;
+    ret->data.isvar_issvar.location = loc;
     if (store->type == isop) {
         ret->datatype = store->data.isop.datatype;
     } else {
@@ -2437,10 +2437,10 @@ struct Expression *str_to_temporary(int addr, struct Expression *store) {
     ret->data.isvar_issvar.size = sizeoftyp(ret->datatype);
     ret->count = 0;
     ret->data.isvar_issvar.unk30 = NULL;
-    ret->data.isvar_issvar.unk24 = NULL;
+    ret->data.isvar_issvar.outer_stack = NULL;
     ret->unk2 = 0;
     ret->data.isvar_issvar.is_volatile = 0;
-    ret->data.isvar_issvar.var_data.level = curlevel;
+    ret->data.isvar_issvar.location.level = curlevel;
 
     extendstat(Ustr);
     ret->data.isvar_issvar.assigned_value = store;
@@ -2484,13 +2484,13 @@ void reset_images(struct Expression *expr) {
             return;
 
         case isilda:
-            reset_images(expr->data.islda_isilda.unk34);
+            reset_images(expr->data.islda_isilda.outer_stack);
             return;
 
         case isvar:
         case issvar:
             if (expr->type == issvar) {
-                reset_images(expr->data.isvar_issvar.unk24);
+                reset_images(expr->data.isvar_issvar.outer_stack);
             }
             return;
 
@@ -2572,7 +2572,7 @@ void loopunroll(void) {
 
                             loopbody->stat_tail->expr = change_to_const_eq(loopbody->stat_tail->u.jp.loop_if_true, loopCond, loopbody, incre - rem - 1);
                         } else {
-                            range = loopCond->data.isop.op2->data.islda_isilda.addr;
+                            range = loopCond->data.isop.op2->data.islda_isilda.offset;
                             incre = loopbody->stat_tail->u.jp.incre;
                             rem = (range - loopbody->stat_tail->u.jp.unk20->data.isconst.number.intval - 1) % incre;
                             if ((rem ^ incre) < 0) {
@@ -2590,7 +2590,7 @@ void loopunroll(void) {
                             }
                             loopbody->stat_tail->expr = change_to_const_eq(loopbody->stat_tail->u.jp.loop_if_true, loopCond, loopbody, incre + rem);
                         } else {
-                            range = loopCond->data.isop.op2->data.islda_isilda.addr;
+                            range = loopCond->data.isop.op2->data.islda_isilda.offset;
                             incre = loopbody->stat_tail->u.jp.incre;
                             rem = (loopbody->stat_tail->u.jp.unk20->data.isconst.number.intval - range) % -incre;
                             if ((rem ^ -incre) < 0) {
@@ -3903,7 +3903,7 @@ glabel par_to_str
 /*
 00473F04 pmov_to_mov
 */
-static struct Expression *func_00473D84(struct Statement *pmov, struct VariableInner var, unsigned short hash) {
+static struct Expression *func_00473D84(struct Statement *pmov, struct VariableLocation loc, unsigned short hash) {
     struct Expression *phi_s0;
     bool found;
 
@@ -3911,8 +3911,8 @@ static struct Expression *func_00473D84(struct Statement *pmov, struct VariableI
     found = false;
     while (!found && phi_s0 != NULL) {
         found = phi_s0->type == islda
-                 && addreq(phi_s0->data.islda_isilda.var_data, var)
-                 && var.addr == phi_s0->data.islda_isilda.addr
+                 && addreq(phi_s0->data.islda_isilda.address, loc)
+                 && loc.addr == phi_s0->data.islda_isilda.offset
                  && pmov->u.store.size == phi_s0->data.islda_isilda.size;
         if (!found) {
             phi_s0 = phi_s0->next;
@@ -3924,12 +3924,12 @@ static struct Expression *func_00473D84(struct Statement *pmov, struct VariableI
         phi_s0->type = islda;
         phi_s0->datatype = Adt;
         phi_s0->graphnode = curgraphnode;
-        phi_s0->data.islda_isilda.var_data = var;
+        phi_s0->data.islda_isilda.address = loc;
         phi_s0->data.islda_isilda.size = pmov->u.store.size;
         phi_s0->data.islda_isilda.level = curlevel;
         phi_s0->var_access_list = NULL;
-        phi_s0->data.islda_isilda.unk34 = NULL;
-        phi_s0->data.islda_isilda.addr = var.addr;
+        phi_s0->data.islda_isilda.outer_stack = NULL;
+        phi_s0->data.islda_isilda.offset = loc.addr;
     }
     return phi_s0;
 }
@@ -3939,19 +3939,19 @@ static struct Expression *func_00473D84(struct Statement *pmov, struct VariableI
 */
 void pmov_to_mov(struct Statement *pmov) {
     int sp3C;
-    struct VariableInner var; // sp34
+    struct VariableLocation loc; // sp34
     unsigned short hash;
     struct Expression *temp_v0;
     struct Statement *mov;
 
-    var.addr = pmov->u.store.u.mov.offset;
-    var.blockno = curblk;
-    var.memtype = Pmt;
+    loc.addr = pmov->u.store.u.mov.offset;
+    loc.blockno = curblk;
+    loc.memtype = Pmt;
 
-    hash = isvarhash(var);
+    hash = isvarhash(loc);
     extendstat(Umov);
     mov = stattail;
-    mov->expr = func_00473D84(pmov, var, hash);
+    mov->expr = func_00473D84(pmov, loc, hash);
     mov->u.store.expr = oneloopblockexpr(pmov->expr, &sp3C);
     mov->u.store.expr = unroll_resetincr(mov->u.store.expr, sp3C);
     mov->u.store.size = pmov->u.store.size;

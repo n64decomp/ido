@@ -74,7 +74,7 @@ struct NumLinkedList *gp_rel_tab[161];
 00459FB0 insertlda
 0045BF44 checkforvreg
 */
-unsigned char compareloc(struct VariableInner a, struct VariableInner b, int size_a, int size_b) {
+unsigned char compareloc(struct VariableLocation a, struct VariableLocation b, int size_a, int size_b) {
     if (a.memtype < b.memtype) {
         return 1;
     }
@@ -97,7 +97,7 @@ unsigned char compareloc(struct VariableInner a, struct VariableInner b, int siz
 0045C540 varintree
 004736E0 func_004736E0
 */
-int compareaddr(struct VariableInner a, struct VariableInner b) {
+int compareaddr(struct VariableLocation a, struct VariableLocation b) {
     if (a.memtype < b.memtype) {
         return 1;
     }
@@ -310,13 +310,13 @@ void update_veqv_in_table(struct Variable *var) {
     unsigned short hash;
     bool found;
 
-    hash = isvarhash(var->inner);
+    hash = isvarhash(var->location);
     entry = table[hash];
     found = false;
 
     while (entry != NULL) {
         if (entry->type == isvar || entry->type == issvar) {
-            if (addreq(entry->data.isvar_issvar.var_data, var->inner)) {
+            if (addreq(entry->data.isvar_issvar.location, var->location)) {
                 entry->data.isvar_issvar.unk21 = true;
                 found = true;
             }
@@ -325,7 +325,7 @@ void update_veqv_in_table(struct Variable *var) {
     }
 
     if (!found) {
-        entry = searchvar(hash, &var->inner);
+        entry = searchvar(hash, &var->location);
         entry->graphnode = NULL;
         entry->data.isvar_issvar.size = (unsigned char)var->size;
         entry->data.isvar_issvar.unk22 = var->unk2;
@@ -337,9 +337,9 @@ void update_veqv_in_table(struct Variable *var) {
 00459698 make_subloc_veqv
 00459828 insertvar
 */
-void make_subloc_veqv(struct VariableInner var, int size, struct Variable **pos) {
+void make_subloc_veqv(struct VariableLocation loc, int size, struct Variable **pos) {
     while (*pos != NULL) {
-        switch (compareloc(var, (*pos)->inner, size, (*pos)->size)) {
+        switch (compareloc(loc, (*pos)->location, size, (*pos)->size)) {
             case 0:
                 if (!(*pos)->unk1) {
                     (*pos)->unk1 = true;
@@ -348,13 +348,13 @@ void make_subloc_veqv(struct VariableInner var, int size, struct Variable **pos)
                         update_veqv_in_table(*pos);
                     }
                 }
-                make_subloc_veqv(var, size, &(*pos)->left);
-                var = var; // why self assignment, tail recursion?
+                make_subloc_veqv(loc, size, &(*pos)->left);
+                loc = loc; // why self assignment, tail recursion?
                 pos = &(*pos)->right;
                 break;
 
             case 1:
-                var = var; // why self assignment, tail recursion?
+                loc = loc; // why self assignment, tail recursion?
                 pos = &(*pos)->left;
                 break;
 
@@ -374,7 +374,7 @@ void make_subloc_veqv(struct VariableInner var, int size, struct Variable **pos)
 0045A480 oneinstruction
 0045B508 oneprocprepass
 */
-struct Variable *insertvar(struct VariableInner var, int size, Datatype dtype, struct Variable **pos, bool arg5_unused, bool arg6, bool arg7) { //arg7 = is_register?
+struct Variable *insertvar(struct VariableLocation loc, int size, Datatype dtype, struct Variable **pos, bool arg5_unused, bool arg6, bool arg7) { //arg7 = is_register?
     struct Variable *v = *pos;
     bool done = false;
     bool updated_size;
@@ -386,7 +386,7 @@ struct Variable *insertvar(struct VariableInner var, int size, Datatype dtype, s
     }
 
     while (!done) {
-        switch (compareloc(var, v->inner, size, v->size)) {
+        switch (compareloc(loc, v->location, size, v->size)) {
             case 1:
                 if (v->left == NULL) {
                     v->left = (struct Variable *)alloc_new(sizeof(struct Variable), &var_heap);
@@ -404,7 +404,7 @@ struct Variable *insertvar(struct VariableInner var, int size, Datatype dtype, s
                 break;
 
             case 0:
-                if ((var.addr == v->inner.addr && size == v->size) || var.memtype == Rmt) {
+                if ((loc.addr == v->location.addr && size == v->size) || loc.memtype == Rmt) {
                     if ((dtype == Qdt || dtype == Rdt) == (v->dtype == Qdt || v->dtype == Rdt)) {
                         if (arg6 && !v->unk2 && !v->unk1) {
                             v->unk1 = true;
@@ -432,15 +432,15 @@ struct Variable *insertvar(struct VariableInner var, int size, Datatype dtype, s
                         }
                     }
 
-                    if (v->inner.addr + v->size < var.addr + size) {
-                        v->size = var.addr + size - v->inner.addr;
+                    if (v->location.addr + v->size < loc.addr + size) {
+                        v->size = loc.addr + size - v->location.addr;
                         updated_size = true;
                     }
-                    if (v->inner.addr >= var.addr && updated_size) {
-                        make_subloc_veqv(var, size, &v->right);
+                    if (v->location.addr >= loc.addr && updated_size) {
+                        make_subloc_veqv(loc, size, &v->right);
                     }
 
-                    if (v->inner.addr > var.addr) {
+                    if (v->location.addr > loc.addr) {
                         arg6 = true;
                         arg7 = false;
                         if (v->left == NULL) {
@@ -448,7 +448,7 @@ struct Variable *insertvar(struct VariableInner var, int size, Datatype dtype, s
                             done = true;
                         }
                         v = v->left;
-                    } else if (v->inner.addr < var.addr) {
+                    } else if (v->location.addr < loc.addr) {
                         arg6 = true;
                         arg7 = false;
                         if (v->right == NULL) {
@@ -468,7 +468,7 @@ struct Variable *insertvar(struct VariableInner var, int size, Datatype dtype, s
         }
     }
 
-    v->inner = var;
+    v->location = loc;
     v->unk1 = arg6 && !arg7;
     v->size = size;
     v->left = NULL;
@@ -588,16 +588,16 @@ void enter_gp_rel_tab(int num) {
 /*
 0045A480 oneinstruction
 */
-void insertlda(struct VariableInner var, int size) {
+void insertlda(struct VariableLocation loc, int size) {
     struct LdatabEntry *entry;
     struct LdatabEntry *new_entry;
     struct LdatabEntry *prev_entry;
     int hash;
     int cmp;
 
-    hash = var.blockno % 3113;
+    hash = loc.blockno % 3113;
     if (hash < 0) {
-        // never happens (var.blockno is unsigned)
+        // never happens (loc.blockno is unsigned)
         hash += 3113;
     }
 
@@ -606,17 +606,17 @@ void insertlda(struct VariableInner var, int size) {
     if (entry == NULL) {
         new_entry = (struct LdatabEntry *)alloc_new(sizeof(struct LdatabEntry), &lda_heap);
         ldatab[hash] = new_entry;
-        new_entry->var = var;
+        new_entry->var = loc;
         new_entry->size = size;
         new_entry->next = NULL;
         return;
     }
 
-    cmp = compareloc(var, entry->var, size, entry->size);
+    cmp = compareloc(loc, entry->var, size, entry->size);
     switch (cmp) {
         case 2:
             new_entry = (struct LdatabEntry *)alloc_new(sizeof(struct LdatabEntry), &lda_heap);
-            new_entry->var = var;
+            new_entry->var = loc;
             new_entry->size = size;
             new_entry->next = entry;
             ldatab[hash] = new_entry;
@@ -628,7 +628,7 @@ void insertlda(struct VariableInner var, int size) {
                 if (entry == NULL) {
                     cmp = 2;
                 } else {
-                    cmp = compareloc(var, entry->var, size, entry->size);
+                    cmp = compareloc(loc, entry->var, size, entry->size);
                 }
             } while (cmp == 1);
             break;
@@ -642,7 +642,7 @@ void insertlda(struct VariableInner var, int size) {
     if (cmp != 0) {
         new_entry = (struct LdatabEntry *)alloc_new(sizeof(struct LdatabEntry), &lda_heap);
         prev_entry->next = new_entry;
-        new_entry->var = var;
+        new_entry->var = loc;
         new_entry->size = size;
         new_entry->next = entry;
         return;
@@ -650,13 +650,13 @@ void insertlda(struct VariableInner var, int size) {
     if (size == 0x7FFFFFFF) {
         entry->size = 0x7FFFFFFF;
     } else if (entry->size != 0x7FFFFFFF) {
-        if (entry->var.addr + entry->size < var.addr + size) {
-            entry->size = var.addr + size - entry->var.addr;
+        if (entry->var.addr + entry->size < loc.addr + size) {
+            entry->size = loc.addr + size - entry->var.addr;
         }
     }
-    if (var.addr < entry->var.addr) {
-        entry->var.addr = var.addr;
-        entry->size = entry->var.addr + entry->size - var.addr;
+    if (loc.addr < entry->var.addr) {
+        entry->var.addr = loc.addr;
+        entry->size = entry->var.addr + entry->size - loc.addr;
     }
 }
 
@@ -723,7 +723,7 @@ void check_gp_relative(void) {
 */
 void oneinstruction(void) {
     struct Proc *proc;
-    struct VariableInner var;
+    struct VariableLocation loc;
     struct Label *label;
     bool lexlev1;
     bool unk;
@@ -736,10 +736,10 @@ void oneinstruction(void) {
 
         case Uoptn:
             if (IONE == UCO_VARARGS) {
-                var.memtype = Pmt;
-                var.blockno = curproc->id;
-                var.addr = LENGTH;
-                insertvar(var, 8000, Ldt, &curproc->vartree, false, true, false);
+                loc.memtype = Pmt;
+                loc.blockno = curproc->id;
+                loc.addr = LENGTH;
+                insertvar(loc, 8000, Ldt, &curproc->vartree, false, true, false);
                 curproc->unkB = true;
             } else if (IONE == UCO_SOURCE && !fortran_lang) {
                 switch (LENGTH) {
@@ -772,15 +772,15 @@ void oneinstruction(void) {
             break;
 
         case Ucsym:
-            var.memtype = Smt;
-            var.blockno = IONE;
-            var.addr = 0;
+            loc.memtype = Smt;
+            loc.blockno = IONE;
+            loc.addr = 0;
             if (lang == LANG_FORTRAN || (lang == LANG_PASCAL && nopalias)) {
                 if (!nof77alias) {
-                    insertlda(var, LENGTH);
+                    insertlda(loc, LENGTH);
                 }
             } else {
-                insertlda(var, LENGTH);
+                insertlda(loc, LENGTH);
             }
             check_gp_relative();
             break;
@@ -797,13 +797,13 @@ void oneinstruction(void) {
 
         case Uesym:
         case Ugsym:
-            var.memtype = Smt;
-            var.addr = 0;
-            var.blockno = IONE;
+            loc.memtype = Smt;
+            loc.addr = 0;
+            loc.blockno = IONE;
             if (LENGTH == 0) {
-                insertlda(var, 0x7FFFFFFF);
+                insertlda(loc, 0x7FFFFFFF);
             } else {
-                insertlda(var, LENGTH);
+                insertlda(loc, LENGTH);
             }
             check_gp_relative();
             break;
@@ -818,25 +818,25 @@ void oneinstruction(void) {
             break;
 
         case Uvreg:
-            var.memtype = MTYPE;
-            var.blockno = IONE;
-            var.addr = OFFSET;
-            insertvar(var, LENGTH, DTYPE, &curproc->vartree, false, false, true);
+            loc.memtype = MTYPE;
+            loc.blockno = IONE;
+            loc.addr = OFFSET;
+            insertvar(loc, LENGTH, DTYPE, &curproc->vartree, false, false, true);
             break;
 
         case Ustr:
         case Uisld:
         case Uisst:
         case Ulod:
-            var.memtype = MTYPE;
-            var.blockno = IONE;
-            var.addr = OFFSET;
-            if (var.memtype == Rmt) {
-                var.blockno = 0;
+            loc.memtype = MTYPE;
+            loc.blockno = IONE;
+            loc.addr = OFFSET;
+            if (loc.memtype == Rmt) {
+                loc.blockno = 0;
             }
             lexlev1 = IS_VOLATILE_ATTR(LEXLEV);
             unk = lexlev1 || (in_exception_block > 0 && MTYPE != Rmt);
-            insertvar(var, LENGTH, DTYPE, &curproc->vartree, OPC == Uisld || OPC == Ulod, unk, MTYPE == Rmt);
+            insertvar(loc, LENGTH, DTYPE, &curproc->vartree, OPC == Uisld || OPC == Ulod, unk, MTYPE == Rmt);
             if (OPC == Uisld || OPC == Ulod) {
                 curproc->bvsize++;
             }
@@ -844,29 +844,29 @@ void oneinstruction(void) {
 
         case Uldap:
         case Uldsp:
-            var.memtype = Rmt;
-            var.blockno = OPC == Uldap;
-            var.addr = r_sp;
-            insertvar(var, 4, Adt, &curproc->vartree, true, true, false);
+            loc.memtype = Rmt;
+            loc.blockno = OPC == Uldap;
+            loc.addr = r_sp;
+            insertvar(loc, 4, Adt, &curproc->vartree, true, true, false);
             break;
 
         case Uilda:
         case Ulda:
-            var.memtype = MTYPE;
-            var.blockno = IONE;
-            var.addr = OFFSET2;
-            if (var.memtype == Rmt) {
-                var.blockno = 0;
+            loc.memtype = MTYPE;
+            loc.blockno = IONE;
+            loc.addr = OFFSET2;
+            if (loc.memtype == Rmt) {
+                loc.blockno = 0;
             }
             if (lang == LANG_ADA && LENGTH == -1) {
-                if (var.memtype == Mmt) {
+                if (loc.memtype == Mmt) {
                     LENGTH = -4 - OFFSET;
-                    var.addr = OFFSET;
+                    loc.addr = OFFSET;
                 } else {
                     LENGTH = 0x7FFFFFFF;
                 }
             }
-            insertlda(var, LENGTH);
+            insertlda(loc, LENGTH);
             break;
 
         case Ucup:
@@ -1028,7 +1028,7 @@ void oneinstruction(void) {
 0045C150 prepass
 */
 void oneprocprepass(void) {
-    struct VariableInner var;
+    struct VariableLocation loc;
     struct ProcList *callees;
     int i;
     int len;
@@ -1044,10 +1044,10 @@ void oneprocprepass(void) {
     }
     in_exception_block = 0;
     if ((lang == LANG_ADA || lang == LANG_PL1 || lang == LANG_COBOL) && !IS_EXTERNAL_ATTR(EXTRNAL)) {
-        var.memtype = Mmt;
-        var.blockno = IONE;
-        var.addr = -4;
-        insertvar(var, 4, Adt, &curproc->vartree, true, false, true);
+        loc.memtype = Mmt;
+        loc.blockno = IONE;
+        loc.addr = -4;
+        insertvar(loc, 4, Adt, &curproc->vartree, true, false, true);
     }
     readuinstr(&u, ustrptr);
     if (OPC == Ueof) {
@@ -1286,14 +1286,14 @@ void checkforvreg(struct Variable *var) {
 
     if (var != NULL) {
         if (!var->unk1 && !var->unk2) {
-            hash = var->inner.blockno % 3113;
+            hash = var->location.blockno % 3113;
             if (hash < 0) {
                 hash += 3113; // dead code
             }
             entry = ldatab[hash];
             stop = false;
             while (!stop && entry != NULL) {
-                cmp = compareloc(var->inner, entry->var, var->size, entry->size);
+                cmp = compareloc(var->location, entry->var, var->size, entry->size);
                 if (cmp != 1) {
                     stop = true;
                 } else {
@@ -1418,9 +1418,9 @@ void prepass(void) {
 0044BDFC cskilled
 0045C620 furthervarintree
 */
-bool varintree(struct VariableInner var, struct Variable *tree) {
+bool varintree(struct VariableLocation loc, struct Variable *tree) {
     while (tree != NULL) {
-        switch (compareaddr(var, tree->inner)) {
+        switch (compareaddr(loc, tree->location)) {
             case 0:
                 return true;
             case 1:
@@ -1443,19 +1443,19 @@ bool varintree(struct VariableInner var, struct Variable *tree) {
 0044BDFC cskilled
 */
 bool furthervarintree(struct Expression *expr, struct Proc *proc) {
-    struct VariableInner var;
+    struct VariableLocation loc;
     struct ProcList *callee;
     bool result;
 
-    var = expr->data.isvar_issvar.var_data;
+    loc = expr->data.isvar_issvar.location;
     callee = proc->callees;
     result = false;
 
     while (!result && callee != NULL) {
         if (indirprocs == callee->proc) {
             result = true;
-        } else if (expr->data.isvar_issvar.var_data.level < callee->proc->level) {
-            result = varintree(var, callee->proc->vartree);
+        } else if (expr->data.isvar_issvar.location.level < callee->proc->level) {
+            result = varintree(loc, callee->proc->vartree);
         }
         callee = callee->next;
     }

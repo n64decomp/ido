@@ -10,6 +10,6 @@ void prepass(void);
 bool proc_suppressed(void);
 bool in_fsym(int num);
 bool is_gp_relative(int num);
-struct Variable *insertvar(struct VariableInner var, int size, Datatype dtype, struct Variable **pos, bool arg5_unused, bool arg6, bool arg7);
+struct Variable *insertvar(struct VariableLocation var, int size, Datatype dtype, struct Variable **pos, bool arg5_unused, bool arg6, bool arg7);
 
 #endif

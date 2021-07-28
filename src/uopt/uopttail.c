@@ -29,15 +29,15 @@ bool next_stmt_is_ret1(struct Statement *stmt, int addr) {
             if (stmt->expr->data.isvar_issvar.assigned_value->type != isvar) {
                 return false;
             }
-            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.var_data.blockno != curblk) {
+            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.location.blockno != curblk) {
                 return false;
             }
-            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.var_data.addr != addr) {
+            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.location.addr != addr) {
                 return false;
             }
             if (stmt->expr->type == isvar) {
-                if (stmt->expr->data.isvar_issvar.var_data.memtype == Rmt) {
-                    if (stmt->expr->data.isvar_issvar.var_data.addr != r_v0) {
+                if (stmt->expr->data.isvar_issvar.location.memtype == Rmt) {
+                    if (stmt->expr->data.isvar_issvar.location.addr != r_v0) {
                         continue;
                     }
                 }
@@ -71,15 +71,15 @@ bool next_stmt_is_ret(struct Statement *stmt) {
             if (stmt->expr->data.isvar_issvar.assigned_value->type != isvar) {
                 return false;
             }
-            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.var_data.memtype != Rmt) {
+            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.location.memtype != Rmt) {
                 return false;
             }
-            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.var_data.addr != r_v0) {
+            if (stmt->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.location.addr != r_v0) {
                 return false;
             }
             if (stmt->expr->type == isvar) {
-                if (stmt->expr->data.isvar_issvar.var_data.memtype == Rmt) {
-                    if (stmt->expr->data.isvar_issvar.var_data.addr == r_v0) {
+                if (stmt->expr->data.isvar_issvar.location.memtype == Rmt) {
+                    if (stmt->expr->data.isvar_issvar.location.addr == r_v0) {
                         continue;
                     }
                 }
@@ -87,10 +87,10 @@ bool next_stmt_is_ret(struct Statement *stmt) {
             if (stmt->expr->type != isvar) {
                 return false;
             }
-            if (stmt->expr->data.isvar_issvar.var_data.blockno != curblk) {
+            if (stmt->expr->data.isvar_issvar.location.blockno != curblk) {
                 return false;
             }
-            return next_stmt_is_ret1(stmt, stmt->expr->data.isvar_issvar.var_data.addr);
+            return next_stmt_is_ret1(stmt, stmt->expr->data.isvar_issvar.location.addr);
         }
         return stmt->opc == Uret;
     }
@@ -104,7 +104,7 @@ bool no_ref_param(struct Statement *parameters) {
     while (parameters != NULL) {
         if (parameters->u.par.dtype == Adt) {
             baseaddr = parameters->u.par.baseaddr;
-            if (baseaddr->type == islda && curblk == baseaddr->data.islda_isilda.var_data.blockno) {
+            if (baseaddr->type == islda && curblk == baseaddr->data.islda_isilda.address.blockno) {
                 return false;
             }
         }
@@ -120,19 +120,19 @@ bool no_ref_param(struct Statement *parameters) {
 static void func_00475E38(struct Variable *vartree, struct Statement *pmov_stmt) {
     struct Expression *expr;
     if (vartree != NULL) {
-        if (vartree->unk2 && vartree->inner.memtype == Pmt && curblk == vartree->inner.blockno) {
-            int loc = vartree->inner.addr;
+        if (vartree->unk2 && vartree->location.memtype == Pmt && curblk == vartree->location.blockno) {
+            int loc = vartree->location.addr;
             if ((loc >= pmov_stmt->u.store.u.mov.offset && loc - pmov_stmt->u.store.u.mov.offset < pmov_stmt->u.store.size) ||
                 (pmov_stmt->u.store.u.mov.offset >= loc && pmov_stmt->u.store.u.mov.offset - loc < vartree->size))
             {
-                for (expr = table[isvarhash(vartree->inner)]; expr != NULL; expr = expr->next) {
+                for (expr = table[isvarhash(vartree->location)]; expr != NULL; expr = expr->next) {
                     if (expr->type != isvar) {
                         continue;
                     }
-                    if (curblk != expr->data.isvar_issvar.var_data.blockno) {
+                    if (curblk != expr->data.isvar_issvar.location.blockno) {
                         continue;
                     }
-                    if (vartree->inner.addr != expr->data.isvar_issvar.var_data.addr) {
+                    if (vartree->location.addr != expr->data.isvar_issvar.location.addr) {
                         continue;
                     }
                     expr->data.isvar_issvar.unk22 = false;
@@ -180,11 +180,11 @@ static void func_0047606C(struct Expression *expr, struct TailRecParameter **tai
 
     switch (expr->type) {
         case isvar:
-            if (expr->data.isvar_issvar.var_data.memtype != Pmt) {
+            if (expr->data.isvar_issvar.location.memtype != Pmt) {
                 return;
             }
 
-            par_number = expr->data.isvar_issvar.var_data.addr;
+            par_number = expr->data.isvar_issvar.location.addr;
             if (par_number >= parnum) {
                 return;
             }
@@ -339,7 +339,7 @@ void tail_recursion(void) {
                         stat_opc != Ustr) {
                     oneloopblockstmt(stmt);
                 } else if (stat_opc == Ustr) {
-                    if (stmt->expr->data.isvar_issvar.var_data.memtype != Rmt) {
+                    if (stmt->expr->data.isvar_issvar.location.memtype != Rmt) {
                         oneloopblockstmt(stmt);
                     }
                 } else if (stat_opc == Upar) {

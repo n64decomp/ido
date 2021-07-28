@@ -224,7 +224,7 @@ D_10011870:
 0047E24C enter_lda
 0047E938 checkincre
 */
-bool addreq(struct VariableInner a, struct VariableInner b) {
+bool addreq(struct VariableLocation a, struct VariableLocation b) {
     return a.addr == b.addr && a.memtype == b.memtype && a.blockno == b.blockno;
 }
 
@@ -921,16 +921,17 @@ glabel fix_base
 void fixcorr(struct Expression *expr) {
     if (expr->ichain->expr == expr) {
         if (expr->type == isop || expr->type == isvar || expr->type == issvar) {
-            if (expr->type != isop || (expr->data.isop.opc == Uiequ ||
-                        expr->data.isop.opc == Uigeq ||
-                        expr->data.isop.opc == Uigrt ||
-                        expr->data.isop.opc == Uildv ||
-                        expr->data.isop.opc == Uileq ||
-                        expr->data.isop.opc == Uiles ||
-                        expr->data.isop.opc == Uilod ||
-                        expr->data.isop.opc == Uineq ||
-                        expr->data.isop.opc == Uirld ||
-                        expr->data.isop.opc == Uirlv)) {
+            if (expr->type != isop ||
+                    (expr->data.isop.opc == Uiequ ||
+                     expr->data.isop.opc == Uigeq ||
+                     expr->data.isop.opc == Uigrt ||
+                     expr->data.isop.opc == Uildv ||
+                     expr->data.isop.opc == Uileq ||
+                     expr->data.isop.opc == Uiles ||
+                     expr->data.isop.opc == Uilod ||
+                     expr->data.isop.opc == Uineq ||
+                     expr->data.isop.opc == Uirld ||
+                     expr->data.isop.opc == Uirlv)) {
                 expr->ichain->expr = findsimilar(expr);
                 if (expr->ichain->expr == NULL) {
                     expr->ichain->expr = appendchain(expr->table_index);
@@ -996,7 +997,7 @@ void decreasecount(struct Expression *expr) {
         case isilda:
             expr->count--;
             if (expr->count == 0) {
-                decreasecount(expr->data.islda_isilda.unk34);
+                decreasecount(expr->data.islda_isilda.outer_stack);
                 delentry(expr);
             }
             return;
@@ -1023,7 +1024,7 @@ void decreasecount(struct Expression *expr) {
                 if (expr->count == 0) {
                     expr->var_access_list->type = 0;
                     if (expr->data.isvar_issvar.assignment == NULL || expr->data.isvar_issvar.assignment->opc == Unop) {
-                        decreasecount(expr->data.isvar_issvar.unk24);
+                        decreasecount(expr->data.isvar_issvar.outer_stack);
                     } else {
                         delentry(expr);
                     }
@@ -1098,14 +1099,14 @@ void increasecount(struct Expression *expr) {
         case issvar:
             expr->count++;
             if (expr->count > 1) {
-                decreasecount(expr->data.isvar_issvar.unk24);
+                decreasecount(expr->data.isvar_issvar.outer_stack);
             }
             return;
 
         case isilda:
             expr->count++;
             if (expr->count > 1) {
-                decreasecount(expr->data.islda_isilda.unk34);
+                decreasecount(expr->data.islda_isilda.outer_stack);
             }
             return;
 
@@ -1173,8 +1174,8 @@ int realhash(int len) {
 0047D768 vartreeinfo
 0047E24C enter_lda
 */
-int isvarhash(struct VariableInner var) {
-    int hash = (((var.memtype << 6) + var.blockno + var.addr) << 4) % 9113;
+int isvarhash(struct VariableLocation loc) {
+    int hash = (((loc.memtype << 6) + loc.blockno + loc.addr) << 4) % 9113;
     return hash < 0 ? hash + 9113 : hash;
 }
 
@@ -1806,12 +1807,12 @@ bool mpyovfw(enum Datatype t, int a, int b) {
 00459564 update_veqv_in_table
 0047D768 vartreeinfo
 */
-struct Expression *searchvar(unsigned short table_index, struct VariableInner *var) {
+struct Expression *searchvar(unsigned short table_index, struct VariableLocation *loc) {
     struct Expression *entry = table[table_index];
     bool found = false;
 
     while (!found && entry != NULL) {
-        if ((entry->type == isvar || entry->type == issvar) && addreq(entry->data.isvar_issvar.var_data, *var)) {
+        if ((entry->type == isvar || entry->type == issvar) && addreq(entry->data.isvar_issvar.location, *loc)) {
             found = true;
         } else {
             entry = entry->next;
@@ -1822,12 +1823,12 @@ struct Expression *searchvar(unsigned short table_index, struct VariableInner *v
         entry = appendchain(table_index);
     }
 
-    if (var->memtype == Rmt || var->memtype == Smt || curblk == var->blockno) {
+    if (loc->memtype == Rmt || loc->memtype == Smt || curblk == loc->blockno) {
         entry->type = isvar;
     } else {
         entry->type = issvar;
     }
-    entry->data.isvar_issvar.var_data = *var;
+    entry->data.isvar_issvar.location = *loc;
     return entry;
 }
 
@@ -1840,7 +1841,7 @@ void vartreeinfo(struct Variable *var) {
 
     while (var != NULL) {
         if (var->unk2 || var->unk1) {
-            entry = searchvar(isvarhash(var->inner), &var->inner);
+            entry = searchvar(isvarhash(var->location), &var->location);
             entry->graphnode = NULL;
             entry->data.isvar_issvar.size = (unsigned char)var->size;
             entry->data.isvar_issvar.unk22 = var->unk2;
@@ -2302,12 +2303,12 @@ struct Expression *enter_lda(int addr, struct Expression *expr, struct Graphnode
     struct Expression *lda;
     bool found;
 
-    hash = isvarhash(expr->data.islda_isilda.var_data);
+    hash = isvarhash(expr->data.islda_isilda.address);
     lda = table[hash];
     found = false;
     while (!found && lda != NULL) {
-        if (lda->type == islda && lda->data.islda_isilda.addr == addr &&
-                addreq(lda->data.islda_isilda.var_data, expr->data.islda_isilda.var_data) &&
+        if (lda->type == islda && lda->data.islda_isilda.offset == addr &&
+                addreq(lda->data.islda_isilda.address, expr->data.islda_isilda.address) &&
                 lda->data.islda_isilda.size == expr->data.islda_isilda.size) {
             found = true;
         } else {
@@ -2321,9 +2322,9 @@ struct Expression *enter_lda(int addr, struct Expression *expr, struct Graphnode
         lda->datatype = Adt;
         lda->graphnode = graphnode;
         lda->var_access_list = NULL;
-        lda->data.islda_isilda.addr = addr;
+        lda->data.islda_isilda.offset = addr;
         lda->data.islda_isilda.size = expr->data.islda_isilda.size;
-        lda->data.islda_isilda.var_data = expr->data.islda_isilda.var_data;
+        lda->data.islda_isilda.address = expr->data.islda_isilda.address;
     }
 
     return lda;
@@ -2647,7 +2648,7 @@ bool checkincre(struct Expression *entry, struct Expression *entry2, int *result
     switch (entry->type) {
         case isvar:
         case issvar:
-            if (addreq(entry->data.isvar_issvar.var_data, entry2->data.isvar_issvar.var_data)) {
+            if (addreq(entry->data.isvar_issvar.location, entry2->data.isvar_issvar.location)) {
                 *result = 1;
                 return true;
             }
@@ -2978,14 +2979,14 @@ bool is_incr(struct Expression *expr) {
     }
 
     if (expr->data.isop.op1->type == isvar &&
-        expr->data.isop.op1->data.isvar_issvar.var_data.memtype == Pmt &&
+        expr->data.isop.op1->data.isvar_issvar.location.memtype == Pmt &&
         expr->data.isop.op2->type == isconst)
     {
         return true;
     }
 
     if (expr->data.isop.op2->type == isvar &&
-        expr->data.isop.op2->data.isvar_issvar.var_data.memtype == Pmt &&
+        expr->data.isop.op2->data.isvar_issvar.location.memtype == Pmt &&
         expr->data.isop.op1->type == isconst)
     {
         return true;
