@@ -43,22 +43,6 @@ jtbl_1000E1F0:
     .gpword .L0047C228
     .gpword .L0047C080
 
-RO_1000E200:
-    # 0047C284 copycoderep
-    .asciz "uoptutil.p"
-
-    .balign 4
-jtbl_1000E20C:
-    # 0047C284 copycoderep
-    .gpword .L0047C370
-    .gpword .L0047C3F0
-    .gpword .L0047C430
-    .gpword .L0047C4BC
-    .gpword .L0047C39C
-    .gpword .L0047C430
-    .gpword .L0047C4BC
-    .gpword .L0047C41C
-
 RO_1000E284:
     # 0047D000 exproccurred
     .asciz "uoptutil.p"
@@ -686,184 +670,113 @@ glabel findsimilar
     .type findsimilar, @function
     .size findsimilar, .-findsimilar
     .end findsimilar
+)"");
 
-glabel copycoderep
-    .ent copycoderep
-    # 00414108 func_00414108
-    # 0041550C func_0041550C
-    # 0044E604 binaryfold
-    # 0044ED5C ixafold
-    # 0044EDF8 ilodfold
-    # 0044F3C0 unaryfold
-    # 0044FF6C mergeconst
-    # 00451764 restructure
-    # 0047C53C fixcorr
-/* 0047C284 3C1C0FBA */  .cpload $t9
-/* 0047C288 279CE00C */
-/* 0047C28C 0399E021 */
-/* 0047C290 90A30000 */  lbu   $v1, ($a1)
-/* 0047C294 27BDFFC8 */  addiu $sp, $sp, -0x38
-/* 0047C298 24010004 */  li    $at, 4
-/* 0047C29C AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047C2A0 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047C2A4 AFA00030 */  sw    $zero, 0x30($sp)
-/* 0047C2A8 1461001C */  bne   $v1, $at, .L0047C31C
-/* 0047C2AC AFA00034 */   sw    $zero, 0x34($sp)
-/* 0047C2B0 24820008 */  addiu $v0, $a0, 8
-/* 0047C2B4 8C4F0000 */  lw    $t7, ($v0)
-/* 0047C2B8 8C4E0004 */  lw    $t6, 4($v0)
-/* 0047C2BC 27A60030 */  addiu $a2, $sp, 0x30
-/* 0047C2C0 8C83001C */  lw    $v1, 0x1c($a0)
-/* 0047C2C4 00A04025 */  move  $t0, $a1
-/* 0047C2C8 00804825 */  move  $t1, $a0
-/* 0047C2CC 24AA003C */  addiu $t2, $a1, 0x3c
-/* 0047C2D0 ACCF0000 */  sw    $t7, ($a2)
-/* 0047C2D4 ACCE0004 */  sw    $t6, 4($a2)
-.L0047C2D8:
-/* 0047C2D8 8D190000 */  lw    $t9, ($t0)
-/* 0047C2DC 2508000C */  addiu $t0, $t0, 0xc
-/* 0047C2E0 2529000C */  addiu $t1, $t1, 0xc
-/* 0047C2E4 AD39FFF4 */  sw    $t9, -0xc($t1)
-/* 0047C2E8 8D18FFF8 */  lw    $t8, -8($t0)
-/* 0047C2EC AD38FFF8 */  sw    $t8, -8($t1)
-/* 0047C2F0 8D19FFFC */  lw    $t9, -4($t0)
-/* 0047C2F4 150AFFF8 */  bne   $t0, $t2, .L0047C2D8
-/* 0047C2F8 AD39FFFC */   sw    $t9, -4($t1)
-/* 0047C2FC 8D190000 */  lw    $t9, ($t0)
-/* 0047C300 AD390000 */  sw    $t9, ($t1)
-/* 0047C304 8CCB0004 */  lw    $t3, 4($a2)
-/* 0047C308 8CCC0000 */  lw    $t4, ($a2)
-/* 0047C30C AC4B0004 */  sw    $t3, 4($v0)
-/* 0047C310 AC4C0000 */  sw    $t4, ($v0)
-/* 0047C314 10000071 */  b     .L0047C4DC
-/* 0047C318 AC83001C */   sw    $v1, 0x1c($a0)
-.L0047C31C:
-/* 0047C31C A0830000 */  sb    $v1, ($a0)
-/* 0047C320 90AD0001 */  lbu   $t5, 1($a1)
-/* 0047C324 A08D0001 */  sb    $t5, 1($a0)
-/* 0047C328 8CAE0010 */  lw    $t6, 0x10($a1)
-/* 0047C32C AC8E0010 */  sw    $t6, 0x10($a0)
-/* 0047C330 8CAF0014 */  lw    $t7, 0x14($a1)
-/* 0047C334 AC8F0014 */  sw    $t7, 0x14($a0)
-/* 0047C338 8CAA0018 */  lw    $t2, 0x18($a1)
-/* 0047C33C AC8A0018 */  sw    $t2, 0x18($a0)
-/* 0047C340 90A20000 */  lbu   $v0, ($a1)
-/* 0047C344 2448FFFF */  addiu $t0, $v0, -1
-/* 0047C348 2D010008 */  sltiu $at, $t0, 8
-/* 0047C34C 1020005B */  beqz  $at, .L0047C4BC
-/* 0047C350 00000000 */   nop
-/* 0047C354 8F818044 */  lw    $at, %got(jtbl_1000E20C)($gp)
-/* 0047C358 00084080 */  sll   $t0, $t0, 2
-/* 0047C35C 00280821 */  addu  $at, $at, $t0
-/* 0047C360 8C28E20C */  lw    $t0, %lo(jtbl_1000E20C)($at)
-/* 0047C364 011C4021 */  addu  $t0, $t0, $gp
-/* 0047C368 01000008 */  jr    $t0
-/* 0047C36C 00000000 */   nop
-.L0047C370:
-/* 0047C370 8CA90020 */  lw    $t1, 0x20($a1)
-/* 0047C374 AC890020 */  sw    $t1, 0x20($a0)
-/* 0047C378 8CB80024 */  lw    $t8, 0x24($a1)
-/* 0047C37C AC980024 */  sw    $t8, 0x24($a0)
-/* 0047C380 8CB90028 */  lw    $t9, 0x28($a1)
-/* 0047C384 AC990028 */  sw    $t9, 0x28($a0)
-/* 0047C388 8CAC002C */  lw    $t4, 0x2c($a1)
-/* 0047C38C AC8C002C */  sw    $t4, 0x2c($a0)
-/* 0047C390 8CAB0030 */  lw    $t3, 0x30($a1)
-/* 0047C394 10000051 */  b     .L0047C4DC
-/* 0047C398 AC8B0030 */   sw    $t3, 0x30($a0)
-.L0047C39C:
-/* 0047C39C 8CAD0020 */  lw    $t5, 0x20($a1)
-/* 0047C3A0 AC8D0020 */  sw    $t5, 0x20($a0)
-/* 0047C3A4 8CAE0024 */  lw    $t6, 0x24($a1)
-/* 0047C3A8 AC8E0024 */  sw    $t6, 0x24($a0)
-/* 0047C3AC 8CAF0028 */  lw    $t7, 0x28($a1)
-/* 0047C3B0 AC8F0028 */  sw    $t7, 0x28($a0)
-/* 0047C3B4 8CA8002C */  lw    $t0, 0x2c($a1)
-/* 0047C3B8 AC88002C */  sw    $t0, 0x2c($a0)
-/* 0047C3BC 8CAA0030 */  lw    $t2, 0x30($a1)
-/* 0047C3C0 AC8A0030 */  sw    $t2, 0x30($a0)
-/* 0047C3C4 94A90006 */  lhu   $t1, 6($a1)
-/* 0047C3C8 A4890006 */  sh    $t1, 6($a0)
-/* 0047C3CC 8CB80034 */  lw    $t8, 0x34($a1)
-/* 0047C3D0 AC980034 */  sw    $t8, 0x34($a0)
-/* 0047C3D4 90B90004 */  lbu   $t9, 4($a1)
-/* 0047C3D8 A0990004 */  sb    $t9, 4($a0)
-/* 0047C3DC 8CAB0038 */  lw    $t3, 0x38($a1)
-/* 0047C3E0 AC8B0038 */  sw    $t3, 0x38($a0)
-/* 0047C3E4 90AC0005 */  lbu   $t4, 5($a1)
-/* 0047C3E8 1000003C */  b     .L0047C4DC
-/* 0047C3EC A08C0005 */   sb    $t4, 5($a0)
-.L0047C3F0:
-/* 0047C3F0 8CAE0020 */  lw    $t6, 0x20($a1)
-/* 0047C3F4 AC8E0020 */  sw    $t6, 0x20($a0)
-/* 0047C3F8 8CAD0024 */  lw    $t5, 0x24($a1)
-/* 0047C3FC AC8D0024 */  sw    $t5, 0x24($a0)
-/* 0047C400 8CAF0028 */  lw    $t7, 0x28($a1)
-/* 0047C404 AC8F0028 */  sw    $t7, 0x28($a0)
-/* 0047C408 8CAA002C */  lw    $t2, 0x2c($a1)
-/* 0047C40C AC8A002C */  sw    $t2, 0x2c($a0)
-/* 0047C410 8CA80030 */  lw    $t0, 0x30($a1)
-/* 0047C414 10000031 */  b     .L0047C4DC
-/* 0047C418 AC880030 */   sw    $t0, 0x30($a0)
-.L0047C41C:
-/* 0047C41C 94A90020 */  lhu   $t1, 0x20($a1)
-/* 0047C420 A4890020 */  sh    $t1, 0x20($a0)
-/* 0047C424 8CB80024 */  lw    $t8, 0x24($a1)
-/* 0047C428 1000002C */  b     .L0047C4DC
-/* 0047C42C AC980024 */   sw    $t8, 0x24($a0)
-.L0047C430:
-/* 0047C430 94B90006 */  lhu   $t9, 6($a1)
-/* 0047C434 A4990006 */  sh    $t9, 6($a0)
-/* 0047C438 90AB0002 */  lbu   $t3, 2($a1)
-/* 0047C43C A08B0002 */  sb    $t3, 2($a0)
-/* 0047C440 90AC0003 */  lbu   $t4, 3($a1)
-/* 0047C444 A08C0003 */  sb    $t4, 3($a0)
-/* 0047C448 90AD0021 */  lbu   $t5, 0x21($a1)
-/* 0047C44C A08D0021 */  sb    $t5, 0x21($a0)
-/* 0047C450 90AE0022 */  lbu   $t6, 0x22($a1)
-/* 0047C454 A08E0022 */  sb    $t6, 0x22($a0)
-/* 0047C458 8CAA0028 */  lw    $t2, 0x28($a1)
-/* 0047C45C AC8A0028 */  sw    $t2, 0x28($a0)
-/* 0047C460 8CAF002C */  lw    $t7, 0x2c($a1)
-/* 0047C464 AC8F002C */  sw    $t7, 0x2c($a0)
-/* 0047C468 90A8002F */  lbu   $t0, 0x2f($a1)
-/* 0047C46C A088002F */  sb    $t0, 0x2f($a0)
-/* 0047C470 90A90020 */  lbu   $t1, 0x20($a1)
-/* 0047C474 A0890020 */  sb    $t1, 0x20($a0)
-/* 0047C478 8CB80030 */  lw    $t8, 0x30($a1)
-/* 0047C47C AC980030 */  sw    $t8, 0x30($a0)
-/* 0047C480 8CB90034 */  lw    $t9, 0x34($a1)
-/* 0047C484 AC990034 */  sw    $t9, 0x34($a0)
-/* 0047C488 8CAB0038 */  lw    $t3, 0x38($a1)
-/* 0047C48C AC8B0038 */  sw    $t3, 0x38($a0)
-/* 0047C490 8CAC0024 */  lw    $t4, 0x24($a1)
-/* 0047C494 AC8C0024 */  sw    $t4, 0x24($a0)
-/* 0047C498 90AD0004 */  lbu   $t5, 4($a1)
-/* 0047C49C A08D0004 */  sb    $t5, 4($a0)
-/* 0047C4A0 8CAE003C */  lw    $t6, 0x3c($a1)
-/* 0047C4A4 AC8E003C */  sw    $t6, 0x3c($a0)
-/* 0047C4A8 90AF0005 */  lbu   $t7, 5($a1)
-/* 0047C4AC A08F0005 */  sb    $t7, 5($a0)
-/* 0047C4B0 90AA0023 */  lbu   $t2, 0x23($a1)
-/* 0047C4B4 10000009 */  b     .L0047C4DC
-/* 0047C4B8 A08A0023 */   sb    $t2, 0x23($a0)
-.L0047C4BC:
-/* 0047C4BC 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0047C4C0 8F868044 */  lw    $a2, %got(RO_1000E200)($gp)
-/* 0047C4C4 24040001 */  li    $a0, 1
-/* 0047C4C8 240500FF */  li    $a1, 255
-/* 0047C4CC 2407000A */  li    $a3, 10
-/* 0047C4D0 0320F809 */  jalr  $t9
-/* 0047C4D4 24C6E200 */   addiu $a2, %lo(RO_1000E200) # addiu $a2, $a2, -0x1e00
-/* 0047C4D8 8FBC0018 */  lw    $gp, 0x18($sp)
-.L0047C4DC:
-/* 0047C4DC 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047C4E0 27BD0038 */  addiu $sp, $sp, 0x38
-/* 0047C4E4 03E00008 */  jr    $ra
-/* 0047C4E8 00000000 */   nop
-    .type copycoderep, @function
-    .size copycoderep, .-copycoderep
-    .end copycoderep
+/* 
+00414108 func_00414108
+0041550C func_0041550C
+0044E604 binaryfold
+0044ED5C ixafold
+0044EDF8 ilodfold
+0044F3C0 unaryfold
+0044FF6C mergeconst
+00451764 restructure
+0047C53C fixcorr
+*/
+void copycoderep(struct Expression *dest, struct Expression *src) {
+    unsigned short table_index;
+    int chain_index;
+    struct Expression *next;
+
+    if (src->type == isop) {
+        // originally this was a struct copy
+        table_index = dest->table_index;
+        chain_index = dest->chain_index;
+
+        next = dest->next;
+
+        *dest = *src;
+
+        dest->next = next;
+
+        // originally this was a struct copy
+        dest->table_index = table_index;
+        dest->chain_index = chain_index;
+        return;
+    }
+
+    dest->type = src->type;
+    dest->datatype = src->datatype;
+    dest->graphnode = src->graphnode;
+    dest->ichain = src->ichain;
+    dest->var_access_list = src->var_access_list;
+    switch (src->type) {
+        case islda:
+            dest->data.islda_isilda.offset = src->data.islda_isilda.offset;
+            dest->data.islda_isilda.size = src->data.islda_isilda.size;
+            dest->data.islda_isilda.level = src->data.islda_isilda.level;
+            dest->data.islda_isilda.address = src->data.islda_isilda.address;
+            break;
+
+        case isilda:
+            dest->data.islda_isilda.offset = src->data.islda_isilda.offset;
+            dest->data.islda_isilda.size = src->data.islda_isilda.size;
+            dest->data.islda_isilda.level = src->data.islda_isilda.level;
+            dest->data.islda_isilda.address = src->data.islda_isilda.address;
+
+            dest->data.islda_isilda.outer_stack = src->data.islda_isilda.outer_stack;
+            dest->data.islda_isilda.unk38 = src->data.islda_isilda.unk38;
+
+            dest->unk4 = src->unk4;
+            dest->unk5 = src->unk5;
+            dest->count = src->count;
+            break;
+
+        case isconst:
+            dest->data.isconst.number = src->data.isconst.number;
+
+            dest->data.isconst.size = src->data.isconst.size;
+            dest->data.isconst.real_significand = src->data.isconst.real_significand;
+            dest->data.isconst.real_exponent = src->data.isconst.real_exponent;
+            break;
+
+        case isrconst:
+            dest->data.isrconst.value = src->data.isrconst.value;
+            dest->data.isrconst.unk24 = src->data.isrconst.unk24;
+            break;
+
+        case isvar:
+        case issvar:
+            dest->unk2 = src->unk2;
+            dest->unk3 = src->unk3;
+            dest->unk4 = src->unk4;
+            dest->unk5 = src->unk5;
+            dest->count = src->count;
+
+            dest->data.isvar_issvar.size = src->data.isvar_issvar.size;
+            dest->data.isvar_issvar.unk21 = src->data.isvar_issvar.unk21;
+            dest->data.isvar_issvar.unk22 = src->data.isvar_issvar.unk22;
+            dest->data.isvar_issvar.is_volatile = src->data.isvar_issvar.is_volatile;
+            dest->data.isvar_issvar.location = src->data.isvar_issvar.location;
+
+            dest->data.isvar_issvar.unk30 = src->data.isvar_issvar.unk30;
+            dest->data.isvar_issvar.assigned_value = src->data.isvar_issvar.assigned_value;
+            dest->data.isvar_issvar.assignment = src->data.isvar_issvar.assignment;
+            dest->data.isvar_issvar.outer_stack = src->data.isvar_issvar.outer_stack;
+            dest->data.isvar_issvar.unk3C = src->data.isvar_issvar.unk3C;
+            break;
+
+        default:
+        case isop:
+        case dumped:
+            caseerror(1, 0xFF, "uoptutil.p", 0xA);
+            break;
+    }
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel fix_sbase
     .ent fix_sbase

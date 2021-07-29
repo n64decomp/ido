@@ -700,81 +700,84 @@ struct TailRecParameter {
 }; // size 0x14
 
 struct Expression {
-    ExpressionType type;
-    Datatype datatype;
-    bool unk2; // saved? see exprimage
-    bool unk3; // not varkilled
-    bool unk4; // bool or unsigned char?
-    bool unk5; // bool or unsigned char?
-    unsigned short count; // use count, see exprdelete
-    unsigned short table_index; // 0x8, identifies the expression
-    int chain_index; // 0xC
-    struct Graphnode *graphnode; // 0x10
-    struct IChain *ichain; // 0x14
-    struct VarAccessList *var_access_list; // 0x18
-    struct Expression *next; // 0x1C
+    /* 0x00 */ ExpressionType type;
+    /* 0x01 */ Datatype datatype;
+    /* 0x02 */ bool unk2; // saved? see exprimage
+    /* 0x03 */ bool unk3; // not varkilled
+    /* 0x04 */ bool unk4; // bool or unsigned char?
+    /* 0x05 */ bool unk5; // bool or unsigned char?
+    /* 0x06 */ unsigned short count; // use count, see exprdelete
+    // struct {    // see copycoderep
+    /* 0x08 */ unsigned short table_index; // identifies the expression
+    /* 0x0C */ int chain_index;
+    // };
+    /* 0x10 */ struct Graphnode *graphnode;
+    /* 0x14 */ struct IChain *ichain;
+    /* 0x18 */ struct VarAccessList *var_access_list;
+    /* 0x1C */ struct Expression *next;
 
     union {
         struct {
-            int offset; // 0x20 when different from Location.addr, acts as offset from base address
-            int size; // 0x24
-            int level; // 0x28
-            struct VariableLocation address; // 0x2C absolute address
-            struct Expression *outer_stack;
-            int unk38;
+            /* 0x20 */ int offset; // when different from Location.addr, acts as offset from base address
+            /* 0x24 */ int size;
+            /* 0x28 */ int level;
+            /* 0x2C */ struct VariableLocation address; // absolute address
+            /* 0x34 */ struct Expression *outer_stack;
+            /* 0x38 */ int unk38;
         } islda_isilda;
         struct {
-            union Constant number; // 0x20
-            int size; // 0x28, in bytes
-            int real_significand; // 0x2C
-            int real_exponent; // 0x30
+            /* 0x20 */ union Constant number;
+            /* 0x28 */ int size; // in bytes
+            /* 0x2C */ int real_significand;
+            /* 0x30 */ int real_exponent;
         } isconst;
         struct {
-            unsigned char size; // 0x20, in bytes
-            bool unk21; // one of these is probably 'dead'
-            bool unk22; // one of these is probably 'dead'
-            bool is_volatile; // 0x23
-            struct Expression *outer_stack;
-            struct VariableLocation location; // 0x28
-            struct Expression *unk30;   // copypropagate
-            struct Expression *assigned_value; // 0x34 used in analoop
-            struct Statement *assignment; // 0x38 a bit unsure about this type, see delentry
-            int unk3C;
+            /* 0x20 */ unsigned char size; // in bytes
+            /* 0x21 */ bool unk21; // one of these is probably 'dead'
+            /* 0x22 */ bool unk22; // one of these is probably 'dead'
+            /* 0x23 */ bool is_volatile;
+            /* 0x24 */ struct Expression *outer_stack;
+            /* 0x28 */ struct VariableLocation location;
+            /* 0x30 */ struct Expression *unk30;   // copypropagate
+            /* 0x34 */ struct Expression *assigned_value; // used in analoop
+            /* 0x38 */ struct Statement *assignment; // a bit unsure about this type, see delentry
+            /* 0x3C */ int unk3C;
         } isvar_issvar;
         struct {
-            Uopcode opc; // 0x20
-            bool unk21; // anticipatable? exprimage
-            bool unk22; // available? exprimage
-            Datatype datatype; // 0x23
-            struct Expression *op1; // 0x24
-            struct Expression *op2; // 0x28
-            int datasize; // calculated result? seems to also sometimes be size in bits of the datatype. Also used as offset in bytes for ilod
-            int unk30;
-            struct Expression *unk34; // return value from findbaseaddr
+            /* 0x20 */ Uopcode opc;
+            /* 0x21 */ bool unk21; // anticipatable? exprimage
+            /* 0x22 */ bool unk22; // available? exprimage
+            /* 0x23 */ Datatype datatype;
+            /* 0x24 */ struct Expression *op1;
+            /* 0x28 */ struct Expression *op2;
+            /* 0x2C */ int datasize; // calculated result? seems to also sometimes be size in bits of the datatype.
+            // Also used as offset in bytes for ilod
+            /* 0x30 */ int unk30;
+            /* 0x34 */ struct Expression *unk34; // return value from findbaseaddr
             union {
-                Datatype cvtfrom; // if opc == Ucvt, seems to be a union here
-                int unk38_int;
-                struct Expression *unk38; // return value from findbaseaddr
-                struct TrepImageThing *unk38_trep;
+                /* 0x38 */ Datatype cvtfrom; // if opc == Ucvt, seems to be a union here
+                /* 0x38 */ int unk38_int;
+                /* 0x38 */ struct Expression *unk38; // return value from findbaseaddr
+                /* 0x38 */ struct TrepImageThing *unk38_trep;
             } aux;
             union {
                 struct {
-                    unsigned short unk3C; // some size, used before createcvtl. used with Uinn
-                    bool overflow_attr; // 0x3E
-                    unsigned char unk3F; // see Uildv and Uilod in readnxtinst
+                    /* 0x3C */ unsigned short unk3C; // some size, used before createcvtl. used with Uinn
+                    /* 0x3E */ bool overflow_attr;
+                    /* 0x3F */ unsigned char unk3F; // see Uildv and Uilod in readnxtinst
                 } v1;
                 struct {
-                    unsigned int unk3C;
+                    /* 0x3C */ unsigned int unk3C;
                 } v2;
-                struct TrepImageThing *unk3C_trep;
+                /* 0x3C */ struct TrepImageThing *unk3C_trep;
             } aux2;
         } isop;
         struct {
-            unsigned short value;
-            int unk24;
+            /* 0x20 */ unsigned short value;
+            /* 0x24 */ int unk24;
         } isrconst;
-    } data; // 0x20
-};
+    } data;
+}; // size 0x40
 
 struct TrepImageThing {
     struct IChain *ichain;  // 0x0
