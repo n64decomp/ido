@@ -283,7 +283,7 @@ bool cupaltered(struct IChain *ichain, int level, struct Proc *proc) {
             break;
 
         case isilda:
-            return cupaltered(ichain->islda_isilda.ichain, level, proc);
+            return cupaltered(ichain->islda_isilda.outer_stack_ichain, level, proc);
 
         case isvar:
         case issvar:

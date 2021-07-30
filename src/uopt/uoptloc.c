@@ -415,7 +415,7 @@ struct Expression *ilodfold(struct Expression *ilod) {
             expr->type = isvar;
             expr->datatype = ilod->datatype;
             expr->unk4 = false;
-            expr->unk5 = false;
+            expr->unk5 = 0;
             expr->data.isvar_issvar.unk21 = false;
             expr->data.isvar_issvar.unk22 = false;
             expr->data.isvar_issvar.location = loc;
@@ -466,7 +466,7 @@ void istrfold(struct Statement *stmt) {
 
     istr = stmt->expr;
     loc = istr->data.islda_isilda.address;
-    loc.addr = istr->data.islda_isilda.offset + stmt->u.store.u.istr.s.word;
+    loc.addr = istr->data.islda_isilda.offset + stmt->u.store.u.istr.offset;
     if (insertvar(loc, stmt->u.store.size, stmt->u.store.u.istr.dtype, &curproc->vartree, 0, 0, 0)->unk1 == 0) {
         expr = appendchain(isvarhash(loc));
         if (outofmem) {
@@ -477,7 +477,7 @@ void istrfold(struct Statement *stmt) {
         expr->unk2 = !stmt->u.store.unk1F;
         expr->unk3 = false;
         expr->unk4 = false;
-        expr->unk5 = false;
+        expr->unk5 = 0;
         expr->count = 0;
         expr->graphnode = stmt->graphnode;
         expr->var_access_list = NULL;
@@ -687,7 +687,7 @@ void linearize(struct Expression *expr) {
     right->data.isop.op2 = right->data.isop.op1;
     right->data.isop.op1 = expr->data.isop.op1;
     expr->data.isop.op1 = right;
-    right->unk5 = false;
+    right->unk5 = 0;
 
     switch (expr->data.isop.opc) {
         case Usub:
@@ -1923,7 +1923,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
             }
 
             if (expr_s0->type == isop) {
-                expr_s0->unk5 = true;
+                expr_s0->unk5 = 1;
             }
             break;
 

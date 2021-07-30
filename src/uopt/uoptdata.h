@@ -32,6 +32,24 @@ __attribute__((packed))
 #endif
 ;
 
+#define IS_UNSIGNED(dtype) \
+    (dtype == Adt || \
+     dtype == Hdt || \
+     dtype == Jdt || \
+     dtype == Ldt)
+
+#define IS_INTEGRAL(dtype) \
+    (dtype == Adt || \
+     dtype == Hdt || \
+     dtype == Idt || \
+     dtype == Kdt || \
+     dtype == Jdt || \
+     dtype == Ldt)
+
+#define IS_REAL(dtype) \
+    (dtype == Qdt || \
+     dtype == Rdt)
+
 #ifdef __GNUC__
 typedef enum MipsRegister MipsRegister;
 #else
@@ -338,10 +356,10 @@ struct Proc {
     bool o3opt; // written to allcallersave in procinit
     bool unkD; // set to lang == LANG_COBOL
     bool no_sideeffects;
-    bool nonlocal_goto;
+    bool has_longjmp;
     unsigned char level; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass
     unsigned short num_bbs; // 0x12
-    bool unk14; // bool or char?
+    bool nonlocal_goto;
     bool has_trap;
     struct ProcList *callees; // linked list of Procs (see oneprocprepass, insertcallee)
     struct IjpLabel *ijp_labels; // 0x1C, sorted tree
@@ -352,14 +370,6 @@ struct Proc {
     struct Proc *right; // binary search tree right (root is prochead)
     void *feedback_data; // related to usefeedback
     int unk38; // mtag uses this
-};
-
-union IChainThing {
-    int word; // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
-    struct {
-        unsigned short bit;
-        unsigned short unk2;
-    };
 };
 
 struct Statement {
@@ -390,15 +400,15 @@ struct Statement {
                 } str;
                 struct {
                     Datatype dtype; // 0x2C
-                    unsigned char unk2D; // LEXLEV&~7 or LENGTH*8
-                    unsigned short offset; // 0x2E
-                    union IChainThing s; // IONE+ustack->value
+                    unsigned char align; // LEXLEV&~7 or LENGTH*8
+                    unsigned short mtagno; // 0x2E
+                    int offset; // IONE+ustack->value
                 } istr; // and istv, irst, irsv
-                struct {
+                struct { // struct copies
                     struct Expression *baseaddr; // 0x2C
                     unsigned short offset; // 0x30, OFFSET for Upmov
-                    unsigned char unk32; // IONE for Umov, Umovv and LEXLEV for Upmov
-                    unsigned char unk33; // LEXLEV&~7 for Umov, Umovv
+                    unsigned char src_align; // based on largest member of the struct
+                    unsigned char dst_align; // alignment of destination. when the struct is on the stack, it's 32/64
                 } mov; // and movv
             } u;
         } store;
@@ -595,58 +605,66 @@ typedef unsigned char ExpressionType;
 #endif
 
 // Probably "Image (Chain)"
+// Global 
 struct IChain {
-    ExpressionType type;        // 0x0
-    Datatype dtype;             // 0x1
-    unsigned short bitpos;      // 0x2
-    unsigned short table_index; // 0x4
-    unsigned short chain_index; // 0x6
-    struct Expression *expr;    // 0x8
-    struct IChain *next;        // 0xC
+    /* 0x0 */ ExpressionType type;
+    /* 0x1 */ Datatype dtype;
+    /* 0x2 */ unsigned short bitpos;
+    /* 0x4 */ unsigned short table_index;
+    /* 0x6 */ unsigned short chain_index;
+    /* 0x8 */ struct Expression *expr;
+    /* 0xC */ struct IChain *next;
 
     union {
         struct {
-            int offset;   // 0x10
-            int size;   // 0x14
-            // missing level
-            struct VariableLocation address; // 0x18
-            struct IChain *ichain;         // 0x20
+            /* 0x10 */ int offset;
+            /* 0x14 */ int size;
+                       // missing level
+            /* 0x18 */ struct VariableLocation address;
+            /* 0x20 */ struct IChain *outer_stack_ichain;
         } islda_isilda;
         struct {
-            struct VariableLocation location; // 0x10
-            unsigned char size;            // 0x18, expr + 0x20
-            // The order of these two bools is swapped from expr's isvar_issvar
-            // unk19 = unk22, and unk1A = unk21
-            bool unk19; // see fix_par_vreg inner function
-            bool unk1A; // codeimage
-            unsigned char unk1B;
-            struct IChain *ichain;          // 0x1C
-            int           unk20;
+            /* 0x10 */ struct VariableLocation location;
+            /* 0x18 */ unsigned char size;
+                       // The order of these two bools is swapped from expr's isvar_issvar
+                       // unk19 = unk22, and unk1A = unk21
+            /* 0x19 */ bool unk19; // see fix_par_vreg inner function
+            /* 0x1A */ bool unk1A; // codeimage
+            /* 0x1B */ unsigned char unk1B;
+            /* 0x1C */ struct IChain *outer_stack_ichain;
+            /* 0x20 */ int unk20;
             union {
-                unsigned short assignbit;       // 0x24
-                int unk24;
+                /* 0x24 */ unsigned short assignbit;
+                /* 0x24 */ int unk24;
             };
         } isvar_issvar;
         struct {
-            Uopcode opc;                    // 0x10
-            unsigned char overflow_attr;    // 0x11
-            Datatype datatype;              // 0x12
-            unsigned char unk13;            // codeimage
-            struct IChain *op1;             // 0x14
-            struct IChain *op2;             // 0x18
-            int size;                       // 0x1C
-            struct Statement *stat;         // 0x20
+            /* 0x10 */ Uopcode opc;
+            /* 0x11 */ unsigned char overflow_attr;
+            /* 0x12 */ Datatype datatype;
+            /* 0x13 */ unsigned char unk13; // codeimage
+            /* 0x14 */ struct IChain *op1;
+            /* 0x18 */ struct IChain *op2;
+            /* 0x1C */ int size;
+            /* 0x20 */ struct Statement *stat;
             union {
-                Datatype cvtfrom;     // 0x24
-                union IChainThing s;  // 0x24
+                /* 0x24 */ Datatype cvtfrom;
+                union {
+                    /* 0x24 */ int word; // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
+                    struct {
+                        /* 0x24 */ unsigned short bit;
+                        /* 0x26 */ unsigned short mtagno;
+                    };
+                } s;
+
             };
         } isop;
         struct {
-            union Constant number;  // 0x10
-            int size;               // 0x18
+            /* 0x10 */ union Constant number;
+            /* 0x18 */ int size;
         } isconst;
         struct {
-            unsigned short unk10;
+            /* 0x10 */ unsigned short unk10;
         } isrconst;
     };
 };
@@ -666,14 +684,14 @@ struct BittabItemUnk4 {
     /* 0x18 */ int unk18;
     /* 0x1C */ int unk1C;
     /* 0x20 */ short unk20; // printregs
-    /* 0x22 */ bool hasstore; // 0x22
+    /* 0x22 */ bool hasstore;
     /* 0x23 */ bool unk23;
     /* 0x24 */ int unk24;
     /* 0x28 */ int unk28;
     /* 0x2C */ int unk2C;
-    /* 0x30 */ float adjsave; // 0x30
-    /* 0x34 */ struct BittabItemUnk4 *next; // 0x34
-    /* 0x38 */ struct InterfereWith *interfere; //0x38
+    /* 0x30 */ float adjsave;
+    /* 0x34 */ struct BittabItemUnk4 *next;
+    /* 0x38 */ struct InterfereWith *interfere;
 }; // size 0x3C
 
 struct BittabItem {
@@ -705,7 +723,7 @@ struct Expression {
     /* 0x02 */ bool unk2; // saved? see exprimage
     /* 0x03 */ bool unk3; // not varkilled
     /* 0x04 */ bool unk4; // bool or unsigned char?
-    /* 0x05 */ bool unk5; // bool or unsigned char?
+    /* 0x05 */ unsigned char unk5;
     /* 0x06 */ unsigned short count; // use count, see exprdelete
     // struct {    // see copycoderep
     /* 0x08 */ unsigned short table_index; // identifies the expression
@@ -738,7 +756,7 @@ struct Expression {
             /* 0x23 */ bool is_volatile;
             /* 0x24 */ struct Expression *outer_stack;
             /* 0x28 */ struct VariableLocation location;
-            /* 0x30 */ struct Expression *unk30;   // copypropagate
+            /* 0x30 */ struct Expression *unk30;   // copypropagate, points to the expression that this one is a copy of
             /* 0x34 */ struct Expression *assigned_value; // used in analoop
             /* 0x38 */ struct Statement *assignment; // a bit unsure about this type, see delentry
             /* 0x3C */ int unk3C;
@@ -751,12 +769,12 @@ struct Expression {
             /* 0x24 */ struct Expression *op1;
             /* 0x28 */ struct Expression *op2;
             /* 0x2C */ int datasize; // calculated result? seems to also sometimes be size in bits of the datatype.
-            // Also used as offset in bytes for ilod
+                                     // Also used as offset in bytes for ilod
             /* 0x30 */ int unk30;
             /* 0x34 */ struct Expression *unk34; // return value from findbaseaddr
             union {
                 /* 0x38 */ Datatype cvtfrom; // if opc == Ucvt, seems to be a union here
-                /* 0x38 */ int unk38_int;
+                /* 0x38 */ int mtagno;
                 /* 0x38 */ struct Expression *unk38; // return value from findbaseaddr
                 /* 0x38 */ struct TrepImageThing *unk38_trep;
             } aux;
@@ -764,10 +782,10 @@ struct Expression {
                 struct {
                     /* 0x3C */ unsigned short unk3C; // some size, used before createcvtl. used with Uinn
                     /* 0x3E */ bool overflow_attr;
-                    /* 0x3F */ unsigned char unk3F; // see Uildv and Uilod in readnxtinst
+                    /* 0x3F */ unsigned char align; // see Uildv and Uilod in readnxtinst
                 } v1;
                 struct {
-                    /* 0x3C */ unsigned int unk3C;
+                    /* 0x3C */ unsigned int unk3C_int; // unused?
                 } v2;
                 /* 0x3C */ struct TrepImageThing *unk3C_trep;
             } aux2;
@@ -841,7 +859,7 @@ extern int blklev[128];
 extern int staticlinkloc;
 extern struct Expression *nocopy;
 extern void *nota_candof; // TODO: fix type (0x1C bytes allocated)
-extern void *constprop; // TODO: fix type (0x10 bytes allocated)
+extern struct VarAccessList *constprop;
 extern int maxlabnam;
 extern struct livbb *dft_livbb;
 extern int bitposcount;
@@ -883,7 +901,7 @@ extern int highestmdef;
 extern int pdefmax;
 extern int pdefno;
 extern struct IChain *itable[1619];
-extern void *toplevelloops; // TODO: fix type (some linked list of 20 bytes data + 4 byte next ptr)
+extern struct Loop *toplevelloops;
 extern void *looptab; // TODO: fix type
 extern int actnuminteeregs;
 extern int actnuminterregs;

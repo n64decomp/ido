@@ -712,7 +712,7 @@ bool unroll_check_istr_propcopy(struct Expression *arg1, int arg2, Datatype dtyp
     while (phi_s0 != 0) {
         if (phi_s0->type == islda) {
             store = phi_s0->data.store;
-            if (store->opc == Uistr && arg1 == store->expr && arg2 == store->u.store.u.istr.s.word && store->u.store.unk1F != 0 && dtype == store->u.store.u.istr.dtype && unk3C == store->u.store.size && !treekilled(store->u.store.expr)) {
+            if (store->opc == Uistr && arg1 == store->expr && arg2 == store->u.store.u.istr.offset && store->u.store.unk1F != 0 && dtype == store->u.store.u.istr.dtype && unk3C == store->u.store.size && !treekilled(store->u.store.expr)) {
                 decreasecount(arg1);
                 phi_v1 = phi_s0->data.store->u.store.expr;
 
@@ -740,7 +740,7 @@ bool unroll_check_irst_propcopy(struct Expression *arg1, int arg2, Datatype dtyp
     while (phi_s0 != 0) {
         if (phi_s0->type == islda) {
             store = phi_s0->data.store;
-            if (store->opc == Uirst && arg1 == store->expr && arg2 == store->u.store.u.istr.s.word && store->u.store.unk1F != 0 && dtype == store->u.store.u.istr.dtype && unk3C == store->u.store.size && !treekilled(store->u.store.expr)) {
+            if (store->opc == Uirst && arg1 == store->expr && arg2 == store->u.store.u.istr.offset && store->u.store.unk1F != 0 && dtype == store->u.store.u.istr.dtype && unk3C == store->u.store.size && !treekilled(store->u.store.expr)) {
                 decreasecount(arg1);
                 phi_v1 = phi_s0->data.store->u.store.expr;
 
@@ -982,8 +982,8 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                                 expr->data.isop.opc == Uleq ||
                                 expr->data.isop.opc == Ules ||
                                 expr->data.isop.opc == Uneq) {
-                            sp60->data.isop.aux.unk38 = NULL;
-                            sp60->data.isop.aux2.v2.unk3C = 0;
+                            sp60->data.isop.aux.unk38_trep = NULL;
+                            sp60->data.isop.aux2.unk3C_trep = NULL;
                         }
                     } else {
                         incroccurrence(&sp60);
@@ -1117,7 +1117,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                             sp60->data.isop.aux2.v1.overflow_attr = 0;
                             sp60->data.isop.datasize = sp54;
                             sp60->data.isop.aux2.v1.unk3C = expr->data.isop.aux2.v1.unk3C;
-                            sp60->data.isop.aux2.v1.unk3F = expr->data.isop.aux2.v1.unk3F;
+                            sp60->data.isop.aux2.v1.align = expr->data.isop.aux2.v1.align;
                             sp60->data.isop.unk30 = 0;
                             sp60->unk5 = 0;
                             sp60->unk4 = 0;
@@ -1156,7 +1156,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         sp60->data.isop.opc = expr->data.isop.opc;
                         sp60->data.isop.datasize = expr->data.isop.datasize;
                         sp60->data.isop.aux2.v1.unk3C = expr->data.isop.aux2.v1.unk3C;
-                        sp60->data.isop.aux2.v1.unk3F = expr->data.isop.aux2.v1.unk3F;
+                        sp60->data.isop.aux2.v1.align = expr->data.isop.aux2.v1.align;
                         sp60->data.isop.unk30 = 0;
                         sp60->unk4 = 0;
                         sp60->unk5 = 0;
@@ -1424,7 +1424,7 @@ void oneloopblockstmt(struct Statement *stat) {
         case Uistv:
             sp60 = unroll_resetincr(oneloopblockexpr(stat->u.store.expr, &sp54), sp54);
             temp_a0_4 = oneloopblockexpr(stat->expr, &sp54);
-            sp54 += stat->u.store.u.istr.s.word;
+            sp54 += stat->u.store.u.istr.offset;
             phi_s1 = unroll_resetincr_mod(temp_a0_4, &sp54);
             sp59 = 0;
             if (stat->opc == Uistr) {
@@ -1432,7 +1432,7 @@ void oneloopblockstmt(struct Statement *stat) {
                 while (s0 != NULL && sp59 == 0) {
                     if (s0->opc == Uistr
                             && phi_s1 == s0->expr
-                            && sp54 == s0->u.store.u.istr.s.word
+                            && sp54 == s0->u.store.u.istr.offset
                             && stat->u.store.size == s0->u.store.size) {
 
                         if (s0->u.store.unk1D != 0) {
@@ -1455,9 +1455,9 @@ void oneloopblockstmt(struct Statement *stat) {
                 stattail->expr = phi_s1;
                 stattail->u.store.expr = sp60;
                 stattail->u.store.u.istr.dtype = stat->u.store.u.istr.dtype;
-                stattail->u.store.u.istr.unk2D = stat->u.store.u.istr.unk2D;
-                stattail->u.store.u.istr.s.word = sp54;
-                stattail->u.store.u.istr.offset = stat->u.store.u.istr.offset;
+                stattail->u.store.u.istr.align = stat->u.store.u.istr.align;
+                stattail->u.store.u.istr.offset = sp54;
+                stattail->u.store.u.istr.mtagno = stat->u.store.u.istr.mtagno;
                 stattail->u.store.size = stat->u.store.size;
                 stattail->u.store.baseaddr = findbaseaddr(phi_s1);
 
@@ -1487,9 +1487,9 @@ void oneloopblockstmt(struct Statement *stat) {
             stattail->expr = phi_s1;
             stattail->u.store.expr = sp60;
             stattail->u.store.u.istr.dtype = stat->u.store.u.istr.dtype;
-            stattail->u.store.u.istr.unk2D = stat->u.store.u.istr.unk2D;
-            stattail->u.store.u.istr.s.word = sp54;
-            stattail->u.store.u.istr.offset = stat->u.store.u.istr.offset;
+            stattail->u.store.u.istr.align = stat->u.store.u.istr.align;
+            stattail->u.store.u.istr.offset = sp54;
+            stattail->u.store.u.istr.mtagno = stat->u.store.u.istr.mtagno;
             stattail->u.store.size = stat->u.store.size;
             stattail->u.store.baseaddr = findbaseaddr(phi_s1);
             if (stat->opc == Uirst) {
@@ -1515,8 +1515,8 @@ void oneloopblockstmt(struct Statement *stat) {
             stattail->u.store.expr = oneloopblockexpr(stat->u.store.expr, &sp54);
             stattail->u.store.expr = unroll_resetincr(stattail->u.store.expr, sp54);
             stattail->u.store.size = stat->u.store.size;
-            stattail->u.store.u.mov.unk32 = stat->u.store.u.mov.unk32;
-            stattail->u.store.u.mov.unk33 = stat->u.store.u.mov.unk33;
+            stattail->u.store.u.mov.src_align = stat->u.store.u.mov.src_align;
+            stattail->u.store.u.mov.dst_align = stat->u.store.u.mov.dst_align;
             stattail->u.store.u.mov.baseaddr = findbaseaddr(stattail->u.store.expr);
             appendstorelist();
             stattail->u.store.var_access_list_item->type = 3;
@@ -2214,8 +2214,8 @@ struct Expression *form_bop(Uopcode opc, struct Expression *left, struct Express
         binop->graphnode = curgraphnode;
 
         if (opc == Uneq) {
-            binop->data.isop.aux.unk38_int = 0;
-            binop->data.isop.aux2.v2.unk3C = 0;
+            binop->data.isop.aux.unk38_trep = NULL;
+            binop->data.isop.aux2.unk3C_trep = NULL;
         }
     } else {
         increasecount(binop);
@@ -2354,13 +2354,13 @@ struct Expression *form_neq0(struct Expression *expr) {
         }
         neq0->data.isop.op1 = expr;
         neq0->data.isop.op2 = zero;
-        neq0->data.isop.aux2.v1.overflow_attr = 0;
+        neq0->data.isop.aux2.v1.overflow_attr = false;
         neq0->count = 1;
         neq0->data.isop.unk30 = 0;
         neq0->unk5 = 0;
         neq0->unk4 = 0;
-        neq0->data.isop.aux.unk38_int = 0;
-        neq0->data.isop.aux2.v2.unk3C = 0;
+        neq0->data.isop.aux.unk38_trep = NULL;
+        neq0->data.isop.aux2.unk3C_trep = NULL;
         neq0->graphnode = curgraphnode;
     } else {
         increasecount(neq0);
@@ -3955,8 +3955,8 @@ void pmov_to_mov(struct Statement *pmov) {
     mov->u.store.expr = oneloopblockexpr(pmov->expr, &sp3C);
     mov->u.store.expr = unroll_resetincr(mov->u.store.expr, sp3C);
     mov->u.store.size = pmov->u.store.size;
-    mov->u.store.u.mov.unk32 = pmov->u.store.u.mov.unk32;
-    mov->u.store.u.mov.unk33 = pmov->u.store.u.mov.unk32; // ??
+    mov->u.store.u.mov.src_align = pmov->u.store.u.mov.src_align;
+    mov->u.store.u.mov.dst_align = pmov->u.store.u.mov.src_align; // pmov doesn't have dst_align
     mov->u.store.u.mov.baseaddr = findbaseaddr(pmov->expr);
     appendstorelist();
     mov->u.store.var_access_list_item->type = 3;

@@ -103,23 +103,23 @@ void init_mtagtab(void) {
     uu.Ucode.Opc = Umtag;
     tagno = curproc->unk38 + 1;
     uu.Ucode.I1 = tagno;
-    uu.Ucode.Lexlev = 0;
+    uu.Ucode.Lexlev = mtag_anything;
     mtagno_anything = tagno;
     uwrite(&uu);
 
-    uu.Ucode.Lexlev = 1;
+    uu.Ucode.Lexlev = mtag_heap;
     tagno = curproc->unk38 + 2;
     uu.Ucode.I1 = tagno;
     mtagno_heap = tagno;
     uwrite(&uu);
 
-    uu.Ucode.Lexlev = 2;
+    uu.Ucode.Lexlev = mtag_readonly;
     tagno = curproc->unk38 + 3;
     uu.Ucode.I1 = tagno;
     mtagno_readonly = tagno;
     uwrite(&uu);
 
-    uu.Ucode.Lexlev = 3;
+    uu.Ucode.Lexlev = mtag_non_local;
     tagno = curproc->unk38 + 4;
     uu.Ucode.I1 = tagno;
     mtagno_non_local = tagno;

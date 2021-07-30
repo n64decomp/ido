@@ -598,18 +598,18 @@ void printitab(void) {
             } else if (ichain->type == isilda) {
                 write_string(list.c_file, "ILDA", 4, 4);
                 write_char(list.c_file, '{', 1);
-                write_integer(list.c_file, ichain->islda_isilda.ichain->table_index, 4, 10);
+                write_integer(list.c_file, ichain->islda_isilda.outer_stack_ichain->table_index, 4, 10);
                 write_char(list.c_file, '|', 1);
-                write_integer(list.c_file, ichain->islda_isilda.ichain->chain_index, 1, 10);
+                write_integer(list.c_file, ichain->islda_isilda.outer_stack_ichain->chain_index, 1, 10);
                 write_string(list.c_file, "} ", 2, 2);
                 writeln(list.c_file);
             } else if (ichain->type == isvar || ichain->type == issvar) {
                 printmtyp(ichain->isvar_issvar.location.memtype);
                 if (ichain->type == issvar) {
                     write_char(list.c_file, '{', 1);
-                    write_integer(list.c_file, ichain->isvar_issvar.ichain->table_index, 4, 10);
+                    write_integer(list.c_file, ichain->isvar_issvar.outer_stack_ichain->table_index, 4, 10);
                     write_char(list.c_file, '|', 1);
-                    write_integer(list.c_file, ichain->isvar_issvar.ichain->chain_index, 1, 10);
+                    write_integer(list.c_file, ichain->isvar_issvar.outer_stack_ichain->chain_index, 1, 10);
                     write_string(list.c_file, "} ", 2, 2);
                 }
                 write_integer(list.c_file, ichain->isvar_issvar.location.blockno, 5, 10);

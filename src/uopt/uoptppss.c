@@ -172,8 +172,8 @@ struct Proc *searchproc(int id, int level) {
         new_proc->unkB = lang == LANG_COBOL;
         new_proc->unkD = lang == LANG_COBOL;
         new_proc->no_sideeffects = false;
+        new_proc->has_longjmp = false;
         new_proc->nonlocal_goto = false;
-        new_proc->unk14 = 0;
         new_proc->has_trap = 0;
         new_proc->num_bbs = 0;
         new_proc->ijp_labels = NULL;
@@ -875,11 +875,11 @@ void oneinstruction(void) {
             if (!proc->unk8 || proc == curproc) {
                 proc->o3opt = false;
             }
-            if ((LEXLEV & NOSIDEEFFECT_ATTR) && (lang == LANG_FORTRAN || lang == LANG_C || lang == LANG_PL1 || lang == LANG_COBOL)) {
+            if (IS_NOSIDEEFFECT_ATTR(LEXLEV) && (lang == LANG_FORTRAN || lang == LANG_C || lang == LANG_PL1 || lang == LANG_COBOL)) {
                 proc->no_sideeffects = true;
             }
-            if (LEXLEV & GOTO_ATTR) {
-                curproc->nonlocal_goto = true;
+            if (IS_GOTO_ATTR(LEXLEV)) {
+                curproc->has_longjmp = true;
             }
             curproc->num_bbs++;
             break;
@@ -892,7 +892,7 @@ void oneinstruction(void) {
 
         case Ucia:
             curproc->num_bbs++;
-            if (lang == LANG_ADA && o3opt && (LEXLEV & 1)) {
+            if (lang == LANG_ADA && o3opt && IS_CIA_CALLS_ATTR(LEXLEV)) {
                 o3opt = false;
                 change_to_o2(prochead);
                 if (warn_flag != 1) {
@@ -903,7 +903,7 @@ void oneinstruction(void) {
                     warned = true;
                 }
                 // why isn't insertcallee called here?
-            } else if (LEXLEV & 1) {
+            } else if (IS_CIA_CALLS_ATTR(LEXLEV)) {
                 insertcallee(indirprocs, &curproc->callees);
             }
             break;
@@ -939,8 +939,8 @@ void oneinstruction(void) {
             if (OPC == Ulab) {
                 unk = LEXLEV != 0;
                 curproc->num_bbs++;
-                if (LEXLEV & 7) {
-                    curproc->unk14 = true;
+                if (LEXLEV & (GOOB_TARGET | EXCEPTION_ATTR | EXTERN_LAB_ATTR)) {
+                    curproc->nonlocal_goto = true;
                 }
                 if (!unk) {
                     unk = LENGTH != 0;
@@ -1241,11 +1241,11 @@ static void func_0045BCA8(struct Proc *proc, int *regs_counter) { // originally 
         }
 
         if (lang == LANG_PASCAL) {
-            stop = proc->nonlocal_goto;
+            stop = proc->has_longjmp;
             callee = proc->callees;
             while (!stop && callee != NULL) {
-                if (callee->proc->nonlocal_goto) {
-                    proc->nonlocal_goto = true;
+                if (callee->proc->has_longjmp) {
+                    proc->has_longjmp = true;
                     stop = true;
                 } else {
                     callee = callee->next;
@@ -1348,8 +1348,8 @@ void prepass(void) {
     proc->o3opt = false;
     proc->unkD = true;
     proc->no_sideeffects = false;
+    proc->has_longjmp = false;
     proc->nonlocal_goto = false;
-    proc->unk14 = false;
     proc->has_trap = false;
     proc->unk9 = true;
     proc->unkA = true;
@@ -1373,8 +1373,8 @@ void prepass(void) {
     proc->o3opt = false;
     proc->unkD = true;
     proc->no_sideeffects = false;
+    proc->has_longjmp = false;
     proc->nonlocal_goto = false;
-    proc->unk14 = false;
     proc->has_trap = false;
     proc->unk9 = true;
     proc->unkA = true;

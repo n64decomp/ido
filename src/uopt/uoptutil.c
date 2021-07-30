@@ -2303,7 +2303,7 @@ struct Expression *binopwithconst(Uopcode opc, struct Expression *left, int valu
             binop->type = isop;
             binop->datatype = dtype;
             binop->unk4 = false;
-            binop->unk5 = false;
+            binop->unk5 = 0;
             binop->count = 1;
             binop->graphnode = curgraphnode;
             binop->data.isop.opc = opc;

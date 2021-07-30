@@ -1406,7 +1406,7 @@ static bool func_0043CE64(struct Expression *stexpr1, int val) {
     while (var != NULL) {
         if (var->type == 1) {
             store = var->data.store;
-            if (store->opc == Uistr && store->expr == stexpr1 && store->u.store.u.istr.s.word == val
+            if (store->opc == Uistr && store->expr == stexpr1 && store->u.store.u.istr.offset == val
                     && store->u.store.unk1F && store->u.store.u.istr.dtype == DTYPE && store->u.store.size == LENGTH
                     && !treekilled(store->u.store.expr)) {
                 decreasecount(stexpr1);
@@ -1627,7 +1627,7 @@ void readnxtinst(void) {
                 if (OPC == Uisld) {
                     expr->data.isvar_issvar.unk3C = 0;
                     expr->unk4 = false;
-                    expr->unk5 = false;
+                    expr->unk5 = 0;
                     expr->data.isvar_issvar.outer_stack = ustack->expr;
                 } else {
                     expr->data.isvar_issvar.outer_stack = NULL;
@@ -1828,7 +1828,7 @@ void readnxtinst(void) {
                 if (OPC == Uilda) {
                     expr->count = 1;
                     expr->unk4 = false;
-                    expr->unk5 = false;
+                    expr->unk5 = 0;
                     expr->data.islda_isilda.outer_stack = ustack->expr;
                     expr->data.islda_isilda.unk38 = 0;
                 } else {
@@ -2328,12 +2328,12 @@ void readnxtinst(void) {
                         break;
                 }
                 if (OPC == Uinn) {
-                    expr->data.isop.aux2.v1.unk3C = IONE;
+                    expr->data.isop.aux2.v1.unk3C = IONE; // 'check flag'
                 }
                 expr->data.isop.aux2.v1.overflow_attr = IS_OVERFLOW_ATTR(LEXLEV);
                 expr->count = 1;
                 expr->data.isop.unk30 = 0;
-                expr->unk5 = false;
+                expr->unk5 = 0;
                 expr->unk4 = false;
                 switch (OPC) {
                     case Uequ:
@@ -2342,8 +2342,8 @@ void readnxtinst(void) {
                     case Uleq:
                     case Ules:
                     case Uneq:
-                        expr->data.isop.aux.unk38 = NULL;
-                        expr->data.isop.aux2.v2.unk3C = 0;
+                        expr->data.isop.aux.unk38_trep = NULL;
+                        expr->data.isop.aux2.unk3C_trep = NULL;
                         break;
                 }
             } else {
@@ -2383,7 +2383,7 @@ void readnxtinst(void) {
                 expr->data.isop.op2 = stexpr2;
                 expr->data.isop.aux2.v1.overflow_attr = false;
                 expr->data.isop.unk30 = 0;
-                expr->unk5 = false;
+                expr->unk5 = 0;
                 expr->unk4 = false;
                 expr->data.isop.datasize = IONE;
             } else {
@@ -2431,7 +2431,7 @@ void readnxtinst(void) {
                     expr->data.isop.aux2.v1.overflow_attr = false;
                     expr->count = 1;
                     expr->data.isop.unk30 = 0;
-                    expr->unk5 = false;
+                    expr->unk5 = 0;
                     expr->unk4 = false;
                     expr->data.isop.op2 = stexpr2;
                 } else {
@@ -2474,7 +2474,7 @@ void readnxtinst(void) {
                 expr->data.isop.aux2.v1.overflow_attr = false;
                 expr->count = 1;
                 expr->data.isop.unk30 = 0;
-                expr->unk5 = false;
+                expr->unk5 = 0;
                 expr->unk4 = false;
                 expr->data.isop.op1 = stexpr1;
             } else {
@@ -2572,7 +2572,7 @@ void readnxtinst(void) {
                     expr->count = 1;
                     expr->data.isop.aux2.v1.overflow_attr = IS_OVERFLOW_ATTR(LEXLEV);
                     expr->data.isop.unk30 = 0;
-                    expr->unk5 = false;
+                    expr->unk5 = 0;
                     expr->unk4 = false;
                 } else {
                     incroccurrence(&expr);
@@ -2615,7 +2615,7 @@ void readnxtinst(void) {
                 expr->data.isop.opc = OPC;
                 expr->data.isop.datasize = IONE;
                 expr->data.isop.unk30 = 0;
-                expr->unk5 = false;
+                expr->unk5 = 0;
                 expr->data.isop.aux2.v1.overflow_attr = IS_OVERFLOW_ATTR(LEXLEV);
                 expr->unk4 = false;
             } else {
@@ -2664,7 +2664,7 @@ void readnxtinst(void) {
                 expr->count = 1;
                 expr->data.isop.opc = OPC;
                 expr->data.isop.unk30 = 0;
-                expr->unk5 = false;
+                expr->unk5 = 0;
                 expr->data.isop.aux2.v1.overflow_attr = IS_OVERFLOW_ATTR(LEXLEV);
                 expr->unk4 = false;
             } else {
@@ -2677,23 +2677,25 @@ void readnxtinst(void) {
             ustack_add_value();
             stexpr1 = ustack->expr;
             expr = readnxtinst_searchloop(opvalhash(OPC, stexpr1, OFFSET), &loc, stexpr1, stexpr2);
+
             if (outofmem) {
                 return;
             }
+
             if (expr->type == empty) {
                 expr->type = isop;
                 expr->datatype = DTYPE;
+                expr->unk4 = false;
+                expr->unk5 = 0;
+                expr->count = 1;
+                expr->data.isop.opc = OPC;
                 expr->data.isop.datatype = DTYPE;
                 expr->data.isop.op1 = stexpr1;
                 expr->data.isop.op2 = NULL;
-                expr->data.isop.opc = OPC;
-                expr->data.isop.datasize = OFFSET;
-                expr->count = 1;
+                expr->data.isop.datasize = OFFSET; // shift
+                expr->data.isop.aux2.v1.unk3C = LENGTH; // resulting length
                 expr->data.isop.aux2.v1.overflow_attr = false;
                 expr->data.isop.unk30 = 0;
-                expr->unk5 = false;
-                expr->unk4 = false;
-                expr->data.isop.aux2.v1.unk3C = LENGTH;
             } else {
                 incroccurrence(&expr);
             }
@@ -2716,7 +2718,7 @@ void readnxtinst(void) {
                 expr->count = 1;
                 expr->data.isop.aux2.v1.overflow_attr = false;
                 expr->data.isop.unk30 = 0;
-                expr->unk5 = false;
+                expr->unk5 = 0;
                 expr->unk4 = false;
                 expr->data.isop.opc = OPC;
             } else {
@@ -2732,13 +2734,16 @@ void readnxtinst(void) {
             stval1 = ustack->value;
             ustack->value = 0;
             IONE += stval1;
+
             if (OPC == Uilod && stexpr1->count >= 2 && LENGTH >= 4 && func_0043CE64(stexpr1, IONE)) {
                 return;
             }
+
             expr = readnxtinst_searchloop(opvalhash(OPC, stexpr1, IONE), &loc, stexpr1, stexpr2);
             if (outofmem) {
                 return;
             }
+
             if (expr->type == empty) {
                 expr->type = isop;
                 expr->datatype = DTYPE;
@@ -2748,35 +2753,35 @@ void readnxtinst(void) {
                 expr->count = 1;
                 expr->data.isop.aux2.v1.overflow_attr = false;
                 expr->data.isop.opc = OPC;
-                expr->data.isop.datasize = IONE;
+                expr->data.isop.datasize = IONE; // offset from lda
                 expr->data.isop.aux2.v1.unk3C = (unsigned short)LENGTH;
-                expr->data.isop.aux2.v1.unk3F = (unsigned char)(LEXLEV & ~7);
-                if (expr->data.isop.aux2.v1.unk3F == 0) {
-                    expr->data.isop.aux2.v1.unk3F = (unsigned char)(expr->data.isop.aux2.v1.unk3C * 8);
+                expr->data.isop.aux2.v1.align = (unsigned char)(LEXLEV & ~7);
+                if (expr->data.isop.aux2.v1.align == 0) {
+                    expr->data.isop.aux2.v1.align = (unsigned char)(expr->data.isop.aux2.v1.unk3C * 8);
                 }
                 if (stexpr1->type == isconst) {
-                    if (stexpr1->data.isconst.number.intval % (expr->data.isop.aux2.v1.unk3F / 8) != 0) {
-                        expr->data.isop.aux2.v1.unk3F = 8;
+                    if (stexpr1->data.isconst.number.intval % (expr->data.isop.aux2.v1.align / 8) != 0) {
+                        expr->data.isop.aux2.v1.align = 8;
                         tmp1 = stexpr1->data.isconst.number.intval;
                         while ((tmp1 & 1) == 0) {
-                            expr->data.isop.aux2.v1.unk3F *= 2;
+                            expr->data.isop.aux2.v1.align *= 2;
                             tmp1 /= 2;
                         }
                     }
                 } else if (stexpr1->type == islda) {
-                    if (stexpr1->data.islda_isilda.address.addr % (expr->data.isop.aux2.v1.unk3F / 8) != 0) {
-                        expr->data.isop.aux2.v1.unk3F = 8;
+                    if (stexpr1->data.islda_isilda.address.addr % (expr->data.isop.aux2.v1.align / 8) != 0) {
+                        expr->data.isop.aux2.v1.align = 8;
                         tmp1 = stexpr1->data.islda_isilda.address.addr;
                         while ((tmp1 & 1) == 0) {
-                            expr->data.isop.aux2.v1.unk3F *= 2;
+                            expr->data.isop.aux2.v1.align *= 2;
                             tmp1 /= 2;
                         }
                     }
                 }
                 expr->data.isop.unk30 = 0;
-                expr->unk5 = false;
+                expr->unk5 = 0;
                 expr->unk4 = false;
-                expr->data.isop.aux.unk38_int = OFFSET;
+                expr->data.isop.aux.mtagno = OFFSET;
                 expr->data.isop.unk34 = findbaseaddr(stexpr1);
                 if (expr->datatype != Sdt && OPC != Uildv) {
                     expr->unk2 = false;
@@ -2819,38 +2824,38 @@ void readnxtinst(void) {
                 expr->count = 1;
                 expr->data.isop.aux2.v1.overflow_attr = false;
                 expr->data.isop.opc = OPC;
-                expr->data.isop.datasize = IONE;
+                expr->data.isop.datasize = IONE; // offset from lda
                 expr->data.isop.aux2.v1.unk3C = (unsigned short)LENGTH;
-                expr->data.isop.aux2.v1.unk3F = (unsigned char)(LEXLEV & ~7);
+                expr->data.isop.aux2.v1.align = (unsigned char)(LEXLEV & ~7);
 
-                if (expr->data.isop.aux2.v1.unk3F == 0) {
-                    expr->data.isop.aux2.v1.unk3F = (unsigned char)(expr->data.isop.aux2.v1.unk3C * 8);
+                if (expr->data.isop.aux2.v1.align == 0) {
+                    expr->data.isop.aux2.v1.align = (unsigned char)(expr->data.isop.aux2.v1.unk3C * 8);
                 }
 
                 if (stexpr1->type == isconst) {
-                    if (stexpr1->data.isconst.number.intval % (expr->data.isop.aux2.v1.unk3F / 8) != 0) {
-                        expr->data.isop.aux2.v1.unk3F = 8;
+                    if (stexpr1->data.isconst.number.intval % (expr->data.isop.aux2.v1.align / 8) != 0) {
+                        expr->data.isop.aux2.v1.align = 8;
                         tmp1 = stexpr1->data.isconst.number.intval;
                         while ((tmp1 & 1) == 0) {
-                            expr->data.isop.aux2.v1.unk3F *= 2;
+                            expr->data.isop.aux2.v1.align *= 2;
                             tmp1 /= 2;
                         }
                     }
                 } else if (stexpr1->type == islda) {
-                    if (stexpr1->data.islda_isilda.address.addr % (expr->data.isop.aux2.v1.unk3F / 8) != 0) {
-                        expr->data.isop.aux2.v1.unk3F = 8;
+                    if (stexpr1->data.islda_isilda.address.addr % (expr->data.isop.aux2.v1.align / 8) != 0) {
+                        expr->data.isop.aux2.v1.align = 8;
                         tmp1 = stexpr1->data.islda_isilda.address.addr;
                         while ((tmp1 & 1) == 0) {
-                            expr->data.isop.aux2.v1.unk3F *= 2;
+                            expr->data.isop.aux2.v1.align *= 2;
                             tmp1 /= 2;
                         }
                     }
                 }
 
                 expr->data.isop.unk30 = 0;
-                expr->unk5 = false;
+                expr->unk5 = 0;
                 expr->unk4 = false;
-                expr->data.isop.aux.unk38_int = OFFSET;
+                expr->data.isop.aux.mtagno = OFFSET;
                 expr->data.isop.unk34 = findbaseaddr(stexpr1);
 
                 if (expr->datatype != Sdt && OPC != Uirlv) {
@@ -2872,6 +2877,7 @@ void readnxtinst(void) {
             ustack->expr = expr;
             return;
 
+        // struct/array comparison
         case Uiequ: // XXX: untested
         case Uigeq: // XXX: untested
         case Uigrt: // XXX: untested
@@ -2889,19 +2895,19 @@ void readnxtinst(void) {
             }
             if (expr->type == empty) {
                 expr->type = isop;
+                expr->unk2 = false;
+                expr->unk4 = false;
+                expr->unk5 = 0;
                 expr->datatype = Mdt;
                 expr->data.isop.datatype = Jdt;
                 expr->data.isop.op1 = stexpr1;
+                expr->data.isop.op2 = stexpr2;
                 expr->data.isop.opc = OPC;
                 expr->count = 1;
-                expr->data.isop.aux2.v1.overflow_attr = false;
-                expr->data.isop.op2 = stexpr2;
-                expr->data.isop.datasize = LENGTH;
-                expr->unk2 = false;
                 expr->data.isop.unk30 = 0;
-                expr->unk5 = false;
-                expr->unk4 = false;
-                expr->data.isop.aux2.v1.unk3C = IONE;
+                expr->data.isop.aux2.v1.overflow_attr = false;
+                expr->data.isop.aux2.v1.unk3C = IONE; // number of bits to compare at a time
+                expr->data.isop.datasize = LENGTH; // size of the struct/array in bytes
                 expr->data.isop.unk34 = findbaseaddr(stexpr1);
                 expr->data.isop.aux.unk38 = findbaseaddr(stexpr2);
                 if (expr->unk3) {
@@ -3134,7 +3140,7 @@ void readnxtinst(void) {
                 if (OPC == Uisst) {
                     expr->data.isvar_issvar.unk3C = 0;
                     expr->unk4 = false;
-                    expr->unk5 = false;
+                    expr->unk5 = 0;
                     expr->data.isvar_issvar.outer_stack = ustack->down->expr;
                 } else {
                     expr->data.isvar_issvar.outer_stack = NULL;
@@ -3662,7 +3668,7 @@ void readnxtinst(void) {
             ustack = ustack->down;
             stattail->u.store.u.mov.offset = OFFSET;
             stattail->u.store.size = LENGTH;
-            stattail->u.store.u.mov.unk32 = LEXLEV;
+            stattail->u.store.u.mov.src_align = LEXLEV;
             stattail->u.store.u.mov.baseaddr = findbaseaddr(stattail->expr);
             passbyfp = false;
             appendstorelist();
@@ -3687,7 +3693,7 @@ void readnxtinst(void) {
             if (OPC == Uistr) {
                 for (stmt = curgraphnode->stat_head; stmt != NULL && !found; stmt = stmt->next) {
                     if (stmt->opc == Uistr && ustack->down->expr == stmt->expr &&
-                            IONE + ustack->down->value == stmt->u.store.u.istr.s.word && LENGTH == stmt->u.store.size) 
+                            IONE + ustack->down->value == stmt->u.store.u.istr.offset && LENGTH == stmt->u.store.size) 
                     {
                         if (stmt->u.store.unk1D) {
                             decreasecount(stmt->expr);
@@ -3714,38 +3720,38 @@ void readnxtinst(void) {
             }
 
             stattail->u.store.u.istr.dtype = DTYPE;
-            stattail->u.store.u.istr.unk2D = LEXLEV & ~7;
-            if (stattail->u.store.u.istr.unk2D == 0) {
-                stattail->u.store.u.istr.unk2D = LENGTH * 8;
+            stattail->u.store.u.istr.align = LEXLEV & ~7;
+            if (stattail->u.store.u.istr.align == 0) {
+                stattail->u.store.u.istr.align = LENGTH * 8;
             }
 
             expr = ustack->down->expr;
             if (expr->type == isconst) {
-                if (expr->data.isconst.number.intval % (unsigned)(stattail->u.store.u.istr.unk2D / 8) != 0) {
-                    stattail->u.store.u.istr.unk2D = 8;
+                if (expr->data.isconst.number.intval % (unsigned)(stattail->u.store.u.istr.align / 8) != 0) {
+                    stattail->u.store.u.istr.align = 8;
                     tmp1 = expr->data.isconst.number.intval;
                     while ((tmp1 & 1) == 0) {
-                        stattail->u.store.u.istr.unk2D *= 2;
+                        stattail->u.store.u.istr.align *= 2;
                         tmp1 /= 2;
                     }
                 }
             } else if (expr->type == islda) {
-                if (expr->data.islda_isilda.address.addr % (unsigned)(stattail->u.store.u.istr.unk2D / 8) != 0) {
-                    stattail->u.store.u.istr.unk2D = 8;
+                if (expr->data.islda_isilda.address.addr % (unsigned)(stattail->u.store.u.istr.align / 8) != 0) {
+                    stattail->u.store.u.istr.align = 8;
                     tmp1 = expr->data.islda_isilda.address.addr;
                     while ((tmp1 & 1) == 0) {
-                        stattail->u.store.u.istr.unk2D *= 2;
+                        stattail->u.store.u.istr.align *= 2;
                         tmp1 /= 2;
                     }
                 }
             }
 
-            stattail->u.store.u.istr.offset = (unsigned short)OFFSET;
+            stattail->u.store.u.istr.mtagno = (unsigned short)OFFSET;
             stattail->u.store.expr = ustack->expr;
             ustack = ustack->down;
             ustack_add_index();
             stattail->expr = ustack->expr;
-            stattail->u.store.u.istr.s.word = IONE + ustack->value;
+            stattail->u.store.u.istr.offset = IONE + ustack->value;
             stattail->u.store.size = LENGTH;
             ustack = ustack->down;
             stattail->u.store.baseaddr = findbaseaddr(stattail->expr);
@@ -3783,38 +3789,38 @@ void readnxtinst(void) {
             }
 
             stattail->u.store.u.istr.dtype = DTYPE;
-            stattail->u.store.u.istr.unk2D = LEXLEV & ~7;
-            if (stattail->u.store.u.istr.unk2D == 0) {
-                stattail->u.store.u.istr.unk2D = (unsigned char)(LENGTH * 8);
+            stattail->u.store.u.istr.align = LEXLEV & ~7;
+            if (stattail->u.store.u.istr.align == 0) {
+                stattail->u.store.u.istr.align = (unsigned char)(LENGTH * 8);
             }
 
             expr = ustack->down->expr;
             if (expr->type == isconst) {
-                if (expr->data.isconst.number.intval % (stattail->u.store.u.istr.unk2D / 8) != 0) {
-                    stattail->u.store.u.istr.unk2D = 8;
+                if (expr->data.isconst.number.intval % (stattail->u.store.u.istr.align / 8) != 0) {
+                    stattail->u.store.u.istr.align = 8;
                     tmp1 = expr->data.isconst.number.intval;
                     while ((tmp1 & 1) == 0) {
-                        stattail->u.store.u.istr.unk2D *= 2;
+                        stattail->u.store.u.istr.align *= 2;
                         tmp1 /= 2;
                     }
                 }
             } else if (expr->type == islda) {
-                if (expr->data.islda_isilda.address.addr % (stattail->u.store.u.istr.unk2D / 8) != 0) {
-                    stattail->u.store.u.istr.unk2D = 8;
+                if (expr->data.islda_isilda.address.addr % (stattail->u.store.u.istr.align / 8) != 0) {
+                    stattail->u.store.u.istr.align = 8;
                     tmp1 = expr->data.islda_isilda.address.addr;
                     while ((tmp1 & 1) == 0) {
-                        stattail->u.store.u.istr.unk2D *= 2;
+                        stattail->u.store.u.istr.align *= 2;
                         tmp1 /= 2;
                     }
                 }
             }
 
-            stattail->u.store.u.istr.offset = OFFSET;
+            stattail->u.store.u.istr.mtagno = OFFSET;
             stattail->u.store.expr = ustack->expr;
             ustack = ustack->down;
             ustack_add_value();
             stattail->expr = ustack->expr;
-            stattail->u.store.u.istr.s.word = IONE;
+            stattail->u.store.u.istr.offset = IONE;
             stattail->u.store.size = LENGTH;
             ustack = ustack->down;
             stattail->u.store.baseaddr = findbaseaddr(stattail->expr);
@@ -3852,9 +3858,9 @@ void readnxtinst(void) {
                 stattail->opc = Unop;
                 return;
             }
-            stattail->u.store.u.mov.unk33 = LEXLEV & ~7;
+            stattail->u.store.u.mov.dst_align = LEXLEV & ~7;
             stattail->u.store.size = LENGTH;
-            stattail->u.store.u.mov.unk32 = IONE;
+            stattail->u.store.u.mov.src_align = IONE;
             stattail->u.store.u.mov.baseaddr = findbaseaddr(stattail->u.store.expr);
             appendstorelist();
             if (outofmem) {
@@ -3865,7 +3871,7 @@ void readnxtinst(void) {
             stattail->u.store.baseaddr = findbaseaddr(stattail->expr);
             if (OPC == Umov) {
                 stattail->u.store.unk1C = !strlkilled(stattail, curgraphnode->varlisthead);
-                stattail->u.store.unk1E = !strlkilled(stattail, curgraphnode->varlisthead);
+                stattail->u.store.unk1E = !strlkilled(stattail, curgraphnode->varlisthead); // not strskilled?
                 stattail->u.store.unk1D = true;
                 stattail->u.store.unk1F = true;
             } else {

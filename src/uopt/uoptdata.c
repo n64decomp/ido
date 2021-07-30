@@ -807,7 +807,7 @@ void *nota_candof; // TODO: fix type (0x1C bytes allocated)
 0041550C func_0041550C
 0043771C optinit
 */
-void *constprop; // TODO: fix type (0x10 bytes allocated)
+struct VarAccessList *constprop;
 
 /*
 0042BF08 reemit
@@ -1256,7 +1256,7 @@ struct IChain *itable[1619];
 00456A2C oneproc
 00475680 getexpsources
 */
-void *toplevelloops; // TODO: fix type (some linked list of 20 bytes data + 4 byte next ptr)
+struct Loop *toplevelloops;
 
 /*
 0042AADC func_0042AADC
