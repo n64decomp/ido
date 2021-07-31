@@ -214,6 +214,12 @@ struct JumpFallthroughBB {
     struct JumpFallthroughBB *next;
 };
 
+enum unk5enum {
+    notloopfirstbb,
+    loopfirstbb,
+    canunroll
+};
+
 struct Graphnode {
     /* 0x00 */ int blockno;
     /* 0x04 */ bool interprocedural_controlflow;
