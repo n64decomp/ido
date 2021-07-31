@@ -363,9 +363,9 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                         }
                         break;
 
-                    case Uildv:
                     case Uilod:
                     case Uirld:
+                    case Uildv:
                     case Uirlv:
                         if (ichain->dtype == expr->datatype &&
                                 ichain->isop.op1 == op1 &&

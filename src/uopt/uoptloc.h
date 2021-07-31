@@ -4,4 +4,6 @@
 void reduceixa(struct Expression *ixa);
 void constarith(void);
 
+void unaryfold(struct Expression *expr);
+
 #endif

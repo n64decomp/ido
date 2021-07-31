@@ -149,7 +149,7 @@ struct Statement;
 struct VarAccessList {
     /* 0x00 */ struct VarAccessList *prev; // towards head
     /* 0x04 */ struct VarAccessList *next; // towards tail
-    /* 0x08 */ bool unk8; // or unsigned char?
+    /* 0x08 */ bool unk8; // expr->isvar_issvar.unk22
     /* 0x09 */ unsigned char type; // 0: none?, 1: store (Statement), 2: load (Expression), 3: move (Statement)
     /* 0x0C */ union {
                    struct Statement *store;
@@ -606,7 +606,7 @@ typedef unsigned char ExpressionType;
 
 // Probably "Image (Chain)"
 // Global 
-struct IChain {
+struct IChain { // TODO: rename
     /* 0x0 */ ExpressionType type;
     /* 0x1 */ Datatype dtype;
     /* 0x2 */ unsigned short bitpos;
@@ -649,6 +649,7 @@ struct IChain {
             /* 0x20 */ struct Statement *stat;
             union {
                 /* 0x24 */ Datatype cvtfrom;
+                /* 0x24 */ unsigned short unk24_u16;
                 union {
                     /* 0x24 */ int word; // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
                     struct {
@@ -665,6 +666,7 @@ struct IChain {
         } isconst;
         struct {
             /* 0x10 */ unsigned short unk10;
+            /* 0x14 */ int unk14; // is this ever defined?
         } isrconst;
     };
 };
@@ -720,7 +722,7 @@ struct TailRecParameter {
 struct Expression {
     /* 0x00 */ ExpressionType type;
     /* 0x01 */ Datatype datatype;
-    /* 0x02 */ bool unk2; // saved? see exprimage
+    /* 0x02 */ bool unk2; // true if ichain in altered
     /* 0x03 */ bool unk3; // not varkilled
     /* 0x04 */ bool unk4; // bool or unsigned char?
     /* 0x05 */ unsigned char unk5;
