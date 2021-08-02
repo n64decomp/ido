@@ -492,6 +492,7 @@ struct Statement {
             unsigned char unk15; // 1 from Uicuf, POP from Uaent
         } pop;
 
+        // might be in the same union as store
         struct {
             struct Expression *expr2; // 0x14, first expr at 0x4
             int unk18; // initialized to 0

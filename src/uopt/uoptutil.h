@@ -30,6 +30,8 @@ int sizeoftyp(Datatype t);
 int blktolev(int blk);
 int newbit(struct IChain *ichain, void *unk4);
 
+bool exproccurred(struct IChain *ichain, struct Expression *expr);
+
 bool addovfw_signed(int a, int b);
 bool subovfw_signed(int a, int b);
 bool mpyovfw_signed(int a, int b);
@@ -53,6 +55,8 @@ int regclassof(struct IChain *ichain);
 bool in_indmults(struct IChain *ichain);
 bool checkincre(struct Expression *entry, struct Expression *entry2, int *result);
 int findincre(struct Expression *entry);
+int countvars(struct IChain *ichain);
+
 bool hasvolatile(struct Expression *expr);
 bool has_volt_ovfw(struct Expression *expr);
 bool has_ilod(struct Expression *expr);

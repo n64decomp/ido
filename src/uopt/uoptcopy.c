@@ -10,6 +10,8 @@
 #include "uoptdbg.h"
 #include "uoptppss.h"
 #include "uoptitab.h"
+#include "uoptkill.h"
+#include "uoptprep.h"
 #include "uoptloc.h"
 
 /* 
@@ -24,7 +26,7 @@ bool entryav(struct Expression *expr) {
         return false;
     } 
 
-    switch (expr->type) { // unable to parse jump table
+    switch (expr->type) {
         case islda:
         case isconst:
         case isrconst:
@@ -1671,6 +1673,7 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
 
                             if (temp_s5->isop.op2->type == isop) {
                                 // is assignment->expr->assigned_value ever different from search->assigned_value?
+                                // in oot, they're always the same
                                 if (has_ilod(search->data.isvar_issvar.assignment->expr->data.isvar_issvar.assigned_value) ||
                                         is_incr(search->data.isvar_issvar.assignment->expr->data.isvar_issvar.assigned_value) ||
                                         ((!expr->data.isop.unk22 || curblk != expr->data.isvar_issvar.location.blockno) &&
@@ -1857,12 +1860,10 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                             ixafold(expr, expr->data.isop.op1, expr->data.isop.op2, expr);
                             expr->var_access_list = constprop;
                         }
-                        expr = expr;
                     } else if (binaryovfw(expr->datatype, expr->data.isop.opc, expr->data.isop.op1, expr->data.isop.op2)) {
                         if (expr->data.isop.aux2.v1.overflow_attr) {
                             ovfwwarning(expr->data.isop.opc);
                         }
-                        expr = expr;
                     } else if (expr->data.isop.op1->type != islda || expr->data.isop.op2->type != islda  
                             || expr->data.isop.op1->data.islda_isilda.address.blockno == expr->data.isop.op2->data.islda_isilda.address.blockno) {
 
@@ -2317,7 +2318,7 @@ void copypropagate(void) {
     lastdftime = getclock();
     old.blocks = NULL;
     old.num_blocks = 0;
-    numdataflow += 1;
+    numdataflow++;
     checkbvlist(&old);
 
     for (node = graphhead; node != NULL; node = node->next) {
@@ -2437,17 +2438,17 @@ void copypropagate(void) {
                         }
                     }
                 } else if (stat->opc == Utpeq ||
-                        stat->opc == Utpne ||
-                        stat->opc == Utpge ||
-                        stat->opc == Utpgt ||
-                        stat->opc == Utple ||
-                        stat->opc == Utplt ||
-                        stat->opc == Uistr ||
-                        stat->opc == Uistv ||
-                        stat->opc == Uirst ||
-                        stat->opc == Uirsv ||
-                        stat->opc == Umov ||
-                        stat->opc == Umovv) {
+                           stat->opc == Utpne ||
+                           stat->opc == Utpge ||
+                           stat->opc == Utpgt ||
+                           stat->opc == Utple ||
+                           stat->opc == Utplt ||
+                           stat->opc == Uistr ||
+                           stat->opc == Uistv ||
+                           stat->opc == Uirst ||
+                           stat->opc == Uirsv ||
+                           stat->opc == Umov ||
+                           stat->opc == Umovv) {
                     phi_s8 = entryav(stat->expr) && entryav(stat->u.store.expr);
                     func_0041550C(stat->expr, &spBC, false, stat, node);
                     func_0041550C(stat->u.store.expr, &spB8, false, stat, node);
@@ -2625,14 +2626,14 @@ void copypropagate(void) {
                                         stat->opc == Uistv ||
                                         stat->opc == Uirst ||
                                         stat->opc == Uirsv) {
-                                    spB0 = searchstore(hash, stat->opc, spBC, spB8, stat->u.store.u.str.unk30, stat->u.store.size);
+                                    spB0 = searchstore(hash, stat->opc, spBC, spB8, stat->u.store.u.istr.offset, stat->u.store.size);
                                 } else if (stat->opc == Utpeq ||
                                         stat->opc == Utpge ||
                                         stat->opc == Utpgt ||
                                         stat->opc == Utple ||
                                         stat->opc == Utplt ||
                                         stat->opc == Utpne) {
-                                    spB0 = searchstore(hash, stat->opc, spBC, spB8, stat->u.store.u.str.unk30, 0);
+                                    spB0 = searchstore(hash, stat->opc, spBC, spB8, stat->u.trap.num, 0);
                                 } else {
                                     spB0 = searchstore(hash, stat->opc, spBC, spB8, 0, 0);
                                 }
@@ -2651,14 +2652,14 @@ void copypropagate(void) {
                                         stat->opc == Uistv ||
                                         stat->opc == Uirst ||
                                         stat->opc == Uirsv) {
-                                    spB0 = searchstore(hash, stat->opc, stat->expr->ichain, spB8, stat->u.store.u.str.unk30, stat->u.store.size);
+                                    spB0 = searchstore(hash, stat->opc, stat->expr->ichain, spB8, stat->u.store.u.istr.offset, stat->u.store.size);
                                 } else if (stat->opc == Utpeq ||
                                         stat->opc == Utpge ||
                                         stat->opc == Utpgt ||
                                         stat->opc == Utple ||
                                         stat->opc == Utplt ||
                                         stat->opc == Utpne) {
-                                    spB0 = searchstore(hash, stat->opc, stat->expr->ichain, spB8, stat->u.store.u.str.unk30, 0);
+                                    spB0 = searchstore(hash, stat->opc, stat->expr->ichain, spB8, stat->u.trap.num, 0);
                                 } else {
                                     spB0 = searchstore(hash, stat->opc, stat->expr->ichain, spB8, 0, 0);
                                 }
@@ -2677,16 +2678,16 @@ void copypropagate(void) {
                                         stat->opc == Uistv ||
                                         stat->opc == Uirst ||
                                         stat->opc == Uirsv) {
-                                    spB0 = searchstore(hash, stat->opc, spBC, stat->u.store.expr->ichain, stat->u.store.u.str.unk30, stat->u.store.size);
+                                    spB0 = searchstore(hash, stat->opc, spBC, stat->u.store.expr->ichain, stat->u.store.u.istr.offset, stat->u.store.size);
                                 } else if (stat->opc == Utpeq ||
                                         stat->opc == Utpge ||
                                         stat->opc == Utpgt ||
                                         stat->opc == Utple ||
                                         stat->opc == Utplt ||
                                         stat->opc == Utpne) {
-                                    spB0 = searchstore(hash, stat->opc, spBC, stat->u.store.expr->ichain, stat->u.store.u.str.unk30, 0);
+                                    spB0 = searchstore(hash, stat->opc, spBC, stat->u.trap.expr2->ichain, stat->u.trap.num, 0);
                                 } else {
-                                    spB0 = searchstore(hash, stat->opc, spBC, stat->u.store.expr->ichain, 0, 0);
+                                    spB0 = searchstore(hash, stat->opc, spBC, stat->u.trap.expr2->ichain, 0, 0);
                                 }
                             }
 
@@ -2802,8 +2803,8 @@ void copypropagate(void) {
                         }
                     }
                 } else if (stat->opc == Uloc) {
-                    curlocpg = stat->u.store.expr;
-                    curlocln = stat->u.store.var_access_list_item;
+                    curlocpg = stat->u.loc.page;
+                    curlocln = stat->u.loc.line;
                 }
 
                 if (outofmem) {
@@ -2858,7 +2859,7 @@ void copypropagate(void) {
                     if (!bittab[i].ichain->isvar_issvar.unk19 && !bittab[i].ichain->isvar_issvar.unk1A && indirectaccessed(bittab[i].ichain->isvar_issvar.location, bittab[i].ichain->isvar_issvar.size, node->varlisthead)) {
                         setbit(&node->indiracc, i);
                         setbit(&node->indiracc, i + 1);
-                        aliasedlu += 1;
+                        aliasedlu++;
                         if (dowhyuncolor != 0) {
                             aliasedoc += func_00417480(bittab[i].ichain, node);
                         }
@@ -2889,19 +2890,19 @@ void copypropagate(void) {
                     }
                 } else {
                     if (expinalter(bittab[i].ichain->isop.op2, node)) {
-                        phi_s2 = 1;
-                        phi_s1 = 1;
+                        phi_s2 = true;
+                        phi_s1 = true;
                     } else if (bittab[i].ichain->isop.opc == Uisst || bittab[i].ichain->isop.opc == Ustr) {
                         if (bittab[i].ichain->isop.op1->isvar_issvar.unk1A) {
-                            phi_s2 = 1;
-                            phi_s1 = 1;
+                            phi_s2 = true;
+                            phi_s1 = true;
                         } else {
                             phi_s2 = bvectin(bittab[i].ichain->isop.op1->isvar_issvar.assignbit, &node->bvs.stage1.alters);
                             phi_s1 = bvectin(bittab[i].ichain->isop.op1->bitpos, &node->bvs.stage1.alters);
                         }
                     } else if (expinalter(bittab[i].ichain->isop.op1, node)) {
-                        phi_s2 = 1;
-                        phi_s1 = 1;
+                        phi_s2 = true;
+                        phi_s1 = true;
                     } else {
                         phi_s2 = strlkilled(bittab[i].ichain->isop.stat, node->varlisthead);
                         phi_s1 = strskilled(bittab[i].ichain->isop.stat, node->varlisthead);
@@ -2920,16 +2921,16 @@ void copypropagate(void) {
                                     ((bittab[i].ichain->isop.opc == Umov ||
                                       bittab[i].ichain->isop.opc == Umovv) &&
                                      cmkilled(curlevel, indirprocs, bittab[i].ichain->isop.stat))) {
-                                phi_s2 = 1;
-                                phi_s1 = 1;
+                                phi_s2 = true;
+                                phi_s1 = true;
                             }
                         } else if (cskilled(node->stat_tail->u.call.level, node->stat_tail->u.call.proc, bittab[i].ichain->isop.stat) ||
                                 listpskilled(node->stat_tail->u.call.parameters, bittab[i].ichain->isop.stat, 0) ||
                                 ((bittab[i].ichain->isop.opc == Umov ||
                                   bittab[i].ichain->isop.opc == Umovv) &&
                                  cmkilled(node->stat_tail->u.call.level, node->stat_tail->u.call.proc, bittab[i].ichain->isop.stat))) {
-                            phi_s2 = 1;
-                            phi_s1 = 1;
+                            phi_s2 = true;
+                            phi_s1 = true;
                         }
 
                     }
@@ -3036,7 +3037,7 @@ void copypropagate(void) {
     checkbvlist(&vareqv);
     checkbvlist(&asgneqv);
     lastdftime = getclock();
-    numdataflow += 1;
+    numdataflow++;
 
     node = graphhead;
     while (node != NULL) {
@@ -3054,19 +3055,13 @@ void copypropagate(void) {
             bvectcopy(&node->bvs.stage1.u.precm.antout, &mvarbits);
             bvectminus(&node->bvs.stage1.u.precm.antout, &varbits);
             bvectminus(&node->bvs.stage1.u.precm.antout, &asgneqv);
-        } else if (node->terminal == 0) {
+        } else if (!node->terminal) {
             if (has_exc_handler &&
                     (node->stat_tail->opc == Ucia ||
                      node->stat_tail->opc == Ucup ||
                      node->stat_tail->opc == Uicuf)) {
-                /* 
-                   sp64 = 0;
-                   sp68 = 0;
-                   sp6C = 0;
-                   sp70 = 0;
-                   */
                 initbv(&node->bvs.stage1.u.precm.antout, (struct BitVectorBlock) {0});
-            } else if (node->successors->next == 0) {
+            } else if (node->successors->next == NULL) {
                 bvectcopy(&node->bvs.stage1.u.precm.antout, &asgnbits);
                 bvectminus(&node->bvs.stage1.u.precm.antout, &asgneqv);
             } else {
