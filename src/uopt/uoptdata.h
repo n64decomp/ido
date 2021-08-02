@@ -380,9 +380,9 @@ struct Proc {
 
 struct Statement {
     Uopcode opc;
-    bool unk1;
+    bool unk1; // related to hasincre
     bool unk2; // bool or unsigned char?
-    bool unk3; // codeimage
+    bool unk3; // outpar
     struct Expression *expr; // 0x4
     struct Statement *next; // 0x8, towards tail
     struct Statement *prev; // 0xC, towards head

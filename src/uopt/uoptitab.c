@@ -1028,8 +1028,8 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                         case Uileq:
                         case Uiles:
                         case Uineq:
-                            *anticipated = *anticipated ? expr->unk3 : *anticipated;
-                            *available = *available ? !expr->unk2 : *available;
+                            *anticipated = *anticipated && expr->unk3;
+                            *available = *available && !expr->unk2;
                             break;
 
                         default:
@@ -1070,8 +1070,8 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                         case Uilod:
                         case Uirld:
                         case Uirlv:
-                            *anticipated = op1ant ? expr->unk3 : op1ant;
-                            *available = op1av ? !expr->unk2 : op1av;
+                            *anticipated = op1ant && expr->unk3;
+                            *available = op1av && !expr->unk2;
                             break;
 
                         default:

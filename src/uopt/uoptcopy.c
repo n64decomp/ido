@@ -2309,6 +2309,7 @@ void copypropagate(void) {
     unsigned short hash;
     int i;
     int p;
+    bool changed;
     bool phi_s1;
     bool phi_s2;
     bool phi_s3;
@@ -2344,32 +2345,32 @@ void copypropagate(void) {
     if (docopyprog) {
         do {
             dataflowiter++;
-            phi_s2 = false;
+            changed = false;
             for (node = graphhead; node != NULL; node = node->next) {
                 nodelist = node->predecessors;
                 if (nodelist != NULL) {
-                    if (!phi_s2) {
+                    if (!changed) {
                         bvectcopy(&old, &node->bvs.stage1.u.precm.avin);
                     }
                     while (nodelist != NULL) {
                         bvectintsect(&node->bvs.stage1.u.precm.avin, &nodelist->graphnode->bvs.stage1.u.precm.avout);
                         nodelist = nodelist->next;
                     }
-                    if (!phi_s2 && !bvecteq(&old, &node->bvs.stage1.u.precm.avin)) {
-                        phi_s2 = true;
+                    if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.avin)) {
+                        changed = true;
                     }
                 }
-                if (!phi_s2) {
+                if (!changed) {
                     bvectcopy(&old, &node->bvs.stage1.u.precm.avout);
                 }
 
                 // AVOUT = PAVLOCS | (AVIN & ~ABSALTERED)
                 bvectglop(&node->bvs.stage1.u.precm.avout, &node->bvs.stage1.u.precm.pavlocs, &node->bvs.stage1.u.precm.avin, &node->bvs.stage1.absalters);
-                if (!phi_s2 && !bvecteq(&old, &node->bvs.stage1.u.precm.avout)) {
-                    phi_s2 = true;
+                if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.avout)) {
+                    changed = true;
                 }
             }
-        } while (phi_s2);
+        } while (changed);
 
         dataflowtime = (dataflowtime + getclock()) - lastdftime;
         node = graphtail;
@@ -2405,7 +2406,7 @@ void copypropagate(void) {
                             setbit(&node->bvs.stage1.u.precm.expoccur, spB0->bitpos);
                             spB0->isop.stat = stat;
                             stat->u.store.ichain = spB0;
-                            stat->unk1 = 0;
+                            stat->unk1 = false;
 
                             if (stat->u.store.unk1C && stat->u.store.unk1E && entryant(stat->expr->data.isvar_issvar.assigned_value)) {
                                 resetbit(&node->bvs.stage1.antlocs, temp_s7->bitpos);
@@ -2579,7 +2580,7 @@ void copypropagate(void) {
                             setbit(&node->bvs.stage1.u.precm.expoccur, spB0->bitpos);
                             spB0->isop.stat = stat;
                             stat->u.store.ichain = spB0;
-                            stat->unk1 = 0;
+                            stat->unk1 = false;
                             if (stat->u.store.unk1C && stat->u.store.unk1E && entryant(stat->expr->data.isvar_issvar.assigned_value)) {
                                 resetbit(&node->bvs.stage1.antlocs, temp_s7->bitpos);
                                 setbit(&node->bvs.stage1.antlocs, spB0->bitpos);
@@ -3084,13 +3085,14 @@ void copypropagate(void) {
 
     // redundant store elimination
     if (dordstore) {
-        do {
-            phi_s2 = false;
+        changed = true;
+        while (changed) {
+            changed = false;
             dataflowiter++;
             node = graphtail;
             while (node != NULL) {
                 if (node->successors != NULL) {
-                    if (!phi_s2) {
+                    if (!changed) {
                         bvectcopy(&old, &node->bvs.stage1.u.precm.antout);
                     }
 
@@ -3100,34 +3102,34 @@ void copypropagate(void) {
                         nodelist = nodelist->next;
                     }
 
-                    if (!phi_s2 && !bvecteq(&old, &node->bvs.stage1.u.precm.antout)) {
-                        phi_s2 = true;
+                    if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.antout)) {
+                        changed = true;
                     }
                 } else if (fsymbits.num_blocks != 0) {
-                    if (!phi_s2) {
+                    if (!changed) {
                         bvectcopy(&old, &node->bvs.stage1.u.precm.antout);
                     }
 
                     // ANTOUT = ANTIN or ~FSYM
                     minusminus(&node->bvs.stage1.u.precm.antout, &fsymbits, &graphhead->bvs.stage1.u.precm.antin);
-                    if (!phi_s2 && !bvecteq(&old, &node->bvs.stage1.u.precm.antout)) {
-                        phi_s2 = true;
+                    if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.antout)) {
+                        changed = true;
                     }
                 }
 
-                if (!phi_s2) {
+                if (!changed) {
                     bvectcopy(&old, &node->bvs.stage1.u.precm.antin);
                 }
 
                 // ANTIN = ANTLOC | (ANTOUT & ~ALTERED)
                 bvectglop(&node->bvs.stage1.u.precm.antin, &node->bvs.stage1.antlocs, &node->bvs.stage1.u.precm.antout, &node->bvs.stage1.alters);
-                if (!phi_s2 && !bvecteq(&old, &node->bvs.stage1.u.precm.antin)) {
-                    phi_s2 = true;
+                if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.antin)) {
+                    changed = true;
                 }
 
                 node = node->prev;
             }
-        } while (phi_s2);
+        } while (changed);
         dataflowtime = (dataflowtime + getclock()) - lastdftime;
 
         node = graphhead;

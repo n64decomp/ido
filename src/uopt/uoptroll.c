@@ -1124,14 +1124,14 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                             sp60->data.isop.aux.cvtfrom = expr->data.isop.aux.cvtfrom;
 
                             sp60->data.isop.unk34 = findbaseaddr(sp5C);
-                            if ((sp60->datatype != 0xE) && (sp60->data.isop.opc != Uildv)) {
-                                sp60->unk2 = 0;
-                                if (sp60->unk3 != 0) {
-                                    sp60->unk3 = varkilled(sp60, curgraphnode->varlisthead) == 0;
+                            if (sp60->datatype != Sdt && sp60->data.isop.opc != Uildv) {
+                                sp60->unk2 = false;
+                                if (sp60->unk3) {
+                                    sp60->unk3 = !varkilled(sp60, curgraphnode->varlisthead);
                                 }
                             } else {
-                                sp60->unk2 = 1;
-                                sp60->unk3 = 0;
+                                sp60->unk2 = true;
+                                sp60->unk3 = false;
                             }
                             appendbbvarlst(sp60);
                             lodkillprev(sp60);
@@ -1164,14 +1164,14 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         sp60->data.isop.aux.cvtfrom = expr->data.isop.aux.cvtfrom;
 
                         sp60->data.isop.unk34 = findbaseaddr(sp5C);
-                        if ((sp60->datatype != 0xE) && (sp60->data.isop.opc != 0x33)) {
-                            sp60->unk2 = 0;
+                        if (sp60->datatype != Sdt && sp60->data.isop.opc != Uildv) {
+                            sp60->unk2 = false;
                             if (sp60->unk3) {
-                                sp60->unk3 = varkilled(sp60, curgraphnode->varlisthead) == 0;
+                                sp60->unk3 = !varkilled(sp60, curgraphnode->varlisthead);
                             }
                         } else {
-                            sp60->unk2 = 1;
-                            sp60->unk3 = 0;
+                            sp60->unk2 = true;
+                            sp60->unk3 = false;
                         }
                         appendbbvarlst(sp60);
                         lodkillprev(sp60);
@@ -1204,14 +1204,14 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         sp60->data.isop.aux2.v1.overflow_attr = 0;
                         sp60->data.isop.op2 = sp58;
                         sp60->data.isop.datasize = expr->data.isop.datasize;
-                        sp60->unk2 = 0;
+                        sp60->unk2 = false;
                         sp60->data.isop.unk30 = 0;
                         sp60->data.isop.aux2.v1.unk3C = expr->data.isop.aux2.v1.unk3C;
 
                         sp60->data.isop.unk34 = findbaseaddr(sp5C);
                         sp60->data.isop.aux.unk38 = findbaseaddr(sp58);
-                        if (sp60->unk3 != 0) {
-                            sp60->unk3 = varkilled(sp60, curgraphnode->varlisthead) == 0;
+                        if (sp60->unk3) {
+                            sp60->unk3 = !varkilled(sp60, curgraphnode->varlisthead);
                         }
                         appendbbvarlst(sp60);
                         lodkillprev(sp60);
@@ -1284,7 +1284,7 @@ void oneloopblockstmt(struct Statement *stat) {
                     phi_s1 = appendchain(sp60->table_index);
                     phi_s1->graphnode = curgraphnode;
                     phi_s1->data.isvar_issvar.unk22 = sp60->data.isvar_issvar.unk22;
-                    phi_s1->unk3 = 0;
+                    phi_s1->unk3 = false;
                     phi_s1->data.isvar_issvar.unk21 = sp60->data.isvar_issvar.unk21;
                     sp5B = false;
                     sp5A = true;
@@ -1315,7 +1315,7 @@ void oneloopblockstmt(struct Statement *stat) {
                     phi_s1 = appendchain(sp60->table_index);
                     phi_s1->graphnode = curgraphnode;
                     phi_s1->data.isvar_issvar.unk22 = sp60->data.isvar_issvar.unk22;
-                    phi_s1->unk3 = 0;
+                    phi_s1->unk3 = false;
                     phi_s1->data.isvar_issvar.unk21 = sp60->data.isvar_issvar.unk21;
                     sp5B = false;
                     sp5A = false;
@@ -1331,7 +1331,7 @@ void oneloopblockstmt(struct Statement *stat) {
                 phi_s1->data.isvar_issvar.location = stat->expr->data.isvar_issvar.location;
                 phi_s1->datatype = stat->expr->datatype;
                 phi_s1->data.isvar_issvar.size = stat->expr->data.isvar_issvar.size;
-                phi_s1->unk3 = 0;
+                phi_s1->unk3 = false;
                 phi_s1->count = 0;
                 phi_s1->data.isvar_issvar.copy = NULL;
                 if (stat->expr->type == issvar) {
@@ -1343,23 +1343,23 @@ void oneloopblockstmt(struct Statement *stat) {
                     phi_s1->data.isvar_issvar.outer_stack = NULL;
                 }
 
-                if (phi_s1->data.isvar_issvar.unk21 == 0) {
-                    phi_s1->unk2 = 0;
+                if (!phi_s1->data.isvar_issvar.unk21) {
+                    phi_s1->unk2 = false;
                 } else {
-                    phi_s1->unk2 = 1;
+                    phi_s1->unk2 = true;
                 }
 
                 phi_s1->data.isvar_issvar.is_volatile = stat->expr->data.isvar_issvar.is_volatile;
             }
 
-            if (phi_s1->data.isvar_issvar.unk21 != 0) {
+            if (phi_s1->data.isvar_issvar.unk21) {
                 sp5B = false;
                 sp5A = false;
             }
 
             extendstat(stat->opc);
             phi_s1->data.isvar_issvar.assigned_value = sp5C;
-            TRAP_IF(stat->unk3 != 0);
+            TRAP_IF(stat->unk3);
             stattail->unk3 = 0;
             if (stattail->opc == Uisst) {
                 stattail->u.store.expr = phi_s1->data.isvar_issvar.outer_stack;
@@ -1367,7 +1367,7 @@ void oneloopblockstmt(struct Statement *stat) {
 
             stattail->expr = phi_s1;
             phi_s1->data.isvar_issvar.assignment = stattail;
-            if (stattail->unk3 == 0) {
+            if (!stattail->unk3) {
                 stattail->u.store.unk1C = sp5B;
                 if (phi_s1->data.isvar_issvar.unk22 == 0 && sp5B != 0) {
                     stattail->u.store.unk1C = strlkilled(stattail, curgraphnode->varlisthead) == 0;
@@ -1378,15 +1378,15 @@ void oneloopblockstmt(struct Statement *stat) {
                     stattail->u.store.unk1E = strskilled(stattail, curgraphnode->varlisthead) == 0;
                 }
 
-                stattail->u.store.unk1D = phi_s1->data.isvar_issvar.unk21 == 0;
-                stattail->u.store.unk1F = phi_s1->data.isvar_issvar.unk21 == 0;
+                stattail->u.store.unk1D = !phi_s1->data.isvar_issvar.unk21;
+                stattail->u.store.unk1F = !phi_s1->data.isvar_issvar.unk21;
                 stattail->unk1 = stat->unk1;
             } else {
-                stattail->u.store.unk1C = 0;
-                stattail->u.store.unk1E = 0;
-                stattail->u.store.unk1D = 0;
-                stattail->u.store.unk1F = 0;
-                stattail->unk1 = 0;
+                stattail->u.store.unk1C = false;
+                stattail->u.store.unk1E = false;
+                stattail->u.store.unk1D = false;
+                stattail->u.store.unk1F = false;
+                stattail->unk1 = false;
             }
 
             stattail->u.store.u.str.unk2C = 0;
@@ -2451,7 +2451,7 @@ struct Expression *str_to_temporary(int addr, struct Expression *store) {
     stattail->u.store.unk1E = 1;
     stattail->u.store.unk1D = 1;
     stattail->u.store.unk1F = 1;
-    stattail->unk1 = 0;
+    stattail->unk1 = false;
     stattail->u.store.u.str.unk2C = 0;
     stattail->u.store.u.str.unk30 = 0;
     stattail->unk2 = 0;
@@ -2901,7 +2901,7 @@ void loopunroll(void) {
 
                 incr_stat = loopbody->stat_head;
                 while ((incr_stat->opc != Uisst && incr_stat->opc != Ustr)
-                        || incr_stat->unk1 == 0
+                        || !incr_stat->unk1
                         || incr_stat->expr->ichain != i_var_inx) {
                     incr_stat = incr_stat->next;
                 }
