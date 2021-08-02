@@ -759,7 +759,7 @@ void copycoderep(struct Expression *dest, struct Expression *src) {
             dest->data.isvar_issvar.is_volatile = src->data.isvar_issvar.is_volatile;
             dest->data.isvar_issvar.location = src->data.isvar_issvar.location;
 
-            dest->data.isvar_issvar.unk30 = src->data.isvar_issvar.unk30;
+            dest->data.isvar_issvar.copy = src->data.isvar_issvar.copy;
             dest->data.isvar_issvar.assigned_value = src->data.isvar_issvar.assigned_value;
             dest->data.isvar_issvar.assignment = src->data.isvar_issvar.assignment;
             dest->data.isvar_issvar.outer_stack = src->data.isvar_issvar.outer_stack;
@@ -916,9 +916,9 @@ void decreasecount(struct Expression *expr) {
             return;
 
         case isvar:
-            if (expr->data.isvar_issvar.unk30 != NULL 
-                    && expr->data.isvar_issvar.unk30 != nocopy) {
-                decreasecount(expr->data.isvar_issvar.unk30);
+            if (expr->data.isvar_issvar.copy != NULL 
+                    && expr->data.isvar_issvar.copy != nocopy) {
+                decreasecount(expr->data.isvar_issvar.copy);
             } else {
                 expr->count--;
                 if (expr->count == 0) {
@@ -929,9 +929,9 @@ void decreasecount(struct Expression *expr) {
             return;
 
         case issvar:
-            if (expr->data.isvar_issvar.unk30 != NULL 
-                    && expr->data.isvar_issvar.unk30 != nocopy) {
-                decreasecount(expr->data.isvar_issvar.unk30);
+            if (expr->data.isvar_issvar.copy != NULL 
+                    && expr->data.isvar_issvar.copy != nocopy) {
+                decreasecount(expr->data.isvar_issvar.copy);
             } else {
                 expr->count--;
                 if (expr->count == 0) {

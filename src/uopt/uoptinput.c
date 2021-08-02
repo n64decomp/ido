@@ -1373,7 +1373,7 @@ static void func_0043CBFC(struct UstackEntry *head) { // XXX: never called in oo
             outer_stack->datatype = Adt;
             outer_stack->data.isvar_issvar.size = 4;
             outer_stack->count = 0;
-            outer_stack->data.isvar_issvar.unk30 = NULL;
+            outer_stack->data.isvar_issvar.copy = NULL;
             outer_stack->data.isvar_issvar.outer_stack = NULL;
             outer_stack->unk2 = false;
             outer_stack->unk3 = true;
@@ -1485,7 +1485,7 @@ void readnxtinst(void) {
         expr->data.isvar_issvar.outer_stack = NULL;
         expr->data.isvar_issvar.location = ustack->expr->data.isvar_issvar.location;
         expr->data.isvar_issvar.location.level = ustack->expr->data.isvar_issvar.location.level;
-        expr->data.isvar_issvar.unk30 = NULL;
+        expr->data.isvar_issvar.copy = NULL;
         expr->data.isvar_issvar.assigned_value = ustack->expr;
 
         extendstat(Ustr);
@@ -1535,7 +1535,7 @@ void readnxtinst(void) {
                 expr->datatype = Adt;
                 expr->data.isvar_issvar.size = 4;
                 expr->count = 0;
-                expr->data.isvar_issvar.unk30 = NULL;
+                expr->data.isvar_issvar.copy = NULL;
                 expr->data.isvar_issvar.outer_stack = NULL;
                 expr->unk2 = true;
                 expr->unk3 = false;
@@ -1622,7 +1622,7 @@ void readnxtinst(void) {
                 expr->data.isvar_issvar.size = LENGTH;
                 expr->data.isvar_issvar.location.level = blktolev(loc.blockno);
                 expr->count = 0;
-                expr->data.isvar_issvar.unk30 = NULL;
+                expr->data.isvar_issvar.copy = NULL;
 
                 if (OPC == Uisld) {
                     expr->data.isvar_issvar.unk3C = 0;
@@ -3135,7 +3135,7 @@ void readnxtinst(void) {
                 expr->data.isvar_issvar.location.level = blktolev(loc.blockno);
                 expr->unk3 = false;
                 expr->count = 0;
-                expr->data.isvar_issvar.unk30 = NULL;
+                expr->data.isvar_issvar.copy = NULL;
 
                 if (OPC == Uisst) {
                     expr->data.isvar_issvar.unk3C = 0;

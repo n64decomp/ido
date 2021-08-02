@@ -391,7 +391,7 @@ struct Expression *ilodfold(struct Expression *ilod) {
             found = ilod->graphnode == expr->graphnode &&
                 ilod->unk2 == expr->unk2 &&
                 ilod->unk3 == expr->unk3 &&
-                (expr->data.isvar_issvar.unk30 == NULL || nocopy == expr->data.isvar_issvar.unk30);
+                (expr->data.isvar_issvar.copy == NULL || expr->data.isvar_issvar.copy == nocopy);
 
             prev = expr;
             if (found && expr->unk2 && !expr->unk3) {
@@ -426,7 +426,7 @@ struct Expression *ilodfold(struct Expression *ilod) {
             expr->data.isvar_issvar.is_volatile = false;
         }
         expr->count = 1;
-        expr->data.isvar_issvar.unk30 = NULL;
+        expr->data.isvar_issvar.copy = NULL;
         expr->data.isvar_issvar.assignment = NULL;
         expr->data.isvar_issvar.assigned_value = NULL;
         expr->graphnode = ilod->graphnode;
@@ -489,7 +489,7 @@ void istrfold(struct Statement *stmt) {
         expr->data.isvar_issvar.outer_stack = NULL;
         expr->data.isvar_issvar.location = loc;
         expr->data.isvar_issvar.location.level = blktolev(loc.blockno);
-        expr->data.isvar_issvar.unk30 = NULL;
+        expr->data.isvar_issvar.copy = NULL;
         expr->data.isvar_issvar.assigned_value = stmt->u.store.expr;
         expr->data.isvar_issvar.assignment = stmt;
         expr->data.isvar_issvar.unk3C = 0;

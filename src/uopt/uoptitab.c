@@ -712,12 +712,12 @@ void trep_image(struct Expression *expr, bool op1, bool ant, bool av, bool arg4)
     }
 
     if (op->type == isvar || op->type == issvar) {
-        next = op->data.isvar_issvar.unk30;
+        next = op->data.isvar_issvar.copy;
         while (next != NULL && next != nocopy) {
             op = next;
 
             if (next->type == isvar || next->type == issvar) {
-                next = next->data.isvar_issvar.unk30;
+                next = next->data.isvar_issvar.copy;
             } else {
                 break;
             }

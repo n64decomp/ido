@@ -765,7 +765,7 @@ struct Expression {
             /* 0x23 */ bool is_volatile;
             /* 0x24 */ struct Expression *outer_stack;
             /* 0x28 */ struct VariableLocation location;
-            /* 0x30 */ struct Expression *unk30;   // copypropagate, points to the expression that this one is a copy of
+            /* 0x30 */ struct Expression *copy;   // copypropagate, points to the expression that this one is a copy of
             /* 0x34 */ struct Expression *assigned_value; // used in analoop
             /* 0x38 */ struct Statement *assignment; // a bit unsure about this type, see delentry
             /* 0x3C */ int unk3C;

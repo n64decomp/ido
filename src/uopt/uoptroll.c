@@ -788,7 +788,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                 sp60->datatype = expr->datatype;
                 sp60->data.isvar_issvar.size = expr->data.isvar_issvar.size;
                 sp60->count = 0;
-                sp60->data.isvar_issvar.unk30 = NULL;
+                sp60->data.isvar_issvar.copy = NULL;
                 if (expr->type == issvar) {
                     sp60->data.isvar_issvar.unk3C = 0;
                     sp60->unk4 = 0;
@@ -1333,7 +1333,7 @@ void oneloopblockstmt(struct Statement *stat) {
                 phi_s1->data.isvar_issvar.size = stat->expr->data.isvar_issvar.size;
                 phi_s1->unk3 = 0;
                 phi_s1->count = 0;
-                phi_s1->data.isvar_issvar.unk30 = NULL;
+                phi_s1->data.isvar_issvar.copy = NULL;
                 if (stat->expr->type == issvar) {
                     phi_s1->data.isvar_issvar.outer_stack = oneloopblockexpr(stat->u.store.expr, &sp54);
                     phi_s1->data.isvar_issvar.unk3C = 0;
@@ -2436,7 +2436,7 @@ struct Expression *str_to_temporary(int addr, struct Expression *store) {
     }
     ret->data.isvar_issvar.size = sizeoftyp(ret->datatype);
     ret->count = 0;
-    ret->data.isvar_issvar.unk30 = NULL;
+    ret->data.isvar_issvar.copy = NULL;
     ret->data.isvar_issvar.outer_stack = NULL;
     ret->unk2 = 0;
     ret->data.isvar_issvar.is_volatile = 0;
