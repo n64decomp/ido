@@ -1279,7 +1279,7 @@ void codeimage(void) {
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->isvar_issvar.assignbit);
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
-                if (stat->expr->count) {
+                if (stat->expr->count != 0) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
                     if (!stat->expr->unk2) {
                         setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);

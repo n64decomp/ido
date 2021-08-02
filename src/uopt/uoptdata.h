@@ -353,29 +353,29 @@ struct IjpLabel {
 };
 
 struct Proc {
-    int id;
-    struct Variable *vartree;
-    bool unk8; // bool or char?
-    bool unk9; // bool or char?
-    bool unkA; // bool or char?
-    bool unkB; // set to lang == LANG_COBOL
-    bool o3opt; // written to allcallersave in procinit
-    bool unkD; // set to lang == LANG_COBOL
-    bool no_sideeffects;
-    bool has_longjmp;
-    unsigned char level; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass
-    unsigned short num_bbs; // 0x12
-    bool nonlocal_goto;
-    bool has_trap;
-    struct ProcList *callees; // linked list of Procs (see oneprocprepass, insertcallee)
-    struct IjpLabel *ijp_labels; // 0x1C, sorted tree
-    unsigned int bvsize; // 0x20
-    struct RegstakenParregs *regstaken_parregs; // 0x24
-    struct Label *labels; // sent to searchlab
-    struct Proc *left; // binary search tree left (root is prochead)
-    struct Proc *right; // binary search tree right (root is prochead)
-    void *feedback_data; // related to usefeedback
-    int unk38; // mtag uses this
+    /* 0x00 */ int id;
+    /* 0x04 */ struct Variable *vartree;
+    /* 0x08 */ bool unk8; // bool or char?
+    /* 0x09 */ bool unk9; // bool or char?
+    /* 0x0A */ bool unkA; // bool or char?
+    /* 0x0B */ bool unkB; // set to lang == LANG_COBOL
+    /* 0x0C */ bool o3opt; // written to allcallersave in procinit
+    /* 0x0D */ bool unkD; // set to lang == LANG_COBOL
+    /* 0x0E */ bool no_sideeffects;
+    /* 0x0F */ bool has_longjmp;
+    /* 0x10 */ unsigned char level; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass
+    /* 0x12 */ unsigned short num_bbs;
+    /* 0x13 */ bool nonlocal_goto;
+    /* 0x14 */ bool has_trap;
+    /* 0x18 */ struct ProcList *callees; // linked list of Procs (see oneprocprepass, insertcallee)
+    /* 0x1C */ struct IjpLabel *ijp_labels; // 0x1C, sorted tree
+    /* 0x20 */ unsigned int bvsize;
+    /* 0x24 */ struct RegstakenParregs *regstaken_parregs;
+    /* 0x28 */ struct Label *labels; // sent to searchlab
+    /* 0x2c */ struct Proc *left; // binary search tree left (root is prochead)
+    /* 0x30 */ struct Proc *right; // binary search tree right (root is prochead)
+    /* 0x34 */ void *feedback_data; // related to usefeedback
+    /* 0x38 */ int unk38; // mtag uses this
 };
 
 struct Statement {
