@@ -1655,7 +1655,7 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                     for (search = table[expr->table_index]; search != NULL; search = search->next) {
                         if (search->ichain != expr->ichain ||
                                 search->data.isvar_issvar.assignment == NULL ||
-                                search->data.isvar_issvar.assignment->unk3 ||
+                                search->data.isvar_issvar.assignment->outpar ||
                                 !bvectin0(search->data.isvar_issvar.assignment->u.store.ichain->bitpos, &node_sharedD4->bvs.stage1.u.precm.avin)) {
                             continue;
                         }
@@ -1709,7 +1709,7 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                                 for (phi_s0 = table[(*ichain)->expr->table_index]; phi_s0 != NULL; phi_s0 = phi_s0->next) {
                                     if (phi_s0->ichain != *ichain ||
                                             phi_s0->data.isvar_issvar.assignment == NULL ||
-                                            phi_s0->data.isvar_issvar.assignment->unk3 ||
+                                            phi_s0->data.isvar_issvar.assignment->outpar ||
                                             !bvectin0(phi_s0->data.isvar_issvar.assignment->u.store.ichain->bitpos, &node_sharedD4->bvs.stage1.u.precm.avin)) {
                                         continue;
                                     }
@@ -2384,7 +2384,7 @@ void copypropagate(void) {
             while (!spD2 && stat != NULL) {
 
                 if (stat->opc == Uisst || stat->opc == Ustr) {
-                    if (!stat->unk3) {
+                    if (!stat->outpar) {
                         phi_s8 = entryav(stat->expr->data.isvar_issvar.assigned_value);
                         func_0041550C(stat->expr->data.isvar_issvar.assigned_value, &spB8, 0, stat, node);
 
@@ -2406,7 +2406,7 @@ void copypropagate(void) {
                             setbit(&node->bvs.stage1.u.precm.expoccur, spB0->bitpos);
                             spB0->isop.stat = stat;
                             stat->u.store.ichain = spB0;
-                            stat->unk1 = false;
+                            stat->is_increment = false;
 
                             if (stat->u.store.unk1C && stat->u.store.unk1E && entryant(stat->expr->data.isvar_issvar.assigned_value)) {
                                 resetbit(&node->bvs.stage1.antlocs, temp_s7->bitpos);
@@ -2580,7 +2580,7 @@ void copypropagate(void) {
                             setbit(&node->bvs.stage1.u.precm.expoccur, spB0->bitpos);
                             spB0->isop.stat = stat;
                             stat->u.store.ichain = spB0;
-                            stat->unk1 = false;
+                            stat->is_increment = false;
                             if (stat->u.store.unk1C && stat->u.store.unk1E && entryant(stat->expr->data.isvar_issvar.assigned_value)) {
                                 resetbit(&node->bvs.stage1.antlocs, temp_s7->bitpos);
                                 setbit(&node->bvs.stage1.antlocs, spB0->bitpos);
@@ -3129,7 +3129,7 @@ void copypropagate(void) {
 
                 node = node->prev;
             }
-        } while (changed);
+        }
         dataflowtime = (dataflowtime + getclock()) - lastdftime;
 
         node = graphhead;
@@ -3138,7 +3138,7 @@ void copypropagate(void) {
             spD2 = false;
             stat = node->stat_head;
             while (!spD2 && stat != NULL) {
-                if ((stat->opc == Uisst || stat->opc == Ustr) && !stat->unk3 && stat->u.store.unk1D && stat->u.store.unk1F && bvectin(stat->expr->ichain->isvar_issvar.assignbit, &node->bvs.stage1.u.precm.antout)) {
+                if ((stat->opc == Uisst || stat->opc == Ustr) && !stat->outpar && stat->u.store.unk1D && stat->u.store.unk1F && bvectin(stat->expr->ichain->isvar_issvar.assignbit, &node->bvs.stage1.u.precm.antout)) {
                     stat->u.store.var_access_list_item->type = 0;
                     resetbit(&node->bvs.stage1.antlocs, stat->expr->ichain->isvar_issvar.assignbit);
                     if (stat->u.store.ichain != NULL) {

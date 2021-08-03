@@ -25,6 +25,7 @@ void parkillprev(struct Statement *parameters);
 bool varkilled(struct Expression *expr, struct VarAccessList *varlist);
 bool strlkilled(struct Statement *stat, struct VarAccessList *varlist);
 bool strskilled(struct Statement *stat, struct VarAccessList *varlist);
+bool strlant(struct Statement *stat, struct VarAccessList *varlist);
 bool indirectaccessed(struct VariableLocation location, unsigned char size, struct VarAccessList *varlist);
 
 #endif

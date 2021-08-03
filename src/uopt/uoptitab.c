@@ -1275,7 +1275,7 @@ void codeimage(void) {
             ichain = isearchloop(isvarihash(stat->expr->data.isvar_issvar.location), stat->expr, NULL, NULL);
             if (outofmem) return;
 
-            if (!stat->unk3) {
+            if (!stat->outpar) {
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->isvar_issvar.assignbit);
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);

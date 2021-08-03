@@ -1359,15 +1359,15 @@ void oneloopblockstmt(struct Statement *stat) {
 
             extendstat(stat->opc);
             phi_s1->data.isvar_issvar.assigned_value = sp5C;
-            TRAP_IF(stat->unk3);
-            stattail->unk3 = 0;
+            TRAP_IF(stat->outpar);
+            stattail->outpar = false;
             if (stattail->opc == Uisst) {
                 stattail->u.store.expr = phi_s1->data.isvar_issvar.outer_stack;
             }
 
             stattail->expr = phi_s1;
             phi_s1->data.isvar_issvar.assignment = stattail;
-            if (!stattail->unk3) {
+            if (!stattail->outpar) {
                 stattail->u.store.unk1C = sp5B;
                 if (phi_s1->data.isvar_issvar.unk22 == 0 && sp5B != 0) {
                     stattail->u.store.unk1C = strlkilled(stattail, curgraphnode->varlisthead) == 0;
@@ -1380,13 +1380,13 @@ void oneloopblockstmt(struct Statement *stat) {
 
                 stattail->u.store.unk1D = !phi_s1->data.isvar_issvar.unk21;
                 stattail->u.store.unk1F = !phi_s1->data.isvar_issvar.unk21;
-                stattail->unk1 = stat->unk1;
+                stattail->is_increment = stat->is_increment;
             } else {
                 stattail->u.store.unk1C = false;
                 stattail->u.store.unk1E = false;
                 stattail->u.store.unk1D = false;
                 stattail->u.store.unk1F = false;
-                stattail->unk1 = false;
+                stattail->is_increment = false;
             }
 
             stattail->u.store.u.str.unk2C = 0;
@@ -2439,25 +2439,25 @@ struct Expression *str_to_temporary(int addr, struct Expression *store) {
     ret->data.isvar_issvar.copy = NULL;
     ret->data.isvar_issvar.outer_stack = NULL;
     ret->unk2 = 0;
-    ret->data.isvar_issvar.is_volatile = 0;
+    ret->data.isvar_issvar.is_volatile = false;
     ret->data.isvar_issvar.location.level = curlevel;
 
     extendstat(Ustr);
     ret->data.isvar_issvar.assigned_value = store;
 
-    stattail->unk3 = 0;
+    stattail->outpar = false;
     stattail->expr = ret;
-    stattail->u.store.unk1C = 1;
-    stattail->u.store.unk1E = 1;
-    stattail->u.store.unk1D = 1;
-    stattail->u.store.unk1F = 1;
-    stattail->unk1 = false;
+    stattail->u.store.unk1C = true;
+    stattail->u.store.unk1E = true;
+    stattail->u.store.unk1D = true;
+    stattail->u.store.unk1F = true;
+    stattail->is_increment = false;
     stattail->u.store.u.str.unk2C = 0;
     stattail->u.store.u.str.unk30 = 0;
     stattail->unk2 = 0;
     ret->data.isvar_issvar.assignment = stattail;
     appendstorelist();
-    curgraphnode->varlisttail->unk8 = 1;
+    curgraphnode->varlisttail->unk8 = true;
     return ret;
 }
 
@@ -2901,7 +2901,7 @@ void loopunroll(void) {
 
                 incr_stat = loopbody->stat_head;
                 while ((incr_stat->opc != Uisst && incr_stat->opc != Ustr)
-                        || !incr_stat->unk1
+                        || !incr_stat->is_increment
                         || incr_stat->expr->ichain != i_var_inx) {
                     incr_stat = incr_stat->next;
                 }

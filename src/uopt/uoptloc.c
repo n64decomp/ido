@@ -495,13 +495,13 @@ void istrfold(struct Statement *stmt) {
         expr->data.isvar_issvar.unk3C = 0;
 
         stmt->opc = Ustr;
-        stmt->unk1 = false;
+        stmt->is_increment = false;
         stmt->expr = expr;
         if (checkincre(expr->data.isvar_issvar.assigned_value, expr, &increment) && increment == 1) {
-            stmt->unk1 = true;
+            stmt->is_increment = true;
         }
         stmt->unk2 = false;
-        stmt->unk3 = false;
+        stmt->outpar = false;
         stmt->u.store.var_access_list_item->unk8 = NULL;
         stmt->u.store.u.str.unk2C = 0;
         stmt->u.store.u.str.unk30 = 0;

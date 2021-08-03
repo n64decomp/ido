@@ -380,9 +380,9 @@ struct Proc {
 
 struct Statement {
     Uopcode opc;
-    bool unk1; // related to hasincre
+    bool is_increment;
     bool unk2; // bool or unsigned char?
-    bool unk3; // outpar
+    bool outpar; // first store to parameter build area?
     struct Expression *expr; // 0x4
     struct Statement *next; // 0x8, towards tail
     struct Statement *prev; // 0xC, towards head
@@ -729,7 +729,7 @@ struct TailRecParameter {
 struct Expression {
     /* 0x00 */ ExpressionType type;
     /* 0x01 */ Datatype datatype;
-    /* 0x02 */ bool unk2; // true if ichain in altered
+    /* 0x02 */ bool unk2; // killed? true if ichain in altered
     /* 0x03 */ bool unk3; // not varkilled
     /* 0x04 */ bool unk4; // bool or unsigned char?
     /* 0x05 */ unsigned char unk5;

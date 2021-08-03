@@ -1489,12 +1489,12 @@ void readnxtinst(void) {
         expr->data.isvar_issvar.assigned_value = ustack->expr;
 
         extendstat(Ustr);
-        stattail->unk3 = true;
+        stattail->outpar = true;
         lastmst->u.mst.loc = expr->data.isvar_issvar.location.addr;
         insert_outparlist(expr->data.isvar_issvar.location.addr, expr);
         ustack = ustack->down;
         stattail->expr = expr;
-        stattail->unk1 = false;
+        stattail->is_increment = false;
         stattail->unk2 = false;
         stattail->u.store.unk1C = false;
         stattail->u.store.unk1E = false;
@@ -3193,12 +3193,12 @@ void readnxtinst(void) {
                 use_c_semantics = true;
             }
 
-            if (ustack->expr->type == isvar && ustack->expr->data.isvar_issvar.location.memtype == Amt && !in_outparlist(ustack->expr->data.isvar_issvar.location.addr)) { 
-                stattail->unk3 = true;
+            if (ustack->expr->type == isvar && ustack->expr->data.isvar_issvar.location.memtype == Amt && in_outparlist(ustack->expr->data.isvar_issvar.location.addr) == NULL) { 
+                stattail->outpar = true;
                 lastmst->u.mst.loc = ustack->expr->data.isvar_issvar.location.addr;
                 insert_outparlist(ustack->expr->data.isvar_issvar.location.addr, expr);
             } else {
-                stattail->unk3 = false;
+                stattail->outpar = false;
             }
 
             ustack = ustack->down;
@@ -3209,7 +3209,7 @@ void readnxtinst(void) {
 
             stattail->expr = expr;
             expr->data.isvar_issvar.assignment = stattail;
-            if (!stattail->unk3) {
+            if (!stattail->outpar) {
                 stattail->u.store.unk1C = unk1C;
                 if (!expr->data.isvar_issvar.unk22 && unk1C) {
                     stattail->u.store.unk1C = !strlkilled(stattail, curgraphnode->varlisthead);
@@ -3231,22 +3231,22 @@ void readnxtinst(void) {
                         case Jdt:
                         case Kdt:
                         case Ldt:
-                            stattail->unk1 = true;
+                            stattail->is_increment = true;
                             break;
 
                         default:
-                            stattail->unk1 = false;
+                            stattail->is_increment = false;
                             break;
                     }
                 } else {
-                    stattail->unk1 = false;
+                    stattail->is_increment = false;
                 }
             } else {
                 stattail->u.store.unk1C = false;
                 stattail->u.store.unk1E = false;
                 stattail->u.store.unk1D = false;
                 stattail->u.store.unk1F = false;
-                stattail->unk1 = false;
+                stattail->is_increment = false;
             }
             stattail->u.store.u.str.unk2C = 0;
             stattail->u.store.u.str.unk30 = 0;

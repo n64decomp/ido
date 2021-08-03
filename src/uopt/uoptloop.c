@@ -956,7 +956,7 @@ static void find_increment_expr(struct Interval *intv, struct Graphnode* childNo
                     && loopVar->ichain == varlist->data.store->expr->ichain) {
 
                 // unk1 seems to only be true when unk34 is `var + constant` or `var - constant`
-                if ((varlist->data.store->unk1 == false) || *loopIncrement != NULL) {
+                if ((varlist->data.store->is_increment == false) || *loopIncrement != NULL) {
                     *failed = true;
                     return;
                 }

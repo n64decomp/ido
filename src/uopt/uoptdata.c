@@ -232,8 +232,8 @@ struct AllocBlock *heapptr;
 /*
 0040F8D0 resetsubdelete
 00410204 codemotion
-0041297C func_0041297C
-00412B18 func_00412B18
+0041297C exprant
+00412B18 exprav
 00413000 exprdelete
 00413684 func_00413684
 00414108 func_00414108
@@ -760,8 +760,8 @@ int staticlinkloc;
 0040F8D0 resetsubdelete
 004120E0 entryav
 004121E4 entryant
-0041297C func_0041297C
-00412B18 func_00412B18
+0041297C exprant
+00412B18 exprav
 00413000 exprdelete
 00413510 func_00413510
 004135CC func_004135CC
