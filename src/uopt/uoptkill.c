@@ -581,12 +581,12 @@ bool sskilled(struct Statement *stat, struct Statement *stat2) {
 00473F04 pmov_to_mov
 */
 void movkillprev(struct Statement *stmt) {
-    struct VarAccessList *item;
+    struct VarAccessList *access;
 
-    for (item = curgraphnode->varlisthead; item != NULL; item = item->next) {
-        if (item->type == 1 && !item->unk8) {
-            if (item->data.store->u.store.unk1D) {
-                item->data.store->u.store.unk1D = !smkilled(item->data.store, stmt);
+    for (access = curgraphnode->varlisthead; access != NULL; access = access->next) {
+        if (access->type == 1 && !access->unk8) {
+            if (access->data.store->u.store.unk1D) {
+                access->data.store->u.store.unk1D = !smkilled(access->data.store, stmt);
             }
         }
     }
@@ -599,20 +599,20 @@ void movkillprev(struct Statement *stmt) {
 00473F04 pmov_to_mov
 */
 void strkillprev(struct Statement *stmt) {
-    struct VarAccessList *item;
+    struct VarAccessList *access;
 
-    for (item = curgraphnode->varlisthead; item != NULL; item = item->next) {
-        if (item->type == 2 && !item->unk8) {
-            if (!item->data.var->unk2) {
-                item->data.var->unk2 = slkilled(stmt, item->data.var);
+    for (access = curgraphnode->varlisthead; access != NULL; access = access->next) {
+        if (access->type == 2 && !access->unk8) {
+            if (!access->data.var->unk2) {
+                access->data.var->unk2 = slkilled(stmt, access->data.var);
             }
-        } else if (item->type == 3) { // mov?
-            if (item->data.move->u.store.unk1F) {
-                item->data.move->u.store.unk1F = !smkilled(stmt, item->data.move);
+        } else if (access->type == 3) { // mov?
+            if (access->data.move->u.store.unk1F) {
+                access->data.move->u.store.unk1F = !smkilled(stmt, access->data.move);
             }
-        } else if (item->type == 1 && !item->unk8) {
-            if (item->data.store->u.store.unk1F) {
-                item->data.store->u.store.unk1F = !sskilled(stmt, item->data.store);
+        } else if (access->type == 1 && !access->unk8) {
+            if (access->data.store->u.store.unk1F) {
+                access->data.store->u.store.unk1F = !sskilled(stmt, access->data.store);
             }
         }
     }
@@ -835,11 +835,9 @@ bool cmkilled(int level, struct Proc *proc, struct Statement *stat) {
 bool cskilled(int level, struct Proc *proc, struct Statement *stat) {
     struct Expression *expr;
     struct Expression *baseaddr;
-    bool killed;
+    bool killed = false;
 
-    if (stat->opc == Uisst ||
-            stat->opc == Ustr ||
-            stat->opc == Unop) {
+    if (stat->opc == Uisst || stat->opc == Ustr || stat->opc == Unop) {
         expr = stat->expr;
         if (expr->data.isvar_issvar.location.memtype == Rmt) {
             killed = true;
@@ -857,7 +855,7 @@ bool cskilled(int level, struct Proc *proc, struct Statement *stat) {
                             killed = false;
                         } else if (proc->unk9 && expr->data.isvar_issvar.location.level < 2) {
                             killed = true;
-                        } else if (varintree(expr->data.isvar_issvar.location, proc->vartree) || furthervarintree(stat->expr, proc)) {
+                        } else if (varintree(expr->data.isvar_issvar.location, proc->vartree) || furthervarintree(expr, proc)) {
                             killed = true;
                         }
                     }
@@ -870,7 +868,7 @@ bool cskilled(int level, struct Proc *proc, struct Statement *stat) {
                     } else if (expr->data.isvar_issvar.location.level >= level) {
                         killed = false;
                     } else if (proc == indirprocs || proc->unk9 ||
-                            varintree(expr->data.isvar_issvar.location, proc->vartree) || furthervarintree(stat->expr, proc)) {
+                            varintree(expr->data.isvar_issvar.location, proc->vartree) || furthervarintree(expr, proc)) {
                         killed = true;
                     }
                     break;
@@ -972,26 +970,26 @@ bool cskilled(int level, struct Proc *proc, struct Statement *stat) {
 0043CFCC readnxtinst
 */
 void cupkillprev(int level, struct Proc *proc) {
-    struct VarAccessList *item;
+    struct VarAccessList *access;
 
-    for (item = curgraphnode->varlisthead; item != NULL; item = item->next) {
-        if (item->type == 2) {
-            if (!item->data.var->unk2) {
-                item->data.var->unk2 = clkilled(level, proc, item->data.var);
+    for (access = curgraphnode->varlisthead; access != NULL; access = access->next) {
+        if (access->type == 2) {
+            if (!access->data.var->unk2) {
+                access->data.var->unk2 = clkilled(level, proc, access->data.var);
             }
-        } else if (item->type == 3) {
-            if (item->data.store->u.store.unk1F) {
-                item->data.store->u.store.unk1F = !cmkilled(level, proc, item->data.move);
+        } else if (access->type == 3) {
+            if (access->data.store->u.store.unk1F) {
+                access->data.store->u.store.unk1F = !cmkilled(level, proc, access->data.move);
             }
-            if (!item->data.store->u.store.unk1F) {
-                item->data.store->u.store.unk1D = false;
+            if (!access->data.store->u.store.unk1F) {
+                access->data.store->u.store.unk1D = false;
             }
-        } else if (item->type == 1) {
-            if (item->data.store->u.store.unk1F) {
-                item->data.store->u.store.unk1F = !cskilled(level, proc, item->data.store);
+        } else if (access->type == 1) {
+            if (access->data.store->u.store.unk1F) {
+                access->data.store->u.store.unk1F = !cskilled(level, proc, access->data.store);
             }
-            if (!item->data.store->u.store.unk1F) {
-                item->data.store->u.store.unk1D = false;
+            if (!access->data.store->u.store.unk1F) {
+                access->data.store->u.store.unk1D = false;
             }
         }
     }
@@ -1004,25 +1002,23 @@ void cupkillprev(int level, struct Proc *proc) {
 void ciakillprev(void) {
     struct VarAccessList *access;
 
-    access = curgraphnode->varlisthead;
-    while (access != NULL) {
-            if (access->type == 2) {
-                access->data.var->unk2 = true;
-            } else if (access->type == 3) {
-                access->data.move->u.store.unk1F = false;
-                access->data.move->u.store.unk1D = false;
-            } else if (access->type == 1) {
-                access->data.store->u.store.unk1F = false;
-                access->data.store->u.store.unk1D = false;
-            }
-            access = access->next;
+    for (access = curgraphnode->varlisthead; access != NULL; access = access->next) {
+        if (access->type == 2) {
+            access->data.var->unk2 = true;
+        } else if (access->type == 3) {
+            access->data.move->u.store.unk1F = false;
+            access->data.move->u.store.unk1D = false;
+        } else if (access->type == 1) {
+            access->data.store->u.store.unk1F = false;
+            access->data.store->u.store.unk1D = false;
+        }
     }
 }
 /*
 0044CD14 listplkilled
 */
 static bool plkilled(struct Expression *baseaddr, struct Expression *expr) {
-    struct Expression *sp30;
+    struct Expression *lbaseaddr;
     bool killed;
 
     if (expr->type == isop && (expr->data.isop.opc == Uirld || expr->data.isop.opc == Uirlv)) {
@@ -1047,29 +1043,29 @@ static bool plkilled(struct Expression *baseaddr, struct Expression *expr) {
         if (expr->data.isop.unk34->type == dumped) {
             fix_base(expr);
         }
-        sp30 = expr->data.isop.unk34;
+        lbaseaddr = expr->data.isop.unk34;
 
-        if (sp30->type == islda || sp30->type == isilda) {
+        if (lbaseaddr->type == islda || lbaseaddr->type == isilda) {
             if (baseaddr->type == islda || baseaddr->type == isilda) {
-                killed = overlapping(sp30->data.islda_isilda.address, baseaddr->data.islda_isilda.address, sp30->data.islda_isilda.size, baseaddr->data.islda_isilda.size);
+                killed = overlapping(lbaseaddr->data.islda_isilda.address, baseaddr->data.islda_isilda.address, lbaseaddr->data.islda_isilda.size, baseaddr->data.islda_isilda.size);
             } else if ((baseaddr->type != isvar &&
                         baseaddr->type != isop &&
                         baseaddr->type != issvar &&
                         baseaddr->type != dumped) ||
                         pointtoheap(baseaddr)) {
                 killed = false;
-            } else if (aliaswithptr(&sp30->data.islda_isilda.address)) {
+            } else if (aliaswithptr(&lbaseaddr->data.islda_isilda.address)) {
                 killed = true;
             } else {
                 killed = lang == LANG_FORTRAN && baseaddr->type == isvar && baseaddr->data.isvar_issvar.location.memtype == Mmt;
             }
         } else if (lang != LANG_C &&
-                (sp30->type != isvar &&
-                 sp30->type != isop &&
-                 sp30->type != issvar &&
-                 sp30->type != dumped)) {
+                (lbaseaddr->type != isvar &&
+                 lbaseaddr->type != isop &&
+                 lbaseaddr->type != issvar &&
+                 lbaseaddr->type != dumped)) {
             killed = false;
-        } else if (pointtoheap(sp30)) {
+        } else if (pointtoheap(lbaseaddr)) {
             killed = pointtoheap(baseaddr);
         } else {
             if (baseaddr->type == islda || baseaddr->type == isilda) {
@@ -1091,29 +1087,29 @@ static bool plkilled(struct Expression *baseaddr, struct Expression *expr) {
                  expr->data.isop.opc != Uirld &&
                  expr->data.isop.opc != Uildv &&
                  expr->data.isop.opc != Uirlv)) {
-            sp30 = expr->data.isop.aux.unk38;
+            lbaseaddr = expr->data.isop.aux.unk38;
 
-            if (sp30->type == islda || sp30->type == isilda) {
+            if (lbaseaddr->type == islda || lbaseaddr->type == isilda) {
                 if (baseaddr->type == islda || baseaddr->type == isilda) {
-                    killed = overlapping(sp30->data.islda_isilda.address, baseaddr->data.islda_isilda.address, sp30->data.islda_isilda.size, baseaddr->data.islda_isilda.size);
+                    killed = overlapping(lbaseaddr->data.islda_isilda.address, baseaddr->data.islda_isilda.address, lbaseaddr->data.islda_isilda.size, baseaddr->data.islda_isilda.size);
                 } else if ((baseaddr->type != isvar &&
                             baseaddr->type != isop &&
                             baseaddr->type != issvar &&
                             baseaddr->type != dumped) ||
                         pointtoheap(baseaddr)) {
                     killed = false;
-                } else if (aliaswithptr(&sp30->data.islda_isilda.address)) {
+                } else if (aliaswithptr(&lbaseaddr->data.islda_isilda.address)) {
                     killed = true;
                 } else {
                     killed = lang == LANG_FORTRAN && baseaddr->type == isvar && baseaddr->data.isvar_issvar.location.memtype == Mmt;
                 }
             } else if (lang != LANG_C &&
-                    (sp30->type != isvar &&
-                     sp30->type != isop &&
-                     sp30->type != issvar &&
-                     sp30->type != dumped)) {
+                    (lbaseaddr->type != isvar &&
+                     lbaseaddr->type != isop &&
+                     lbaseaddr->type != issvar &&
+                     lbaseaddr->type != dumped)) {
                 killed = false;
-            } else if (pointtoheap(sp30)) {
+            } else if (pointtoheap(lbaseaddr)) {
                 killed = pointtoheap(baseaddr);
             } else if (baseaddr->type == islda || baseaddr->type == isilda) {
                 killed = aliaswithptr(&baseaddr->data.islda_isilda.address);
@@ -1143,12 +1139,12 @@ static bool plkilled(struct Expression *baseaddr, struct Expression *expr) {
 004638C0 regdataflow
 */
 bool listplkilled(struct Statement *parameters, struct Expression *expr, int arg2) {
-    struct Statement *arg = parameters;
+    struct Statement *arg;
     bool killed = false;
     struct Proc *proc;
     struct Expression *baseaddr;
 
-    while (arg != NULL && !killed) {
+    for (arg = parameters; arg != NULL && !killed; arg = arg->u.par.next) {
         if ((arg->u.par.dtype == Adt || (lang == LANG_ADA && arg->u.par.dtype != Fdt)) && !arg2) {
             killed = plkilled(arg->u.par.baseaddr, expr);
         } else if (arg->u.par.dtype == Fdt) {
@@ -1160,8 +1156,6 @@ bool listplkilled(struct Statement *parameters, struct Expression *expr, int arg
                 killed = clkilled(curlevel, indirprocs, expr);
             }
         }
-
-        arg = arg->u.par.next;
     }
 
     return killed;
@@ -1171,15 +1165,15 @@ bool listplkilled(struct Statement *parameters, struct Expression *expr, int arg
 0044D4B4 listpskilled
 */
 static bool pmkilled(struct Expression *baseaddr, struct Statement *stat) {
-    struct Expression *sp2C;
+    struct Expression *mbaseaddr;
     bool killed;
 
-    sp2C = stat->u.store.u.mov.baseaddr;
+    mbaseaddr = stat->u.store.u.mov.baseaddr;
 
-    if (sp2C->type == islda || sp2C->type == isilda) {
+    if (mbaseaddr->type == islda || mbaseaddr->type == isilda) {
         if (baseaddr->type == islda || baseaddr->type == isilda) {
-            killed = overlapping(sp2C->data.islda_isilda.address, baseaddr->data.islda_isilda.address,
-                                 sp2C->data.islda_isilda.size, baseaddr->data.islda_isilda.size);
+            killed = overlapping(mbaseaddr->data.islda_isilda.address, baseaddr->data.islda_isilda.address,
+                                 mbaseaddr->data.islda_isilda.size, baseaddr->data.islda_isilda.size);
         } else if ((baseaddr->type != isvar &&
                     baseaddr->type != isop &&
                     baseaddr->type != issvar &&
@@ -1192,12 +1186,12 @@ static bool pmkilled(struct Expression *baseaddr, struct Statement *stat) {
             killed = lang == LANG_FORTRAN && baseaddr->type == isvar && baseaddr->data.isvar_issvar.location.memtype == Mmt;
         }
     } else if (lang != LANG_C &&
-            (sp2C->type != isvar &&
-             sp2C->type != isop &&
-             sp2C->type != issvar &&
-             sp2C->type != dumped)) {
+            (mbaseaddr->type != isvar &&
+             mbaseaddr->type != isop &&
+             mbaseaddr->type != issvar &&
+             mbaseaddr->type != dumped)) {
         killed = false;
-    } else if (pointtoheap(sp2C)) {
+    } else if (pointtoheap(mbaseaddr)) {
         killed = pointtoheap(baseaddr);
     } else if (baseaddr->type == islda || baseaddr->type == isilda) {
         killed = aliaswithptr(&baseaddr->data.islda_isilda.address);
@@ -1218,8 +1212,8 @@ static bool pmkilled(struct Expression *baseaddr, struct Statement *stat) {
 /*
 0044D4B4 listpskilled
 */
-static bool pskilled(struct Expression *baseaddr, struct Statement *stat) {
-    struct Expression *sp28;
+static bool pskilled(struct Expression *pbaseaddr, struct Statement *stat) {
+    struct Expression *sbaseaddr;
     bool killed;
 
     if (stat->opc == Uirst || stat->opc == Uirsv) {
@@ -1227,56 +1221,56 @@ static bool pskilled(struct Expression *baseaddr, struct Statement *stat) {
     }
 
     if (stat->opc == Uisst || stat->opc == Ustr || stat->opc == Unop) {
-        if (baseaddr->type == islda || baseaddr->type == isilda) {
-            killed = overlapping(stat->expr->data.isvar_issvar.location, baseaddr->data.islda_isilda.address, stat->expr->data.isvar_issvar.size, baseaddr->data.islda_isilda.size);
-        } else if ((baseaddr->type != isvar &&
-                    baseaddr->type != isop &&
-                    baseaddr->type != issvar &&
-                    baseaddr->type != dumped) ||
-                    pointtoheap(baseaddr)) {
+        if (pbaseaddr->type == islda || pbaseaddr->type == isilda) {
+            killed = overlapping(stat->expr->data.isvar_issvar.location, pbaseaddr->data.islda_isilda.address, stat->expr->data.isvar_issvar.size, pbaseaddr->data.islda_isilda.size);
+        } else if ((pbaseaddr->type != isvar &&
+                    pbaseaddr->type != isop &&
+                    pbaseaddr->type != issvar &&
+                    pbaseaddr->type != dumped) ||
+                    pointtoheap(pbaseaddr)) {
             killed = false;
         } else if (aliaswithptr(&stat->expr->data.isvar_issvar.location)) {
             killed = true;
         } else {
-            killed = lang == LANG_FORTRAN && baseaddr->type == isvar && baseaddr->data.isvar_issvar.location.memtype == Mmt;
+            killed = lang == LANG_FORTRAN && pbaseaddr->type == isvar && pbaseaddr->data.isvar_issvar.location.memtype == Mmt;
         }
     } else {
         if (stat->u.store.baseaddr->type == dumped) {
             fix_sbase(stat);
         }
-        sp28 = stat->u.store.baseaddr;
+        sbaseaddr = stat->u.store.baseaddr;
 
-        if (sp28->type == islda || sp28->type == isilda) {
-            if (baseaddr->type == islda || baseaddr->type == isilda) {
-                killed = overlapping(sp28->data.islda_isilda.address, baseaddr->data.islda_isilda.address, sp28->data.islda_isilda.size, baseaddr->data.islda_isilda.size);
-            } else if ((baseaddr->type != isvar &&
-                        baseaddr->type != isop &&
-                        baseaddr->type != issvar &&
-                        baseaddr->type != dumped) ||
-                        pointtoheap(baseaddr)) {
+        if (sbaseaddr->type == islda || sbaseaddr->type == isilda) {
+            if (pbaseaddr->type == islda || pbaseaddr->type == isilda) {
+                killed = overlapping(sbaseaddr->data.islda_isilda.address, pbaseaddr->data.islda_isilda.address, sbaseaddr->data.islda_isilda.size, pbaseaddr->data.islda_isilda.size);
+            } else if ((pbaseaddr->type != isvar &&
+                        pbaseaddr->type != isop &&
+                        pbaseaddr->type != issvar &&
+                        pbaseaddr->type != dumped) ||
+                        pointtoheap(pbaseaddr)) {
                 killed = false;
             } else if (aliaswithptr(&stat->u.store.baseaddr->data.islda_isilda.address)) {
                 killed = true;
             } else {
-                killed = lang == LANG_FORTRAN && baseaddr->type == isvar && baseaddr->data.isvar_issvar.location.memtype == Mmt;
+                killed = lang == LANG_FORTRAN && pbaseaddr->type == isvar && pbaseaddr->data.isvar_issvar.location.memtype == Mmt;
             }
         } else if (lang != LANG_C &&
-                (sp28->type != isvar &&
-                 sp28->type != isop &&
-                 sp28->type != issvar &&
-                 sp28->type != dumped)) {
+                (sbaseaddr->type != isvar &&
+                 sbaseaddr->type != isop &&
+                 sbaseaddr->type != issvar &&
+                 sbaseaddr->type != dumped)) {
             killed = false;
-        } else if (pointtoheap(sp28) != 0) {
-            killed = pointtoheap(baseaddr);
-        } else if (baseaddr->type == islda || baseaddr->type == isilda) {
-            killed = aliaswithptr(&baseaddr->data.islda_isilda.address);
+        } else if (pointtoheap(sbaseaddr) != 0) {
+            killed = pointtoheap(pbaseaddr);
+        } else if (pbaseaddr->type == islda || pbaseaddr->type == isilda) {
+            killed = aliaswithptr(&pbaseaddr->data.islda_isilda.address);
         } else {
             killed = true;
             if (lang != LANG_C &&
-                    (baseaddr->type != isvar &&
-                     baseaddr->type != isop &&
-                     baseaddr->type != issvar &&
-                     baseaddr->type != dumped)) {
+                    (pbaseaddr->type != isvar &&
+                     pbaseaddr->type != isop &&
+                     pbaseaddr->type != issvar &&
+                     pbaseaddr->type != dumped)) {
                 killed = false;
             }
         }
@@ -1292,10 +1286,10 @@ static bool pskilled(struct Expression *baseaddr, struct Statement *stat) {
 */
 bool listpskilled(struct Statement *parameters, struct Statement *stat, int arg3) {
     struct Proc *proc;
-    struct Statement *arg = parameters;
+    struct Statement *arg;
     bool killed = false;
 
-    if (arg != NULL && !killed) {
+    for (arg = parameters; arg != NULL && !killed; arg = arg->u.par.next) {
         if ((arg->u.par.dtype == Adt || (lang == LANG_ADA && arg->u.par.dtype != Fdt)) && !arg3) {
             killed = pskilled(arg->u.par.baseaddr, stat);
             if (!killed) {
@@ -1320,7 +1314,6 @@ bool listpskilled(struct Statement *parameters, struct Statement *stat, int arg3
                 }
             }
         }
-        arg = arg->u.par.next;
     }
 
     return killed;
@@ -1332,8 +1325,7 @@ bool listpskilled(struct Statement *parameters, struct Statement *stat, int arg3
 void parkillprev(struct Statement *parameters) {
     struct VarAccessList *access;
 
-    access = curgraphnode->varlisthead;
-    while (access != NULL) {
+    for (access = curgraphnode->varlisthead; access != NULL; access = access->next) {
         if (access->type == 2) {
             if (!access->data.var->unk2) {
                 access->data.var->unk2 = listplkilled(parameters, access->data.var, access->unk8);
@@ -1347,7 +1339,6 @@ void parkillprev(struct Statement *parameters) {
                 access->data.store->u.store.unk1D = false;
             }
         }
-        access = access->next;
     }
 }
 
@@ -1440,22 +1431,18 @@ bool strskilled(struct Statement *stat, struct VarAccessList *varlist) {
 */
 bool strlant(struct Statement *stat, struct VarAccessList *varlist) {
     struct VarAccessList *access;
-    bool killed;
+    bool killed = false;
 
-    killed = false;
     if (stat->opc == Uistv) {
         killed = true;
     }
 
-    access = varlist;
-    while (!killed && access != NULL) {
+    for (access = varlist; !killed && access != NULL; access = access->prev) {
         if (access->type == 2 && !access->unk8) {
             killed = slkilled(stat, access->data.var);
         } else if (access->type == 3) {
             killed = smkilled(stat, access->data.move);
         }
-
-        access = access->prev;
     }
 
     return !killed;
@@ -1467,11 +1454,9 @@ bool strlant(struct Statement *stat, struct VarAccessList *varlist) {
 bool indirectaccessed(struct VariableLocation location, unsigned char size, struct VarAccessList *varlist) {
     struct VarAccessList *access;
     struct Expression *baseaddr2;
-    bool killed;
+    bool killed = false;
 
-    access = varlist;
-    killed = false;
-    while (!killed && access != NULL) {
+    for (access = varlist; !killed && access != NULL; access = access->next) {
         if (access->type == 1) {
             if (access->data.store->opc == Uistr ||
                     access->data.store->opc == Uistv ||
@@ -1523,7 +1508,6 @@ bool indirectaccessed(struct VariableLocation location, unsigned char size, stru
                 killed = aliaswithptr(&location);
             }
         }
-        access = access->next;
     }
 
     return killed;
