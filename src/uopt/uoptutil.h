@@ -13,6 +13,8 @@ void dbgerror(int code);
 struct Expression *appendchain(unsigned short table_index);
 struct Expression *findsimilar(struct Expression *expr);
 void copycoderep(struct Expression *dest, struct Expression *src);
+void fix_sbase(struct Statement *stat);
+void fix_base(struct Expression *expr);
 void fixcorr(struct Expression *expr);
 
 void delentry(struct Expression *entry);

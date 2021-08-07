@@ -7,6 +7,8 @@
 struct Proc *getproc(int unk);
 struct Label *searchlab(unsigned int addr, struct Label *tree);
 void prepass(void);
+bool varintree(struct VariableLocation loc, struct Variable *tree);
+bool furthervarintree(struct Expression *expr, struct Proc *proc);
 bool proc_suppressed(void);
 bool in_fsym(int num);
 bool is_gp_relative(int num);

@@ -769,61 +769,45 @@ void copycoderep(struct Expression *dest, struct Expression *src) {
         default:
         case isop:
         case dumped:
-            caseerror(1, 0xFF, "uoptutil.p", 0xA);
+            caseerror(1, 255, "uoptutil.p", 10);
             break;
     }
 }
 
-__asm__(R""(
-.set noat
-.set noreorder
+/*
+004496F0 slkilled
+0044A5C8 smkilled
+0044AAD0 sskilled
+0044BDFC cskilled
+0044D0C4 pskilled
+0044DBC4 indirectaccessed
+00478FA0 func_00478FA0
+*/
+void fix_sbase(struct Statement *stat) {
+    if (stat->u.store.baseaddr->ichain != NULL) {
+        if (stat->u.store.baseaddr->ichain->expr != NULL) {
+            stat->u.store.baseaddr = stat->u.store.baseaddr->ichain->expr;
+        }
+    }
+}
 
-glabel fix_sbase
-    .ent fix_sbase
-    # 004496F0 slkilled
-    # 0044A5C8 smkilled
-    # 0044AAD0 sskilled
-    # 0044BDFC cskilled
-    # 0044D0C4 func_0044D0C4
-    # 0044DBC4 indirectaccessed
-    # 00478FA0 func_00478FA0
-/* 0047C4EC 8C8E0024 */  lw    $t6, 0x24($a0)
-/* 0047C4F0 8DC20014 */  lw    $v0, 0x14($t6)
-/* 0047C4F4 10400005 */  beqz  $v0, .L0047C50C
-/* 0047C4F8 00000000 */   nop
-/* 0047C4FC 8C430008 */  lw    $v1, 8($v0)
-/* 0047C500 10600002 */  beqz  $v1, .L0047C50C
-/* 0047C504 00000000 */   nop
-/* 0047C508 AC830024 */  sw    $v1, 0x24($a0)
-.L0047C50C:
-/* 0047C50C 03E00008 */  jr    $ra
-/* 0047C510 00000000 */   nop
-    .type fix_sbase, @function
-    .size fix_sbase, .-fix_sbase
-    .end fix_sbase
 
-glabel fix_base
-    .ent fix_base
-    # 004496F0 slkilled
-    # 0044B4F4 clkilled
-    # 0044C6D4 func_0044C6D4
-    # 0044DBC4 indirectaccessed
-    # 00478FA0 func_00478FA0
-/* 0047C514 8C8E0034 */  lw    $t6, 0x34($a0)
-/* 0047C518 8DC20014 */  lw    $v0, 0x14($t6)
-/* 0047C51C 10400005 */  beqz  $v0, .L0047C534
-/* 0047C520 00000000 */   nop
-/* 0047C524 8C430008 */  lw    $v1, 8($v0)
-/* 0047C528 10600002 */  beqz  $v1, .L0047C534
-/* 0047C52C 00000000 */   nop
-/* 0047C530 AC830034 */  sw    $v1, 0x34($a0)
-.L0047C534:
-/* 0047C534 03E00008 */  jr    $ra
-/* 0047C538 00000000 */   nop
-    .type fix_base, @function
-    .size fix_base, .-fix_base
-    .end fix_base
-)"");
+/* 
+004496F0 slkilled
+0044A5C8 smkilled
+0044AAD0 sskilled
+0044BDFC cskilled
+0044D0C4 pskilled
+0044DBC4 indirectaccessed
+00478FA0 func_00478FA0
+ */
+void fix_base(struct Expression *expr) {
+    if (expr->data.islda_isilda.outer_stack->ichain != NULL) {
+        if (expr->data.islda_isilda.outer_stack->ichain->expr != NULL) {
+            expr->data.islda_isilda.outer_stack = expr->data.islda_isilda.outer_stack->ichain->expr;
+        }
+    }
+}
 
 /* 
 0041550C func_0041550C

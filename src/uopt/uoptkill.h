@@ -7,6 +7,8 @@ struct Expression *findbaseaddr(struct Expression *expr);
 struct Expression *findbaseaddr_ada(struct Expression *expr);
 
 bool overlapping(struct VariableLocation a, struct VariableLocation b, int size_a, int size_b);
+bool aliaswithptr(struct VariableLocation *location);
+bool pointtoheap(struct Expression *baseaddr);
 bool slkilled(struct Statement *stat, struct Expression *expr);
 bool smkilled(struct Statement *stat, struct Statement *stat2);
 bool sskilled(struct Statement *stat, struct Statement *stat2);

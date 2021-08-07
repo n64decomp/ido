@@ -1615,10 +1615,10 @@ bool o0o1specified;
 0044B4F4 clkilled
 0044BD00 cmkilled
 0044BDFC cskilled
-0044C6D4 func_0044C6D4
+0044C6D4 plkilled
 0044CD14 listplkilled
-0044CE80 func_0044CE80
-0044D0C4 func_0044D0C4
+0044CE80 pmkilled
+0044D0C4 pskilled
 0044D4B4 listpskilled
 00454D08 func_00454D08
 00455060 func_00455060
