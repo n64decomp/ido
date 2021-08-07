@@ -379,7 +379,7 @@ struct Expression *ilodfold(struct Expression *ilod) {
     left = ilod->data.isop.op1;
     loc = left->data.islda_isilda.address;
     loc.addr = left->data.islda_isilda.offset + ilod->data.isop.datasize;
-    if (insertvar(loc, ilod->data.isop.aux2.v1.unk3C, ilod->datatype, &curproc->vartree, 1, 0, 0)->unk1 != 0) {
+    if (insertvar(loc, ilod->data.isop.aux2.v1.unk3C, ilod->datatype, &curproc->vartree, 1, 0, 0)->veqv) {
         return ilod;
     }
     hash = isvarhash(loc);
@@ -416,7 +416,7 @@ struct Expression *ilodfold(struct Expression *ilod) {
             expr->datatype = ilod->datatype;
             expr->unk4 = false;
             expr->unk5 = 0;
-            expr->data.isvar_issvar.unk21 = false;
+            expr->data.isvar_issvar.veqv = false;
             expr->data.isvar_issvar.unk22 = false;
             expr->data.isvar_issvar.location = loc;
             expr->data.isvar_issvar.outer_stack = NULL;
@@ -467,45 +467,47 @@ void istrfold(struct Statement *stmt) {
     istr = stmt->expr;
     loc = istr->data.islda_isilda.address;
     loc.addr = istr->data.islda_isilda.offset + stmt->u.store.u.istr.offset;
-    if (insertvar(loc, stmt->u.store.size, stmt->u.store.u.istr.dtype, &curproc->vartree, 0, 0, 0)->unk1 == 0) {
-        expr = appendchain(isvarhash(loc));
-        if (outofmem) {
-            return;
-        }
-        expr->type = isvar;
-        expr->datatype = stmt->u.store.u.istr.dtype;
-        expr->unk2 = !stmt->u.store.unk1F;
-        expr->unk3 = false;
-        expr->unk4 = false;
-        expr->unk5 = 0;
-        expr->count = 0;
-        expr->graphnode = stmt->graphnode;
-        expr->var_access_list = NULL;
-
-        expr->data.isvar_issvar.size = stmt->u.store.size;
-        expr->data.isvar_issvar.unk21 = false;
-        expr->data.isvar_issvar.unk22 = false;
-        expr->data.isvar_issvar.is_volatile = false;
-        expr->data.isvar_issvar.outer_stack = NULL;
-        expr->data.isvar_issvar.location = loc;
-        expr->data.isvar_issvar.location.level = blktolev(loc.blockno);
-        expr->data.isvar_issvar.copy = NULL;
-        expr->data.isvar_issvar.assigned_value = stmt->u.store.expr;
-        expr->data.isvar_issvar.assignment = stmt;
-        expr->data.isvar_issvar.unk3C = 0;
-
-        stmt->opc = Ustr;
-        stmt->is_increment = false;
-        stmt->expr = expr;
-        if (checkincre(expr->data.isvar_issvar.assigned_value, expr, &increment) && increment == 1) {
-            stmt->is_increment = true;
-        }
-        stmt->unk2 = false;
-        stmt->outpar = false;
-        stmt->u.store.var_access_list_item->unk8 = NULL;
-        stmt->u.store.u.str.unk2C = 0;
-        stmt->u.store.u.str.unk30 = 0;
+    if (insertvar(loc, stmt->u.store.size, stmt->u.store.u.istr.dtype, &curproc->vartree, 0, 0, 0)->veqv) {
+        return;
     }
+
+    expr = appendchain(isvarhash(loc));
+    if (outofmem) {
+        return;
+    }
+    expr->type = isvar;
+    expr->datatype = stmt->u.store.u.istr.dtype;
+    expr->unk2 = !stmt->u.store.unk1F;
+    expr->unk3 = false;
+    expr->unk4 = false;
+    expr->unk5 = 0;
+    expr->count = 0;
+    expr->graphnode = stmt->graphnode;
+    expr->var_access_list = NULL;
+
+    expr->data.isvar_issvar.size = stmt->u.store.size;
+    expr->data.isvar_issvar.veqv = false;
+    expr->data.isvar_issvar.unk22 = false;
+    expr->data.isvar_issvar.is_volatile = false;
+    expr->data.isvar_issvar.outer_stack = NULL;
+    expr->data.isvar_issvar.location = loc;
+    expr->data.isvar_issvar.location.level = blktolev(loc.blockno);
+    expr->data.isvar_issvar.copy = NULL;
+    expr->data.isvar_issvar.assigned_value = stmt->u.store.expr;
+    expr->data.isvar_issvar.assignment = stmt;
+    expr->data.isvar_issvar.unk3C = 0;
+
+    stmt->opc = Ustr;
+    stmt->is_increment = false;
+    stmt->expr = expr;
+    if (checkincre(expr->data.isvar_issvar.assigned_value, expr, &increment) && increment == 1) {
+        stmt->is_increment = true;
+    }
+    stmt->unk2 = false;
+    stmt->outpar = false;
+    stmt->u.store.var_access_list_item->unk8 = NULL;
+    stmt->u.store.u.str.unk2C = 0;
+    stmt->u.store.u.str.unk30 = 0;
 }
 
 /* 
@@ -1937,7 +1939,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
 }
 
 /* 
-00456310 func_00456310
+00456310 one_block
 */
 void constarith(void) {
     int oldpage = curlocpg;

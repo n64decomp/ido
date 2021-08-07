@@ -158,7 +158,7 @@ void fix_par_vreg(struct Statement *pmov_stmt) {
 # 0047606C func_0047606C
 # 004761D0 tail_recursion
 */
-static struct TailRecParameter *func_00476034(int arg0, struct TailRecParameter **tailRecParHead, int parnum) {
+static struct TailRecParameter *func_00476034(int arg0, struct TailRecParameter **tailRecParHead) {
     struct TailRecParameter *par = *tailRecParHead;
 
     while (par != NULL) {
@@ -180,32 +180,25 @@ static void func_0047606C(struct Expression *expr, struct TailRecParameter **tai
 
     switch (expr->type) {
         case isvar:
-            if (expr->data.isvar_issvar.location.memtype != Pmt) {
-                return;
-            }
+            if (expr->data.isvar_issvar.location.memtype == Pmt) {
 
-            par_number = expr->data.isvar_issvar.location.addr;
-            if (par_number >= parnum) {
-                return;
+                par_number = expr->data.isvar_issvar.location.addr;
+                if (par_number < parnum && func_00476034((par_number >> 2) << 2, tailRecParHead) == NULL) {
+                    par = alloc_new(sizeof(struct TailRecParameter), &perm_heap);
+                    par->parnum = (par_number >> 2) << 2;
+                    par->next = *tailRecParHead;
+                    *tailRecParHead = par;
+                }
             }
-
-            if (func_00476034((par_number >> 2) << 2, tailRecParHead, parnum) != 0) {
-                return;
-            }
-
-            par = alloc_new(sizeof(struct TailRecParameter), &perm_heap);
-            par->parnum = (par_number >> 2) << 2;
-            par->next = *tailRecParHead;
-            *tailRecParHead = par;
             return;
 
         case isop:
             func_0047606C(expr->data.isop.op1, tailRecParHead, parnum);
-            if (!optab[expr->data.isop.opc].is_binary_op) {
-                return;
+            if (optab[expr->data.isop.opc].is_binary_op) {
+                // originally optimized by tail recursion
+                func_0047606C(expr->data.isop.op2, tailRecParHead, parnum);
             }
-            // originally optimized by tail recursion
-            func_0047606C(expr->data.isop.op2, tailRecParHead, parnum);
+            return;
 
         case empty:
         case dumped:
@@ -222,13 +215,12 @@ static void func_0047606C(struct Expression *expr, struct TailRecParameter **tai
 # 00456A2C oneproc
 */
 void tail_recursion(void) {
-    struct Graphnode *oldHead;
+    struct Graphnode *prev;
     struct Statement *oldStattail;
     int parnum; // shared sp68
     bool found; // also shared? sp67
-    bool initialized;
     struct TailRecParameter *tailRecParHead; // shared sp60
-    struct Graphnode *head;
+    struct Graphnode *node;
     int size;
     struct Statement *stmt;
     struct GraphnodeList *predecessors;
@@ -259,23 +251,22 @@ void tail_recursion(void) {
     }
 
     found = false;
-    head = graphhead;
+    node = graphhead;
     do {
-        if (head->stat_tail != NULL
-                && head->stat_tail->opc == Ucup
-                && head->stat_tail->u.call.proc->id == curblk
+        if (node->stat_tail != NULL
+                && node->stat_tail->opc == Ucup
+                && node->stat_tail->u.call.proc->id == curblk
                 && ((lang == LANG_C || lang == LANG_PL1 || lang == LANG_RESERVED1)
                     // check for reference params for pascal, fortran, and ada source
-                    || no_ref_param(head->stat_tail->u.call.parameters))
-                && head->successors != NULL
-                && next_stmt_is_ret(head->stat_tail)
-                && head != graphhead
-                && head->predecessors != NULL) {
+                    || no_ref_param(node->stat_tail->u.call.parameters))
+                && node->successors != NULL
+                && next_stmt_is_ret(node->stat_tail)
+                && node != graphhead
+                && node->predecessors != NULL) {
 
-            initialized = found;
-            found = true;
             tailRecParHead = NULL;
-            if (!initialized) {
+            if (!found) {
+                found = true;
                 TRAP_IF(graphhead->blockno != 0);
                 maxlabnam += 1;
                 graphhead->blockno = maxlabnam;
@@ -284,22 +275,22 @@ void tail_recursion(void) {
                 graphhead->stat_head->prev = stmt;
                 graphhead->stat_head = stmt;
                 stathead = stmt;
+                stmt->graphnode = graphhead;
                 stmt->prev = NULL;
                 stmt->opc = Ulab;
                 stmt->u.label.unk28 = 0;
                 stmt->u.label.flags = 0;
                 stmt->u.label.length = 0;
-                stmt->graphnode = graphhead;
                 stmt->u.label.blockno = maxlabnam;
             }
 
             if (listwritten) {
                 write_string(list.c_file, "TAIL RECURSION ELIMINATION at BB:", 33, 33);
-                write_integer(list.c_file, head->num, 12, 10);
+                write_integer(list.c_file, node->num, 12, 10);
                 writeln(list.c_file);
             }
 
-            stmt = head->stat_tail;
+            stmt = node->stat_tail;
             do {
                 if (stmt->opc == Upar || stmt->opc == Upmov) {
                     parnum = stmt->u.par.loc;
@@ -310,23 +301,23 @@ void tail_recursion(void) {
 
             curgraphnode = alloc_new(sizeof(struct Graphnode), &perm_heap);
             init_graphnode(curgraphnode);
-            curgraphnode->num = head->num;
-            curgraphnode->bvs.init.line = head->bvs.init.line;
-            curgraphnode->unk2C = head->unk2C;
-            curgraphnode->blockno = head->blockno;
-            oldHead->next = curgraphnode;
-            curgraphnode->next = head->next;
-            curgraphnode->predecessors = head->predecessors;
-            curgraphnode->successors = head->successors;
+            curgraphnode->num = node->num;
+            curgraphnode->bvs.init.line = node->bvs.init.line;
+            curgraphnode->unk2C = node->unk2C;
+            curgraphnode->blockno = node->blockno;
+            prev->next = curgraphnode;
+            curgraphnode->next = node->next;
+            curgraphnode->predecessors = node->predecessors;
+            curgraphnode->successors = node->successors;
 
-            predecessors = head->predecessors;
+            predecessors = node->predecessors;
             do {
-                change_adj_node(predecessors->graphnode->successors, head, curgraphnode);
+                change_adj_node(predecessors->graphnode->successors, node, curgraphnode);
                 predecessors = predecessors->next;
             } while (predecessors != NULL);
 
-            change_adj_node(curgraphnode->successors->graphnode->predecessors, head, curgraphnode);
-            stmt = head->stat_head;
+            change_adj_node(curgraphnode->successors->graphnode->predecessors, node, curgraphnode);
+            stmt = node->stat_head;
             oldStattail = stattail;
             stattail = stmt->prev;
             stat_opc = stmt->opc;
@@ -343,7 +334,7 @@ void tail_recursion(void) {
                         oneloopblockstmt(stmt);
                     }
                 } else if (stat_opc == Upar) {
-                    trPar = func_00476034(stmt->u.par.loc, &tailRecParHead, parnum);
+                    trPar = func_00476034(stmt->u.par.loc, &tailRecParHead);
                     if (trPar != 0) {
                         size = stmt->u.par.size;
                         phi_a0 = tempdisp % size;
@@ -415,43 +406,43 @@ void tail_recursion(void) {
             graphhead->predecessors = predecessors;
             curgraphnode->stat_tail = stattail;
             codeimage();
-            stattail->next = head->stat_tail->next;
-            head->stat_tail->next->prev = stattail;
+            stattail->next = node->stat_tail->next;
+            node->stat_tail->next->prev = stattail;
             stattail = oldStattail;
-            head = curgraphnode;
+            node = curgraphnode;
         }
 
-        oldHead = head;
-        head = head->next;
-    } while (head != NULL);
+        prev = node;
+        node = node->next;
+    } while (node != NULL);
 
     if (found) {
-        head = alloc_new(sizeof(struct Graphnode), &perm_heap);
-        init_graphnode(head);
-        head->num = curstaticno++;
-        head->next = graphhead;
-        head->bvs.stage1.u.precm.unk134 = graphhead->bvs.stage1.u.precm.unk134;
-        head->unk2C = graphhead->unk2C;
+        node = alloc_new(sizeof(struct Graphnode), &perm_heap);
+        init_graphnode(node);
+        node->num = curstaticno++;
+        node->next = graphhead;
+        node->bvs.init.line = graphhead->bvs.init.line;
+        node->unk2C = graphhead->unk2C;
         stmt = alloc_new(sizeof(struct Statement), &perm_heap);
         stmt->next = stathead;
         stathead->prev = stmt;
         stmt->prev = NULL;
         stmt->opc = Unop;
-        stmt->graphnode = head;
+        stmt->graphnode = node;
         // u.nop?
         stmt->u.store.ichain = NULL;
-        head->stat_head = stmt;
-        head->stat_tail = stmt;
+        node->stat_head = stmt;
+        node->stat_tail = stmt;
         stathead = stmt;
-        init_node_vectors(head);
+        init_node_vectors(node);
         predecessors = alloc_new(8, &perm_heap);
-        predecessors->graphnode = head;
+        predecessors->graphnode = node;
         predecessors->next = graphhead->predecessors;
         graphhead->predecessors = predecessors;
         successors = alloc_new(8, &perm_heap);
         successors->graphnode = graphhead;
-        successors->next = head->successors;
-        head->successors = successors;
-        graphhead = head;
+        successors->next = node->successors;
+        node->successors = successors;
+        graphhead = node;
     }
 }

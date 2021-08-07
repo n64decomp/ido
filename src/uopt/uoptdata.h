@@ -84,8 +84,8 @@ struct optabrec {
 
 struct Label {
     /* 0x00 */ unsigned int addr;
-    /* 0x04 */ int len; // should probably be endaddr and not len
-    /* 0x08 */ bool unk8; // or unsigned char?
+    /* 0x04 */ int merged_label;
+    /* 0x08 */ bool referenced;
     /* 0x09 */ bool branched_back;
     /* 0x0C */ struct Label *left;
     /* 0x10 */ struct Label *right;
@@ -109,7 +109,7 @@ struct VariableLocation {
 
 struct Variable {
     Datatype dtype;
-    bool unk1;
+    bool veqv;
     bool unk2;
     struct VariableLocation location;
     int size;
@@ -227,7 +227,7 @@ struct Graphnode {
     /* 0x06 */ bool terminal;
     /* 0x07 */ unsigned char unk7;     // 0 = unseen, 1 = graphhead, 2 = graphtail?
     /* 0x08 */ unsigned short num;
-    /* 0x0A */ unsigned char loopdepth; 
+    /* 0x0A */ unsigned char loopdepth;
     /* 0x0B */ unsigned char unkBb8: 1;
     /* 0x0B */ unsigned char unkBb4: 1;
     /* 0x0C */ struct Graphnode *next;
@@ -365,8 +365,8 @@ struct Proc {
     /* 0x0F */ bool has_longjmp;
     /* 0x10 */ unsigned char level; // initialized to 2 in prepass, also set to lexlev for Ucup in oneprocprepass
     /* 0x12 */ unsigned short num_bbs;
-    /* 0x13 */ bool nonlocal_goto;
-    /* 0x14 */ bool has_trap;
+    /* 0x14 */ bool nonlocal_goto;
+    /* 0x15 */ bool has_trap;
     /* 0x18 */ struct ProcList *callees; // linked list of Procs (see oneprocprepass, insertcallee)
     /* 0x1C */ struct IjpLabel *ijp_labels; // 0x1C, sorted tree
     /* 0x20 */ unsigned int bvsize;
@@ -496,6 +496,7 @@ struct Statement {
         struct {
             struct Expression *expr2; // 0x14, first expr at 0x4
             int unk18; // initialized to 0
+            int unk1C;
             int unk20;
             int unk24;
             int unk28;
@@ -612,7 +613,7 @@ typedef unsigned char ExpressionType;
 #endif
 
 // Probably "Image (Chain)"
-// Global 
+// Global
 struct IChain { // TODO: rename
     /* 0x0 */ ExpressionType type;
     /* 0x1 */ Datatype dtype;
@@ -760,7 +761,7 @@ struct Expression {
         } isconst;
         struct {
             /* 0x20 */ unsigned char size; // in bytes
-            /* 0x21 */ bool unk21; // one of these is probably 'dead'
+            /* 0x21 */ bool veqv;
             /* 0x22 */ bool unk22; // one of these is probably 'dead'
             /* 0x23 */ bool is_volatile;
             /* 0x24 */ struct Expression *outer_stack;

@@ -677,7 +677,7 @@ void init_graphnode(struct Graphnode *node) {
 /*
 0042F6CC controlflow
 004471AC codeimage
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 004713E8 loopunroll
 004761D0 tail_recursion
@@ -698,7 +698,7 @@ void init_node_vectors(struct Graphnode *graphnode) {
 /*
 0043CA8C func_0043CA8C
 0043CFCC readnxtinst
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 */
 void appendgraph(void) {
@@ -755,32 +755,32 @@ static void visit_predecessors(struct Graphnode *node) { // inner function
 }
 
 /*
-0042F5D4 place_graphtail
+0042F5D4 depth_first_order
 0042F6CC controlflow
 */
-static void place_graphtail(struct Graphnode *head) { // inner function
+static void depth_first_order(struct Graphnode *node) { // inner function
     struct GraphnodeList *succ;
     bool found;
 
-    if (head->unk7 != 2) {
-        graphtail->next = head;
-        graphtail = head;
-        head->unk7 = 2;
+    if (node->unk7 != 2) {
+        graphtail->next = node;
+        graphtail = node;
+        node->unk7 = 2;
 
-        // visit the successor directly after head first, then visit the other successors
-        succ = head->successors;
+        // visit the successor directly after node first, then visit the other successors
+        succ = node->successors;
         found = false;
         while (succ != NULL && !found) {
-            if ((head->num + 1) == succ->graphnode->num) {
-                place_graphtail(succ->graphnode);
+            if ((node->num + 1) == succ->graphnode->num) {
+                depth_first_order(succ->graphnode);
                 found = true;
             }
             succ = succ->next;
         }
 
-        succ = head->successors;
+        succ = node->successors;
         while (succ != NULL) {
-            place_graphtail(succ->graphnode);
+            depth_first_order(succ->graphnode);
             succ = succ->next;
         }
     }
@@ -791,7 +791,7 @@ static void place_graphtail(struct Graphnode *head) { // inner function
 */
 void controlflow() {
     struct Graphnode *curnode;
-    struct Graphnode *loop_node;
+    struct Graphnode *unvisited_node;
     struct Graphnode *new_node;
 
     struct GraphnodeList *succ;
@@ -802,9 +802,9 @@ void controlflow() {
     struct GraphnodeList *new_list;
 
     struct Statement *stat;
-    struct Statement *prev_stat;
+    struct Statement *last_reached_stat;
 
-    bool found;
+    bool done;
     int i;
 
     visit_successors(graphhead);
@@ -823,23 +823,20 @@ void controlflow() {
         curnode = curnode->next;
     }
 
-    curnode = graphhead;
-    while (curnode != NULL) {
+    // erase any nodes that weren't reached from the entry
+    for (curnode = graphhead; curnode != NULL; curnode = curnode->next) {
         if (curnode->unk7 == 0) {
             if (curnode->stat_head != NULL && curnode->stat_head->opc == Uclab && curnode->stat_head->u.label.unk1C == false) {
                 curnode->successors = NULL;
             }
 
+            // remove the unreached node from predecessors
             succ = curnode->successors;
             while (succ != NULL) {
                 pred = succ->graphnode->predecessors;
                 if (curnode == pred->graphnode) {
                     succ->graphnode->predecessors = pred->next;
                 } else {
-
-                    prev_pred = succ->graphnode->predecessors;
-                    pred = pred->next;
-
                     while (curnode != pred->graphnode) {
                         prev_pred = pred;
                         pred = pred->next;
@@ -849,23 +846,25 @@ void controlflow() {
                 succ = succ->next;
             }
 
+            // erase the statements in the node
             if (curnode->stat_head != NULL) {
-                prev_stat = curnode->stat_head->prev;
+                last_reached_stat = curnode->stat_head->prev;
 
-                stat = prev_stat->next;
-                loop_node = stat->graphnode;
-                found = false;
+                stat = last_reached_stat->next;
+                //! always the same as curnode?
+                unvisited_node = stat->graphnode;
+                done = false;
 
                 do {
-                    // Not case and not default
+                    // don't erase switch definitions and memory definitions
                     if (stat->opc != Uclab && stat->opc != Udef) {
                         if (Uxjp == stat->opc) {
                             stat->u.xjp.case_stmts->u.label.unk1C = false;
                         }
 
-                        prev_stat->next = stat->next;
+                        last_reached_stat->next = stat->next;
                         if (stat->next != NULL) {
-                            stat->next->prev = prev_stat;
+                            stat->next->prev = last_reached_stat;
                         }
 
                         if (stat->opc == Uisst || stat->opc == Ustr) {
@@ -931,49 +930,47 @@ void controlflow() {
                             }
                         }
                     } else {
-                        stat->graphnode = prev_stat->graphnode;
-                        if (Uclab == stat->opc) {
-                            for (i = 0; i < stat->u.label.length; i++) {
-                                stat->graphnode = prev_stat->graphnode;
+                        // move Uclab and Udef to the previous graphnode
+                        stat->graphnode = last_reached_stat->graphnode;
+                        if (stat->opc == Uclab) {
+                            int length = stat->u.label.length;
+                            for (i = 0; i < length; i++) {
                                 stat = stat->next;
+                                stat->graphnode = last_reached_stat->graphnode;
                             }
                         }
-                        prev_stat = stat;
+                        last_reached_stat = stat;
                     }
 
                     stat = stat->next;
                     if (stat != NULL) {
-                        found = (loop_node != stat->graphnode);
+                        done = (stat->graphnode != unvisited_node);
                     }
-                } while (stat != NULL && found == false);
+                } while (stat != NULL && done == false);
             }
-        } else {
-            if (curnode->blockno != 0 && curnode->stat_head == NULL) {
-                writeln(err.c_file);
-                write_string(err.c_file, "uopt: Internal: ", 16, 16);
-                write_string(err.c_file, entnam0, 1024, entnam0len);
-                write_string(err.c_file, ": label L", 9, 9);
-                write_cardinal(err.c_file, curnode->blockno, 0, 10);
-                write_string(err.c_file, " undefined.", 11, 11);
-                writeln(err.c_file);
-                fflush(err.c_file);
-                abort();
-            }
-
+        } else if (curnode->blockno != 0 && curnode->stat_head == NULL) {
+            writeln(err.c_file);
+            write_string(err.c_file, "uopt: Internal: ", 16, 16);
+            write_string(err.c_file, entnam0, 1024, entnam0len);
+            write_string(err.c_file, ": label L", 9, 9);
+            write_cardinal(err.c_file, curnode->blockno, 0, 10);
+            write_string(err.c_file, " undefined.", 11, 11);
+            writeln(err.c_file);
+            fflush(err.c_file);
+            abort();
         }
-        curnode = curnode->next;
     }
 
     succ = graphhead->successors;
     graphhead->unk7 = 2;
     graphtail = graphhead;
     while (succ != NULL) {
-        place_graphtail(succ->graphnode);
+        depth_first_order(succ->graphnode);
         succ = succ->next;
     }
 
     while (interproc_targets != NULL) {
-        place_graphtail(interproc_targets->graphnode);
+        depth_first_order(interproc_targets->graphnode);
         interproc_targets = interproc_targets->next;
     }
 

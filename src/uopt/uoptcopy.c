@@ -152,7 +152,7 @@ void varinsert(struct Expression *expr, struct Graphnode *node) {
             }
         } else if ((stat->opc == Uisst ||
                     stat->opc == Ustr) &&
-                !stat->expr->data.isvar_issvar.unk21 &&
+                !stat->expr->data.isvar_issvar.veqv &&
                 stat->u.store.ichain != NULL && slkilled(stat, expr)) {
             stat->u.store.unk1C = false;
             resetbit(&node->bvs.stage1.antlocs, stat->u.store.ichain->bitpos);

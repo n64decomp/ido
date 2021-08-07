@@ -31,11 +31,11 @@
 /*
 00456A2C oneproc
 */
-static void one_block(bool *unconditional_jump) { // originally embedded func
+static void one_block(bool *elim_dead_code) { // originally embedded func
     struct Statement *statpos;
     struct GraphnodeList *graphnode_list;
 
-    if (filteringout || *unconditional_jump) {
+    if (filteringout || *elim_dead_code) {
         curgraphnode = NULL;
 
         // remove dead code, skip to the next label or the end of the function
@@ -133,7 +133,7 @@ static void one_block(bool *unconditional_jump) { // originally embedded func
                 getop();
             }
 
-            *unconditional_jump = (OPC == Uijp || OPC == Uret || OPC == Uujp || OPC == Uxjp) || (OPC == Ucup && IS_RETURN_ATTR(EXTRNAL));
+            *elim_dead_code = (OPC == Uijp || OPC == Uret || OPC == Uujp || OPC == Uxjp) || (OPC == Ucup && IS_RETURN_ATTR(EXTRNAL));
             switch (OPC) {
                 case Ucia:
                 case Ucup:
@@ -159,7 +159,7 @@ static void one_block(bool *unconditional_jump) { // originally embedded func
                     break;
             }
         } else {
-            *unconditional_jump = (OPC == Uijp || OPC == Uret || OPC == Uujp || OPC == Uxjp) || (OPC == Ucup && IS_RETURN_ATTR(EXTRNAL));
+            *elim_dead_code = (OPC == Uijp || OPC == Uret || OPC == Uujp || OPC == Uxjp) || (OPC == Ucup && IS_RETURN_ATTR(EXTRNAL));
             endblock = false;
 
             getop();
@@ -171,6 +171,7 @@ static void one_block(bool *unconditional_jump) { // originally embedded func
 
         filteringout = false;
         constarith();
+
         if (outofmem) {
             return;
         }
@@ -183,7 +184,7 @@ static void one_block(bool *unconditional_jump) { // originally embedded func
 0045806C main
 */
 void oneproc(void) {
-    bool unconditional_jump;
+    bool elim_dead_code;
     union Bcode u_copy;
 
     curproc = getproc(IONE);
@@ -244,10 +245,10 @@ void oneproc(void) {
                 curstaticno = 1;
             }
 
-            unconditional_jump = false;
+            elim_dead_code = false;
             filteringout = false;
             while (OPC != Uend) {
-                one_block(&unconditional_jump);
+                one_block(&elim_dead_code);
                 loc_not_yet_seen = true;
                 if (outofmem) {
                     goto done;

@@ -460,7 +460,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
 
                 // The two bools' order is swapped!
                 ichain->isvar_issvar.unk19 = expr->data.isvar_issvar.unk22;
-                ichain->isvar_issvar.unk1A = expr->data.isvar_issvar.unk21;
+                ichain->isvar_issvar.unk1A = expr->data.isvar_issvar.veqv;
                 ichain->expr = expr;
                 break;
 
@@ -470,7 +470,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
 
                 // The two bools' order is swapped!
                 ichain->isvar_issvar.unk19 = expr->data.isvar_issvar.unk22;
-                ichain->isvar_issvar.unk1A = expr->data.isvar_issvar.unk21;
+                ichain->isvar_issvar.unk1A = expr->data.isvar_issvar.veqv;
                 ichain->expr = expr;
 
                 ichain->isvar_issvar.outer_stack_ichain = expr->data.isvar_issvar.outer_stack->ichain;
@@ -924,7 +924,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->isvar_issvar.assignbit);
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
-                if (expr->data.isvar_issvar.unk21) {
+                if (expr->data.isvar_issvar.veqv) {
                     *anticipated = false;
                     *available = false;
                     setbit(&vareqv, ichain->bitpos);
@@ -955,7 +955,7 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->isvar_issvar.assignbit);
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
-                if (expr->data.isvar_issvar.unk21) {
+                if (expr->data.isvar_issvar.veqv) {
                     *anticipated = false;
                     *available = false;
                     setbit(&vareqv, ichain->bitpos);
@@ -1244,7 +1244,7 @@ struct IChain *searchstore(unsigned short hash, Uopcode opc /* sp3f */, struct I
 }
 
 /*
-00456310 func_00456310
+00456310 one_block
 0046FCD4 link_jump_in_loop
 00470048 pre_loopblock
 00470248 post_loopblock
@@ -1392,29 +1392,29 @@ void codeimage(void) {
         } else {
             // stat->opc not in [Uaent, ...]
             switch (stat->opc) {
-                case Uaent:
-                case Ubgnb:
-                case Ucia:
-                case Uclab:
-                case Uclbd:
-                case Uctrl:
-                case Ucubd:
-                case Ucup:
-                case Udef:
-                case Uendb:
-                case Uicuf:
+                case Unop:
+                case Uujp:
                 case Ulab:
-                case Ulbdy:
+                case Uclab:
+                case Umst:
+                case Ubgnb:
+                case Uendb:
+                case Uret:
+                case Uloc:
+                case Udef:
+                case Ucup:
+                case Uicuf:
+                case Urcuf:
+                case Ucia:
+                case Uaent:
                 case Ulbgn:
                 case Ulend:
-                case Uloc:
                 case Ultrm:
-                case Umst:
-                case Unop:
-                case Uret:
+                case Ulbdy:
+                case Uclbd:
+                case Ucubd:
                 case Ustep:
-                case Uujp:
-                case Urcuf:
+                case Uctrl:
                     continue;
 
                 default:
@@ -1530,22 +1530,18 @@ void codeimage(void) {
                     store_ichain = searchstore(opihash, stat->opc, ichain, store_ichain, stat->u.store.u.istr.offset, stat->u.store.size);
                     break;
 
-                default:
-                    switch (stat->opc) {
-                        case Uchkt:
-                        case Utpeq:
-                        case Utpge:
-                        case Utpgt:
-                        case Utple:
-                        case Utplt:
-                        case Utpne:
-                            store_ichain = searchstore(opihash, stat->opc, ichain, store_ichain, stat->u.trap.num, 0);
-                            break;
+                case Uchkt:
+                case Utpeq:
+                case Utpge:
+                case Utpgt:
+                case Utple:
+                case Utplt:
+                case Utpne:
+                    store_ichain = searchstore(opihash, stat->opc, ichain, store_ichain, stat->u.trap.num, 0);
+                    break;
 
-                        default:
-                            store_ichain = searchstore(opihash, stat->opc, ichain, store_ichain, 0, 0);
-                            break;
-                    }
+                default:
+                    store_ichain = searchstore(opihash, stat->opc, ichain, store_ichain, 0, 0);
                     break;
             }
             if (outofmem) return;

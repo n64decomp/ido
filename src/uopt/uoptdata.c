@@ -36,7 +36,7 @@
 0043C56C func_0043C56C
 0043CE64 func_0043CE64
 0043CFCC readnxtinst
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 0045806C main
 00459400 updatelab
@@ -180,7 +180,7 @@ union Bcode lastcopiedu;
 00445E44 exprimage
 0044EDF8 ilodfold
 00453B04 func_00453B04
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 0045877C searchmtag_parm
 00458998 func_00458998
@@ -257,7 +257,7 @@ struct AllocBlock *heapptr;
 00448530 has_direct_induct_usage
 00448928 check_loop_induct_usages
 00454F00 func_00454F00
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 0045CBDC cupaltered
 0045CD78 expaltered
@@ -293,7 +293,7 @@ struct optabrec optab[0x9C];
 /*
 00439C40 getop
 0043CFCC readnxtinst
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 */
 bool endblock;
@@ -554,7 +554,7 @@ int strpdisplace;
 /*
 0043771C optinit
 00452DAC constarith
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 */
 bool filteringout;
@@ -625,7 +625,7 @@ struct Graphnode *graphhead;
 00439188 procinit
 0043CA8C func_0043CA8C
 0043CFCC readnxtinst
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 004638C0 regdataflow
 004713E8 loopunroll
@@ -655,7 +655,7 @@ struct Graphnode *graphtail;
 0044C648 ciakillprev
 0044D6EC parkillprev
 00452DAC constarith
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 0046C710 unroll_searchloop
 0046D158 unroll_check_istr_propcopy
@@ -689,7 +689,7 @@ struct Graphnode *curgraphnode;
 0043CFCC readnxtinst
 00445E44 exprimage
 00455D38 analoop
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 00461AAC makelivranges
 00464BFC localcolor
@@ -722,7 +722,7 @@ struct Statement *stathead;
 00439188 procinit
 0043AA18 appendstorelist
 0043CFCC readnxtinst
-00456310 func_00456310
+00456310 one_block
 0046E77C oneloopblockstmt
 0046FCD4 link_jump_in_loop
 00470048 pre_loopblock
@@ -1684,7 +1684,7 @@ bool usefeedback;
 /*
 00439C40 getop
 0043CFCC readnxtinst
-00456310 func_00456310
+00456310 one_block
 */
 int varrefs;
 
@@ -1694,13 +1694,13 @@ int totalvarref;
 /*
 00434720 processargs
 0043771C optinit
-00456310 func_00456310
+00456310 one_block
 */
 int varreflimit;
 
 /*
 00439C40 getop
-00456310 func_00456310
+00456310 one_block
 */
 int curvarreflimit;
 
@@ -2126,7 +2126,7 @@ bool dokpicopt;
 004510A0 distrlaw
 00451764 restructure
 00452DAC constarith
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 0045D208 patchvectors
 0045DA18 formlivbb

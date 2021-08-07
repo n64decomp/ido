@@ -257,7 +257,7 @@ void insertijplab(int num, struct IjpLabel **pos) {
 /*
 0045A480 oneinstruction
 */
-struct Label *updatelab(unsigned int addr, struct Label **pos, bool arg2) {
+struct Label *updatelab(unsigned int addr, struct Label **pos, bool referenced) {
     struct Label *label;
 
     for (;;) {
@@ -268,8 +268,8 @@ struct Label *updatelab(unsigned int addr, struct Label **pos, bool arg2) {
             label->branched_back = false;
             label->left = NULL;
             label->right = NULL;
-            label->len = 0;
-            label->unk8 = arg2;
+            label->merged_label = 0;
+            label->referenced = referenced;
             label->addr = addr;
             break;
         }
@@ -278,11 +278,11 @@ struct Label *updatelab(unsigned int addr, struct Label **pos, bool arg2) {
         } else if (addr > label->addr) {
             pos = &label->right;
         } else {
-            if (arg2) {
-                if (!label->unk8 && (OPC == Ufjp || OPC == Utjp)) {
+            if (referenced) {
+                if (!label->referenced && (OPC == Ufjp || OPC == Utjp)) {
                     label->branched_back = true;
                 }
-                label->unk8 = true;
+                label->referenced = true;
             }
             break;
         }
@@ -317,7 +317,7 @@ void update_veqv_in_table(struct Variable *var) {
     while (entry != NULL) {
         if (entry->type == isvar || entry->type == issvar) {
             if (addreq(entry->data.isvar_issvar.location, var->location)) {
-                entry->data.isvar_issvar.unk21 = true;
+                entry->data.isvar_issvar.veqv = true;
                 found = true;
             }
         }
@@ -329,7 +329,7 @@ void update_veqv_in_table(struct Variable *var) {
         entry->graphnode = NULL;
         entry->data.isvar_issvar.size = (unsigned char)var->size;
         entry->data.isvar_issvar.unk22 = var->unk2;
-        entry->data.isvar_issvar.unk21 = var->unk1;
+        entry->data.isvar_issvar.veqv = var->veqv;
     }
 }
 
@@ -341,8 +341,8 @@ void make_subloc_veqv(struct VariableLocation loc, int size, struct Variable **p
     while (*pos != NULL) {
         switch (compareloc(loc, (*pos)->location, size, (*pos)->size)) {
             case 0:
-                if (!(*pos)->unk1) {
-                    (*pos)->unk1 = true;
+                if (!(*pos)->veqv) {
+                    (*pos)->veqv = true;
                     (*pos)->unk2 = false;
                     if (inlopt) {
                         update_veqv_in_table(*pos);
@@ -374,7 +374,7 @@ void make_subloc_veqv(struct VariableLocation loc, int size, struct Variable **p
 0045A480 oneinstruction
 0045B508 oneprocprepass
 */
-struct Variable *insertvar(struct VariableLocation loc, int size, Datatype dtype, struct Variable **pos, bool arg5_unused, bool arg6, bool arg7) { //arg7 = is_register?
+struct Variable *insertvar(struct VariableLocation loc, int size, Datatype dtype, struct Variable **pos, bool is_load, bool arg6, bool is_register) {
     struct Variable *v = *pos;
     bool done = false;
     bool updated_size;
@@ -406,18 +406,18 @@ struct Variable *insertvar(struct VariableLocation loc, int size, Datatype dtype
             case 0:
                 if ((loc.addr == v->location.addr && size == v->size) || loc.memtype == Rmt) {
                     if ((dtype == Qdt || dtype == Rdt) == (v->dtype == Qdt || v->dtype == Rdt)) {
-                        if (arg6 && !v->unk2 && !v->unk1) {
-                            v->unk1 = true;
+                        if (arg6 && !v->unk2 && !v->veqv) {
+                            v->veqv = true;
                             if (inlopt) {
                                 update_veqv_in_table(v);
                             }
                         }
-                        if (arg7) {
+                        if (is_register) {
                             v->unk2 = true;
-                            v->unk1 = false;
+                            v->veqv = false;
                         }
                     } else {
-                        v->unk1 = true;
+                        v->veqv = true;
                         if (inlopt) {
                             update_veqv_in_table(v);
                         }
@@ -425,8 +425,8 @@ struct Variable *insertvar(struct VariableLocation loc, int size, Datatype dtype
                     return v;
                 } else {
                     updated_size = false;
-                    if (!v->unk1) {
-                        v->unk1 = true;
+                    if (!v->veqv) {
+                        v->veqv = true;
                         if (inlopt) {
                             update_veqv_in_table(v);
                         }
@@ -442,7 +442,7 @@ struct Variable *insertvar(struct VariableLocation loc, int size, Datatype dtype
 
                     if (v->location.addr > loc.addr) {
                         arg6 = true;
-                        arg7 = false;
+                        is_register = false;
                         if (v->left == NULL) {
                             v->left = (struct Variable *)alloc_new(sizeof(struct Variable), &var_heap);
                             done = true;
@@ -450,7 +450,7 @@ struct Variable *insertvar(struct VariableLocation loc, int size, Datatype dtype
                         v = v->left;
                     } else if (v->location.addr < loc.addr) {
                         arg6 = true;
-                        arg7 = false;
+                        is_register = false;
                         if (v->right == NULL) {
                             v->right = (struct Variable *)alloc_new(sizeof(struct Variable), &var_heap);
                             done = true;
@@ -469,11 +469,11 @@ struct Variable *insertvar(struct VariableLocation loc, int size, Datatype dtype
     }
 
     v->location = loc;
-    v->unk1 = arg6 && !arg7;
+    v->veqv = arg6 && !is_register;
     v->size = size;
     v->left = NULL;
     v->right = NULL;
-    v->unk2 = arg7;
+    v->unk2 = is_register;
     v->dtype = dtype;
     return v;
 }
@@ -725,7 +725,7 @@ void oneinstruction(void) {
     struct Proc *proc;
     struct VariableLocation loc;
     struct Label *label;
-    bool lexlev1;
+    bool is_volatile;
     bool unk;
 
     switch (OPC) {
@@ -834,8 +834,8 @@ void oneinstruction(void) {
             if (loc.memtype == Rmt) {
                 loc.blockno = 0;
             }
-            lexlev1 = IS_VOLATILE_ATTR(LEXLEV);
-            unk = lexlev1 || (in_exception_block > 0 && MTYPE != Rmt);
+            is_volatile = IS_VOLATILE_ATTR(LEXLEV);
+            unk = is_volatile || (in_exception_block > 0 && MTYPE != Rmt);
             insertvar(loc, LENGTH, DTYPE, &curproc->vartree, OPC == Uisld || OPC == Ulod, unk, MTYPE == Rmt);
             if (OPC == Uisld || OPC == Ulod) {
                 curproc->bvsize++;
@@ -942,12 +942,15 @@ void oneinstruction(void) {
                 if (LEXLEV & (GOOB_TARGET | EXCEPTION_ATTR | EXTERN_LAB_ATTR)) {
                     curproc->nonlocal_goto = true;
                 }
+
                 if (!unk) {
                     unk = LENGTH != 0;
                 }
+
+                // merge consecutive labels to all point to the first one
                 label = updatelab(IONE, &curproc->labels, unk);
                 if (lab_just_defined != 0 && LEXLEV == 0 && LENGTH == 0) {
-                    label->len = lab_just_defined;
+                    label->merged_label = lab_just_defined;
                     updatelab(lab_just_defined, &curproc->labels, true);
                 } else {
                     lab_just_defined = IONE;
@@ -965,7 +968,7 @@ void oneinstruction(void) {
                     in_exception_frame--;
                 }
             } else if (OPC == Uldef) {
-                updatelab(IONE, &curproc->labels, true)->len = 0;
+                updatelab(IONE, &curproc->labels, true)->merged_label = 0;
             }
             if (OPC == Ulab || OPC == Uldef) {
                 if (LEXLEV & IJP_ATTR) {
@@ -1285,7 +1288,7 @@ void checkforvreg(struct Variable *var) {
     unsigned char cmp;
 
     if (var != NULL) {
-        if (!var->unk1 && !var->unk2) {
+        if (!var->veqv && !var->unk2) {
             hash = var->location.blockno % 3113;
             if (hash < 0) {
                 hash += 3113; // dead code

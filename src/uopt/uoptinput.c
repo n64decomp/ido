@@ -17,17 +17,17 @@ struct ParameterList {
     struct ParameterList *next;
 };
 
-/* 
+/*
 0043CFCC readnxtinst
 */
 int parcount;
 
-/* 
+/*
 0043CFCC readnxtinst
 */
 bool passbyfp;
 
-/* 
+/*
 0043CFCC readnxtinst
 */
 struct Statement *lastmst;
@@ -47,14 +47,14 @@ bool branched_back_lab;
 /*
 0043A0CC copyline
 0043CFCC readnxtinst
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 0045806C main
 */
 void getop(void) {
     struct Label *lab;
     enum Uopcode op;
-    int temp;
+    int merged_label;
 
 restart: // TODO: change to tail recursion when O2 works
     readuinstr(&u, ustrptr);
@@ -64,27 +64,27 @@ restart: // TODO: change to tail recursion when O2 works
     }
     if (op == Ulab) {
         lab = searchlab(IONE, curproc->labels);
-        if (lab->unk8 == 0) { // 1 byte
+        if (!lab->referenced) {
             goto restart;
         }
-        if (lab->len != 0) {
+        if (lab->merged_label != 0) {
             goto restart;
         }
         branched_back_lab = lab->branched_back; // 1 byte
     } else if (op == Ufjp || op == Utjp || op == Uujp) {
-        temp = searchlab(IONE, curproc->labels)->len;
-        if (temp != 0) {
-            IONE = temp;
+        merged_label = searchlab(IONE, curproc->labels)->merged_label;
+        if (merged_label != 0) {
+            IONE = merged_label;
         }
     } else if (op == Uldc && DTYPE == Gdt) {
-        temp = searchlab(CONSTVAL.swpart.Ival, curproc->labels)->len;
-        if (temp != 0) {
-            CONSTVAL.swpart.Ival = temp;
+        merged_label = searchlab(CONSTVAL.swpart.Ival, curproc->labels)->merged_label;
+        if (merged_label != 0) {
+            CONSTVAL.swpart.Ival = merged_label;
         }
     } else if (op == Uxjp) {
-        temp = searchlab(LENGTH, curproc->labels)->len;
-        if (temp != 0) {
-            LENGTH = temp;
+        merged_label = searchlab(LENGTH, curproc->labels)->merged_label;
+        if (merged_label != 0) {
+            LENGTH = merged_label;
         }
     }
     switch (op) {
@@ -206,7 +206,7 @@ static void set_blklev(int blk, int level) {
 
 /*
 0043CFCC readnxtinst
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 0045806C main
 */
@@ -251,64 +251,58 @@ void copyline(void) {
             }
         }
         bitvectorsize = (curproc->bvsize >> 7) + 2;
-    } else {
-        if (OPC == Uregs || OPC == Urlod || OPC == Urstr) {
-            writeln(err.c_file);
-            write_string(err.c_file, "uopt: Error: ", 13, 13);
-            write_string(err.c_file, entnam0, 1024, entnam0len);
-            write_string(err.c_file, ": optimized code not allowed as input", 37, 37);
-            writeln(err.c_file);
-            fflush(err.c_file);
-            abort();
-        } else {
-            if (OPC == Ulex) {
-                set_blklev(IONE, LEXLEV);
-            } else {
-                if (OPC == Updef) {
-                    if (aentptr != NULL) {
-                        aentptr->u.aent.blockno++;
-                        return;
-                    }
-                    argNum = OFFSET / 4;
-                    if ((LENGTH & 3) != 0) {
-                        LENGTH = LENGTH - (LENGTH & 3) + 4;
-                        OFFSET = argNum * 4;
-                    }
-                    if (allcallersave || argNum < 4 || lang == LANG_ADA) {
-                        if (!allcallersave && ++pdefno >= 3) {
-                            passedbyfp = false;
-                        }
-                        new_pdeftabsize = argNum + LENGTH;
-                        if (new_pdeftabsize >= pdeftabsize) {
-                            pdeftab = alloc_realloc(pdeftab, (pdeftabsize * 16 + 15) / 16, (new_pdeftabsize * 16 + 15) / 16, &perm_heap);
-                            for (i = pdeftabsize; i < new_pdeftabsize; i++) {
-                                pdeftab[i].opc = Unop;
-                            }
-                            pdeftabsize = new_pdeftabsize;
-                        }
-                        pdef_entry = &pdeftab[argNum];
-                        pdef_entry->outmode = (LEXLEV & OUT_MODE) != 0;
-                        pdef_entry->opc = Updef;
-                        pdef_entry->dtype = DTYPE;
-                        pdef_entry->inmode = (LEXLEV & IN_MODE) != 0;
-                        pdef_entry->size = LENGTH;
-                        pdef_entry->offset = OFFSET;
-                        pdef_entry->unk3 = !formal_parm_vreg(OFFSET);
-                        if (!allcallersave) {
-                            if (DTYPE != Qdt && DTYPE != Rdt) {
-                                passedbyfp = false;
-                            }
-                            if (passedbyfp) {
-                                offsetpassedbyint = OFFSET + LENGTH;
-                            }
-                        }
-                        pdefmax = MAX(argNum, pdefmax);
-                    }
-                } else if (OPC == Uoptn) {
-                    getoption(IONE, LENGTH);
+    } else if (OPC == Uregs || OPC == Urlod || OPC == Urstr) {
+        writeln(err.c_file);
+        write_string(err.c_file, "uopt: Error: ", 13, 13);
+        write_string(err.c_file, entnam0, 1024, entnam0len);
+        write_string(err.c_file, ": optimized code not allowed as input", 37, 37);
+        writeln(err.c_file);
+        fflush(err.c_file);
+        abort();
+    } else if (OPC == Ulex) {
+        set_blklev(IONE, LEXLEV);
+    } else if (OPC == Updef) {
+        if (aentptr != NULL) {
+            aentptr->u.aent.blockno++;
+            return;
+        }
+        argNum = OFFSET / 4;
+        if ((LENGTH & 3) != 0) {
+            LENGTH = LENGTH - (LENGTH & 3) + 4;
+            OFFSET = argNum * 4;
+        }
+        if (allcallersave || argNum < 4 || lang == LANG_ADA) {
+            if (!allcallersave && ++pdefno >= 3) {
+                passedbyfp = false;
+            }
+            new_pdeftabsize = argNum + LENGTH;
+            if (new_pdeftabsize >= pdeftabsize) {
+                pdeftab = alloc_realloc(pdeftab, (pdeftabsize * 16 + 15) / 16, (new_pdeftabsize * 16 + 15) / 16, &perm_heap);
+                for (i = pdeftabsize; i < new_pdeftabsize; i++) {
+                    pdeftab[i].opc = Unop;
+                }
+                pdeftabsize = new_pdeftabsize;
+            }
+            pdef_entry = &pdeftab[argNum];
+            pdef_entry->outmode = (LEXLEV & OUT_MODE) != 0;
+            pdef_entry->opc = Updef;
+            pdef_entry->dtype = DTYPE;
+            pdef_entry->inmode = (LEXLEV & IN_MODE) != 0;
+            pdef_entry->size = LENGTH;
+            pdef_entry->offset = OFFSET;
+            pdef_entry->unk3 = !formal_parm_vreg(OFFSET);
+            if (!allcallersave) {
+                if (DTYPE != Qdt && DTYPE != Rdt) {
+                    passedbyfp = false;
+                }
+                if (passedbyfp) {
+                    offsetpassedbyint = OFFSET + LENGTH;
                 }
             }
+            pdefmax = MAX(argNum, pdefmax);
         }
+    } else if (OPC == Uoptn) {
+        getoption(IONE, LENGTH);
     }
 
     switch (OPC) {
@@ -618,7 +612,7 @@ bool treekilled(struct Expression *expr) {
     }
 }
 
-/* 
+/*
 0043B504 readnxtinst_searchloop
 */
 static bool number_in_realstore(union Constant number) {
@@ -633,7 +627,7 @@ static bool number_in_realstore(union Constant number) {
     return strncmp(ustrptr, &real->c[number.real.disp & 0xff], number.real.len) == 0;
 }
 
-/* 
+/*
 0043CFCC readnxtinst
 */
 static void ustack_push(struct Expression *expr) {
@@ -659,7 +653,7 @@ static void ustack_add_value(void) {
     }
 }
 
-/* 
+/*
 0043CFCC readnxtinst
     used for ilod and istr
 */
@@ -672,7 +666,7 @@ static void ustack_add_index(void) {
     }
 }
 
-/* 
+/*
 0043CFCC readnxtinst
 */
 static void parstack_push(struct Statement *par) {
@@ -685,7 +679,7 @@ static void parstack_push(struct Statement *par) {
     parstack->par = par;
 }
 
-/* 
+/*
 0043CFCC readnxtinst
     replace addr with addr+1...????
 */
@@ -698,7 +692,7 @@ static struct Expression *func_0043B334(struct Expression *stexpr) {
             (stexpr->datatype != Ldt || stexpr->data.isconst.number.uintval != 0xFFFFFFFF)) {
             return enter_const(stexpr->data.isconst.number.intval + 1, stexpr->datatype, curgraphnode);
         }
-        
+
         return NULL;
     }
 
@@ -731,7 +725,7 @@ static struct Expression *func_0043B334(struct Expression *stexpr) {
     return lda;
 }
 
-/* 
+/*
 0043C248 cvt_to_float
 0043C56C transform_float_div
 0043CFCC readnxtinst
@@ -740,13 +734,13 @@ static struct Expression *readnxtinst_searchloop(unsigned short tableIdx, struct
     bool sp33;
     bool sp31;
     bool sp30;
-    bool sp2F;
+    bool var_equivalence;
     struct Expression *expr;
 
     expr = table[tableIdx];
     sp31 = false;
     sp30 = false;
-    sp2F = false;
+    var_equivalence = false;
 
     if (DTYPE == Sdt) {
         if (OPC != Uldc) {
@@ -754,13 +748,13 @@ static struct Expression *readnxtinst_searchloop(unsigned short tableIdx, struct
                 expr = NULL;
             } else if (LENGTH > 4) {
                 // small string optimization?
-                sp2F = true;
+                var_equivalence = true;
             }
         }
     }
 
     sp33 = false;
-    while (!sp33 && !sp2F && expr != NULL) {
+    while (!sp33 && !var_equivalence && expr != NULL) {
         if (expr->type == isop || expr->type == isilda) {
             if (expr->graphnode != curgraphnode) {
                 goto next;
@@ -771,8 +765,8 @@ static struct Expression *readnxtinst_searchloop(unsigned short tableIdx, struct
             case Ulod:
             case Ustr:
                 if (expr->type == isvar && addreq(expr->data.isvar_issvar.location, *loc)) {
-                    if (expr->data.isvar_issvar.unk21) {
-                        sp2F = true;
+                    if (expr->data.isvar_issvar.veqv) {
+                        var_equivalence = true;
                         break;
                     }
 
@@ -790,13 +784,13 @@ static struct Expression *readnxtinst_searchloop(unsigned short tableIdx, struct
             case Uisld:
             case Uisst:
                 if (expr->type == issvar && addreq(expr->data.isvar_issvar.location, *loc)) {
-                    if (expr->data.isvar_issvar.unk21) {
-                        sp2F = true;
+                    if (expr->data.isvar_issvar.veqv) {
+                        var_equivalence = true;
                         break;
                     }
 
                     sp33 = curgraphnode == expr->graphnode && !expr->unk2 &&
-                             !expr->data.isvar_issvar.outer_stack->data.isvar_issvar.unk21;
+                             !expr->data.isvar_issvar.outer_stack->data.isvar_issvar.veqv;
                     if (expr->data.isvar_issvar.unk22) {
                         sp30 = true;
                     }
@@ -818,7 +812,7 @@ static struct Expression *readnxtinst_searchloop(unsigned short tableIdx, struct
             case Uilda:
                 if (expr->type == isilda && addreq(expr->data.islda_isilda.address, *loc) &&
                         expr->data.islda_isilda.size == LENGTH && expr->data.islda_isilda.offset == OFFSET) {
-                    sp33 = !expr->data.islda_isilda.outer_stack->data.isvar_issvar.unk21;
+                    sp33 = !expr->data.islda_isilda.outer_stack->data.isvar_issvar.veqv;
                 }
                 break;
 
@@ -838,7 +832,7 @@ static struct Expression *readnxtinst_searchloop(unsigned short tableIdx, struct
                         sp33 = true;
                     }
                 }
-                
+
                 break;
 
             case Uldrc:
@@ -1050,7 +1044,7 @@ next:
         }
     }
 
-    if (!sp33 || sp2F) {
+    if (!sp33 || var_equivalence) {
         expr = appendchain(tableIdx);
         if (outofmem) {
             return expr;
@@ -1060,8 +1054,8 @@ next:
 
         // originally performs useless checks for below opcodes including Ulca Ulda Uldc, then overwrites with && below
         if (OPC == Uisld || OPC == Uisst || OPC == Ulod || OPC == Ustr) {
-                expr->data.isvar_issvar.unk21 = sp2F;
-                expr->data.isvar_issvar.unk22 = !sp2F && sp30;
+                expr->data.isvar_issvar.veqv = var_equivalence;
+                expr->data.isvar_issvar.unk22 = !var_equivalence && sp30;
         }
 
         if (sp31) {
@@ -1082,7 +1076,7 @@ next:
     return expr;
 }
 
-/* 
+/*
 0043CFCC readnxtinst
 */
 static void cvt_to_float(struct UstackEntry *ustackHead, struct VariableLocation *loc, struct Expression *stexpr1, struct Expression *stexpr2) {
@@ -1156,7 +1150,7 @@ static void cvt_to_float(struct UstackEntry *ustackHead, struct VariableLocation
     ustackHead->expr = expr;
 }
 
-/* 
+/*
 0043CFCC readnxtinst
 */
 static struct Expression *transform_float_div(int real_significand, bool negative, int real_exponent, Datatype dtype, struct VariableLocation *loc, struct Expression *stexpr1, struct Expression *stexpr2) {
@@ -1285,7 +1279,7 @@ static struct Expression *transform_float_div(int real_significand, bool negativ
     return expr;
 }
 
-/* 
+/*
 0043CA8C link_ijp_labels
 0043CFCC readnxtinst
 */
@@ -1328,7 +1322,7 @@ static void link_ijp_labels(struct IjpLabel *ijp) {
     }
 }
 
-/* 
+/*
 0043CFCC readnxtinst
 */
 static void func_0043CBFC(struct UstackEntry *head) { // XXX: never called in oot
@@ -1362,7 +1356,7 @@ static void func_0043CBFC(struct UstackEntry *head) { // XXX: never called in oo
                 return;
             }
 
-            outer_stack->data.isvar_issvar.unk21 = false;
+            outer_stack->data.isvar_issvar.veqv = false;
             outer_stack->data.isvar_issvar.unk22 = true;
             outer_stack->graphnode = curgraphnode;
         }
@@ -1394,7 +1388,7 @@ static void func_0043CBFC(struct UstackEntry *head) { // XXX: never called in oo
     head->expr->data.isvar_issvar.unk22 = true;
 }
 
-/* 
+/*
 0043CFCC readnxtinst
 */
 static bool func_0043CE64(struct Expression *stexpr1, int val) {
@@ -1426,7 +1420,7 @@ static bool func_0043CE64(struct Expression *stexpr1, int val) {
 /* 
 0043A7DC createcvtl
 0043CFCC readnxtinst
-00456310 func_00456310
+00456310 one_block
 */
 void readnxtinst(void) {
     struct Expression *expr; // sp10C
@@ -1438,6 +1432,8 @@ void readnxtinst(void) {
     int tmp1;
     int tmp2;
     int tmp3;
+    int length;
+    int clab_blockno;
     unsigned short hash;
     Datatype dtype;
     int i;
@@ -1467,7 +1463,7 @@ void readnxtinst(void) {
         return;
     }
 
-    if (ustackbot != ustack && ustack->expr->type == isvar && ustack->expr->data.isvar_issvar.location.memtype == Amt && OPC != Ustr) {
+    if (ustack != ustackbot && ustack->expr->type == isvar && ustack->expr->data.isvar_issvar.location.memtype == Amt && OPC != Ustr) {
         // XXX: untested (Amt doesn't exist in C)
         TRAP_IF(ustack->expr->data.isvar_issvar.assignment != NULL);
         ustack->expr->unk2 = true;
@@ -1479,7 +1475,7 @@ void readnxtinst(void) {
         expr->count = 0;
         expr->graphnode = curgraphnode;
         expr->data.isvar_issvar.size = ustack->expr->data.isvar_issvar.size;
-        expr->data.isvar_issvar.unk21 = false;
+        expr->data.isvar_issvar.veqv = false;
         expr->data.isvar_issvar.unk22 = true;
         expr->data.isvar_issvar.is_volatile = false;
         expr->data.isvar_issvar.outer_stack = NULL;
@@ -1633,7 +1629,7 @@ void readnxtinst(void) {
                     expr->data.isvar_issvar.outer_stack = NULL;
                 }
 
-                if (!expr->data.isvar_issvar.unk21) {
+                if (!expr->data.isvar_issvar.veqv) {
                     expr->unk2 = false;
                     if (expr->unk3 && !expr->data.isvar_issvar.unk22) {
                         
@@ -1667,7 +1663,7 @@ void readnxtinst(void) {
                     }
                 }
 
-                if (!expr->data.isvar_issvar.unk21) {
+                if (!expr->data.isvar_issvar.veqv) {
                     varrefs++;
                 }
                 return;
@@ -1694,7 +1690,7 @@ void readnxtinst(void) {
                 }
 
                 increasecount(expr);
-                if (!expr->data.isvar_issvar.unk21) {
+                if (!expr->data.isvar_issvar.veqv) {
                     varrefs++;
                 }
                 return;
@@ -2281,6 +2277,7 @@ void readnxtinst(void) {
                         stexpr2 = expr;
                     }
                 }
+            // swap == and != if the left side isn't a var (even if the right side isn't one either)
             } else if (OPC == Uequ || OPC == Uneq) {
                 if (stexpr1->type != isvar) {
                     expr = stexpr2;
@@ -3026,7 +3023,7 @@ void readnxtinst(void) {
                     expr->data.isvar_issvar.size = 4;
                     expr->graphnode = NULL;
                     expr->data.isvar_issvar.unk22 = true;
-                    expr->data.isvar_issvar.unk21 = false;
+                    expr->data.isvar_issvar.veqv = false;
                     decreasecount(ustack->expr);
                     ustack = ustack->down;
                     extendstat(Unop);
@@ -3078,7 +3075,7 @@ void readnxtinst(void) {
                     expr->graphnode = curgraphnode;
                     expr->data.isvar_issvar.unk22 = expr2->data.isvar_issvar.unk22;
                     expr->unk3 = false;
-                    expr->data.isvar_issvar.unk21 = expr2->data.isvar_issvar.unk21;
+                    expr->data.isvar_issvar.veqv = expr2->data.isvar_issvar.veqv;
                     unk1C = false;
                     unk1E = true;
                 } else if (expr->data.isvar_issvar.assigned_value != NULL && stmt->u.store.unk1D) {
@@ -3117,7 +3114,7 @@ void readnxtinst(void) {
                     expr->graphnode = curgraphnode;
                     expr->data.isvar_issvar.unk22 = expr2->data.isvar_issvar.unk22;
                     expr->unk3 = false;
-                    expr->data.isvar_issvar.unk21 = expr2->data.isvar_issvar.unk21;
+                    expr->data.isvar_issvar.veqv = expr2->data.isvar_issvar.veqv;
                     unk1C = false;
                     unk1E = false;
                 }
@@ -3145,7 +3142,7 @@ void readnxtinst(void) {
                 } else {
                     expr->data.isvar_issvar.outer_stack = NULL;
                 }
-                if (!expr->data.isvar_issvar.unk21) {
+                if (!expr->data.isvar_issvar.veqv) {
                     expr->unk2 = false;
                 } else {
                     expr->unk2 = true;
@@ -3154,7 +3151,7 @@ void readnxtinst(void) {
                 expr->data.isvar_issvar.is_volatile = IS_OVERFLOW_ATTR(LEXLEV);
             }
 
-            if (expr->data.isvar_issvar.unk21) {
+            if (expr->data.isvar_issvar.veqv) {
                 unk1C = false;
                 unk1E = false;
             }
@@ -3221,8 +3218,8 @@ void readnxtinst(void) {
                 if (stattail->expr->data.isvar_issvar.location.memtype == Rmt) {
                     stattail->u.store.unk1E = false;
                 }
-                stattail->u.store.unk1D = !expr->data.isvar_issvar.unk21;
-                stattail->u.store.unk1F = !expr->data.isvar_issvar.unk21;
+                stattail->u.store.unk1D = !expr->data.isvar_issvar.veqv;
+                stattail->u.store.unk1F = !expr->data.isvar_issvar.veqv;
                 if (increment_result == 1 && !hasvolatile(expr->data.isvar_issvar.assigned_value)) {
                     switch (stattail->expr->datatype) {
                         case Adt:
@@ -3312,8 +3309,8 @@ void readnxtinst(void) {
                     ustack_add_value();
                     if (ustack->expr->type == isvar) {
                         ustack->expr = binopwithconst(Uneq, ustack->expr, 0);
-                        ustack->expr->data.isvar_issvar.assignment = NULL;
-                        ustack->expr->data.isvar_issvar.unk3C = 0;
+                        ustack->expr->data.isop.aux.unk38_trep = NULL;
+                        ustack->expr->data.isop.aux2.unk3C_trep = NULL;
                     }
                     stattail->expr = ustack->expr;
                     ustack = ustack->down;
@@ -3364,97 +3361,161 @@ void readnxtinst(void) {
                 successors->graphnode = target_graphnode;
                 successors->next = curgraphnode->successors;
                 curgraphnode->successors = successors;
-                return;
-            }
+            } else {
+                // loop body?
+                if (stattail->prev->opc == Ulbdy) {
+                    target_graphnode->unkBb4 = true;
+                }
 
-            // loop body?
-            if (stattail->prev->opc == Ulbdy) {
-                target_graphnode->unkBb4 = true;
-            }
-
-            target_graphnode->blockno = IONE;
-            target_graphnode->interprocedural_controlflow = (LEXLEV & (GOOB_TARGET | EXCEPTION_ATTR | EXTERN_LAB_ATTR | EXCEPTION_END_ATTR | EXCEPTION_FRAME_START_ATTR | EXCEPTION_FRAME_END_ATTR | 0x1c0)) != 0;
-            if (curgraphnode != NULL) {
-                if (curgraphnode->stat_tail->opc == Ufjp || curgraphnode->stat_tail->opc == Utjp) {
-                    if (curgraphnode->stat_tail->u.jp.target_blockno == IONE)  {
-                        // empty if (...) { } body, eliminate the whole statement
-                        if (!has_volt_ovfw(curgraphnode->stat_tail->expr)) {
-                            decreasecount(curgraphnode->stat_tail->expr);
-                            curgraphnode->stat_tail->opc = Unop;
-                        } else {
-                            // the if-expression contains a volatile load or should be
-                            // overflow-checked, so keep the expression but eliminate the jump.
-                            curgraphnode->stat_tail->opc = Upop;
-                            curgraphnode->stat_tail->u.pop.dtype = Jdt;
-                            curgraphnode->stat_tail->u.pop.unk15 = 0;
+                target_graphnode->blockno = IONE;
+                target_graphnode->interprocedural_controlflow = (LEXLEV & (GOOB_TARGET | EXCEPTION_ATTR | EXTERN_LAB_ATTR | EXCEPTION_END_ATTR | EXCEPTION_FRAME_START_ATTR | EXCEPTION_FRAME_END_ATTR | 0x1c0)) != 0;
+                if (curgraphnode != NULL) {
+                    if (curgraphnode->stat_tail->opc == Ufjp || curgraphnode->stat_tail->opc == Utjp) {
+                        if (curgraphnode->stat_tail->u.jp.target_blockno == IONE)  {
+                            // empty if (...) { } body, eliminate the whole statement
+                            if (!has_volt_ovfw(curgraphnode->stat_tail->expr)) {
+                                decreasecount(curgraphnode->stat_tail->expr);
+                                curgraphnode->stat_tail->opc = Unop;
+                            } else {
+                                // the if-expression contains a volatile load or should be
+                                // overflow-checked, so keep the expression but eliminate the jump.
+                                curgraphnode->stat_tail->opc = Upop;
+                                curgraphnode->stat_tail->u.pop.dtype = Jdt;
+                                curgraphnode->stat_tail->u.pop.unk15 = 0;
+                            }
                         }
                     }
-                }
 
-                found = false;
-                successors = curgraphnode->successors;
-                while (successors != NULL && !found) {
-                    if (IONE == successors->graphnode->blockno) {
-                        found = true;
-                    } else {
-                        successors = successors->next;
+                    found = false;
+                    successors = curgraphnode->successors;
+                    while (successors != NULL && !found) {
+                        if (successors->graphnode->blockno == IONE) {
+                            found = true;
+                        } else {
+                            successors = successors->next;
+                        }
+                    }
+
+                    if (!found) {
+                        predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+                        if (predecessors == NULL) {
+                            outofmem = true;
+                            return;
+                        }
+                        predecessors->graphnode = curgraphnode;
+                        predecessors->next = target_graphnode->predecessors;
+                        target_graphnode->predecessors = predecessors;
+
+                        successors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+                        if (successors == NULL) {
+                            outofmem = true;
+                            return;
+                        }
+                        successors->graphnode = target_graphnode;
+                        successors->next = curgraphnode->successors;
+                        curgraphnode->successors = successors;
                     }
                 }
 
-                if (!found) {
-                    predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                    if (predecessors == NULL) {
-                        outofmem = true;
-                        return;
-                    }
-                    predecessors->graphnode = curgraphnode;
-                    predecessors->next = target_graphnode->predecessors;
-                    target_graphnode->predecessors = predecessors;
-
-                    successors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                    if (successors == NULL) {
-                        outofmem = true;
-                        return;
-                    }
-                    successors->graphnode = target_graphnode;
-                    successors->next = curgraphnode->successors;
-                    curgraphnode->successors = successors;
-                }
+                curgraphnode = target_graphnode;
+                curgraphnode->stat_head = stattail;
+                stattail->graphnode = curgraphnode;
+                curgraphnode->num = curstaticno++;
             }
-
-            curgraphnode = target_graphnode;
-            curgraphnode->stat_head = stattail;
-            stattail->graphnode = curgraphnode;
-            curgraphnode->num = curstaticno++;
             return;
 
+        // switch statement jumptable definition
         case Uclab:
             extendstat(Uclab);
             if (outofmem) {
                 return;
             }
 
-            // xjp
+            /*
+             * Frontends are inconcistent about how they emit switch statements.
+             *
+             * The pascal frontend emits the cases first, then the clab with ujps, and finally the xjp:
+             *
+             *     ujp  2        --\ jump ahead to xjp
+             *                     |
+             *     lab  3          |
+             *     lab  4          |
+             *     lab  5          |
+             *        etc..        |
+             *                     |
+             *     clab 6 len 2    |
+             *     ujp  4          |
+             *     ujp  3          |
+             *                     |
+             *     lab  2        <-/
+             *     lod  u32 Mmt 93 -5 1
+             *     xjp  u32 clab 6 default 5 lbnd 0 hbnd 1
+             *     lab  1       break label
+             *
+             * The C frontend is sane and emits the xjp, clab, and cases in order:
+             *
+             *     lod  s32 Pmt 5 0 4
+             *     xjp  s32 clab 13 default 12 lbnd 1 hbnd 5
+             *     clab 13 len 5
+             *     ujp  14
+             *     ujp  15
+             *     ujp  16
+             *     ujp  17
+             *     ujp  18
+             *
+             *     lab  14
+             *     lab  15
+             *     lab  16
+             *     lab  17
+             *     lab  18
+             *     ret
+             *
+             *     lab  12
+             *     ret
+             *
+             *
+             * Because of this, uopt has to detect both types of switch statements in Uclab and Uxjp depending on which comes first.
+             *
+             *! however, due to some quirks with dead code elimination and controlflow(),
+             *  it is possible for C's switch statement to be treated as a pascal
+             *  switch statement, if the switch appears in dead code:
+             *
+             *  return;
+             *
+             *  switch() {
+             *     case 1:
+             *         ...
+             *  }
+             *  The xjp is filtered out by dce, leaving only a clab.
+             */
             stattail->u.label.blockno = IONE;
             stattail->u.label.length = LENGTH;
+
             graphnode = ingraph(IONE);
             if (graphnode == NULL) {
+                // Pascal frontend switch statement
                 appendgraph();
                 if (outofmem) {
                     return;
                 }
+
                 graphtail->blockno = IONE;
                 stattail->u.label.unk1C = false;
                 graphtail->stat_head = stattail;
                 graphnode = graphtail;
             } else {
+                // C frontend case statement
+
+                // xjp graphnode
                 graphnode = graphnode->predecessors->graphnode;
                 graphnode->stat_tail->u.xjp.case_stmts = stattail;
                 stattail->u.label.unk1C = true;
             }
 
             endblock_saved = endblock;
-            for (i = 0; OPC != Uujp || i != LENGTH; i++) {
+            length = LENGTH;
+            clab_blockno = IONE;
+            for (i = 0; OPC != Uujp || i < length; i++) {
                 getop();
                 if (OPC != Uujp) {
                     copyline();
@@ -3473,7 +3534,9 @@ void readnxtinst(void) {
                         target_graphnode = graphtail;
                         target_graphnode->blockno = IONE;
                     }
-                    if (IONE != graphnode->blockno) {
+
+                    // C frontend switch statement: the xjp was read first, so add the cases as predecessors here
+                    if (graphnode->blockno != clab_blockno) {
                         predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
                         if (predecessors == NULL) {
                             outofmem = true;
@@ -3516,30 +3579,35 @@ void readnxtinst(void) {
             stattail->u.xjp.lbound_h = LBOUND_H;
             stattail->u.xjp.hbound_l = HBOUND_L;
             stattail->u.xjp.hbound_h = HBOUND_H;
+
             graphnode = ingraph(IONE);
 
             if (graphnode != NULL) {
+                // detect pascal frontend switch statement: the clab was read before xjp, so connect the jumps now
                 graphnode->stat_head->u.label.unk1C = true;
                 stattail->u.xjp.case_stmts = graphnode->stat_head;
 
                 // Move over the successors from the case labels graphnode and add predecessor at targets
                 curgraphnode->successors = graphnode->successors;
                 for (successors = graphnode->successors; successors != NULL; successors = successors->next) {
-                    new_graphnode_list_item = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-                    if (new_graphnode_list_item == NULL) {
+                    predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
+                    if (predecessors == NULL) {
                         outofmem = true;
                         return;
                     }
-                    new_graphnode_list_item->graphnode = curgraphnode;
-                    new_graphnode_list_item->next = successors->graphnode->predecessors;
-                    successors->graphnode->predecessors = new_graphnode_list_item;
+
+                    predecessors->graphnode = curgraphnode;
+                    predecessors->next = successors->graphnode->predecessors;
+                    successors->graphnode->predecessors = predecessors;
                 }
                 graphnode->successors = NULL;
             } else {
+                // C frontend switch statement. The jumps haven't been read yet, so connect them when the Uclab is read
                 appendgraph();
                 if (outofmem) {
                     return;
                 }
+
                 graphtail->blockno = IONE;
                 predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
                 graphtail->predecessors = predecessors;
@@ -3551,6 +3619,7 @@ void readnxtinst(void) {
                 predecessors->graphnode = curgraphnode;
             }
 
+            // default case
             graphnode = ingraph(LENGTH);
             if (graphnode == NULL) {
                 appendgraph();
@@ -3693,7 +3762,7 @@ void readnxtinst(void) {
             if (OPC == Uistr) {
                 for (stmt = curgraphnode->stat_head; stmt != NULL && !found; stmt = stmt->next) {
                     if (stmt->opc == Uistr && ustack->down->expr == stmt->expr &&
-                            IONE + ustack->down->value == stmt->u.store.u.istr.offset && LENGTH == stmt->u.store.size) 
+                            IONE + ustack->down->value == stmt->u.store.u.istr.offset && LENGTH == stmt->u.store.size)
                     {
                         if (stmt->u.store.unk1D) {
                             decreasecount(stmt->expr);

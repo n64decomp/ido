@@ -261,7 +261,7 @@ void *xmalloc(ssize_t size) {
 00453430 func_00453430
 00453B04 func_00453B04
 00455D38 analoop
-00456310 func_00456310
+00456310 one_block
 0045877C searchmtag_parm
 00458998 func_00458998
 00458B88 assign_mtag

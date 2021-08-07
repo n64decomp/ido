@@ -1283,7 +1283,6 @@ void analoop() {
     struct Interval *intvRoot;
     struct AllocBlock *heapBlock;
     struct BitVector pavin;
-    struct BitVectorBlock sp48;
     struct Interval *curIntv;
     struct Interval *newIntv;
     struct GraphnodeList *nodeSucc;
@@ -1331,7 +1330,7 @@ void analoop() {
         newIntv->loop = NULL;
         newIntv->type = intv_unvisited;
         newIntv->loopdepth = 0;
-        newIntv->interprocedural_controlflow = curnode->interprocedural_controlflow; // in oot, always zero
+        newIntv->interprocedural_controlflow = curnode->interprocedural_controlflow;
 
         curIntv->next = newIntv;
         curIntv = newIntv;
@@ -1425,11 +1424,7 @@ void analoop() {
         if (curnode->predecessors == NULL || curnode->interprocedural_controlflow) {
             setbitbb(&curnode->bvs.stage1.u.precm.pavin, curnode->num);
         } else {
-            sp48.words[0] = -1;
-            sp48.words[1] = -1;
-            sp48.words[2] = -1;
-            sp48.words[3] = -1;
-            initbv(&curnode->bvs.stage1.u.precm.pavin, sp48);
+            initbv(&curnode->bvs.stage1.u.precm.pavin, (struct BitVectorBlock) {-1, -1, -1, -1});
         }
         curnode = curnode->next;
     }

@@ -754,7 +754,7 @@ void copycoderep(struct Expression *dest, struct Expression *src) {
             dest->count = src->count;
 
             dest->data.isvar_issvar.size = src->data.isvar_issvar.size;
-            dest->data.isvar_issvar.unk21 = src->data.isvar_issvar.unk21;
+            dest->data.isvar_issvar.veqv = src->data.isvar_issvar.veqv;
             dest->data.isvar_issvar.unk22 = src->data.isvar_issvar.unk22;
             dest->data.isvar_issvar.is_volatile = src->data.isvar_issvar.is_volatile;
             dest->data.isvar_issvar.location = src->data.isvar_issvar.location;
@@ -1246,7 +1246,7 @@ glabel opvalhash
 
 /*
 0043CFCC readnxtinst
-00456310 func_00456310
+00456310 one_block
 00456A2C oneproc
 0046E77C oneloopblockstmt
 004704B0 termination_test
@@ -1264,6 +1264,9 @@ void extendstat(Uopcode opc) {
         outofmem = true;
         return;
     }
+#ifdef AVOID_UB
+    *stat = (struct Statement) {0};
+#endif
     stat->next = NULL;
     stat->opc = opc;
     stat->u.store.ichain = NULL;
@@ -1753,12 +1756,12 @@ void vartreeinfo(struct Variable *var) {
     struct Expression *entry;
 
     while (var != NULL) {
-        if (var->unk2 || var->unk1) {
+        if (var->unk2 || var->veqv) {
             entry = searchvar(isvarhash(var->location), &var->location);
             entry->graphnode = NULL;
             entry->data.isvar_issvar.size = (unsigned char)var->size;
             entry->data.isvar_issvar.unk22 = var->unk2;
-            entry->data.isvar_issvar.unk21 = var->unk1;
+            entry->data.isvar_issvar.veqv = var->veqv;
         }
         vartreeinfo(var->left);
         var = var->right;
@@ -2638,6 +2641,8 @@ int findincre(struct Expression *entry) {
                     caseerror(1, 1251, "uoptutil.p", 10);
                     return 0; // originally an uninitialized stack value was returned
             }
+            return 0;
+
         default:
             caseerror(1, 1238, "uoptutil.p", 10);
             return 0; // originally an uninitialized stack value was returned
