@@ -1272,7 +1272,7 @@ struct Loop *toplevelloops;
 00480624 check_ix_source
 00480698 get_ix_source
 */
-void *looptab; // TODO: fix type
+struct LooptabItem *looptab;
 
 /*
 00434720 processargs

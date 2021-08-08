@@ -169,6 +169,37 @@ struct Loop {
     /* 0x14 */ struct Loop *next;
 }; // size 0x18
 
+// probably related to induction variables or loop invariant
+// only used when mipsflag == 3
+struct ExpSourceThing {
+    /* 0x00 */ struct IChain *ichain;
+    /* 0x04 */ struct ExpSourceThing *next;
+    /* 0x08 */ int unk8;
+    /* 0x0C */ int unkC;
+    /* 0x10 */ struct IChain *ichain_unk10;
+    /* 0x14 */ int unk14;
+    /* 0x18 */ int unk18;
+}; // size 0x1C
+
+// probably related to induction variables or loop invariant
+// only used when mipsflag == 3
+struct ScmThing {
+    /* 0x00 */ struct IChain *ichain;
+    /* 0x04 */ struct ExpSourceThing *unk4;
+    /* 0x08 */ struct ScmThing *next;
+    /* 0x10 */ unsigned char unk10;
+    /* 0x11 */ unsigned char unk11;
+}; // size 0x14
+
+struct LooptabItem {
+    /* 0x0 */ struct Loop *loop;
+    /* 0x4 */ struct ScmThing *unk4;
+    /* 0x8 */ bool unk8;
+    /* 0x9 */ bool unk9;
+    /* 0xA */ unsigned char unkA;
+}; // size 0xC
+
+
 struct IntervalList {
     /* 0x00 */ struct Interval* intv;
     /* 0x04 */ struct IntervalList* next;
@@ -401,7 +432,7 @@ struct Statement {
             struct IChain *ichain; //0x28
             union {
                 struct {
-                    int unk2C;
+                    struct ExpSourceThing *unk2C;
                     struct RecurThing *unk30;
                 } str;
                 struct {
@@ -658,6 +689,7 @@ struct IChain { // TODO: rename
             union {
                 /* 0x24 */ Datatype cvtfrom;
                 /* 0x24 */ unsigned short unk24_u16;
+                struct ExpSourceThing *unk24_cand;
                 union {
                     /* 0x24 */ int word; // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
                     struct {
@@ -732,8 +764,7 @@ struct RecurThing {
     /* 0x00 */ struct IChain *ichain;
     /* 0x04 */ struct Expression *expr;
     /* 0x08 */ struct RecurThing *next;
-
-};
+}; // size 0xC
 
 struct Expression {
     /* 0x00 */ ExpressionType type;
@@ -920,7 +951,7 @@ extern int pdefmax;
 extern int pdefno;
 extern struct IChain *itable[1619];
 extern struct Loop *toplevelloops;
-extern void *looptab; // TODO: fix type
+extern struct LooptabItem *looptab;
 extern int actnuminteeregs;
 extern int actnuminterregs;
 extern struct BitVector setofr2bbs[3];
