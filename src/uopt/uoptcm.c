@@ -1,9 +1,11 @@
 #include "libp/libp.h"
 #include "libu/libu.h"
 #include "uoptions.h"
+#include "uoptutil.h"
 #include "uoptdata.h"
 #include "bitvector.h"
 #include "uoptcm.h"
+#include "uoptscm.h"
 #include "uoptdbg.h"
 #include "uoptitab.h"
 

@@ -53,6 +53,8 @@ void printitab(void);
 void printtab(void);
 void printbv(struct BitVector *bv);
 void printlinfo(void);
+void printhoist(bool show_hoistedexp);
+void printprecm(void);
 void printcm(void);
 void printscm(void);
 void printregs(void);
