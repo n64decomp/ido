@@ -192,7 +192,7 @@ static int func_00474DC0(struct IChain *ichain) {
 */
 static void func_00474FC8(struct Statement *stat, struct Graphnode *node_shared74) {
     int sp80;
-    unsigned short sp7A; // or bool?
+    bool sp7A;
     struct IChain *sp70;
     int sp6C;
     int loopno;
