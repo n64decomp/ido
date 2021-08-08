@@ -194,6 +194,7 @@ D_10010450:
     # 0041C914 printregs
     .ascii "notloopfirstbb\x00 loopfirstbb\x00canunroll\x00\x00 \x00\x00\x00\x00\x00\x00\x00\x00"
 
+.text
 )"");
 /*
 0041DDD4 printstat

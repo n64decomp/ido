@@ -25,6 +25,7 @@ RO_1000A10C:
     # 0040BCA0 path_blockno
     .asciz "symbol table anomaly isym (%d) not referred to by external\n"
 
+.text
 )"");
 
 // See /usr/include/cmplrs/feedback.h for feedback structure
