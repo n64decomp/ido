@@ -118,43 +118,6 @@ jtbl_1000E3F8:
     .gpword .L0047EDF0
     .gpword .L0047EE70
     .gpword .L0047EDE8
-
-RO_1000E418:
-    # 0047F4C0 trap_imply
-    .asciz "uoptutil.p"
-
-    .balign 4
-jtbl_1000E424:
-    # 0047F4C0 trap_imply
-    .gpword .L0047F548
-    .gpword .L0047F548
-    .gpword .L0047F59C
-    .gpword .L0047F59C
-
-RO_1000E434:
-    # 0047F620 trapstat_imply
-    .ascii "uoptutil.p"
-
-RO_1000E43E:
-    # 0047F620 trapstat_imply
-    .ascii "uoptutil.p"
-
-    .balign 4
-jtbl_1000E448:
-    # 0047F620 trapstat_imply
-    .gpword .L0047F710
-    .gpword .L0047F710
-    .gpword .L0047F734
-    .gpword .L0047F734
-
-    .balign 4
-jtbl_1000E458:
-    # 0047F620 trapstat_imply
-    .gpword .L0047F7AC
-    .gpword .L0047F7AC
-    .gpword .L0047F7D0
-    .gpword .L0047F7D0
-
 )"");
 
 /*
@@ -2124,7 +2087,7 @@ int cutbits(int val, int length, enum Datatype dtype) {
 /* 
 0043CFCC readnxtinst
 */
-long long int cutbits64(long long val, int length, enum Datatype dtype) {
+long long cutbits64(long long val, int length, enum Datatype dtype) {
     union Valu t;
     t.dwval = val;
 
@@ -2494,47 +2457,19 @@ glabel ldainreg
     .type ldainreg, @function
     .size ldainreg, .-ldainreg
     .end ldainreg
-
-glabel in_indmults
-    .ent in_indmults
-    # 0041550C func_0041550C
-    # 00444A84 isearchloop
-/* 0047E8C8 3C1C0FBA */  .cpload $t9
-/* 0047E8CC 279CB9C8 */
-/* 0047E8D0 0399E021 */
-/* 0047E8D4 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0047E8D8 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047E8DC AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047E8E0 14800003 */  bnez  $a0, .L0047E8F0
-/* 0047E8E4 00803025 */   move  $a2, $a0
-/* 0047E8E8 1000000E */  b     .L0047E924
-/* 0047E8EC 24030001 */   li    $v1, 1
-.L0047E8F0:
-/* 0047E8F0 90CE0000 */  lbu   $t6, ($a2)
-/* 0047E8F4 24010004 */  li    $at, 4
-/* 0047E8F8 11C10003 */  beq   $t6, $at, .L0047E908
-/* 0047E8FC 00000000 */   nop
-/* 0047E900 10000008 */  b     .L0047E924
-/* 0047E904 24030001 */   li    $v1, 1
-.L0047E908:
-/* 0047E908 8F998170 */  lw    $t9, %call16(bvectin0)($gp)
-/* 0047E90C 94C40002 */  lhu   $a0, 2($a2)
-/* 0047E910 8F858CF8 */  lw     $a1, %got(indmults)($gp)
-/* 0047E914 0320F809 */  jalr  $t9
-/* 0047E918 00000000 */   nop
-/* 0047E91C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047E920 304300FF */  andi  $v1, $v0, 0xff
-.L0047E924:
-/* 0047E924 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047E928 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0047E92C 00601025 */  move  $v0, $v1
-/* 0047E930 03E00008 */  jr    $ra
-/* 0047E934 00000000 */   nop
-    .type in_indmults, @function
-    .size in_indmults, .-in_indmults
-    .end in_indmults
-
 )"");
+
+/*
+0041550C func_0041550C
+00444A84 isearchloop
+*/
+bool in_indmults(struct IChain *ichain) {
+    if (ichain != NULL && ichain->type == isop){
+        return bvectin0(ichain->bitpos, &indmults);
+    } else {
+        return true; // ?
+    }
+}
 
 /*
 0043CFCC readnxtinst
@@ -2943,279 +2878,118 @@ bool fitparmreg(int arg0, int arg1, int arg2, int arg3) {
     return ((arg2 + arg3) == (arg0 + arg1));
 }
 
-__asm__(R""(
-.set noat
-.set noreorder
+/*
+00410204 codemotion
+004324F4 findinduct
+*/
+bool trap_imply(struct IChain *trap_ichain, struct IChain *ichain) {
+    if (ichain->type != isop) {
+        return false;
+    }
 
-glabel trap_imply
-    .ent trap_imply
-    # 00410204 codemotion
-    # 004324F4 findinduct
-/* 0047F4C0 3C1C0FBA */  .cpload $t9
-/* 0047F4C4 279CADD0 */
-/* 0047F4C8 0399E021 */
-/* 0047F4CC 90AE0000 */  lbu   $t6, ($a1)
-/* 0047F4D0 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0047F4D4 24010004 */  li    $at, 4
-/* 0047F4D8 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047F4DC 11C10003 */  beq   $t6, $at, .L0047F4EC
-/* 0047F4E0 AFBC0018 */   sw    $gp, 0x18($sp)
-/* 0047F4E4 1000004A */  b     .L0047F610
-/* 0047F4E8 00001025 */   move  $v0, $zero
-.L0047F4EC:
-/* 0047F4EC 90830010 */  lbu   $v1, 0x10($a0)
-/* 0047F4F0 90AF0010 */  lbu   $t7, 0x10($a1)
-/* 0047F4F4 146F0007 */  bne   $v1, $t7, .L0047F514
-/* 0047F4F8 00000000 */   nop
-/* 0047F4FC 8C980014 */  lw    $t8, 0x14($a0)
-/* 0047F500 8CB90014 */  lw    $t9, 0x14($a1)
-/* 0047F504 17190003 */  bne   $t8, $t9, .L0047F514
-/* 0047F508 00000000 */   nop
-/* 0047F50C 14A40003 */  bne   $a1, $a0, .L0047F51C
-/* 0047F510 306200FF */   andi  $v0, $v1, 0xff
-.L0047F514:
-/* 0047F514 1000003E */  b     .L0047F610
-/* 0047F518 00001025 */   move  $v0, $zero
-.L0047F51C:
-/* 0047F51C 2448FF7F */  addiu $t0, $v0, -0x81
-/* 0047F520 2D010004 */  sltiu $at, $t0, 4
-/* 0047F524 10200032 */  beqz  $at, .L0047F5F0
-/* 0047F528 2407000A */   li    $a3, 10
-/* 0047F52C 8F818044 */  lw    $at, %got(jtbl_1000E424)($gp)
-/* 0047F530 00084080 */  sll   $t0, $t0, 2
-/* 0047F534 00280821 */  addu  $at, $at, $t0
-/* 0047F538 8C28E424 */  lw    $t0, %lo(jtbl_1000E424)($at)
-/* 0047F53C 011C4021 */  addu  $t0, $t0, $gp
-/* 0047F540 01000008 */  jr    $t0
-/* 0047F544 00000000 */   nop
-.L0047F548:
-/* 0047F548 90820001 */  lbu   $v0, 1($a0)
-/* 0047F54C 24010006 */  li    $at, 6
-/* 0047F550 54410008 */  bnel  $v0, $at, .L0047F574
-/* 0047F554 24010008 */   li    $at, 8
-/* 0047F558 8C890018 */  lw    $t1, 0x18($a0)
-/* 0047F55C 8CAB0018 */  lw    $t3, 0x18($a1)
-/* 0047F560 8D2A0010 */  lw    $t2, 0x10($t1)
-/* 0047F564 8D6C0010 */  lw    $t4, 0x10($t3)
-/* 0047F568 10000029 */  b     .L0047F610
-/* 0047F56C 014C102A */   slt   $v0, $t2, $t4
-/* 0047F570 24010008 */  li    $at, 8
-.L0047F574:
-/* 0047F574 14410007 */  bne   $v0, $at, .L0047F594
-/* 0047F578 00000000 */   nop
-/* 0047F57C 8C8D0018 */  lw    $t5, 0x18($a0)
-/* 0047F580 8CAF0018 */  lw    $t7, 0x18($a1)
-/* 0047F584 8DAE0010 */  lw    $t6, 0x10($t5)
-/* 0047F588 8DF80010 */  lw    $t8, 0x10($t7)
-/* 0047F58C 10000020 */  b     .L0047F610
-/* 0047F590 01D8102B */   sltu  $v0, $t6, $t8
-.L0047F594:
-/* 0047F594 1000001E */  b     .L0047F610
-/* 0047F598 00001025 */   move  $v0, $zero
-.L0047F59C:
-/* 0047F59C 90820001 */  lbu   $v0, 1($a0)
-/* 0047F5A0 24010006 */  li    $at, 6
-/* 0047F5A4 54410008 */  bnel  $v0, $at, .L0047F5C8
-/* 0047F5A8 24010008 */   li    $at, 8
-/* 0047F5AC 8CB90018 */  lw    $t9, 0x18($a1)
-/* 0047F5B0 8C890018 */  lw    $t1, 0x18($a0)
-/* 0047F5B4 8F280010 */  lw    $t0, 0x10($t9)
-/* 0047F5B8 8D2B0010 */  lw    $t3, 0x10($t1)
-/* 0047F5BC 10000014 */  b     .L0047F610
-/* 0047F5C0 010B102A */   slt   $v0, $t0, $t3
-/* 0047F5C4 24010008 */  li    $at, 8
-.L0047F5C8:
-/* 0047F5C8 14410007 */  bne   $v0, $at, .L0047F5E8
-/* 0047F5CC 00000000 */   nop
-/* 0047F5D0 8CAA0018 */  lw    $t2, 0x18($a1)
-/* 0047F5D4 8C8D0018 */  lw    $t5, 0x18($a0)
-/* 0047F5D8 8D4C0010 */  lw    $t4, 0x10($t2)
-/* 0047F5DC 8DAF0010 */  lw    $t7, 0x10($t5)
-/* 0047F5E0 1000000B */  b     .L0047F610
-/* 0047F5E4 018F102B */   sltu  $v0, $t4, $t7
-.L0047F5E8:
-/* 0047F5E8 10000009 */  b     .L0047F610
-/* 0047F5EC 00001025 */   move  $v0, $zero
-.L0047F5F0:
-/* 0047F5F0 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0047F5F4 8F868044 */  lw    $a2, %got(RO_1000E418)($gp)
-/* 0047F5F8 24040001 */  li    $a0, 1
-/* 0047F5FC 24050575 */  li    $a1, 1397
-/* 0047F600 0320F809 */  jalr  $t9
-/* 0047F604 24C6E418 */   addiu $a2, %lo(RO_1000E418) # addiu $a2, $a2, -0x1be8
-/* 0047F608 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047F60C 93A20027 */  lbu   $v0, 0x27($sp)
-.L0047F610:
-/* 0047F610 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047F614 27BD0028 */  addiu $sp, $sp, 0x28
-/* 0047F618 03E00008 */  jr    $ra
-/* 0047F61C 00000000 */   nop
-    .type trap_imply, @function
-    .size trap_imply, .-trap_imply
-    .end trap_imply
+    if (trap_ichain->isop.opc != ichain->isop.opc || trap_ichain->isop.op1 != ichain->isop.op1 || ichain == trap_ichain) {
+        return false;
+    }
 
-glabel trapstat_imply
-    .ent trapstat_imply
-    # 0043CFCC readnxtinst
-    # 0046E77C oneloopblockstmt
-/* 0047F620 3C1C0FBA */  .cpload $t9
-/* 0047F624 279CAC70 */
-/* 0047F628 0399E021 */
-/* 0047F62C 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0047F630 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047F634 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047F638 8C8E0004 */  lw    $t6, 4($a0)
-/* 0047F63C 00803825 */  move  $a3, $a0
-/* 0047F640 50AE0004 */  beql  $a1, $t6, .L0047F654
-/* 0047F644 8CE40014 */   lw    $a0, 0x14($a3)
-/* 0047F648 10000075 */  b     .L0047F820
-/* 0047F64C 00001025 */   move  $v0, $zero
-/* 0047F650 8CE40014 */  lw    $a0, 0x14($a3)
-.L0047F654:
-/* 0047F654 54C40004 */  bnel  $a2, $a0, .L0047F668
-/* 0047F658 90E50000 */   lbu   $a1, ($a3)
-/* 0047F65C 10000070 */  b     .L0047F820
-/* 0047F660 24020001 */   li    $v0, 1
-/* 0047F664 90E50000 */  lbu   $a1, ($a3)
-.L0047F668:
-/* 0047F668 3C018400 */  lui   $at, 0x8400
-/* 0047F66C 24AFFF80 */  addiu $t7, $a1, -0x80
-/* 0047F670 2DF80020 */  sltiu $t8, $t7, 0x20
-/* 0047F674 0018C823 */  negu  $t9, $t8
-/* 0047F678 03214824 */  and   $t1, $t9, $at
-/* 0047F67C 01E95004 */  sllv  $t2, $t1, $t7
-/* 0047F680 05430004 */  bgezl $t2, .L0047F694
-/* 0047F684 90820000 */   lbu   $v0, ($a0)
-/* 0047F688 10000065 */  b     .L0047F820
-/* 0047F68C 00001025 */   move  $v0, $zero
-/* 0047F690 90820000 */  lbu   $v0, ($a0)
-.L0047F694:
-/* 0047F694 24080002 */  li    $t0, 2
-/* 0047F698 15020004 */  bne   $t0, $v0, .L0047F6AC
-/* 0047F69C 00000000 */   nop
-/* 0047F6A0 90C30000 */  lbu   $v1, ($a2)
-/* 0047F6A4 51030004 */  beql  $t0, $v1, .L0047F6B8
-/* 0047F6A8 24080008 */   li    $t0, 8
-.L0047F6AC:
-/* 0047F6AC 1000005C */  b     .L0047F820
-/* 0047F6B0 00001025 */   move  $v0, $zero
-/* 0047F6B4 24080008 */  li    $t0, 8
-.L0047F6B8:
-/* 0047F6B8 15020003 */  bne   $t0, $v0, .L0047F6C8
-/* 0047F6BC 00000000 */   nop
-/* 0047F6C0 51030004 */  beql  $t0, $v1, .L0047F6D4
-/* 0047F6C4 90E2002C */   lbu   $v0, 0x2c($a3)
-.L0047F6C8:
-/* 0047F6C8 10000055 */  b     .L0047F820
-/* 0047F6CC 00001025 */   move  $v0, $zero
-/* 0047F6D0 90E2002C */  lbu   $v0, 0x2c($a3)
-.L0047F6D4:
-/* 0047F6D4 24010006 */  li    $at, 6
-/* 0047F6D8 14410027 */  bne   $v0, $at, .L0047F778
-/* 0047F6DC 00000000 */   nop
-/* 0047F6E0 30A200FF */  andi  $v0, $a1, 0xff
-/* 0047F6E4 244BFF7F */  addiu $t3, $v0, -0x81
-/* 0047F6E8 2D610004 */  sltiu $at, $t3, 4
-/* 0047F6EC 1020001A */  beqz  $at, .L0047F758
-/* 0047F6F0 2405058E */   li    $a1, 1422
-/* 0047F6F4 8F818044 */  lw    $at, %got(jtbl_1000E448)($gp)
-/* 0047F6F8 000B5880 */  sll   $t3, $t3, 2
-/* 0047F6FC 002B0821 */  addu  $at, $at, $t3
-/* 0047F700 8C2BE448 */  lw    $t3, %lo(jtbl_1000E448)($at)
-/* 0047F704 017C5821 */  addu  $t3, $t3, $gp
-/* 0047F708 01600008 */  jr    $t3
-/* 0047F70C 00000000 */   nop
-.L0047F710:
-/* 0047F710 8C8C0020 */  lw    $t4, 0x20($a0)
-/* 0047F714 8CCD0020 */  lw    $t5, 0x20($a2)
-/* 0047F718 018D082A */  slt   $at, $t4, $t5
-/* 0047F71C 10200003 */  beqz  $at, .L0047F72C
-/* 0047F720 00000000 */   nop
-/* 0047F724 1000003E */  b     .L0047F820
-/* 0047F728 24020001 */   li    $v0, 1
-.L0047F72C:
-/* 0047F72C 1000003C */  b     .L0047F820
-/* 0047F730 2402FFFF */   li    $v0, -1
-.L0047F734:
-/* 0047F734 8CCE0020 */  lw    $t6, 0x20($a2)
-/* 0047F738 8C980020 */  lw    $t8, 0x20($a0)
-/* 0047F73C 01D8082A */  slt   $at, $t6, $t8
-/* 0047F740 10200003 */  beqz  $at, .L0047F750
-/* 0047F744 00000000 */   nop
-/* 0047F748 10000035 */  b     .L0047F820
-/* 0047F74C 24020001 */   li    $v0, 1
-.L0047F750:
-/* 0047F750 10000033 */  b     .L0047F820
-/* 0047F754 2402FFFF */   li    $v0, -1
-.L0047F758:
-/* 0047F758 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0047F75C 8F868044 */  lw    $a2, %got(RO_1000E43E)($gp)
-/* 0047F760 24040001 */  li    $a0, 1
-/* 0047F764 2407000A */  li    $a3, 10
-/* 0047F768 0320F809 */  jalr  $t9
-/* 0047F76C 24C6E43E */   addiu $a2, %lo(RO_1000E43E) # addiu $a2, $a2, -0x1bc2
-/* 0047F770 1000002A */  b     .L0047F81C
-/* 0047F774 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0047F778:
-/* 0047F778 15020026 */  bne   $t0, $v0, .L0047F814
-/* 0047F77C 30A200FF */   andi  $v0, $a1, 0xff
-/* 0047F780 2459FF7F */  addiu $t9, $v0, -0x81
-/* 0047F784 2F210004 */  sltiu $at, $t9, 4
-/* 0047F788 1020001A */  beqz  $at, .L0047F7F4
-/* 0047F78C 24050595 */   li    $a1, 1429
-/* 0047F790 8F818044 */  lw    $at, %got(jtbl_1000E458)($gp)
-/* 0047F794 0019C880 */  sll   $t9, $t9, 2
-/* 0047F798 00390821 */  addu  $at, $at, $t9
-/* 0047F79C 8C39E458 */  lw    $t9, %lo(jtbl_1000E458)($at)
-/* 0047F7A0 033CC821 */  addu  $t9, $t9, $gp
-/* 0047F7A4 03200008 */  jr    $t9
-/* 0047F7A8 00000000 */   nop
-.L0047F7AC:
-/* 0047F7AC 8C890020 */  lw    $t1, 0x20($a0)
-/* 0047F7B0 8CCF0020 */  lw    $t7, 0x20($a2)
-/* 0047F7B4 012F082B */  sltu  $at, $t1, $t7
-/* 0047F7B8 10200003 */  beqz  $at, .L0047F7C8
-/* 0047F7BC 00000000 */   nop
-/* 0047F7C0 10000017 */  b     .L0047F820
-/* 0047F7C4 24020001 */   li    $v0, 1
-.L0047F7C8:
-/* 0047F7C8 10000015 */  b     .L0047F820
-/* 0047F7CC 2402FFFF */   li    $v0, -1
-.L0047F7D0:
-/* 0047F7D0 8CCA0020 */  lw    $t2, 0x20($a2)
-/* 0047F7D4 8C8B0020 */  lw    $t3, 0x20($a0)
-/* 0047F7D8 014B082B */  sltu  $at, $t2, $t3
-/* 0047F7DC 10200003 */  beqz  $at, .L0047F7EC
-/* 0047F7E0 00000000 */   nop
-/* 0047F7E4 1000000E */  b     .L0047F820
-/* 0047F7E8 24020001 */   li    $v0, 1
-.L0047F7EC:
-/* 0047F7EC 1000000C */  b     .L0047F820
-/* 0047F7F0 2402FFFF */   li    $v0, -1
-.L0047F7F4:
-/* 0047F7F4 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0047F7F8 8F868044 */  lw    $a2, %got(RO_1000E434)($gp)
-/* 0047F7FC 24040001 */  li    $a0, 1
-/* 0047F800 2407000A */  li    $a3, 10
-/* 0047F804 0320F809 */  jalr  $t9
-/* 0047F808 24C6E434 */   addiu $a2, %lo(RO_1000E434) # addiu $a2, $a2, -0x1bcc
-/* 0047F80C 10000003 */  b     .L0047F81C
-/* 0047F810 8FBC0018 */   lw    $gp, 0x18($sp)
-.L0047F814:
-/* 0047F814 10000002 */  b     .L0047F820
-/* 0047F818 00001025 */   move  $v0, $zero
-.L0047F81C:
-/* 0047F81C 8FA20024 */  lw    $v0, 0x24($sp)
-.L0047F820:
-/* 0047F820 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047F824 27BD0028 */  addiu $sp, $sp, 0x28
-/* 0047F828 03E00008 */  jr    $ra
-/* 0047F82C 00000000 */   nop
-    .type trapstat_imply, @function
-    .size trapstat_imply, .-trapstat_imply
-    .end trapstat_imply
+    switch (trap_ichain->isop.opc) {
+        case Utpge:
+        case Utpgt:
+            if (trap_ichain->dtype == Jdt) {
+                return trap_ichain->isop.op2->isconst.number.intval < ichain->isop.op2->isconst.number.intval;
+            }
+            if (trap_ichain->dtype == Ldt) {
+                return trap_ichain->isop.op2->isconst.number.uintval < ichain->isop.op2->isconst.number.uintval;
+            }
+            return false;
 
-)"");
+        case Utple:
+        case Utplt:
+            if (trap_ichain->dtype == Jdt) {
+                return trap_ichain->isop.op2->isconst.number.intval > ichain->isop.op2->isconst.number.intval;
+            }
+            if (trap_ichain->dtype == Ldt) {
+                return trap_ichain->isop.op2->isconst.number.uintval > ichain->isop.op2->isconst.number.uintval;
+            }
+            return false;
+
+        default:
+            caseerror(1, 0x575, "uoptutil.p", 0xA);
+            return false;
+    }
+}
+
+/*
+0043CFCC readnxtinst
+0046E77C oneloopblockstmt
+*/
+int trapstat_imply(struct Statement *stat, struct Expression *op1, struct Expression *op2) {
+    if (op1 != stat->expr) {
+        return 0;
+    }
+    if (op2 == stat->u.trap.expr2) {
+        return 1;
+    }
+
+    if (stat->opc == Utpeq || stat->opc == Utpne) {
+        return 0;
+    }
+
+    if (stat->u.trap.expr2->type != isconst || op2->type != isconst) {
+        return 0;
+    }
+    if (stat->u.trap.expr2->type != isrconst || op2->type != isrconst) { // wait what
+        return 0;
+    }
+
+    // dead code
+    if (stat->u.trap.dtype == Jdt) {
+        switch (stat->opc) {
+            case Utpge:
+            case Utpgt:
+                if (stat->u.trap.expr2->data.isconst.number.intval < op2->data.isconst.number.intval) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+
+            case Utple:
+            case Utplt:
+                if (op2->data.isconst.number.intval < stat->u.trap.expr2->data.isconst.number.intval) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+
+            default: 
+                caseerror(1, 1422, "uoptutil.p", 10);
+                break;
+        }
+    } else if (stat->u.trap.dtype == Ldt) {
+        switch (stat->opc) {
+            case Utpge:
+            case Utpgt:
+                if (stat->u.trap.expr2->data.isconst.number.uintval < op2->data.isconst.number.uintval) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+
+            case Utple:
+            case Utplt:
+                if (op2->data.isconst.number.uintval < stat->u.trap.expr2->data.isconst.number.uintval) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+
+            default:
+                caseerror(1, 1429, "uoptutil.p", 10);
+                break;
+        }
+    }
+
+    return 0;
+}
 
 /*
 0043C56C func_0043C56C

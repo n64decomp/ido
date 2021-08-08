@@ -402,7 +402,7 @@ struct Statement {
             union {
                 struct {
                     int unk2C;
-                    int unk30;
+                    struct RecurThing *unk30;
                 } str;
                 struct {
                     Datatype dtype; // 0x2C
@@ -726,6 +726,14 @@ struct TailRecParameter {
     /* 0x0C */ struct Expression* expr;
     /* 0x10 */ struct TailRecParameter *next;
 }; // size 0x14
+
+// Statement.u.store.u.str.unk30
+struct RecurThing {
+    /* 0x00 */ struct IChain *ichain;
+    /* 0x04 */ struct Expression *expr;
+    /* 0x08 */ struct RecurThing *next;
+
+};
 
 struct Expression {
     /* 0x00 */ ExpressionType type;

@@ -334,19 +334,19 @@ void patchvectors(void) {
                         }
                     } else {
                         if (expinalter(ichain->isop.op2, node)) {
-                            phi_s1 = true;
                             phi_s2 = true;
+                            phi_s1 = true;
                         } else if (ichain->isop.opc == Uisst || ichain->isop.opc == Ustr) {
                             if (ichain->isop.op1->isvar_issvar.unk1A) {
-                                phi_s1 = true;
                                 phi_s2 = true;
+                                phi_s1 = true;
                             } else {
                                 phi_s2 = bvectin(ichain->isop.op1->isvar_issvar.assignbit, &node->bvs.stage1.alters);
                                 phi_s1 = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.alters);
                             }
                         } else if (expinalter(ichain->isop.op1, node)) {
-                            phi_s1 = true;
                             phi_s2 = true;
+                            phi_s1 = true;
                         } else {
                             phi_s2 = strlkilled(ichain->isop.stat, node->varlisthead);
                             phi_s1 = strskilled(ichain->isop.stat, node->varlisthead);
@@ -367,16 +367,16 @@ void patchvectors(void) {
                                             ((ichain->isop.opc == Umov ||
                                               ichain->isop.opc == Umovv) &&
                                              cmkilled(curlevel, indirprocs, ichain->isop.stat))) {
-                                        phi_s1 = true;
                                         phi_s2 = true;
+                                        phi_s1 = true;
                                     }
                                 } else if (cskilled(node->stat_tail->u.call.level, node->stat_tail->u.call.proc, ichain->isop.stat) ||
                                         listpskilled(node->stat_tail->u.call.parameters, ichain->isop.stat, 0) ||
                                         ((ichain->isop.opc == Umov ||
                                           ichain->isop.opc == Umovv) &&
                                          cmkilled(node->stat_tail->u.call.level, node->stat_tail->u.call.proc, ichain->isop.stat))) {
-                                    phi_s1 = true;
                                     phi_s2 = true;
+                                    phi_s1 = true;
                                 }
                             }
                         }
