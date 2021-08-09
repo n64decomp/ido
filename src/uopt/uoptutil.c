@@ -923,7 +923,7 @@ void decreasecount(struct Expression *expr) {
         case empty:
         case dumped:
         default:
-            caseerror(1, 0x16D, "uoptutil.p", 0xA);
+            caseerror(1, 365, "uoptutil.p", 10);
             break;
     }
 }
@@ -2913,7 +2913,7 @@ bool trap_imply(struct IChain *trap_ichain, struct IChain *ichain) {
             return false;
 
         default:
-            caseerror(1, 0x575, "uoptutil.p", 0xA);
+            caseerror(1, 1397, "uoptutil.p", 10);
             return false;
     }
 }

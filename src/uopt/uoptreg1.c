@@ -1,3 +1,8 @@
+#include "libp/libp.h"
+#include "libu/libu.h"
+#include "uoptdata.h"
+#include "uoptdbg.h"
+#include "uoptions.h"
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -198,6 +203,17 @@ glabel outonly_parm
 .set noreorder # don't insert nops after branches
 
 .text
+)"");
+
+extern struct BitVector ever_altered;
+extern int passedcl;
+extern int outonly_parm;
+
+
+__asm__(R""(
+.set noat      # allow manual use of $at
+.set noreorder # don't insert nops after branches
+
 glabel is_cup
     .ent is_cup
     # 004638C0 regdataflow
@@ -236,400 +252,119 @@ glabel is_cup
     .type is_cup, @function
     .size is_cup, .-is_cup
     .end is_cup
+)"");
 
-glabel formlivbb
-    .ent formlivbb
-    # 0045E45C func_0045E45C
-    # 0045E5C4 func_0045E5C4
-    # 0045FBB4 func_0045FBB4
-    # 00461084 func_00461084
-    # 0046123C func_0046123C
-    # 00461640 func_00461640
-    # 00461AAC makelivranges
-/* 0045DA18 3C1C0FBC */  .cpload $t9
-/* 0045DA1C 279CC878 */  
-/* 0045DA20 0399E021 */  
-/* 0045DA24 27BDFFA8 */  addiu $sp, $sp, -0x58
-/* 0045DA28 8F8F89EC */  lw     $t7, %got(bittab)($gp)
-/* 0045DA2C AFBF0024 */  sw    $ra, 0x24($sp)
-/* 0045DA30 AFBC0020 */  sw    $gp, 0x20($sp)
-/* 0045DA34 AFB1001C */  sw    $s1, 0x1c($sp)
-/* 0045DA38 AFB00018 */  sw    $s0, 0x18($sp)
-/* 0045DA3C AFA5005C */  sw    $a1, 0x5c($sp)
-/* 0045DA40 94820002 */  lhu   $v0, 2($a0)
-/* 0045DA44 8DEF0000 */  lw    $t7, ($t7)
-/* 0045DA48 00808025 */  move  $s0, $a0
-/* 0045DA4C 000270C0 */  sll   $t6, $v0, 3
-/* 0045DA50 AFAE0030 */  sw    $t6, 0x30($sp)
-/* 0045DA54 01EEC821 */  addu  $t9, $t7, $t6
-/* 0045DA58 8F230004 */  lw    $v1, 4($t9)
-/* 0045DA5C 00C08825 */  move  $s1, $a2
-/* 0045DA60 146000F5 */  bnez  $v1, .L0045DE38
-/* 0045DA64 00000000 */   nop   
-/* 0045DA68 8F9986BC */  lw    $t9, %call16(regclassof)($gp)
-/* 0045DA6C 0320F809 */  jalr  $t9
-/* 0045DA70 00000000 */   nop   
-/* 0045DA74 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DA78 000268C0 */  sll   $t5, $v0, 3
-/* 0045DA7C 96050002 */  lhu   $a1, 2($s0)
-/* 0045DA80 8F8E8D78 */  lw     $t6, %got(iscolored)($gp)
-/* 0045DA84 8F998184 */  lw    $t9, %call16(setbit)($gp)
-/* 0045DA88 25CEFFF8 */  addiu $t6, $t6, -8
-/* 0045DA8C 0320F809 */  jalr  $t9
-/* 0045DA90 01AE2021 */   addu  $a0, $t5, $t6
-/* 0045DA94 92020000 */  lbu   $v0, ($s0)
-/* 0045DA98 240C0003 */  li    $t4, 3
-/* 0045DA9C 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DAA0 1582009D */  bne   $t4, $v0, .L0045DD18
-/* 0045DAA4 00000000 */   nop   
-/* 0045DAA8 920F0016 */  lbu   $t7, 0x16($s0)
-/* 0045DAAC 24010002 */  li    $at, 2
-/* 0045DAB0 31F80007 */  andi  $t8, $t7, 7
-/* 0045DAB4 17010098 */  bne   $t8, $at, .L0045DD18
-/* 0045DAB8 00000000 */   nop   
-/* 0045DABC 8F998980 */  lw     $t9, %got(curblk)($gp)
-/* 0045DAC0 8E0D0014 */  lw    $t5, 0x14($s0)
-/* 0045DAC4 8F390000 */  lw    $t9, ($t9)
-/* 0045DAC8 000D72C2 */  srl   $t6, $t5, 0xb
-/* 0045DACC 172E0092 */  bne   $t9, $t6, .L0045DD18
-/* 0045DAD0 00000000 */   nop   
-/* 0045DAD4 8F838A00 */  lw     $v1, %got(pdefmax)($gp)
-/* 0045DAD8 8E040010 */  lw    $a0, 0x10($s0)
-/* 0045DADC 00005825 */  move  $t3, $zero
-/* 0045DAE0 8C630000 */  lw    $v1, ($v1)
-/* 0045DAE4 04810003 */  bgez  $a0, .L0045DAF4
-/* 0045DAE8 00044883 */   sra   $t1, $a0, 2
-/* 0045DAEC 24810003 */  addiu $at, $a0, 3
-/* 0045DAF0 00014883 */  sra   $t1, $at, 2
-.L0045DAF4:
-/* 0045DAF4 0069082A */  slt   $at, $v1, $t1
-/* 0045DAF8 5420000E */  bnezl $at, .L0045DB34
-/* 0045DAFC 24080060 */   li    $t0, 96
-/* 0045DB00 8F8F89F4 */  lw     $t7, %got(pdeftab)($gp)
-/* 0045DB04 00095100 */  sll   $t2, $t1, 4
-/* 0045DB08 24080060 */  li    $t0, 96
-/* 0045DB0C 8DEF0000 */  lw    $t7, ($t7)
-/* 0045DB10 01EA1021 */  addu  $v0, $t7, $t2
-/* 0045DB14 90580000 */  lbu   $t8, ($v0)
-/* 0045DB18 51180006 */  beql  $t0, $t8, .L0045DB34
-/* 0045DB1C 24080060 */   li    $t0, 96
-/* 0045DB20 904D0001 */  lbu   $t5, 1($v0)
-/* 0045DB24 24010009 */  li    $at, 9
-/* 0045DB28 15A10004 */  bne   $t5, $at, .L0045DB3C
-/* 0045DB2C 00000000 */   nop   
-/* 0045DB30 24080060 */  li    $t0, 96
-.L0045DB34:
-/* 0045DB34 10000055 */  b     .L0045DC8C
-/* 0045DB38 240B0001 */   li    $t3, 1
-.L0045DB3C:
-/* 0045DB3C 8F998B0C */  lw     $t9, %got(allcallersave)($gp)
-/* 0045DB40 28610004 */  slti  $at, $v1, 4
-/* 0045DB44 93390000 */  lbu   $t9, ($t9)
-/* 0045DB48 17200007 */  bnez  $t9, .L0045DB68
-/* 0045DB4C 00000000 */   nop   
-/* 0045DB50 14200002 */  bnez  $at, .L0045DB5C
-/* 0045DB54 00607025 */   move  $t6, $v1
-/* 0045DB58 240E0003 */  li    $t6, 3
-.L0045DB5C:
-/* 0045DB5C 01C9082A */  slt   $at, $t6, $t1
-/* 0045DB60 5420004A */  bnezl $at, .L0045DC8C
-/* 0045DB64 240B0001 */   li    $t3, 1
-.L0045DB68:
-/* 0045DB68 8F9986EC */  lw    $t9, %call16(fitparmreg)($gp)
-/* 0045DB6C 92050018 */  lbu   $a1, 0x18($s0)
-/* 0045DB70 8C460008 */  lw    $a2, 8($v0)
-/* 0045DB74 8C47000C */  lw    $a3, 0xc($v0)
-/* 0045DB78 AFA90048 */  sw    $t1, 0x48($sp)
-/* 0045DB7C AFAA0028 */  sw    $t2, 0x28($sp)
-/* 0045DB80 0320F809 */  jalr  $t9
-/* 0045DB84 A3AB0047 */   sb    $t3, 0x47($sp)
-/* 0045DB88 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DB8C 24080060 */  li    $t0, 96
-/* 0045DB90 8FA90048 */  lw    $t1, 0x48($sp)
-/* 0045DB94 8FAA0028 */  lw    $t2, 0x28($sp)
-/* 0045DB98 1040003B */  beqz  $v0, .L0045DC88
-/* 0045DB9C 93AB0047 */   lbu   $t3, 0x47($sp)
-/* 0045DBA0 8F8F89F4 */  lw     $t7, %got(pdeftab)($gp)
-/* 0045DBA4 3C010500 */  lui   $at, 0x500
-/* 0045DBA8 8DEF0000 */  lw    $t7, ($t7)
-/* 0045DBAC 01EAC021 */  addu  $t8, $t7, $t2
-/* 0045DBB0 930D0001 */  lbu   $t5, 1($t8)
-/* 0045DBB4 2DB90020 */  sltiu $t9, $t5, 0x20
-/* 0045DBB8 00197023 */  negu  $t6, $t9
-/* 0045DBBC 01C17824 */  and   $t7, $t6, $at
-/* 0045DBC0 01AFC004 */  sllv  $t8, $t7, $t5
-/* 0045DBC4 0701000D */  bgez  $t8, .L0045DBFC
-/* 0045DBC8 00000000 */   nop   
-/* 0045DBCC 8F998B28 */  lw     $t9, %got(mips3_64data)($gp)
-/* 0045DBD0 93390000 */  lbu   $t9, ($t9)
-/* 0045DBD4 17200009 */  bnez  $t9, .L0045DBFC
-/* 0045DBD8 00000000 */   nop   
-/* 0045DBDC 8F8E8B2C */  lw     $t6, %got(dwopcode)($gp)
-/* 0045DBE0 91CE0000 */  lbu   $t6, ($t6)
-/* 0045DBE4 51C00029 */  beql  $t6, $zero, .L0045DC8C
-/* 0045DBE8 240B0001 */   li    $t3, 1
-/* 0045DBEC 8F8F8B0C */  lw     $t7, %got(allcallersave)($gp)
-/* 0045DBF0 91EF0000 */  lbu   $t7, ($t7)
-/* 0045DBF4 51E00025 */  beql  $t7, $zero, .L0045DC8C
-/* 0045DBF8 240B0001 */   li    $t3, 1
-.L0045DBFC:
-/* 0045DBFC 8F998184 */  lw    $t9, %call16(setbit)($gp)
-/* 0045DC00 8F848D24 */  lw     $a0, %got(coloredparms)($gp)
-/* 0045DC04 96050002 */  lhu   $a1, 2($s0)
-/* 0045DC08 AFA90048 */  sw    $t1, 0x48($sp)
-/* 0045DC0C AFAA0028 */  sw    $t2, 0x28($sp)
-/* 0045DC10 0320F809 */  jalr  $t9
-/* 0045DC14 A3AB0047 */   sb    $t3, 0x47($sp)
-/* 0045DC18 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DC1C 8FA90048 */  lw    $t1, 0x48($sp)
-/* 0045DC20 8FAA0028 */  lw    $t2, 0x28($sp)
-/* 0045DC24 8F828A5C */  lw     $v0, %got(lang)($gp)
-/* 0045DC28 93AB0047 */  lbu   $t3, 0x47($sp)
-/* 0045DC2C 90420000 */  lbu   $v0, ($v0)
-/* 0045DC30 38420003 */  xori  $v0, $v0, 3
-/* 0045DC34 2C420001 */  sltiu $v0, $v0, 1
-/* 0045DC38 10400006 */  beqz  $v0, .L0045DC54
-/* 0045DC3C 00000000 */   nop   
-/* 0045DC40 8F8D89F4 */  lw     $t5, %got(pdeftab)($gp)
-/* 0045DC44 8DAD0000 */  lw    $t5, ($t5)
-/* 0045DC48 01AAC021 */  addu  $t8, $t5, $t2
-/* 0045DC4C 93020004 */  lbu   $v0, 4($t8)
-/* 0045DC50 2C420001 */  sltiu $v0, $v0, 1
-.L0045DC54:
-/* 0045DC54 8F818C60 */  lw     $at, %got(outonly_parm)($gp)
-/* 0045DC58 8F9981E4 */  lw    $t9, %call16(setbitbb)($gp)
-/* 0045DC5C 8F848938 */  lw     $a0, %got(ever_altered)($gp)
-/* 0045DC60 A0220000 */  sb    $v0, ($at)
-/* 0045DC64 96050002 */  lhu   $a1, 2($s0)
-/* 0045DC68 AFA90048 */  sw    $t1, 0x48($sp)
-/* 0045DC6C 0320F809 */  jalr  $t9
-/* 0045DC70 A3AB0047 */   sb    $t3, 0x47($sp)
-/* 0045DC74 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DC78 24080060 */  li    $t0, 96
-/* 0045DC7C 8FA90048 */  lw    $t1, 0x48($sp)
-/* 0045DC80 10000002 */  b     .L0045DC8C
-/* 0045DC84 93AB0047 */   lbu   $t3, 0x47($sp)
-.L0045DC88:
-/* 0045DC88 240B0001 */  li    $t3, 1
-.L0045DC8C:
-/* 0045DC8C 1160003C */  beqz  $t3, .L0045DD80
-/* 0045DC90 00000000 */   nop   
-/* 0045DC94 8F998B0C */  lw     $t9, %got(allcallersave)($gp)
-/* 0045DC98 93390000 */  lbu   $t9, ($t9)
-/* 0045DC9C 17200038 */  bnez  $t9, .L0045DD80
-/* 0045DCA0 00000000 */   nop   
-/* 0045DCA4 8F8E8A00 */  lw     $t6, %got(pdefmax)($gp)
-/* 0045DCA8 8DCE0000 */  lw    $t6, ($t6)
-/* 0045DCAC 29C10004 */  slti  $at, $t6, 4
-/* 0045DCB0 54200003 */  bnezl $at, .L0045DCC0
-/* 0045DCB4 01C9082A */   slt   $at, $t6, $t1
-/* 0045DCB8 240E0003 */  li    $t6, 3
-/* 0045DCBC 01C9082A */  slt   $at, $t6, $t1
-.L0045DCC0:
-/* 0045DCC0 1420002F */  bnez  $at, .L0045DD80
-/* 0045DCC4 00000000 */   nop   
-/* 0045DCC8 8F8489F4 */  lw     $a0, %got(pdeftab)($gp)
-/* 0045DCCC 00097900 */  sll   $t7, $t1, 4
-/* 0045DCD0 0009C900 */  sll   $t9, $t1, 4
-/* 0045DCD4 8C840000 */  lw    $a0, ($a0)
-/* 0045DCD8 01201825 */  move  $v1, $t1
-/* 0045DCDC 008F6821 */  addu  $t5, $a0, $t7
-/* 0045DCE0 91B80000 */  lbu   $t8, ($t5)
-/* 0045DCE4 240F0001 */  li    $t7, 1
-/* 0045DCE8 00991021 */  addu  $v0, $a0, $t9
-/* 0045DCEC 55180007 */  bnel  $t0, $t8, .L0045DD0C
-/* 0045DCF0 00036900 */   sll   $t5, $v1, 4
-/* 0045DCF4 904EFFF0 */  lbu   $t6, -0x10($v0)
-.L0045DCF8:
-/* 0045DCF8 2463FFFF */  addiu $v1, $v1, -1
-/* 0045DCFC 2442FFF0 */  addiu $v0, $v0, -0x10
-/* 0045DD00 510EFFFD */  beql  $t0, $t6, .L0045DCF8
-/* 0045DD04 904EFFF0 */   lbu   $t6, -0x10($v0)
-/* 0045DD08 00036900 */  sll   $t5, $v1, 4
-.L0045DD0C:
-/* 0045DD0C 008DC021 */  addu  $t8, $a0, $t5
-/* 0045DD10 1000001B */  b     .L0045DD80
-/* 0045DD14 A30F0003 */   sb    $t7, 3($t8)
-.L0045DD18:
-/* 0045DD18 15820019 */  bne   $t4, $v0, .L0045DD80
-/* 0045DD1C 00000000 */   nop   
-/* 0045DD20 92190016 */  lbu   $t9, 0x16($s0)
-/* 0045DD24 24010001 */  li    $at, 1
-/* 0045DD28 332E0007 */  andi  $t6, $t9, 7
-/* 0045DD2C 15C10014 */  bne   $t6, $at, .L0045DD80
-/* 0045DD30 00000000 */   nop   
-/* 0045DD34 8F8D8980 */  lw     $t5, %got(curblk)($gp)
-/* 0045DD38 8E0F0014 */  lw    $t7, 0x14($s0)
-/* 0045DD3C 8DAD0000 */  lw    $t5, ($t5)
-/* 0045DD40 000FC2C2 */  srl   $t8, $t7, 0xb
-/* 0045DD44 15B8000E */  bne   $t5, $t8, .L0045DD80
-/* 0045DD48 00000000 */   nop   
-/* 0045DD4C 8F9989C8 */  lw     $t9, %got(staticlinkloc)($gp)
-/* 0045DD50 8E0E0010 */  lw    $t6, 0x10($s0)
-/* 0045DD54 8F390000 */  lw    $t9, ($t9)
-/* 0045DD58 172E0009 */  bne   $t9, $t6, .L0045DD80
-/* 0045DD5C 00000000 */   nop   
-/* 0045DD60 8F998184 */  lw    $t9, %call16(setbit)($gp)
-/* 0045DD64 8F848D24 */  lw     $a0, %got(coloredparms)($gp)
-/* 0045DD68 96050002 */  lhu   $a1, 2($s0)
-/* 0045DD6C 0320F809 */  jalr  $t9
-/* 0045DD70 00000000 */   nop   
-/* 0045DD74 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DD78 8F818C60 */  lw     $at, %got(outonly_parm)($gp)
-/* 0045DD7C A0200000 */  sb    $zero, ($at)
-.L0045DD80:
-/* 0045DD80 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0045DD84 2404003C */  li    $a0, 60
-/* 0045DD88 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 0045DD8C 0320F809 */  jalr  $t9
-/* 0045DD90 00000000 */   nop   
-/* 0045DD94 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DD98 8FAD0030 */  lw    $t5, 0x30($sp)
-/* 0045DD9C 8F8F89EC */  lw     $t7, %got(bittab)($gp)
-/* 0045DDA0 8DEF0000 */  lw    $t7, ($t7)
-/* 0045DDA4 01ED3021 */  addu  $a2, $t7, $t5
-/* 0045DDA8 14400005 */  bnez  $v0, .L0045DDC0
-/* 0045DDAC ACC20004 */   sw    $v0, 4($a2)
-/* 0045DDB0 8F818B20 */  lw     $at, %got(outofmem)($gp)
-/* 0045DDB4 24180001 */  li    $t8, 1
-/* 0045DDB8 10000077 */  b     .L0045DF98
-/* 0045DDBC A0380000 */   sb    $t8, ($at)
-.L0045DDC0:
-/* 0045DDC0 8CC20004 */  lw    $v0, 4($a2)
-/* 0045DDC4 AC500000 */  sw    $s0, ($v0)
-/* 0045DDC8 96190002 */  lhu   $t9, 2($s0)
-/* 0045DDCC AC400008 */  sw    $zero, 8($v0)
-/* 0045DDD0 2444000C */  addiu $a0, $v0, 0xc
-/* 0045DDD4 AC590004 */  sw    $t9, 4($v0)
-/* 0045DDD8 8F9981E0 */  lw    $t9, %call16(formbvlivran)($gp)
-/* 0045DDDC AFA20034 */  sw    $v0, 0x34($sp)
-/* 0045DDE0 0320F809 */  jalr  $t9
-/* 0045DDE4 00000000 */   nop   
-/* 0045DDE8 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DDEC 8FA20034 */  lw    $v0, 0x34($sp)
-/* 0045DDF0 8F9981E0 */  lw    $t9, %call16(formbvlivran)($gp)
-/* 0045DDF4 24440014 */  addiu $a0, $v0, 0x14
-/* 0045DDF8 0320F809 */  jalr  $t9
-/* 0045DDFC 00000000 */   nop   
-/* 0045DE00 8FA20034 */  lw    $v0, 0x34($sp)
-/* 0045DE04 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DE08 240FFFFF */  li    $t7, -1
-/* 0045DE0C 8C4E0018 */  lw    $t6, 0x18($v0)
-/* 0045DE10 00001825 */  move  $v1, $zero
-/* 0045DE14 51C00061 */  beql  $t6, $zero, .L0045DF9C
-/* 0045DE18 8FBF0024 */   lw    $ra, 0x24($sp)
-/* 0045DE1C AC4F001C */  sw    $t7, 0x1c($v0)
-/* 0045DE20 A0400020 */  sb    $zero, 0x20($v0)
-/* 0045DE24 AC400024 */  sw    $zero, 0x24($v0)
-/* 0045DE28 A0400023 */  sb    $zero, 0x23($v0)
-/* 0045DE2C AC400034 */  sw    $zero, 0x34($v0)
-/* 0045DE30 10000008 */  b     .L0045DE54
-/* 0045DE34 AC400038 */   sw    $zero, 0x38($v0)
-.L0045DE38:
-/* 0045DE38 8F99816C */  lw    $t9, %call16(bvectin)($gp)
-/* 0045DE3C 8FAD005C */  lw    $t5, 0x5c($sp)
-/* 0045DE40 24650014 */  addiu $a1, $v1, 0x14
-/* 0045DE44 0320F809 */  jalr  $t9
-/* 0045DE48 95A40008 */   lhu   $a0, 8($t5)
-/* 0045DE4C 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DE50 304300FF */  andi  $v1, $v0, 0xff
-.L0045DE54:
-/* 0045DE54 54600043 */  bnezl $v1, .L0045DF64
-/* 0045DE58 8FAE005C */   lw    $t6, 0x5c($sp)
-/* 0045DE5C 8F828BF4 */  lw     $v0, %got(numlu)($gp)
-/* 0045DE60 24040018 */  li    $a0, 24
-/* 0045DE64 8F858954 */  lw     $a1, %got(perm_heap)($gp)
-/* 0045DE68 8C580000 */  lw    $t8, ($v0)
-/* 0045DE6C 27190001 */  addiu $t9, $t8, 1
-/* 0045DE70 AC590000 */  sw    $t9, ($v0)
-/* 0045DE74 8F9988B8 */  lw    $t9, %call16(alloc_new)($gp)
-/* 0045DE78 0320F809 */  jalr  $t9
-/* 0045DE7C 00000000 */   nop   
-/* 0045DE80 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DE84 14400005 */  bnez  $v0, .L0045DE9C
-/* 0045DE88 AE220000 */   sw    $v0, ($s1)
-/* 0045DE8C 8F818B20 */  lw     $at, %got(outofmem)($gp)
-/* 0045DE90 240E0001 */  li    $t6, 1
-/* 0045DE94 10000040 */  b     .L0045DF98
-/* 0045DE98 A02E0000 */   sb    $t6, ($at)
-.L0045DE9C:
-/* 0045DE9C 8E220000 */  lw    $v0, ($s1)
-/* 0045DEA0 8FA7005C */  lw    $a3, 0x5c($sp)
-/* 0045DEA4 8F8F89EC */  lw     $t7, %got(bittab)($gp)
-/* 0045DEA8 A4400010 */  sh    $zero, 0x10($v0)
-/* 0045DEAC A0400012 */  sb    $zero, 0x12($v0)
-/* 0045DEB0 A0400014 */  sb    $zero, 0x14($v0)
-/* 0045DEB4 A0400013 */  sb    $zero, 0x13($v0)
-/* 0045DEB8 AC470000 */  sw    $a3, ($v0)
-/* 0045DEBC 8FAD0030 */  lw    $t5, 0x30($sp)
-/* 0045DEC0 8DEF0000 */  lw    $t7, ($t7)
-/* 0045DEC4 01ED3021 */  addu  $a2, $t7, $t5
-/* 0045DEC8 8CC30004 */  lw    $v1, 4($a2)
-/* 0045DECC 8C640038 */  lw    $a0, 0x38($v1)
-/* 0045DED0 54800005 */  bnezl $a0, .L0045DEE8
-/* 0045DED4 8E390000 */   lw    $t9, ($s1)
-/* 0045DED8 8E380000 */  lw    $t8, ($s1)
-/* 0045DEDC 10000003 */  b     .L0045DEEC
-/* 0045DEE0 AC780008 */   sw    $t8, 8($v1)
-/* 0045DEE4 8E390000 */  lw    $t9, ($s1)
-.L0045DEE8:
-/* 0045DEE8 AC990004 */  sw    $t9, 4($a0)
-.L0045DEEC:
-/* 0045DEEC 8E2E0000 */  lw    $t6, ($s1)
-/* 0045DEF0 8CCF0004 */  lw    $t7, 4($a2)
-/* 0045DEF4 ADEE0038 */  sw    $t6, 0x38($t7)
-/* 0045DEF8 AC400004 */  sw    $zero, 4($v0)
-/* 0045DEFC 8CCD0004 */  lw    $t5, 4($a2)
-/* 0045DF00 AC4D0008 */  sw    $t5, 8($v0)
-/* 0045DF04 8CF80030 */  lw    $t8, 0x30($a3)
-/* 0045DF08 AC58000C */  sw    $t8, 0xc($v0)
-/* 0045DF0C 8E390000 */  lw    $t9, ($s1)
-/* 0045DF10 AFA20034 */  sw    $v0, 0x34($sp)
-/* 0045DF14 94E50008 */  lhu   $a1, 8($a3)
-/* 0045DF18 ACF90030 */  sw    $t9, 0x30($a3)
-/* 0045DF1C 8F9981E4 */  lw    $t9, %call16(setbitbb)($gp)
-/* 0045DF20 8CC40004 */  lw    $a0, 4($a2)
-/* 0045DF24 0320F809 */  jalr  $t9
-/* 0045DF28 24840014 */   addiu $a0, $a0, 0x14
-/* 0045DF2C 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DF30 8FA4005C */  lw    $a0, 0x5c($sp)
-/* 0045DF34 96050002 */  lhu   $a1, 2($s0)
-/* 0045DF38 8F998184 */  lw    $t9, %call16(setbit)($gp)
-/* 0045DF3C 24840104 */  addiu $a0, $a0, 0x104
-/* 0045DF40 0320F809 */  jalr  $t9
-/* 0045DF44 00000000 */   nop   
-/* 0045DF48 8FA20034 */  lw    $v0, 0x34($sp)
-/* 0045DF4C 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0045DF50 A0400015 */  sb    $zero, 0x15($v0)
-/* 0045DF54 A0400016 */  sb    $zero, 0x16($v0)
-/* 0045DF58 1000000F */  b     .L0045DF98
-/* 0045DF5C A0400017 */   sb    $zero, 0x17($v0)
-/* 0045DF60 8FAE005C */  lw    $t6, 0x5c($sp)
-.L0045DF64:
-/* 0045DF64 8DC20030 */  lw    $v0, 0x30($t6)
-/* 0045DF68 AE220000 */  sw    $v0, ($s1)
-/* 0045DF6C 8C4F0008 */  lw    $t7, 8($v0)
-/* 0045DF70 8DED0000 */  lw    $t5, ($t7)
-/* 0045DF74 520D0009 */  beql  $s0, $t5, .L0045DF9C
-/* 0045DF78 8FBF0024 */   lw    $ra, 0x24($sp)
-/* 0045DF7C 8C58000C */  lw    $t8, 0xc($v0)
-.L0045DF80:
-/* 0045DF80 AE380000 */  sw    $t8, ($s1)
-/* 0045DF84 8F190008 */  lw    $t9, 8($t8)
-/* 0045DF88 03001025 */  move  $v0, $t8
-/* 0045DF8C 8F2E0000 */  lw    $t6, ($t9)
-/* 0045DF90 560EFFFB */  bnel  $s0, $t6, .L0045DF80
-/* 0045DF94 8C58000C */   lw    $t8, 0xc($v0)
-.L0045DF98:
-/* 0045DF98 8FBF0024 */  lw    $ra, 0x24($sp)
-.L0045DF9C:
-/* 0045DF9C 8FB00018 */  lw    $s0, 0x18($sp)
-/* 0045DFA0 8FB1001C */  lw    $s1, 0x1c($sp)
-/* 0045DFA4 03E00008 */  jr    $ra
-/* 0045DFA8 27BD0058 */   addiu $sp, $sp, 0x58
-    .type formlivbb, @function
-    .size formlivbb, .-formlivbb
-    .end formlivbb
+/*
+0045E45C func_0045E45C
+0045E5C4 func_0045E5C4
+0045FBB4 func_0045FBB4
+00461084 func_00461084
+0046123C func_0046123C
+00461640 func_00461640
+00461AAC makelivranges
+*/
+void formlivbb(struct IChain *ichain, struct Graphnode *node, struct livbb **dest) {
+    int argnum;
+    int i;
+    bool phi_t3;
+    bool phi_v1_2;
+
+    if (bittab[ichain->bitpos].unk4 == NULL) {
+        setbit(&iscolored[regclassof(ichain) - 1], ichain->bitpos);
+
+        if (ichain->type == isvar && ichain->isvar_issvar.location.memtype == Pmt && curblk == ichain->isvar_issvar.location.blockno) {
+            argnum = ichain->isvar_issvar.location.addr / 4;
+            phi_t3 = false;
+            if (argnum > pdefmax || pdeftab[argnum].opc == Unop || pdeftab[argnum].dtype == Mdt) {
+                phi_t3 = true;
+            } else if (!allcallersave && argnum > MIN(pdefmax, 3)) {
+                phi_t3 = true;
+            } else if (fitparmreg(ichain->isvar_issvar.location.addr, ichain->isvar_issvar.size, pdeftab[argnum].offset, pdeftab[argnum].size) &&
+                    ((pdeftab[argnum].dtype != Idt && pdeftab[argnum].dtype != Kdt) || mips3_64data || (dwopcode && allcallersave))) {
+                
+                setbit(&coloredparms, ichain->bitpos);
+                outonly_parm = lang == LANG_ADA && !pdeftab[argnum].inmode;
+                setbitbb(&ever_altered, ichain->bitpos);
+            } else {
+                phi_t3 = true;
+            }
+
+            if (phi_t3 && !allcallersave) {
+                if (argnum <= MIN(pdefmax, 3)) {
+                    i = argnum;
+                    while (pdeftab[i].opc == Unop) {
+                        i--;
+                    }
+                    pdeftab[i].unk3 = true;
+                }
+            }
+        } else if (ichain->type == isvar && ichain->isvar_issvar.location.memtype == Mmt && curblk == ichain->isvar_issvar.location.blockno && staticlinkloc == ichain->isvar_issvar.location.addr) {
+            setbit(&coloredparms, ichain->bitpos);
+            outonly_parm = false;
+        }
+
+        bittab[ichain->bitpos].unk4 = alloc_new(sizeof(struct BittabItemUnk4), &perm_heap);
+        if (bittab[ichain->bitpos].unk4 == NULL) {
+            outofmem = 1;
+            return;
+        }
+
+        bittab[ichain->bitpos].unk4->ichain = ichain;
+        bittab[ichain->bitpos].unk4->unk8 = NULL;
+        bittab[ichain->bitpos].unk4->unk4 = ichain->bitpos;
+        formbvlivran(&bittab[ichain->bitpos].unk4->unkC);
+        formbvlivran(&bittab[ichain->bitpos].unk4->unk14);
+        phi_v1_2 = 0;
+        if (bittab[ichain->bitpos].unk4->unk14.blocks == NULL) {
+            return;
+        }
+        bittab[ichain->bitpos].unk4->unk1C = -1;
+        bittab[ichain->bitpos].unk4->unk20 = 0;
+        bittab[ichain->bitpos].unk4->unk24 = 0;
+        bittab[ichain->bitpos].unk4->unk23 = 0;
+        bittab[ichain->bitpos].unk4->next = NULL;
+        bittab[ichain->bitpos].unk4->interfere = NULL;
+    } else {
+        phi_v1_2 = bvectin(node->num, &bittab[ichain->bitpos].unk4->unk14);
+    }
+
+    if (!phi_v1_2) {
+        numlu += 1;
+        *dest = alloc_new(sizeof(struct livbb), &perm_heap);
+        if (*dest == NULL) {
+            outofmem = 1;
+            return;
+        }
+        (*dest)->unk10 = 0;
+        (*dest)->unk12 = 0;
+        (*dest)->firstisstr = 0;
+        (*dest)->unk13 = 0;
+        (*dest)->node = node;
+        if (bittab[ichain->bitpos].unk4->interfere == 0) {
+            bittab[ichain->bitpos].unk4->unk8 = *dest;
+        } else {
+            bittab[ichain->bitpos].unk4->interfere->next = *dest;
+        }
+        bittab[ichain->bitpos].unk4->interfere = *dest;
+        (*dest)->next = NULL;
+        (*dest)->unk8 = bittab[ichain->bitpos].unk4;
+        (*dest)->unkC = node->unk30;
+        node->unk30 = *dest;
+        setbitbb(&bittab[ichain->bitpos].unk4->unk14, node->num);
+        setbit(&node->bvs.stage2.appear, ichain->bitpos);
+        (*dest)->needreglod = 0;
+        (*dest)->needregsave = 0;
+        (*dest)->deadout = 0;
+    } else {
+        *dest = node->unk30;
+        while ((*dest)->unk8->ichain != ichain) {
+            *dest = (*dest)->unkC;
+        }
+    }
+}
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel passedinreg
     .ent passedinreg
@@ -712,6 +447,11 @@ glabel passedinreg
     .type passedinreg, @function
     .size passedinreg, .-passedinreg
     .end passedinreg
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel varappear
     .ent varappear
@@ -811,6 +551,11 @@ glabel varappear
     .type varappear, @function
     .size varappear, .-varappear
     .end varappear
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel caninsertearly
     .ent caninsertearly
@@ -961,6 +706,11 @@ glabel caninsertearly
     .type caninsertearly, @function
     .size caninsertearly, .-caninsertearly
     .end caninsertearly
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel sizeofsetexpr
     .ent sizeofsetexpr
@@ -993,6 +743,11 @@ glabel sizeofsetexpr
     .type sizeofsetexpr, @function
     .size sizeofsetexpr, .-sizeofsetexpr
     .end sizeofsetexpr
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_0045E45C, @function
 func_0045E45C:
@@ -1092,6 +847,11 @@ func_0045E45C:
 /* 0045E5B8 27BD0048 */  addiu $sp, $sp, 0x48
 /* 0045E5BC 03E00008 */  jr    $ra
 /* 0045E5C0 00000000 */   nop   
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_0045E5C4, @function
 func_0045E5C4:
@@ -2613,6 +2373,11 @@ func_0045E5C4:
 /* 0045FBA8 8FB10024 */  lw    $s1, 0x24($sp)
 /* 0045FBAC 03E00008 */  jr    $ra
 /* 0045FBB0 27BD0060 */   addiu $sp, $sp, 0x60
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_0045FBB4, @function
 func_0045FBB4:
@@ -4046,6 +3811,11 @@ func_0045FBB4:
 /* 00461078 27BD0058 */  addiu $sp, $sp, 0x58
 /* 0046107C 03E00008 */  jr    $ra
 /* 00461080 00000000 */   nop   
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_00461084, @function
 func_00461084:
@@ -4171,6 +3941,11 @@ func_00461084:
 /* 00461230 8FB40024 */  lw    $s4, 0x24($sp)
 /* 00461234 03E00008 */  jr    $ra
 /* 00461238 27BD0048 */   addiu $sp, $sp, 0x48
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_0046123C, @function
 func_0046123C:
@@ -4453,6 +4228,11 @@ func_0046123C:
 /* 00461634 8FBE0038 */  lw    $fp, 0x38($sp)
 /* 00461638 03E00008 */  jr    $ra
 /* 0046163C 27BD0070 */   addiu $sp, $sp, 0x70
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_00461640, @function
 func_00461640:
@@ -4540,6 +4320,11 @@ func_00461640:
 /* 0046176C 8FB70034 */  lw    $s7, 0x34($sp)
 /* 00461770 03E00008 */  jr    $ra
 /* 00461774 27BD0058 */   addiu $sp, $sp, 0x58
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_00461778, @function
 func_00461778:
@@ -4616,6 +4401,11 @@ func_00461778:
 /* 00461874 27BD0030 */  addiu $sp, $sp, 0x30
 /* 00461878 03E00008 */  jr    $ra
 /* 0046187C 00000000 */   nop   
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_00461880, @function
 func_00461880:
@@ -4647,6 +4437,11 @@ func_00461880:
 .L004618CC:
 /* 004618CC 03E00008 */  jr    $ra
 /* 004618D0 00801025 */   move  $v0, $a0
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_004618D4, @function
 func_004618D4:
@@ -4673,6 +4468,11 @@ func_004618D4:
 .L00461918:
 /* 00461918 03E00008 */  jr    $ra
 /* 0046191C 00601025 */   move  $v0, $v1
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_00461920, @function
 func_00461920:
@@ -4694,6 +4494,11 @@ func_00461920:
 .L00461954:
 /* 00461954 03E00008 */  jr    $ra
 /* 00461958 00601025 */   move  $v0, $v1
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_0046195C, @function
 func_0046195C:
@@ -4745,6 +4550,11 @@ func_0046195C:
 .L004619F8:
 /* 004619F8 03E00008 */  jr    $ra
 /* 004619FC 00000000 */   nop   
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_00461A00, @function
 func_00461A00:
@@ -4798,6 +4608,11 @@ func_00461A00:
 .L00461AA4:
 /* 00461AA4 03E00008 */  jr    $ra
 /* 00461AA8 00000000 */   nop   
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel makelivranges
     .ent makelivranges

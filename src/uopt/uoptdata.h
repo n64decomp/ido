@@ -63,10 +63,10 @@ struct StrList {
 };
 
 struct livbb {
-    /* 0x00 */ void *unk0; //BittabItemUnk4, previous livbb?
+    /* 0x00 */ struct Graphnode *node; //BittabItemUnk4, previous livbb?
     /* 0x04 */ struct livbb *next;
-    /* 0x08 */ int unk8;
-    /* 0x0C */ int unkC;
+    /* 0x08 */ struct BittabItemUnk4 *unk8;
+    /* 0x0C */ struct livbb *unkC; // previous node->unk30
     /* 0x10 */ unsigned short unk10;
     /* 0x12 */ unsigned char unk12;
     /* 0x13 */ unsigned char unk13;
@@ -75,6 +75,24 @@ struct livbb {
     /* 0x16 */ bool needregsave;
     /* 0x17 */ bool deadout;
 }; // size 0x18
+
+struct BittabItemUnk4 {
+    /*  0x0 */ struct IChain *ichain; // active?
+    /*  0x4 */ int unk4;   // bitpos
+    /*  0x8 */ struct livbb *unk8;
+    /*  0xC */ struct BitVector unkC;
+    /* 0x14 */ struct BitVector unk14;
+    /* 0x1C */ int unk1C;
+    /* 0x20 */ short unk20; // printregs
+    /* 0x22 */ bool hasstore;
+    /* 0x23 */ bool unk23;
+    /* 0x24 */ int unk24;
+    /* 0x28 */ int unk28;
+    /* 0x2C */ int unk2C;
+    /* 0x30 */ float adjsave;
+    /* 0x34 */ struct BittabItemUnk4 *next;
+    /* 0x38 */ struct livbb *interfere;
+}; // size 0x3C
 
 struct optabrec {
     bool ends_bb;
@@ -251,6 +269,7 @@ enum unk5enum {
     canunroll
 };
 
+#pragma pack(4)
 struct Graphnode {
     /* 0x00 */ int blockno;
     /* 0x04 */ bool interprocedural_controlflow;
@@ -270,10 +289,15 @@ struct Graphnode {
     /* 0x24 */ struct VarAccessList *varlisthead;
     /* 0x28 */ struct VarAccessList *varlisttail;
     /* 0x2C */ unsigned int unk2C;      // checked in func_00453E7C analoop.c
-    /* 0x30 */ int unk30;
-    /* 0x34 */ int regsused[2][2]; // should be two 64-bit values, but then alignment fails
-    /* 0x44 */ void *unk44[35]; // see printregs
-    /* 0xD0 */ int unkD0[(0xE8 - 0xD0) / 4];
+    /* 0x30 */ struct livbb *unk30;
+    /* 0x34 */ long long regsused[2];
+    ///* 0x34 */ int regsused[2][2]; // should be two 64-bit values, but then alignment fails
+    /* 0x44 */ struct RegisterData {
+                   void *unk44[35]; // see printregs
+               } regdata;
+    /* 0xD0 */ int unkD0[4];
+    /* 0xE0 */ int unkE0;
+    /* 0xE4 */ int unkE4;
     /* 0xE8 */ struct Loop *loop;
     /* 0xEC */ struct JumpFallthroughBB *fallthrough_bbs;
     /* 0xF0 */ struct JumpFallthroughBB *jump_bbs;
@@ -362,6 +386,7 @@ struct Graphnode {
         } stage3;
     } bvs;
 };
+#pragma pack()
 
 // Derived from printinterproc
 struct RegstakenParregs {
@@ -715,26 +740,6 @@ struct InterfereWith {
     void *unk0;
     struct InterfereWith *next;
 };
-
-struct BittabItemUnk4 {
-    /*  0x0 */ void *unk0; // active?
-    /*  0x4 */ int unk4;   // printregs
-    /*  0x8 */ struct livbb *unk8;
-    /*  0xC */ struct BitVector *unkC;
-    /* 0x10 */ int unk10;
-    /* 0x14 */ int unk14;
-    /* 0x18 */ int unk18;
-    /* 0x1C */ int unk1C;
-    /* 0x20 */ short unk20; // printregs
-    /* 0x22 */ bool hasstore;
-    /* 0x23 */ bool unk23;
-    /* 0x24 */ int unk24;
-    /* 0x28 */ int unk28;
-    /* 0x2C */ int unk2C;
-    /* 0x30 */ float adjsave;
-    /* 0x34 */ struct BittabItemUnk4 *next;
-    /* 0x38 */ struct InterfereWith *interfere;
-}; // size 0x3C
 
 struct BittabItem {
     struct IChain *ichain; // a pointer returned by appendichain

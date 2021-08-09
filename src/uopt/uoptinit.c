@@ -773,7 +773,7 @@ void optinit(void) {
     dft_livbb->unk10 = 0;
     dft_livbb->unk12 = 0;
     dft_livbb->firstisstr = false;
-    dft_livbb->unk0 = NULL;
+    dft_livbb->node = NULL;
     dft_livbb->unk13 = 0;
     dft_livbb->next = NULL;
     dft_livbb->unk8 = 0;

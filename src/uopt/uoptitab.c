@@ -536,9 +536,9 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                         ichain->isop.s.bit = expr->data.isop.aux2.v1.unk3C;
                         break;
 
-                    case Uildv:
                     case Uilod:
                     case Uirld:
+                    case Uildv:
                     case Uirlv:
                         ichain->isop.size = expr->data.isop.datasize; //! this is actually an offset from baseaddr
                         ichain->isop.s.bit = expr->data.isop.aux2.v1.unk3C;
@@ -632,15 +632,12 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                 // non floating-point multiplies
                 if (expr->data.isop.opc == Umpy &&
                         expr->datatype != Qdt && expr->datatype != Rdt) {
-
-                    if (ichain->isop.op1->type != isconst ||
-                            ichain->isop.op2->type != isconst) {
-
+                    if (ichain->isop.op1->type != isconst || ichain->isop.op2->type != isconst) {
                         if ((ichain->isop.op1->type == isconst ||
                              ichain->isop.op1->type == isvar   ||
                              ichain->isop.op1->type == issvar)
                              || // bug from short-circuit eval?
-                                // if op1 is const,var,svar, op2 can be any type
+                                // if op1 is var,svar, op2 can be any type. The only other type it could be lda though, which is impossible...
                             (ichain->isop.op2->type == isconst ||
                              ichain->isop.op2->type == isvar   ||
                              ichain->isop.op2->type == issvar)) {
@@ -674,17 +671,15 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                 }
             }
         }
-    } else {
-        if (expr->type == islda) {
-            int expr_varlen = expr->data.islda_isilda.address.addr + expr->data.islda_isilda.size;
+    } else if (expr->type == islda) {
+        int expr_varlen = expr->data.islda_isilda.address.addr + expr->data.islda_isilda.size;
 
-            if ((ichain->islda_isilda.address.addr + ichain->isvar_issvar.size) < expr_varlen) {
-                ichain->islda_isilda.size = (expr_varlen - ichain->islda_isilda.address.addr);
-            }
+        if ((ichain->islda_isilda.address.addr + ichain->isvar_issvar.size) < expr_varlen) {
+            ichain->islda_isilda.size = (expr_varlen - ichain->islda_isilda.address.addr);
+        }
 
-            if (expr->data.islda_isilda.address.addr < ichain->islda_isilda.address.addr) {
-                ichain->islda_isilda.address.addr = expr->data.islda_isilda.address.addr;
-            }
+        if (expr->data.islda_isilda.address.addr < ichain->islda_isilda.address.addr) {
+            ichain->islda_isilda.address.addr = expr->data.islda_isilda.address.addr;
         }
     }
 
