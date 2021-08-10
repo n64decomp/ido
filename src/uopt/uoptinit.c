@@ -750,18 +750,19 @@ void optinit(void) {
     constprop = alloc_new(0x10, &perm_heap);
 
     // see coloroffset
+    // the classes were 1-indexed in the original pascal, so regsinclass[1] is "regsinclass2"
     regsinclass1 = 23;
-    firsterreg[0] = 1;
-    firsteereg[0] = 14;
-    firstparmreg[0] = 3;
+    firsterreg[0] = er_v0;
+    firsteereg[0] = ee_s0;
+    firstparmreg[0] = er_a0;
 
     regsinclass[1] = 12;
-    firsterreg[1] = 24;
-    firstparmreg[1] = 26;
+    firsterreg[1] = fp_f0;
+    firstparmreg[1] = fp_f12;
     numoferregs[1] = 6;
-    lasterreg[1] = 29;
-    firsteereg[1] = 30;
-    lasteereg[1] = 35;
+    lasterreg[1] = fp_f18;
+    firsteereg[1] = fp_f20;
+    lasteereg[1] = fp_f30;
     seterregs[1] = GENMASK(firsterreg[1], lasterreg[1] + 1);
     seteeregs[1] = GENMASK(firsteereg[1], lasteereg[1] + 1);
     setregs[1] = (seterregs[1] | seteeregs[1]);
@@ -770,7 +771,7 @@ void optinit(void) {
     gsptr->opc = Ustr;
 
     dft_livbb = (struct livbb *)alloc_new(0x18, &perm_heap);
-    dft_livbb->unk10 = 0;
+    dft_livbb->count = 0;
     dft_livbb->unk12 = 0;
     dft_livbb->firstisstr = false;
     dft_livbb->node = NULL;

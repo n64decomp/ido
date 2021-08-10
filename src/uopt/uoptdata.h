@@ -32,6 +32,31 @@ __attribute__((packed))
 #endif
 ;
 
+#ifdef __GNUC__
+typedef enum MipsRegister MipsRegister;
+#else
+typedef unsigned char MipsRegister;
+#endif
+
+// see coloroffset
+enum RegisterColor {
+    // call"er"-saved registers
+    er_v0=1, er_v1, er_a0, er_a1, er_a2, er_a3, er_t0, er_t1, er_t2, er_t3, er_t4, er_t5, er_ra,
+    // call"ee"-saved registers
+    ee_s0,   ee_s1, ee_s2, ee_s3, ee_s4, ee_s5, ee_s6, ee_s7, ee_fp, ee_ra,
+    // floating point
+    fp_f0,  fp_f2,  fp_f12, fp_f14, fp_f16, fp_f18,
+    fp_f20, fp_f22, fp_f24, fp_f26, fp_f28, fp_f30,
+};
+
+#ifdef __GNUC__
+typedef enum RegisterColor RegisterColor;
+#else
+typedef unsigned char RegisterColor;
+#endif
+
+
+
 #define IS_UNSIGNED(dtype) \
     (dtype == Adt || \
      dtype == Hdt || \
@@ -50,12 +75,6 @@ __attribute__((packed))
     (dtype == Qdt || \
      dtype == Rdt)
 
-#ifdef __GNUC__
-typedef enum MipsRegister MipsRegister;
-#else
-typedef unsigned char MipsRegister;
-#endif
-
 struct StrList {
     char str[1024];
     int len;
@@ -67,9 +86,9 @@ struct livbb {
     /* 0x04 */ struct livbb *next;
     /* 0x08 */ struct BittabItemUnk4 *unk8;
     /* 0x0C */ struct livbb *unkC; // previous node->unk30
-    /* 0x10 */ unsigned short unk10;
+    /* 0x10 */ unsigned short count;
     /* 0x12 */ unsigned char unk12;
-    /* 0x13 */ unsigned char unk13;
+    /* 0x13 */ unsigned char unk13; // register?
     /* 0x14 */ bool firstisstr;
     /* 0x15 */ bool needreglod;
     /* 0x16 */ bool needregsave;
@@ -87,8 +106,7 @@ struct BittabItemUnk4 {
     /* 0x22 */ bool hasstore;
     /* 0x23 */ bool unk23;
     /* 0x24 */ int unk24;
-    /* 0x28 */ int unk28;
-    /* 0x2C */ int unk2C;
+    /* 0x28 */ int forbidden[2];
     /* 0x30 */ float adjsave;
     /* 0x34 */ struct BittabItemUnk4 *next;
     /* 0x38 */ struct livbb *interfere;
@@ -196,7 +214,7 @@ struct ExpSourceThing {
     /* 0x0C */ int unkC;
     /* 0x10 */ struct IChain *ichain_unk10;
     /* 0x14 */ int unk14;
-    /* 0x18 */ int unk18;
+    /* 0x18 */ int unk18; // bitpos
 }; // size 0x1C
 
 // probably related to induction variables or loop invariant
@@ -428,7 +446,7 @@ struct Proc {
     /* 0x20 */ unsigned int bvsize;
     /* 0x24 */ struct RegstakenParregs *regstaken_parregs;
     /* 0x28 */ struct Label *labels; // sent to searchlab
-    /* 0x2c */ struct Proc *left; // binary search tree left (root is prochead)
+    /* 0x2C */ struct Proc *left; // binary search tree left (root is prochead)
     /* 0x30 */ struct Proc *right; // binary search tree right (root is prochead)
     /* 0x34 */ void *feedback_data; // related to usefeedback
     /* 0x38 */ int unk38; // mtag uses this
@@ -618,12 +636,12 @@ struct Statement {
 }; // size 0x34
 
 struct Temploc {
-    int index;
-    int disp; // start offset (leftmost) in stack frame
-    int size;
-    bool not_spilled;
-    struct Temploc *next;
-};
+    /* 0x00 */ int index;
+    /* 0x04 */ int disp; // start offset (leftmost) in stack frame
+    /* 0x08 */ int size;
+    /* 0x0C */ bool not_spilled;
+    /* 0x10 */ struct Temploc *next;
+}; // size 0x14
 
 union Constant {
     struct {
@@ -710,7 +728,10 @@ struct IChain { // TODO: rename
             /* 0x14 */ struct IChain *op1;
             /* 0x18 */ struct IChain *op2;
             /* 0x1C */ int size;
+            union {
             /* 0x20 */ struct Statement *stat;
+                       struct Temploc *temploc;
+            };
             union {
                 /* 0x24 */ Datatype cvtfrom;
                 /* 0x24 */ unsigned short unk24_u16;
@@ -734,7 +755,7 @@ struct IChain { // TODO: rename
             /* 0x14 */ int unk14; // is this ever defined?
         } isrconst;
     };
-};
+}; // size 0x28
 
 struct InterfereWith {
     void *unk0;
@@ -776,8 +797,8 @@ struct Expression {
     /* 0x01 */ Datatype datatype;
     /* 0x02 */ bool unk2; // killed? true if ichain in altered
     /* 0x03 */ bool unk3; // not varkilled
-    /* 0x04 */ bool unk4; // bool or unsigned char?
-    /* 0x05 */ unsigned char unk5;
+    /* 0x04 */ unsigned char unk4;  // ExpressionType? (definitely an enum)
+    /* 0x05 */ unsigned char unk5;  // ExpressionType?
     /* 0x06 */ unsigned short count; // use count, see exprdelete
     // struct {    // see copycoderep
     /* 0x08 */ unsigned short table_index; // identifies the expression
@@ -806,13 +827,13 @@ struct Expression {
         struct {
             /* 0x20 */ unsigned char size; // in bytes
             /* 0x21 */ bool veqv;
-            /* 0x22 */ bool unk22; // one of these is probably 'dead'
+            /* 0x22 */ bool unk22;
             /* 0x23 */ bool is_volatile;
             /* 0x24 */ struct Expression *outer_stack;
             /* 0x28 */ struct VariableLocation location;
             /* 0x30 */ struct Expression *copy;   // copypropagate, points to the expression that this one is a copy of
-            /* 0x34 */ struct Expression *assigned_value; // used in analoop
-            /* 0x38 */ struct Statement *assignment; // a bit unsure about this type, see delentry
+            /* 0x34 */ struct Expression *assigned_value;
+            /* 0x38 */ struct Statement *assignment;
             /* 0x3C */ int unk3C;
         } isvar_issvar;
         struct {
@@ -852,18 +873,18 @@ struct Expression {
 }; // size 0x40
 
 struct TrepImageThing {
-    struct IChain *ichain;  // 0x0
-    unsigned int unk4;
-    unsigned int unk8;
-    unsigned int unkC;
-    unsigned int unk10;
-    unsigned int unk14;
-    unsigned int unk18;
-    unsigned int unk1c;
-    unsigned int unk20;
-    unsigned int unk24;
-    unsigned int unk28;
-    unsigned int unk2C;
+    /* 0x00 */ struct IChain *ichain;
+    /* 0x04 */ struct IChain *ichain2;
+    /* 0x08 */ Uopcode opc;
+    /* 0x0C */ unsigned int unkC;
+    /* 0x10 */ unsigned int unk10;
+    /* 0x14 */ unsigned int unk14;
+    /* 0x18 */ unsigned int unk18; // used to create a Constant
+    /* 0x1C */ unsigned int unk1C;
+    /* 0x20 */ unsigned int unk20;
+    /* 0x24 */ unsigned int unk24;
+    /* 0x28 */ struct IChain *unk28;
+    /* 0x2C */ unsigned int unk2C;
 }; // size 0x30
 
 extern union Bcode u;

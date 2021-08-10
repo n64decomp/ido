@@ -1117,7 +1117,7 @@ static void func_00414108(struct IChain *ichain, struct Expression *expr, struct
                 (*dest)->data.islda_isilda.address = expr->data.islda_isilda.address;
 
                 if (ichain->type == isilda) {
-                    (*dest)->unk4 = false;
+                    (*dest)->unk4 = 0;
                     (*dest)->unk5 = 0;
                     (*dest)->count = 0;
                     (*dest)->data.islda_isilda.outer_stack = sp7C;
@@ -1301,7 +1301,7 @@ static void func_00414108(struct IChain *ichain, struct Expression *expr, struct
             if ((*dest)->type == empty) {
                 (*dest)->type = isop;
                 (*dest)->datatype = ichain->dtype;
-                (*dest)->unk4 = false;
+                (*dest)->unk4 = 0;
                 (*dest)->unk5 = 2;
                 (*dest)->count = 0;
                 (*dest)->data.isop.opc = ichain->isop.opc;
