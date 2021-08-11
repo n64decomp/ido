@@ -285,7 +285,6 @@ enum unk5enum {
     canunroll
 };
 
-#pragma pack(4)
 struct Graphnode {
     /* 0x00 */ int blockno;
     /* 0x04 */ bool interprocedural_controlflow;
@@ -306,8 +305,8 @@ struct Graphnode {
     /* 0x28 */ struct VarAccessList *varlisttail;
     /* 0x2C */ unsigned int unk2C;      // checked in func_00453E7C analoop.c
     /* 0x30 */ struct livbb *unk30;
-    /* 0x34 */ long long regsused[2];
-    ///* 0x34 */ int regsused[2][2]; // should be two 64-bit values, but then alignment fails
+    ///* 0x34 */ long long regsused[2];
+    /* 0x34 */ int regsused[2][2]; // should be two 64-bit values, but then alignment fails
     /* 0x44 */ struct RegisterData {
                    void *unk44[35]; // see printregs
                } regdata;
@@ -402,7 +401,6 @@ struct Graphnode {
         } stage3;
     } bvs;
 };
-#pragma pack()
 
 // Derived from printinterproc
 struct RegstakenParregs {

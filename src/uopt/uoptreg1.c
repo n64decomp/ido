@@ -1509,10 +1509,12 @@ void makelivranges(void) {
         initbv(&node->bvs.stage2.appear, (struct BitVectorBlock) {0});
         initbv(&node->bvs.stage2.loclive, (struct BitVectorBlock) {0});
         initbv(&node->bvs.stage2.locdef, (struct BitVectorBlock) {0});
-        node->regsused[0] = dftregsused;
-        node->regsused[1] = 0ll;
-        node->unkD0[4] = 0;
-        node->unkD0[5] = 0;
+        node->regsused[0][0] = dftregsused >> 32ll;
+        node->regsused[1][1] = dftregsused;
+        node->regsused[1][0] = 0;
+        node->regsused[1][1] = 0;
+        node->unkE0 = 0;
+        node->unkE4 = 0;
         node->regdata = (struct RegisterData) {0};
 
         bvectminus(&node->indiracc, &slvarbits);

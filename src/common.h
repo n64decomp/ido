@@ -26,14 +26,15 @@ typedef unsigned char bool;
 //#define GETBIT32(value, index) ((int)(((unsigned int)(value) & -((unsigned int)(index) < 32)) << ((index) & 31)) < 0)
 #define GETBIT32(value, index) ((unsigned int)(index) < 32 && ((value) & (1U << (31 - (index)))))
 
+
+#define SET_ADD(set, value)                                             \
+    set[0] |= ((unsigned) (value) < 0x20U) << (~(value) & 31);          \
+    set[1] |= ((unsigned) ((value) - 0x20) < 0x20U) << (~(value) & 31);
+
+#define SET_IN(set, value) (GETBIT32((set)[0], (value)) || GETBIT32((set)[1], (value) - 0x20))
+
 /* 
-#define SETADD(set, value)                                         \
-    set[0] |= ((unsigned) (value) < 0x20U) << (~(value) & 0x1f);          \
-    set[1] |= ((unsigned) (temp_t4 - 0x20) < 0x20U) << (~(value) & 0x1f);
- */
-
 #define SET_ADD(set, value) (set) |= (1ll << ((~(value)) & 0x3f))
-
 #define SET_IN(set, value) (((set) & (1ll << ((~(value)) & 0x3f))) != 0)
-
+ */
 #endif
