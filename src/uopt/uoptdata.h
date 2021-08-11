@@ -160,8 +160,6 @@ struct LdatabEntry {
     struct LdatabEntry *next;
 };
 
-struct Expression;
-
 struct UstackEntry {
     struct Expression *expr;
     int value;
@@ -396,9 +394,9 @@ struct Graphnode {
             int unk118;
             int strinsertin; // 0x11C
             int lodinsertout; // 0x120
-            int unk124;
+            int unk124; // eravin?
             int eeavin; // 0x128
-            int unk12C;
+            int unk12C; // eravout?
             int eeavout; // 0x130
             int unk134[(0x174 - 0x134) / 4];
         } stage3;
@@ -474,6 +472,10 @@ struct Statement {
             struct Expression *baseaddr; // 0x24
             struct IChain *ichain; //0x28
             union {
+                struct { // opc = Ustr, outpar = true
+                    struct Statement *par;
+
+                } outpar;
                 struct {
                     struct ExpSourceThing *unk2C;
                     struct RecurThing *unk30;
@@ -535,10 +537,10 @@ struct Statement {
         } ctrl;
 
         struct {
-            int cup_level; // LEXLEV
-            int fp_offset; // Upar/Uxpar OFFSET+LENGTH if passbyfp
-            int loc; // 0x1C, VariableLocation loc
-            struct Proc *proc; // indirprocs/ciaprocs
+            /* 0x14 */ int cup_level; // LEXLEV
+            /* 0x18 */ int fp_offset; // Upar/Uxpar OFFSET+LENGTH if passbyfp
+            /* 0x1C */ int loc; // VariableLocation loc
+            /* 0x20 */ struct Proc *proc; // indirprocs/ciaprocs
         } mst;
 
         // check true
@@ -553,17 +555,20 @@ struct Statement {
         } def;
 
         struct {
-            Datatype dtype; // 0x14
-            unsigned char size; // 0x15
-            int index; // 0x18, parcount or OFFSET/4
-            int loc; // 0x1C, OFFSET
-            struct Expression *baseaddr; // 0x20
-            struct Statement *next; // 0x24, linked list of parameters
+            /* 0x14 */ Datatype dtype;
+            /* 0x15 */ unsigned char size;
+            /* 0x16 */ unsigned char reg; // unset, but used in reg1
+            /* 0x16 */ unsigned char unk17;
+            /* 0x18 */ int index; // parcount or OFFSET/4
+            /* 0x1C */ int loc; // OFFSET
+            /* 0x20 */ struct Expression *baseaddr;
+            /* 0x24 */ struct Statement *next; // linked list of parameters
         } par; // and xpar
 
         struct {
             Datatype dtype; // 0x14
             unsigned char unk15; // 1 from Uicuf, POP from Uaent
+            unsigned char unk16; // used in reg1
         } pop;
 
         // might be in the same union as store
