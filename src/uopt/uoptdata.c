@@ -827,7 +827,7 @@ int maxlabnam;
 004669A8 addadjacents
 00469280 globalcolor
 */
-struct livbb *dft_livbb;
+struct LiveUnit *dft_livbb;
 
 /*
 00410204 codemotion

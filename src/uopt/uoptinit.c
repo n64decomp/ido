@@ -770,15 +770,15 @@ void optinit(void) {
     gsptr = alloc_new(sizeof(struct Statement), &perm_heap);
     gsptr->opc = Ustr;
 
-    dft_livbb = (struct livbb *)alloc_new(0x18, &perm_heap);
-    dft_livbb->count = 0;
-    dft_livbb->unk12 = 0;
+    dft_livbb = alloc_new(sizeof(struct LiveUnit), &perm_heap);
+    dft_livbb->load_count = 0;
+    dft_livbb->store_count = 0;
     dft_livbb->firstisstr = false;
     dft_livbb->node = NULL;
-    dft_livbb->unk13 = 0;
+    dft_livbb->reg = 0;
     dft_livbb->next = NULL;
-    dft_livbb->unk8 = 0;
-    dft_livbb->unkC = 0;
+    dft_livbb->liverange = NULL;
+    dft_livbb->next_in_block = NULL;
     dft_livbb->needreglod = false;
     dft_livbb->needregsave = false;
     dft_livbb->deadout = false;

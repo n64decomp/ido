@@ -30,7 +30,7 @@ int opvalhash(Uopcode opc, struct Expression *op1, int value);
 void extendstat(Uopcode opc);
 int sizeoftyp(Datatype t);
 int blktolev(int blk);
-int newbit(struct IChain *ichain, void *unk4);
+int newbit(struct IChain *ichain, struct LiveRange *liverange);
 
 bool exproccurred(struct IChain *ichain, struct Expression *expr);
 
@@ -54,6 +54,8 @@ struct Expression *enter_const(int num, Datatype datatype, struct Graphnode *gra
 struct Expression *enter_lda(int addr, struct Expression *expr, struct Graphnode *graphnode);
 struct Expression *binopwithconst(Uopcode opc, struct Expression *left, int value);
 int regclassof(struct IChain *ichain);
+bool constinreg(Datatype dtype, int unused, union Constant cval, unsigned char optype);
+bool ldainreg(Memtype mtype, int addr, unsigned char optype);
 bool in_indmults(struct IChain *ichain);
 bool checkincre(struct Expression *entry, struct Expression *entry2, int *result);
 int findincre(struct Expression *entry);
@@ -75,4 +77,7 @@ int val_when_exponent0(int a, int exponent10);
 int coloroffset(int index);
 int in_reg_masks(int index, int arg1, int arg2);
 void skipproc(int reason);
+
+bool check_ix_candidate(struct IChain *ichain, int loopno);
+bool check_ix_source(struct IChain *ichain, int loopno);
 #endif

@@ -12,12 +12,12 @@ static int outonly_parm;
 /*
 004638C0 regdataflow
 */
-bool is_cup(struct IChain *ichain) {
-    if (ichain->isop.stat->opc == Ucia || ichain->isop.stat->opc == Uicuf) {
+bool is_cup(struct Graphnode *node) {
+    if (node->stat_tail->opc == Ucia || node->stat_tail->opc == Uicuf) {
         return true;
-    } else if (ichain->isop.stat->opc == Ucup &&
-            (!IS_NOSIDEEFFECT_ATTR(ichain->isop.stat->u.call.extrnal_flags) ||
-             !IS_RETURN_ATTR(ichain->isop.stat->u.call.extrnal_flags))) {
+    } else if (node->stat_tail->opc == Ucup &&
+            (!IS_NOSIDEEFFECT_ATTR(node->stat_tail->u.call.extrnal_flags) ||
+             !IS_RETURN_ATTR(node->stat_tail->u.call.extrnal_flags))) {
         return true;
     } else {
         return false;
@@ -33,13 +33,13 @@ bool is_cup(struct IChain *ichain) {
 00461640 func_00461640
 00461AAC makelivranges
 */
-void formlivbb(struct IChain *ichain, struct Graphnode *node, struct livbb **dest) {
+void formlivbb(struct IChain *ichain, struct Graphnode *node, struct LiveUnit **dest) {
     int argnum;
     int i;
     bool phi_t3;
     bool phi_v1_2;
 
-    if (bittab[ichain->bitpos].unk4 == NULL) {
+    if (bittab[ichain->bitpos].liverange == NULL) {
         setbit(&iscolored[regclassof(ichain) - 1], ichain->bitpos);
 
         if (ichain->type == isvar && ichain->isvar_issvar.location.memtype == Pmt && curblk == ichain->isvar_issvar.location.blockno) {
@@ -73,66 +73,67 @@ void formlivbb(struct IChain *ichain, struct Graphnode *node, struct livbb **des
             outonly_parm = false;
         }
 
-        bittab[ichain->bitpos].unk4 = alloc_new(sizeof(struct BittabItemUnk4), &perm_heap);
-        if (bittab[ichain->bitpos].unk4 == NULL) {
+        bittab[ichain->bitpos].liverange = alloc_new(sizeof(struct LiveRange), &perm_heap);
+        if (bittab[ichain->bitpos].liverange == NULL) {
             outofmem = true;
             return;
         }
 
-        bittab[ichain->bitpos].unk4->ichain = ichain;
-        bittab[ichain->bitpos].unk4->unk8 = NULL;
-        bittab[ichain->bitpos].unk4->unk4 = ichain->bitpos;
-        formbvlivran(&bittab[ichain->bitpos].unk4->unkC);
-        formbvlivran(&bittab[ichain->bitpos].unk4->unk14);
+        bittab[ichain->bitpos].liverange->ichain = ichain;
+        bittab[ichain->bitpos].liverange->liveunits = NULL;
+        bittab[ichain->bitpos].liverange->bitpos = ichain->bitpos;
+        formbvlivran(&bittab[ichain->bitpos].liverange->unkC);
+        formbvlivran(&bittab[ichain->bitpos].liverange->unk14);
         phi_v1_2 = false;
-        if (bittab[ichain->bitpos].unk4->unk14.blocks == NULL) {
+        if (bittab[ichain->bitpos].liverange->unk14.blocks == NULL) {
             return;
         }
-        bittab[ichain->bitpos].unk4->unk1C = -1;
-        bittab[ichain->bitpos].unk4->unk20 = 0;
-        bittab[ichain->bitpos].unk4->unk24 = 0;
-        bittab[ichain->bitpos].unk4->unk23 = 0;
-        bittab[ichain->bitpos].unk4->next = NULL;
-        bittab[ichain->bitpos].unk4->interfere = NULL;
+
+        bittab[ichain->bitpos].liverange->unk1C = -1;
+        bittab[ichain->bitpos].liverange->unk20 = 0;
+        bittab[ichain->bitpos].liverange->unk24 = 0;
+        bittab[ichain->bitpos].liverange->unk23 = 0;
+        bittab[ichain->bitpos].liverange->next = NULL;
+        bittab[ichain->bitpos].liverange->interfere = NULL;
     } else {
-        phi_v1_2 = bvectin(node->num, &bittab[ichain->bitpos].unk4->unk14);
+        phi_v1_2 = bvectin(node->num, &bittab[ichain->bitpos].liverange->unk14);
     }
 
     if (!phi_v1_2) {
         numlu++;
 
-        *dest = alloc_new(sizeof(struct livbb), &perm_heap);
+        *dest = alloc_new(sizeof(struct LiveUnit), &perm_heap);
         if (*dest == NULL) {
             outofmem = true;
             return;
         }
 
-        (*dest)->count = 0;
-        (*dest)->unk12 = 0;
+        (*dest)->load_count = 0;
+        (*dest)->store_count = 0;
         (*dest)->firstisstr = 0;
-        (*dest)->unk13 = 0;
+        (*dest)->reg = 0;
         (*dest)->node = node;
 
-        if (bittab[ichain->bitpos].unk4->interfere == NULL) {
-            bittab[ichain->bitpos].unk4->unk8 = *dest;
+        if (bittab[ichain->bitpos].liverange->interfere == NULL) {
+            bittab[ichain->bitpos].liverange->liveunits = *dest;
         } else {
-            bittab[ichain->bitpos].unk4->interfere->next = *dest;
+            bittab[ichain->bitpos].liverange->interfere->next = *dest;
         }
 
-        bittab[ichain->bitpos].unk4->interfere = *dest;
+        bittab[ichain->bitpos].liverange->interfere = *dest;
         (*dest)->next = NULL;
-        (*dest)->unk8 = bittab[ichain->bitpos].unk4;
-        (*dest)->unkC = node->unk30;
-        node->unk30 = *dest;
-        setbitbb(&bittab[ichain->bitpos].unk4->unk14, node->num);
+        (*dest)->liverange = bittab[ichain->bitpos].liverange;
+        (*dest)->next_in_block = node->liveunit;
+        node->liveunit = *dest;
+        setbitbb(&bittab[ichain->bitpos].liverange->unk14, node->num);
         setbit(&node->bvs.stage2.appear, ichain->bitpos);
-        (*dest)->needreglod = 0;
-        (*dest)->needregsave = 0;
-        (*dest)->deadout = 0;
+        (*dest)->needreglod = false;
+        (*dest)->needregsave = false;
+        (*dest)->deadout = false;
     } else {
-        *dest = node->unk30;
-        while ((*dest)->unk8->ichain != ichain) {
-            *dest = (*dest)->unkC;
+        *dest = node->liveunit;
+        while ((*dest)->liverange->ichain != ichain) {
+            *dest = (*dest)->next_in_block;
         }
     }
 }
@@ -258,7 +259,7 @@ int sizeofsetexpr(struct IChain *ichain) {
 0045E5C4 func_0045E5C4
 */
 static void func_0045E45C(struct TrepImageThing *trep, bool is_equ_neq, struct Graphnode *node_shared) {
-    struct livbb *sp3C;
+    struct LiveUnit *sp3C;
     union Constant value;
     bool const_reg;
 
@@ -281,8 +282,8 @@ static void func_0045E45C(struct TrepImageThing *trep, bool is_equ_neq, struct G
                 return;
             }
 
-            sp3C->count++;
-            if (sp3C->count == 1) {
+            sp3C->load_count++;
+            if (sp3C->load_count == 1) {
                 setbit(&node_shared->bvs.stage2.loclive, trep->unk28->bitpos);
             }
         }
@@ -294,8 +295,8 @@ static void func_0045E45C(struct TrepImageThing *trep, bool is_equ_neq, struct G
 00461640 func_00461640
 00461AAC makelivranges
 */
-static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Graphnode *node_shared, struct livbb **livbb_shared) {
-    struct livbb *livbb_saved;
+static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Graphnode *node_shared, struct LiveUnit **livbb_shared) {
+    struct LiveUnit *livbb_saved;
     int phi_s1;
     struct IChain *phi_a3;
 
@@ -316,8 +317,8 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                     return;
                 }
 
-                (*livbb_shared)->count++;
-                if ((*livbb_shared)->count == 1) {
+                (*livbb_shared)->load_count++;
+                if ((*livbb_shared)->load_count == 1) {
                     setbit(&node_shared->bvs.stage2.loclive, expr->ichain->bitpos);
                 }
             }
@@ -334,8 +335,8 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                     return;
                 }
 
-                (*livbb_shared)->count++;
-                if ((*livbb_shared)->count == 1) {
+                (*livbb_shared)->load_count++;
+                if ((*livbb_shared)->load_count == 1) {
                     setbit(&node_shared->bvs.stage2.loclive, expr->ichain->bitpos);
                 }
             }
@@ -385,8 +386,8 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                     return;
                 }
 
-                (*livbb_shared)->count++;
-                if ((*livbb_shared)->count == 1 && (*livbb_shared)->unk12 == 0) {
+                (*livbb_shared)->load_count++;
+                if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
                     setbit(&node_shared->bvs.stage2.loclive, expr->ichain->bitpos);
                 }
             } else {
@@ -395,12 +396,12 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                 if ((expr->count > 1 && expr->unk4 != 2) || ((expr->unk4 == 3 || expr->unk4 == 5) && expr->unk5 != 7)) {
                     formlivbb(expr->ichain, node_shared, livbb_shared);
                     if (outofmem == 0) {
-                        (*livbb_shared)->unk12++;
+                        (*livbb_shared)->store_count++;
                         setbit(&node_shared->bvs.stage2.locdef, expr->ichain->bitpos);
-                        if ((*livbb_shared)->count == 0) {
+                        if ((*livbb_shared)->load_count == 0) {
                             (*livbb_shared)->firstisstr = true;
                         }
-                        (*livbb_shared)->count++;
+                        (*livbb_shared)->load_count++;
                         expr->unk5 = 7;
                     }
                 } else {
@@ -448,8 +449,8 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                         return;
                     }
 
-                    (*livbb_shared)->count++;
-                    if ((*livbb_shared)->count == 1 && (*livbb_shared)->unk12 == 0) {
+                    (*livbb_shared)->load_count++;
+                    if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
                         setbit(&node_shared->bvs.stage2.loclive, expr->ichain->bitpos);
                     }
                 }
@@ -464,13 +465,13 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                     return;
                 }
 
-                (*livbb_shared)->unk12++;
+                (*livbb_shared)->store_count++;
                 setbit(&node_shared->bvs.stage2.locdef, expr->ichain->bitpos);
 
-                if ((*livbb_shared)->count == 0) {
+                if ((*livbb_shared)->load_count == 0) {
                     (*livbb_shared)->firstisstr = 1;
                 }
-                (*livbb_shared)->count++;
+                (*livbb_shared)->load_count++;
                 expr->unk5 = 7;
             } else {
                 *livbb_shared = NULL;
@@ -511,8 +512,8 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                         return;
                     }
 
-                    (*livbb_shared)->count++;
-                    if ((*livbb_shared)->count == 1 && (*livbb_shared)->unk12 == 0) {
+                    (*livbb_shared)->load_count++;
+                    if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
                         setbit(&node_shared->bvs.stage2.loclive, expr->ichain->bitpos);
                     }
                 }
@@ -536,8 +537,8 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                             return;
                         }
 
-                        (*livbb_shared)->count++;
-                        if ((*livbb_shared)->count == 1 && (*livbb_shared)->unk12 == 0) {
+                        (*livbb_shared)->load_count++;
+                        if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
                             setbit(&node_shared->bvs.stage2.loclive, expr->data.isop.aux.unk38_trep->ichain2->bitpos);
                         }
 
@@ -549,8 +550,8 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                                 return;
                             }
 
-                            (*livbb_shared)->count++;
-                            TRAP_IF((*livbb_shared)->unk12 != 0);
+                            (*livbb_shared)->load_count++;
+                            TRAP_IF((*livbb_shared)->store_count != 0);
                             setbit(&node_shared->bvs.stage2.loclive, expr->data.isop.aux2.unk3C_trep->ichain->bitpos);
                         }
                     }
@@ -563,8 +564,8 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                             return;
                         }
 
-                        (*livbb_shared)->count++;
-                        if ((*livbb_shared)->count == 1 && (*livbb_shared)->unk12 == 0) {
+                        (*livbb_shared)->load_count++;
+                        if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
                             setbit(&node_shared->bvs.stage2.loclive, expr->data.isop.aux2.unk3C_trep->ichain2->bitpos);
                         }
 
@@ -576,8 +577,8 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                                 return;
                             }
 
-                            (*livbb_shared)->count++;
-                            TRAP_IF((*livbb_shared)->unk12 != 0);
+                            (*livbb_shared)->load_count++;
+                            TRAP_IF((*livbb_shared)->store_count != 0);
                             setbit(&node_shared->bvs.stage2.loclive, expr->data.isop.aux.unk38_trep->ichain->bitpos);
                         }
                     }
@@ -647,13 +648,13 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                         return;
                     }
 
-                    (*livbb_shared)->unk12++;
+                    (*livbb_shared)->store_count++;
                     setbit(&node_shared->bvs.stage2.locdef, expr->ichain->bitpos);
-                    if ((*livbb_shared)->count == 0) {
+                    if ((*livbb_shared)->load_count == 0) {
                         (*livbb_shared)->firstisstr = true;
                     }
 
-                    (*livbb_shared)->count++;
+                    (*livbb_shared)->load_count++;
                 } else {
                     *livbb_shared = NULL;
                 }
@@ -704,16 +705,16 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                     if ((phi_a3->isop.datatype != Idt && phi_a3->isop.datatype != Kdt) || dwopcode) {
                         livbb_saved = *livbb_shared;
                         formlivbb(expr->ichain->isop.unk24_cand->ichain_unk10, node_shared, livbb_shared);
-                        if ((*livbb_shared)->count == 0 && (*livbb_shared)->unk12 == 0) {
+                        if ((*livbb_shared)->load_count == 0 && (*livbb_shared)->store_count == 0) {
                             setbit(&node_shared->bvs.stage2.loclive, expr->ichain->isop.unk24_cand->ichain_unk10->bitpos);
                         }
 
-                        (*livbb_shared)->count++;
+                        (*livbb_shared)->load_count++;
                         formlivbb(phi_a3, node_shared, livbb_shared);
-                        (*livbb_shared)->unk12++;
+                        (*livbb_shared)->store_count++;
 
                         setbit(&node_shared->bvs.stage2.locdef, expr->ichain->isop.unk24_cand->unk18);
-                        if ((*livbb_shared)->count == 0) {
+                        if ((*livbb_shared)->load_count == 0) {
                             (*livbb_shared)->firstisstr = 1;
                         }
 
@@ -738,7 +739,7 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
 0045FBB4 func_0045FBB4
 00461AAC makelivranges
 */
-static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Graphnode *node_shared, struct livbb **livbb_shared) {
+static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Graphnode *node_shared, struct LiveUnit **livbb_shared) {
     void *sp54;
     bool sp53;
     bool sp52; // a3
@@ -747,7 +748,7 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
     unsigned short hash; //sp48
     struct Expression *sp44;
     struct IChain *sp40;
-    struct livbb **sp24;
+    struct LiveUnit **sp24;
     struct Expression *expr;
     bool phi_t1;
     bool phi_t0;
@@ -831,8 +832,8 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                     break;
                 }
 
-                (*livbb_shared)->count++;
-                if ((*livbb_shared)->count == 1 && (*livbb_shared)->unk12 == 0) {
+                (*livbb_shared)->load_count++;
+                if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
                     setbit(&node_shared->bvs.stage2.loclive, ichain->bitpos);
                 }
 
@@ -842,20 +843,20 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                             (*livbb_shared)->firstisstr = true;
                         }
                         if ((!allcallersave || ichain->isvar_issvar.location.memtype == Mmt) &&
-                                (*livbb_shared)->unk13 == 0 && doprecolor) {
+                                (*livbb_shared)->reg == 0 && doprecolor) {
                             if (passedinreg(ichain, offsetpassedbyint)) {
                                 passedcl = regclassof(ichain);
                                 if (ichain->isvar_issvar.location.memtype == Mmt) {
-                                    (*livbb_shared)->unk13 = 1;
+                                    (*livbb_shared)->reg = 1;
                                 } else {
-                                    (*livbb_shared)->unk13 = firstparmreg[passedcl - 1] + ichain->isvar_issvar.location.addr / 4;
+                                    (*livbb_shared)->reg = firstparmreg[passedcl - 1] + ichain->isvar_issvar.location.addr / 4;
                                 }
 
                                 if (passedcl == 2 && ichain->isvar_issvar.location.addr) {
-                                    (*livbb_shared)->unk13 = firstparmreg[passedcl - 1] + 1;
+                                    (*livbb_shared)->reg = firstparmreg[passedcl - 1] + 1;
                                 }
 
-                                SET_ADD(node_shared->regsused[passedcl -1], (*livbb_shared)->unk13);
+                                SET_ADD(node_shared->regsused[passedcl -1], (*livbb_shared)->reg);
                             }
                         }
                     }
@@ -879,8 +880,8 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                             break;
                         } 
 
-                        (*livbb_shared)->count++;
-                        if ((*livbb_shared)->count == 1 && (*livbb_shared)->unk12 == 0) {
+                        (*livbb_shared)->load_count++;
+                        if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
                             setbit(&node_shared->bvs.stage2.loclive, ichain->bitpos);
                         }
                     } 
@@ -896,8 +897,8 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                         break;
                     } 
 
-                    (*livbb_shared)->count++;
-                        if ((*livbb_shared)->count == 1 && (*livbb_shared)->unk12 == 0) {
+                    (*livbb_shared)->load_count++;
+                        if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
                             setbit(&node_shared->bvs.stage2.loclive, ichain->bitpos);
                         }
                 }
@@ -918,9 +919,9 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                     break;
                 }
 
-                (*livbb_shared)->unk12++;
+                (*livbb_shared)->store_count++;
                 setbit(&node_shared->bvs.stage2.locdef, ichain->bitpos);
-                if ((*livbb_shared)->count == 0) {
+                if ((*livbb_shared)->load_count == 0) {
                     (*livbb_shared)->firstisstr = true;
                 }
             }
@@ -939,16 +940,16 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                         break;
                     }
 
-                    (*livbb_shared)->unk12++;
+                    (*livbb_shared)->store_count++;
                     setbit(&node_shared->bvs.stage2.locdef, ichain->isop.op1->bitpos);
-                    if ((*livbb_shared)->count == 0) {
+                    if ((*livbb_shared)->load_count == 0) {
                         (*livbb_shared)->firstisstr = true;
                     }
                     
                     if (node_shared->stat_tail->opc == Ucup ||
                             node_shared->stat_tail->opc == Uicuf ||
                             node_shared->stat_tail->opc == Ucia) {
-                        (*livbb_shared)->unk13 = 0;
+                        (*livbb_shared)->reg = 0;
                     }
                 }
                 sp53 = 0;
@@ -991,8 +992,8 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                         break;
                     }
 
-                    (*livbb_shared)->count++;
-                    if ((*livbb_shared)->count == 1 && (*livbb_shared)->unk12 == 0) {
+                    (*livbb_shared)->load_count++;
+                    if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
                         setbit(&node_shared->bvs.stage2.loclive, ichain->bitpos);
                     }
                 }
@@ -1008,8 +1009,8 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                             break;
                         }
 
-                        (*livbb_shared)->count++;
-                        if ((*livbb_shared)->count == 1 && (*livbb_shared)->unk12 == 0) {
+                        (*livbb_shared)->load_count++;
+                        if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
                             setbit(&node_shared->bvs.stage2.loclive, ichain->bitpos);
                         }
                     }
@@ -1028,12 +1029,12 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                         break;
                     }
 
-                    (*livbb_shared)->unk12++;
+                    (*livbb_shared)->store_count++;
                     setbit(&node_shared->bvs.stage2.locdef, ichain->bitpos);
-                    if ((*livbb_shared)->count == 0) {
+                    if ((*livbb_shared)->load_count == 0) {
                         (*livbb_shared)->firstisstr = 1;
                     }
-                    (*livbb_shared)->count++;
+                    (*livbb_shared)->load_count++;
                 }
                 sp53 = 0;
                 break;
@@ -1124,9 +1125,9 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                         break;
                     }
 
-                    (*livbb_shared)->unk12++;
+                    (*livbb_shared)->store_count++;
                     setbit(&node_shared->bvs.stage2.locdef, ichain->bitpos);
-                    if ((*livbb_shared)->count == 0) {
+                    if ((*livbb_shared)->load_count == 0) {
                         (*livbb_shared)->firstisstr = 1;
                     }
                 }
@@ -1174,10 +1175,10 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                             func_0045FBB4(ichain->isop.unk24_cand->ichain_unk10, 0, 0, node_shared, livbb_shared);
                             formlivbb(sp40, node_shared, livbb_shared);
 
-                            (*livbb_shared)->unk12++;
+                            (*livbb_shared)->store_count++;
                             setbit(&node_shared->bvs.stage2.locdef, ichain->isop.unk24_cand->unk18);
 
-                            if ((*livbb_shared)->count == 0) {
+                            if ((*livbb_shared)->load_count == 0) {
                                 (*livbb_shared)->firstisstr = true;
                             }
                         }
@@ -1199,7 +1200,7 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
 0046123C func_0046123C
 */
 static void func_00461084(struct IChain *ichain, struct Graphnode *node_shared) {
-    struct livbb *sp40;
+    struct LiveUnit *sp40;
 
     switch (ichain->type) {
         case islda:
@@ -1220,8 +1221,8 @@ static void func_00461084(struct IChain *ichain, struct Graphnode *node_shared) 
                 if (outofmem) {
                     return;
                 }
-                sp40->count++;
-                if (sp40->count == 1 && sp40->unk12 == 0) {
+                sp40->load_count++;
+                if (sp40->load_count == 1 && sp40->store_count == 0) {
                     setbit(&node_shared->bvs.stage2.loclive, ichain->bitpos);
                 }
             }
@@ -1246,7 +1247,7 @@ static void func_00461084(struct IChain *ichain, struct Graphnode *node_shared) 
 00461AAC makelivranges
 */
 static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared) {
-    struct livbb *sp68;
+    struct LiveUnit *sp68;
     int sp58;
     bool phi_s6;
     struct ExpSourceThing *phi_s2;
@@ -1270,14 +1271,14 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared)
                 if (outofmem) {
                     return;
                 }
-                sp68->count += 1;
+                sp68->load_count += 1;
                 if (phi_s6 && check_ix_source(phi_s2->ichain, sp58)) {
-                    sp68->count += 2;
+                    sp68->load_count += 2;
                 }
-                if (sp68->count == 1 && sp68->unk12 == 0) {
+                if (sp68->load_count == 1 && sp68->store_count == 0) {
                     setbit(&node_shared->bvs.stage2.loclive, phi_s2->ichain->bitpos);
                 }
-                sp68->unk12 += 1;
+                sp68->store_count += 1;
                 setbit(&node_shared->bvs.stage2.locdef, phi_s2->ichain->bitpos);
             } 
 
@@ -1311,8 +1312,8 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared)
 
                     if ((phi_s1->isop.datatype != Idt && phi_s1->isop.datatype != Kdt) || dwopcode) {
                         formlivbb(phi_s1, node_shared, &sp68);
-                        sp68->count++;
-                        if (sp68->count == 1) {
+                        sp68->load_count++;
+                        if (sp68->load_count == 1) {
                             setbit(&node_shared->bvs.stage2.loclive, phi_s1->bitpos);
                         }
                     }
@@ -1327,8 +1328,8 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared)
 /*
 00461AAC makelivranges
 */
-static void func_00461640(struct Statement *stat, struct Graphnode *node_shared, struct livbb **livbb_shared) {
-    struct livbb *sp50;
+static void func_00461640(struct Statement *stat, struct Graphnode *node_shared, struct LiveUnit **livbb_shared) {
+    struct LiveUnit *sp50;
     struct RecurThing *recur;
 
     recur = stat->u.store.u.str.unk30;
@@ -1340,9 +1341,9 @@ static void func_00461640(struct Statement *stat, struct Graphnode *node_shared,
                 return;
             }
 
-            sp50->unk12 += 1;
+            sp50->store_count += 1;
             setbit(&node_shared->bvs.stage2.locdef, recur->ichain->bitpos);
-            if (sp50->count == 0) {
+            if (sp50->load_count == 0) {
                 sp50->firstisstr = true;
             }
         } 
@@ -1355,7 +1356,7 @@ static void func_00461640(struct Statement *stat, struct Graphnode *node_shared,
 00461AAC makelivranges
 */
 static void func_00461778(struct Graphnode *node, int reg, bool arg2) {
-    struct livbb *bb;
+    struct LiveUnit *bb;
     int regclass;
 
     if (!usingregoption) {
@@ -1363,11 +1364,11 @@ static void func_00461778(struct Graphnode *node, int reg, bool arg2) {
             dbgerror(0x1F9B);
         }
 
-        bb = node->unk30;
-        while (reg != bb->unk13) {
-            bb = bb->unkC;
+        bb = node->liveunit;
+        while (reg != bb->reg) {
+            bb = bb->next_in_block;
         }
-        bb->unk13 = 0;
+        bb->reg = 0;
 
         if (reg <= 23) {
             regclass = 1;
@@ -1474,7 +1475,7 @@ static bool func_00461A00(struct Statement *stat, struct Expression *expr) {
 */
 void makelivranges(void) {
     struct Graphnode *node; // v0-4
-    struct livbb *bb;       // v0-c 
+    struct LiveUnit *bb;       // v0-c 
     bool done;
     int fp_offset;
     bool spF7;
@@ -1509,7 +1510,7 @@ void makelivranges(void) {
         initbv(&node->bvs.stage2.appear, (struct BitVectorBlock) {0});
         initbv(&node->bvs.stage2.loclive, (struct BitVectorBlock) {0});
         initbv(&node->bvs.stage2.locdef, (struct BitVectorBlock) {0});
-        node->regsused[0][0] = dftregsused >> 32ll;
+        node->regsused[0][0] = dftregsused >> 32ull;
         node->regsused[1][1] = dftregsused;
         node->regsused[1][0] = 0;
         node->regsused[1][1] = 0;
@@ -1526,50 +1527,49 @@ void makelivranges(void) {
                         !access->data.var->ichain->isvar_issvar.unk1A &&
                         !bvectin(access->data.var->ichain->bitpos, &node->indiracc) &&
                         ((access->data.var->datatype != Idt && access->data.var->datatype != Kdt) || dwopcode || access->data.var->data.isvar_issvar.location.memtype == Rmt)) {
-
                     formlivbb(access->data.var->ichain, node, &bb);
                     if (outofmem) {
                         return;
                     }
 
-                    if (bb->count == 0 && bb->unk12 == 0) {
+                    if (bb->load_count == 0 && bb->store_count == 0) {
                         setbit(&node->bvs.stage2.loclive, access->data.var->ichain->bitpos);
                     }
-                    bb->count += access->data.var->count;
+                    bb->load_count += access->data.var->count;
                     if (node == graphhead && !bb->firstisstr && bvectin0(access->data.var->ichain->bitpos, &coloredparms)) {
                         if (!outonly_parm) {
                             bb->firstisstr = true;
                         }
 
                         if ((!allcallersave || access->data.var->data.isvar_issvar.location.memtype == Mmt) &&
-                                bb->unk13 == 0 && doprecolor && passedinreg(access->data.var->ichain, offsetpassedbyint)) {
+                                bb->reg == 0 && doprecolor && passedinreg(access->data.var->ichain, offsetpassedbyint)) {
                             passedcl = func_004618D4(access->data.var);
 
                             if (access->data.var->data.isvar_issvar.location.memtype == Mmt) {
-                                bb->unk13 = 1; // v0?
+                                bb->reg = 1; // v0?
                             } else {
-                                bb->unk13 = firstparmreg[passedcl - 1] + access->data.var->data.isvar_issvar.location.addr / 4;
+                                bb->reg = firstparmreg[passedcl - 1] + access->data.var->data.isvar_issvar.location.addr / 4;
                             }
 
                             if (passedcl == 2 && access->data.var->data.isvar_issvar.location.addr != 0) {
-                                bb->unk13 = firstparmreg[passedcl - 1] + 1;
+                                bb->reg = firstparmreg[passedcl - 1] + 1;
                             }
 
-                            SET_ADD(node->regsused[passedcl - 1], bb->unk13);
+                            SET_ADD(node->regsused[passedcl - 1], bb->reg);
                         }
                     } else if (node->successors == NULL &&
                             bvectin0(access->data.var->ichain->bitpos, &coloredparms) &&
                             bvectin0(access->data.var->ichain->bitpos, &outmodebits) &&
-                            !allcallersave && bb->unk13 == 0 &&
+                            !allcallersave && bb->reg == 0 &&
                             passedinreg(access->data.var->ichain, offsetpassedbyint)) {
                         passedcl = func_004618D4(access->data.var);
 
-                        bb->unk13 = firstparmreg[passedcl - 1] + access->data.var->data.isvar_issvar.location.addr / 4;
+                        bb->reg = firstparmreg[passedcl - 1] + access->data.var->data.isvar_issvar.location.addr / 4;
                         if (passedcl == 2 && access->data.var->data.isvar_issvar.location.addr != 0) {
-                            bb->unk13 = firstparmreg[passedcl - 1] + 1;
+                            bb->reg = firstparmreg[passedcl - 1] + 1;
                         }
 
-                        SET_ADD(node->regsused[passedcl - 1], bb->unk13);
+                        SET_ADD(node->regsused[passedcl - 1], bb->reg);
                     }
                 } 
             } else if (access->type == 1 &&
@@ -1584,23 +1584,23 @@ void makelivranges(void) {
                     return;
                 }
 
-                bb->unk12++;
+                bb->store_count++;
                 setbit(&node->bvs.stage2.locdef, access->data.store->expr->ichain->bitpos);
-                if (bb->count == 0) {
+                if (bb->load_count == 0) {
                     bb->firstisstr = true;
                 }
 
                 if (node->successors == NULL &&
                         bvectin0(access->data.store->expr->ichain->bitpos, &coloredparms) &&
                         bvectin0(access->data.store->expr->ichain->bitpos, &outmodebits) &&
-                        !allcallersave && bb->unk13 == 0 && passedinreg(access->data.store->expr->ichain, offsetpassedbyint)) {
+                        !allcallersave && bb->reg == 0 && passedinreg(access->data.store->expr->ichain, offsetpassedbyint)) {
                     passedcl = func_004618D4(access->data.store->expr);
-                    bb->unk13 = firstparmreg[passedcl - 1] + access->data.store->expr->data.isvar_issvar.location.addr / 4;
+                    bb->reg = firstparmreg[passedcl - 1] + access->data.store->expr->data.isvar_issvar.location.addr / 4;
                     if (passedcl == 2 && access->data.store->expr->data.isvar_issvar.location.addr != 0) {
-                        bb->unk13 = firstparmreg[passedcl - 1] + 1;
+                        bb->reg = firstparmreg[passedcl - 1] + 1;
                     }
                     
-                    SET_ADD(node->regsused[passedcl - 1], bb->unk13);
+                    SET_ADD(node->regsused[passedcl - 1], bb->reg);
                 }
             }
             access = access->next;
@@ -1659,8 +1659,8 @@ void makelivranges(void) {
                     if (outofmem) {
                         return;
                     }
-                    if (bb->unk13 == 0) {
-                        bb->unk13 = reg;
+                    if (bb->reg == 0) {
+                        bb->reg = reg;
                         SET_ADD(node->regsused[regclass - 1], reg);
                     }
                 }
@@ -1810,7 +1810,7 @@ void makelivranges(void) {
                     }
 
                     if (allcallersave == 0 && SET_IN(node->regsused[regclass - 1], reg)) {
-                        if (bb != NULL && spF7 && reg == bb->unk13 && bb->unk12 == 0) {
+                        if (bb != NULL && spF7 && reg == bb->reg && bb->store_count == 0) {
                             goto next;
                         }
                         func_00461778(node, reg, 0);
@@ -1831,16 +1831,16 @@ void makelivranges(void) {
 
                     if (func_004618D4(expr) == regclass && doprecolor) {
                         if (expr->type == isvar) {
-                            if (spF7 && bb->unk13 == 0) {
+                            if (spF7 && bb->reg == 0) {
                                 if (lang != LANG_C || func_00461A00(stat, expr)) {
-                                    bb->unk13 = reg;
+                                    bb->reg = reg;
                                 }
                             }
-                        } else if (bb != NULL && bb->unk13 == 0) {
+                        } else if (bb != NULL && bb->reg == 0) {
                             if (lang != LANG_C ||
                                     !bvectin0(expr->ichain->bitpos, &node->bvs.stage2.unk13C) ||
                                     func_0046195C(stat)) {
-                                bb->unk13 = reg;
+                                bb->reg = reg;
                             }
                         }
                     }

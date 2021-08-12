@@ -668,7 +668,7 @@ void init_graphnode(struct Graphnode *node) {
     node->stat_tail = NULL;
     node->varlisthead = NULL;
     node->varlisttail = NULL;
-    node->unk30 = 0;
+    node->liveunit = NULL;
     node->fallthrough_bbs = NULL;
     node->jump_bbs = NULL;
     node->bvs.init.line = curlocln;

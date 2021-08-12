@@ -246,6 +246,7 @@ static void find_acyclic_loop_depth(struct Interval *child, struct Interval *par
 
 /* Inner function
 00453C20 find_loop_relations
+    Uopt assumes that each loop executes 10 times.
 */
 static int power_10(unsigned int power) {
     switch (power) {
@@ -333,7 +334,7 @@ static void find_loop_relations(struct Interval *intv, int depth) {
         }
 
         // some kind of weight?
-        if (usefeedback == 0 || curproc->feedback_data == NULL) {
+        if (!usefeedback || curproc->feedback_data == NULL) {
             node->unk2C = power_10(intv->loopdepth - 1);
         }
     } else if (depth == 0) {

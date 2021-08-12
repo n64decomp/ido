@@ -68,6 +68,7 @@
 #define NOSIDEEFFECT_ATTR 1             /* indicates call has no side effect */
 #define RETURN_ATTR 2                   /* indicates call will not return */
 /* 4 used in 1.31 for reloading stack limit for ada, but then removed in 2.0 */
+#define RELOAD_STACK_ATTR 4             /* Placeholder */
 #define REALLOC_ARG_ATTR 8              /* reallocate the arg build area */
 #define GOTO_ATTR 16                    /* indicates call is the Pascal GOOB*/
 #define COMPOSITE_CALL_ATTR 32          /* call returns a composite object */
@@ -175,6 +176,7 @@
 #define SET_RETURN_ATTR(x) x = ((x) | RETURN_ATTR)
 #define IS_NOSIDEEFFECT_ATTR(x) (((x) & NOSIDEEFFECT_ATTR) != 0)
 #define SET_NOSIDEEFFECT_ATTR(x) x = ((x) | NOSIDEEFFECT_ATTR)
+#define IS_RELOAD_STACK_ATTR(x) (((x) & RELOAD_STACK_ATTR) != 0)
 #define IS_GOTO_ATTR(x) (((x) & GOTO_ATTR) != 0)
 #define SET_GOTO_ATTR(x) x = ((x) | GOTO_ATTR)
 #define IS_COMPOSITE_CALL_ATTR(x) (((x) & COMPOSITE_CALL_ATTR) != 0)
@@ -228,6 +230,11 @@ enum Memtype {
     /* 7 */ Kmt, /* static class data member in C++   */
 };
 
+#ifdef __GNUC__
+typedef enum Memtype Memtype;
+#else
+typedef unsigned char Memtype;
+#endif
 
 
   /***************************************************************************/
