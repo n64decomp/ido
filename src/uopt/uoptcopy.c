@@ -2300,7 +2300,7 @@ void copypropagate(void) {
     struct IChain *spB8; // s6
     struct IChain *spB0; // s4
     struct Statement *stat; // spAC / s2, shared
-    struct BitVector sp94;
+    struct BitVector aliases;
     bool sp93;
     struct Graphnode *sp88;
     struct GraphnodeList *nodelist;
@@ -2956,16 +2956,18 @@ void copypropagate(void) {
     }
 
     if (listwritten) {
-        sp94.num_blocks = 0;
-        sp94.blocks = NULL;
-        checkbvlist(&sp94);
+        aliases.num_blocks = 0;
+        aliases.blocks = NULL;
+        checkbvlist(&aliases);
+
         node = graphhead;
         while (node != NULL) {
-            bvectunion(&sp94, &node->indiracc);
+            bvectunion(&aliases, &node->indiracc);
             node = node->next;
         }
-        bvectintsect(&sp94, &varbits);
-        aliasedlr = bvectcard(&sp94);
+
+        bvectintsect(&aliases, &varbits);
+        aliasedlr = bvectcard(&aliases);
     }
 
     checkbvlist(&outmodebits);

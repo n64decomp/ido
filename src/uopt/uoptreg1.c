@@ -1498,6 +1498,7 @@ void makelivranges(void) {
     ever_altered.blocks = NULL;
     checkbvlist(&ever_altered);
     initbv(&ever_altered, (struct BitVectorBlock) {0});
+
     node = graphhead;
     while (node != NULL) {
         bvectunion(&ever_altered, &node->bvs.stage1.alters);

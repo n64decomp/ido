@@ -40,6 +40,7 @@ typedef unsigned char MipsRegister;
 
 // see coloroffset
 enum RegisterColor {
+    uncolored,
     // call"er"-saved registers
     er_v0=1, er_v1, er_a0, er_a1, er_a2, er_a3, er_t0, er_t1, er_t2, er_t3, er_t4, er_t5, er_ra,
     // call"ee"-saved registers
@@ -676,6 +677,7 @@ struct IChain { // TODO: rename
                        // missing level
             /* 0x18 */ struct VariableLocation address;
             /* 0x20 */ struct IChain *outer_stack_ichain;
+            /* 0x24 */ struct Temploc *temploc;
         } islda_isilda;
         struct {
             /* 0x10 */ struct VariableLocation location;
@@ -686,7 +688,7 @@ struct IChain { // TODO: rename
             /* 0x1A */ bool unk1A; // codeimage
             /* 0x1B */ unsigned char unk1B;
             /* 0x1C */ struct IChain *outer_stack_ichain;
-            /* 0x20 */ int unk20;
+            /* 0x20 */ struct Temploc *temploc;
             union {
                 /* 0x24 */ unsigned short assignbit;
                 /* 0x24 */ int unk24;
