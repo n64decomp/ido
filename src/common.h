@@ -33,6 +33,10 @@ typedef unsigned char bool;
 
 #define SET_IN(set, value) (GETBIT32((set)[0], (value)) || GETBIT32((set)[1], (value) - 0x20))
 
+#define SET_UNION(set1, set2)                                       \
+    (set1)[0] |= (set2)[0];                                          \
+    (set1)[1] |= (set2)[1]
+
 /* 
 #define SET_ADD(set, value) (set) |= (1ll << ((~(value)) & 0x3f))
 #define SET_IN(set, value) (((set) & (1ll << ((~(value)) & 0x3f))) != 0)

@@ -81,39 +81,6 @@ struct StrList {
     struct StrList *next;
 };
 
-// register allocation candidate
-struct LiveUnit {
-    /* 0x00 */ struct Graphnode *node;
-    /* 0x04 */ struct LiveUnit *next;
-    /* 0x08 */ struct LiveRange *liverange;
-    /* 0x0C */ struct LiveUnit *next_in_block;
-    /* 0x10 */ unsigned short load_count;
-    /* 0x12 */ unsigned char store_count;
-    /* 0x13 */ unsigned char reg;
-    /* 0x14 */ bool firstisstr;
-    /* 0x15 */ bool needreglod;
-    /* 0x16 */ bool needregsave;
-    /* 0x17 */ bool deadout;
-}; // size 0x18
-
-// live range
-struct LiveRange {
-    /*  0x0 */ struct IChain *ichain; // active?
-    /*  0x4 */ int bitpos;
-    /*  0x8 */ struct LiveUnit *liveunits;
-    /*  0xC */ struct BitVector unkC;
-    /* 0x14 */ struct BitVector unk14; // livebbs?
-    /* 0x1C */ int unk1C; // precolor?
-    /* 0x20 */ short unk20; // printregs
-    /* 0x22 */ bool hasstore;
-    /* 0x23 */ bool unk23;
-    /* 0x24 */ int unk24;
-    /* 0x28 */ int forbidden[2];
-    /* 0x30 */ float adjsave;
-    /* 0x34 */ struct LiveRange *next;
-    /* 0x38 */ struct LiveUnit *interfere;
-}; // size 0x3C
-
 struct optabrec {
     bool ends_bb;
     bool executable;
@@ -762,13 +729,39 @@ struct IChain { // TODO: rename
     };
 }; // size 0x28
 
-struct InterfereWith {
-    void *unk0;
-    struct InterfereWith *next;
-};
+struct LiveUnit {
+    /* 0x00 */ struct Graphnode *node;
+    /* 0x04 */ struct LiveUnit *next;
+    /* 0x08 */ struct LiveRange *liverange;
+    /* 0x0C */ struct LiveUnit *next_in_block;
+    /* 0x10 */ unsigned short load_count;
+    /* 0x12 */ unsigned char store_count;
+    /* 0x13 */ unsigned char reg;
+    /* 0x14 */ bool firstisstr;
+    /* 0x15 */ bool needreglod;
+    /* 0x16 */ bool needregsave;
+    /* 0x17 */ bool deadout;
+}; // size 0x18
+
+struct LiveRange {
+    /*  0x0 */ struct IChain *ichain; // active?
+    /*  0x4 */ int bitpos;
+    /*  0x8 */ struct LiveUnit *liveunits;
+    /*  0xC */ struct BitVector unkC;
+    /* 0x14 */ struct BitVector unk14; // livebbs?
+    /* 0x1C */ int unk1C; // precolor?
+    /* 0x20 */ short unk20; // printregs
+    /* 0x22 */ bool hasstore;
+    /* 0x23 */ bool unk23;
+    /* 0x24 */ int unk24;
+    /* 0x28 */ int forbidden[2];
+    /* 0x30 */ float adjsave;
+    /* 0x34 */ struct LiveRange *next;
+    /* 0x38 */ struct LiveUnit *interfere;
+}; // size 0x3C
 
 struct BittabItem {
-    struct IChain *ichain; // a pointer returned by appendichain
+    struct IChain *ichain;
     struct LiveRange *liverange;
 };
 
