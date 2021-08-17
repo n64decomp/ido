@@ -90,11 +90,11 @@ void formlivbb(struct IChain *ichain, struct Graphnode *node, struct LiveUnit **
         }
 
         bittab[ichain->bitpos].liverange->unk1C = -1;
-        bittab[ichain->bitpos].liverange->unk20 = 0;
+        bittab[ichain->bitpos].liverange->assigned_reg = 0;
         bittab[ichain->bitpos].liverange->unk24 = 0;
         bittab[ichain->bitpos].liverange->unk23 = 0;
         bittab[ichain->bitpos].liverange->next = NULL;
-        bittab[ichain->bitpos].liverange->interfere = NULL;
+        bittab[ichain->bitpos].liverange->unk38_lu = NULL;
     } else {
         phi_v1_2 = bvectin(node->num, &bittab[ichain->bitpos].liverange->unk14);
     }
@@ -110,17 +110,17 @@ void formlivbb(struct IChain *ichain, struct Graphnode *node, struct LiveUnit **
 
         (*dest)->load_count = 0;
         (*dest)->store_count = 0;
-        (*dest)->firstisstr = 0;
-        (*dest)->reg = 0;
+        (*dest)->firstisstr = false;
+        (*dest)->reg = uncolored;
         (*dest)->node = node;
 
-        if (bittab[ichain->bitpos].liverange->interfere == NULL) {
+        if (bittab[ichain->bitpos].liverange->unk38_lu == NULL) {
             bittab[ichain->bitpos].liverange->liveunits = *dest;
         } else {
-            bittab[ichain->bitpos].liverange->interfere->next = *dest;
+            bittab[ichain->bitpos].liverange->unk38_lu->next = *dest;
         }
 
-        bittab[ichain->bitpos].liverange->interfere = *dest;
+        bittab[ichain->bitpos].liverange->unk38_lu = *dest;
         (*dest)->next = NULL;
         (*dest)->liverange = bittab[ichain->bitpos].liverange;
         (*dest)->next_in_block = node->liveunit;
@@ -1356,7 +1356,7 @@ static void func_00461640(struct Statement *stat, struct Graphnode *node_shared,
 00461AAC makelivranges
 */
 static void func_00461778(struct Graphnode *node, int reg, bool arg2) {
-    struct LiveUnit *bb;
+    struct LiveUnit *lu;
     int regclass;
 
     if (!usingregoption) {
@@ -1364,11 +1364,11 @@ static void func_00461778(struct Graphnode *node, int reg, bool arg2) {
             dbgerror(0x1F9B);
         }
 
-        bb = node->liveunit;
-        while (reg != bb->reg) {
-            bb = bb->next_in_block;
+        lu = node->liveunit;
+        while (reg != lu->reg) {
+            lu = lu->next_in_block;
         }
-        bb->reg = 0;
+        lu->reg = 0;
 
         if (reg <= 23) {
             regclass = 1;
@@ -1475,7 +1475,7 @@ static bool func_00461A00(struct Statement *stat, struct Expression *expr) {
 */
 void makelivranges(void) {
     struct Graphnode *node; // v0-4
-    struct LiveUnit *bb;       // v0-c 
+    struct LiveUnit *lu;       // v0-c 
     bool done;
     int fp_offset;
     bool spF7;
@@ -1528,49 +1528,49 @@ void makelivranges(void) {
                         !access->data.var->ichain->isvar_issvar.unk1A &&
                         !bvectin(access->data.var->ichain->bitpos, &node->indiracc) &&
                         ((access->data.var->datatype != Idt && access->data.var->datatype != Kdt) || dwopcode || access->data.var->data.isvar_issvar.location.memtype == Rmt)) {
-                    formlivbb(access->data.var->ichain, node, &bb);
+                    formlivbb(access->data.var->ichain, node, &lu);
                     if (outofmem) {
                         return;
                     }
 
-                    if (bb->load_count == 0 && bb->store_count == 0) {
+                    if (lu->load_count == 0 && lu->store_count == 0) {
                         setbit(&node->bvs.stage2.loclive, access->data.var->ichain->bitpos);
                     }
-                    bb->load_count += access->data.var->count;
-                    if (node == graphhead && !bb->firstisstr && bvectin0(access->data.var->ichain->bitpos, &coloredparms)) {
+                    lu->load_count += access->data.var->count;
+                    if (node == graphhead && !lu->firstisstr && bvectin0(access->data.var->ichain->bitpos, &coloredparms)) {
                         if (!outonly_parm) {
-                            bb->firstisstr = true;
+                            lu->firstisstr = true;
                         }
 
                         if ((!allcallersave || access->data.var->data.isvar_issvar.location.memtype == Mmt) &&
-                                bb->reg == 0 && doprecolor && passedinreg(access->data.var->ichain, offsetpassedbyint)) {
+                                lu->reg == 0 && doprecolor && passedinreg(access->data.var->ichain, offsetpassedbyint)) {
                             passedcl = func_004618D4(access->data.var);
 
                             if (access->data.var->data.isvar_issvar.location.memtype == Mmt) {
-                                bb->reg = 1; // v0?
+                                lu->reg = 1; // v0?
                             } else {
-                                bb->reg = firstparmreg[passedcl - 1] + access->data.var->data.isvar_issvar.location.addr / 4;
+                                lu->reg = firstparmreg[passedcl - 1] + access->data.var->data.isvar_issvar.location.addr / 4;
                             }
 
                             if (passedcl == 2 && access->data.var->data.isvar_issvar.location.addr != 0) {
-                                bb->reg = firstparmreg[passedcl - 1] + 1;
+                                lu->reg = firstparmreg[passedcl - 1] + 1;
                             }
 
-                            SET_ADD(node->regsused[passedcl - 1], bb->reg);
+                            SET_ADD(node->regsused[passedcl - 1], lu->reg);
                         }
                     } else if (node->successors == NULL &&
                             bvectin0(access->data.var->ichain->bitpos, &coloredparms) &&
                             bvectin0(access->data.var->ichain->bitpos, &outmodebits) &&
-                            !allcallersave && bb->reg == 0 &&
+                            !allcallersave && lu->reg == 0 &&
                             passedinreg(access->data.var->ichain, offsetpassedbyint)) {
                         passedcl = func_004618D4(access->data.var);
 
-                        bb->reg = firstparmreg[passedcl - 1] + access->data.var->data.isvar_issvar.location.addr / 4;
+                        lu->reg = firstparmreg[passedcl - 1] + access->data.var->data.isvar_issvar.location.addr / 4;
                         if (passedcl == 2 && access->data.var->data.isvar_issvar.location.addr != 0) {
-                            bb->reg = firstparmreg[passedcl - 1] + 1;
+                            lu->reg = firstparmreg[passedcl - 1] + 1;
                         }
 
-                        SET_ADD(node->regsused[passedcl - 1], bb->reg);
+                        SET_ADD(node->regsused[passedcl - 1], lu->reg);
                     }
                 } 
             } else if (access->type == 1 &&
@@ -1580,28 +1580,28 @@ void makelivranges(void) {
                     !bvectin(access->data.store->expr->ichain->bitpos, &node->indiracc) &&
                     ((access->data.store->expr->datatype != Idt && access->data.store->expr->datatype != Kdt) ||
                      dwopcode || access->data.store->expr->data.isvar_issvar.location.memtype == Rmt)) {
-                formlivbb(access->data.store->expr->ichain, node, &bb);
+                formlivbb(access->data.store->expr->ichain, node, &lu);
                 if (outofmem) {
                     return;
                 }
 
-                bb->store_count++;
+                lu->store_count++;
                 setbit(&node->bvs.stage2.locdef, access->data.store->expr->ichain->bitpos);
-                if (bb->load_count == 0) {
-                    bb->firstisstr = true;
+                if (lu->load_count == 0) {
+                    lu->firstisstr = true;
                 }
 
                 if (node->successors == NULL &&
                         bvectin0(access->data.store->expr->ichain->bitpos, &coloredparms) &&
                         bvectin0(access->data.store->expr->ichain->bitpos, &outmodebits) &&
-                        !allcallersave && bb->reg == 0 && passedinreg(access->data.store->expr->ichain, offsetpassedbyint)) {
+                        !allcallersave && lu->reg == 0 && passedinreg(access->data.store->expr->ichain, offsetpassedbyint)) {
                     passedcl = func_004618D4(access->data.store->expr);
-                    bb->reg = firstparmreg[passedcl - 1] + access->data.store->expr->data.isvar_issvar.location.addr / 4;
+                    lu->reg = firstparmreg[passedcl - 1] + access->data.store->expr->data.isvar_issvar.location.addr / 4;
                     if (passedcl == 2 && access->data.store->expr->data.isvar_issvar.location.addr != 0) {
-                        bb->reg = firstparmreg[passedcl - 1] + 1;
+                        lu->reg = firstparmreg[passedcl - 1] + 1;
                     }
                     
-                    SET_ADD(node->regsused[passedcl - 1], bb->reg);
+                    SET_ADD(node->regsused[passedcl - 1], lu->reg);
                 }
             }
             access = access->next;
@@ -1613,11 +1613,11 @@ void makelivranges(void) {
             if (stat->opc == Ustr) {
                 if (!stat->outpar) {
                     if (stat->unk2 != 1) {
-                        func_0045E5C4(stat->expr->data.isvar_issvar.assigned_value, 0, node, &bb);
+                        func_0045E5C4(stat->expr->data.isvar_issvar.assigned_value, 0, node, &lu);
                     }
                     if (stat->is_increment) {
                         func_0046123C(stat, node);
-                        func_00461640(stat, node, &bb);
+                        func_00461640(stat, node, &lu);
                     }
                     goto next;
                 }
@@ -1628,8 +1628,8 @@ void makelivranges(void) {
                 } while (par->opc != Upar || stat->expr->data.isvar_issvar.assigned_value->data.isvar_issvar.location.addr / 4 != par->u.par.loc / 4);
                 stat->u.store.u.outpar.par = par;
 
-                formlivbb(stat->expr->ichain, node, &bb);
-                bb->firstisstr = true;
+                formlivbb(stat->expr->ichain, node, &lu);
+                lu->firstisstr = true;
                 setbit(&node->bvs.stage2.locdef, stat->expr->ichain->bitpos);
                 if (proc->o3opt) {
                     if (par->u.par.reg == 0) {
@@ -1660,15 +1660,15 @@ void makelivranges(void) {
                     if (outofmem) {
                         return;
                     }
-                    if (bb->reg == 0) {
-                        bb->reg = reg;
+                    if (lu->reg == 0) {
+                        lu->reg = reg;
                         SET_ADD(node->regsused[regclass - 1], reg);
                     }
                 }
             } else if (stat->opc == Uisst) {
                 if (stat->unk2 != 1) {
-                    func_0045E5C4(stat->u.store.expr, 3, node, &bb);
-                    func_0045E5C4(stat->expr->data.isvar_issvar.assigned_value, 0, node, &bb);
+                    func_0045E5C4(stat->u.store.expr, 3, node, &lu);
+                    func_0045E5C4(stat->expr->data.isvar_issvar.assigned_value, 0, node, &lu);
                 }
                 if (stat->is_increment) {
                     func_0046123C(stat, node);
@@ -1681,12 +1681,12 @@ void makelivranges(void) {
                        stat->opc == Uirsv) {
                 if (stat->opc == Uistr || stat->opc == Uirst ||
                         stat->opc == Uistv || stat->opc == Uirsv) {
-                    func_0045E5C4(stat->expr, 1, node, &bb);
+                    func_0045E5C4(stat->expr, 1, node, &lu);
                 } else {
-                    func_0045E5C4(stat->expr, 3, node, &bb);
+                    func_0045E5C4(stat->expr, 3, node, &lu);
                 }
 
-                func_0045E5C4(stat->u.store.expr, 3, node, &bb);
+                func_0045E5C4(stat->u.store.expr, 3, node, &lu);
             } else if (stat->opc == Utpeq ||
                        stat->opc == Utpne ||
                        stat->opc == Utpge ||
@@ -1694,17 +1694,17 @@ void makelivranges(void) {
                        stat->opc == Utple ||
                        stat->opc == Utplt) {
                 if (stat->opc == Utpeq || stat->opc == Utpne) {
-                    func_0045E5C4(stat->expr, 3, node, &bb);
-                    func_0045E5C4(stat->u.store.expr, 3, node, &bb);
+                    func_0045E5C4(stat->expr, 3, node, &lu);
+                    func_0045E5C4(stat->u.store.expr, 3, node, &lu);
                 } else {
-                    func_0045E5C4(stat->expr, 1, node, &bb);
-                    func_0045E5C4(stat->u.store.expr, 1, node, &bb);
+                    func_0045E5C4(stat->expr, 1, node, &lu);
+                    func_0045E5C4(stat->u.store.expr, 1, node, &lu);
                 }
             } else if (stat->opc == Ufjp || stat->opc == Utjp || stat->opc == Uxjp || stat->opc == Uijp) {
                 if (!caninsertearly(stat->expr, node)) {
                     stat->expr->count++;
                 }
-                func_0045E5C4(stat->expr, 0, node, &bb);
+                func_0045E5C4(stat->expr, 0, node, &lu);
             } else if (stat->opc != Uaent && stat->opc != Ubgnb && stat->opc != Ucia  && stat->opc != Uclab &&
                        stat->opc != Uclbd && stat->opc != Uctrl && stat->opc != Ucubd && stat->opc != Ucup  &&
                        stat->opc != Udef  && stat->opc != Udup  && stat->opc != Uendb && stat->opc != Uicuf &&
@@ -1712,9 +1712,9 @@ void makelivranges(void) {
                        stat->opc != Uloc  && stat->opc != Ultrm && stat->opc != Umst  && stat->opc != Unop  &&
                        stat->opc != Uret  && stat->opc != Ustep && stat->opc != Uujp  && stat->opc != Uxpar) { // TODO: make define for this?
                 if (stat->opc == Uchkt) {
-                    func_0045E5C4(stat->expr, 0, node, &bb);
+                    func_0045E5C4(stat->expr, 0, node, &lu);
                 } else if (stat->opc == Upar) {
-                    func_0045E5C4(stat->expr, 0, node, &bb);
+                    func_0045E5C4(stat->expr, 0, node, &lu);
                     if (stat->u.par.dtype == Sdt && !proc->o3opt) {
                         if (stat->u.par.size > int_reg_size) {
                             reg = firstparmreg[0] + (stat->u.par.loc / int_reg_size);
@@ -1728,7 +1728,7 @@ void makelivranges(void) {
                         }
                     }
                 } else if (stat->opc == Upmov) {
-                    func_0045E5C4(stat->expr, 3, node, &bb);
+                    func_0045E5C4(stat->expr, 3, node, &lu);
                     if (proc->o3opt == 0) {
                         size = stat->u.store.size;
                         reg = firstparmreg[0] + stat->u.store.u.mov.offset / int_reg_size;
@@ -1754,7 +1754,7 @@ void makelivranges(void) {
                             }
                         }
                     }
-                    func_0045E5C4(stat->expr, 3, node, &bb);
+                    func_0045E5C4(stat->expr, 3, node, &lu);
                 }
 
                 if (stat->opc == Upar &&
@@ -1796,7 +1796,7 @@ void makelivranges(void) {
                     }
 
                     if (expr->type == isvar && !expr->ichain->isvar_issvar.unk1A && !bvectin(expr->ichain->bitpos, &node->indiracc)) {
-                        formlivbb(expr->ichain, node, &bb);
+                        formlivbb(expr->ichain, node, &lu);
                     } else {
                         spF7 = 0;
                     }
@@ -1811,7 +1811,7 @@ void makelivranges(void) {
                     }
 
                     if (allcallersave == 0 && SET_IN(node->regsused[regclass - 1], reg)) {
-                        if (bb != NULL && spF7 && reg == bb->reg && bb->store_count == 0) {
+                        if (lu != NULL && spF7 && reg == lu->reg && lu->store_count == 0) {
                             goto next;
                         }
                         func_00461778(node, reg, 0);
@@ -1832,16 +1832,16 @@ void makelivranges(void) {
 
                     if (func_004618D4(expr) == regclass && doprecolor) {
                         if (expr->type == isvar) {
-                            if (spF7 && bb->reg == 0) {
+                            if (spF7 && lu->reg == 0) {
                                 if (lang != LANG_C || func_00461A00(stat, expr)) {
-                                    bb->reg = reg;
+                                    lu->reg = reg;
                                 }
                             }
-                        } else if (bb != NULL && bb->reg == 0) {
+                        } else if (lu != NULL && lu->reg == 0) {
                             if (lang != LANG_C ||
                                     !bvectin0(expr->ichain->bitpos, &node->bvs.stage2.unk13C) ||
                                     func_0046195C(stat)) {
-                                bb->reg = reg;
+                                lu->reg = reg;
                             }
                         }
                     }
@@ -1926,7 +1926,7 @@ next:
                             (bvectin(i, &node->bvs.stage2.unk154) ||
                              bvectin(i, &storeop) ||
                              bvectin(i, &trapop))) {
-                        func_0045FBB4(bittab[i].ichain, 1, 1, node, &bb);
+                        func_0045FBB4(bittab[i].ichain, 1, 1, node, &lu);
                         if (outofmem) {
                             return;
                         }

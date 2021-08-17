@@ -255,6 +255,12 @@ enum unk5enum {
     canunroll
 };
 
+struct RegisterNode {
+    unsigned char reg;
+    struct IChain *ichain;
+    struct RegisterNode *next;
+};
+
 struct Graphnode {
     /* 0x00 */ int blockno;
     /* 0x04 */ bool interprocedural_controlflow;
@@ -278,11 +284,14 @@ struct Graphnode {
     ///* 0x34 */ long long regsused[2];
     /* 0x34 */ int regsused[2][2]; // should be two 64-bit values, but then alignment fails
     /* 0x44 */ struct RegisterData {
-                   void *unk44[35]; // see printregs
+                   struct IChain *unk44[35];
                } regdata;
-    /* 0xD0 */ int unkD0[4];
-    /* 0xE0 */ int unkE0;
-    /* 0xE4 */ int unkE4;
+    // packed array of bools, great
+    /* 0xD0 */ unsigned char unkD0[5]; // rlods
+    /* 0xD5 */ unsigned char unkD5[5]; // rstrs
+    /* 0xDA */ unsigned char unkDA[5];
+    /* 0xE0 */ struct RegisterNode *unkE0;
+    /* 0xE4 */ struct RegisterNode *unkE4;
     /* 0xE8 */ struct Loop *loop;
     /* 0xEC */ struct JumpFallthroughBB *fallthrough_bbs;
     /* 0xF0 */ struct JumpFallthroughBB *jump_bbs;
@@ -745,6 +754,13 @@ struct LiveUnit {
     /* 0x17 */ bool deadout;
 }; // size 0x18
 
+struct InterfereList {
+    /* 0x0 */ struct LiveRange *liverange;
+    /* 0x4 */ struct InterfereList *next;
+    /* 0x8 */ unsigned char unk8;
+    /* 0x9 */ unsigned char unk9;
+}; // size 0xC
+
 struct LiveRange {
     /*  0x0 */ struct IChain *ichain; // active?
     /*  0x4 */ int bitpos;
@@ -752,14 +768,19 @@ struct LiveRange {
     /*  0xC */ struct BitVector unkC;
     /* 0x14 */ struct BitVector unk14; // livebbs?
     /* 0x1C */ int unk1C; // precolor?
-    /* 0x20 */ short unk20; // printregs
+    /* 0x20 */ unsigned char assigned_reg; // printregs
+    /* 0x21 */ unsigned char unk21;
     /* 0x22 */ bool hasstore;
-    /* 0x23 */ bool unk23;
+    /* 0x23 */ unsigned char unk23; // probably the number of register moves
     /* 0x24 */ int unk24;
     /* 0x28 */ int forbidden[2];
     /* 0x30 */ float adjsave;
     /* 0x34 */ struct LiveRange *next;
-    /* 0x38 */ struct LiveUnit *interfere;
+    union {
+        /* 0x38 */ struct InterfereList *interfere;
+        /* 0x38 */ struct LiveUnit *unk38_lu; // it gets nulled out in localcolor, so why?
+                                              // aliased units?
+    };
 }; // size 0x3C
 
 struct BittabItem {
