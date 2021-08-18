@@ -5,28 +5,30 @@
 /*
 0042BF08 reemit
 */
-void findbbtemps(void *arg0) {
+void findbbtemps(struct Graphnode *node) {
     int i;
-    struct BitVectorBlock zero = {0};
-    unsigned char *ptr;
+    struct IChain *ichain;
     struct Temploc *pos;
 
-    initbv(&setofspills, zero);
+    initbv(&setofspills, (struct BitVectorBlock) {0});
 
     for (i = 0; i < firstconstbit; i++) {
-        if (bvectin(i, (struct BitVector *)((char *)arg0 + 0x15c))) {
+        if (bvectin(i, &node->bvs.stage2.unk15C)) {
             if (bvectin(i, &coloreditems)) {
-                ptr = (unsigned char *)bittab[i].ichain;
-                switch (*ptr) {
-                    case 4:
-                        setbit(&setofspills, **(int **)(ptr + 0x20));
+                ichain = bittab[i].ichain;
+                switch (ichain->type) {
+                    case isop:
+                        setbit(&setofspills, ichain->isop.temploc->index);
                         break;
-                    case 5:
-                        setbit(&setofspills, **(int **)(ptr + 0x24));
+
+                    case isilda:
+                        setbit(&setofspills, ichain->islda_isilda.temploc->index);
                         break;
-                    case 6:
-                        setbit(&setofspills, **(int **)(ptr + 0x20));
+
+                    case issvar:
+                        setbit(&setofspills, ichain->isvar_issvar.temploc->index);
                         break;
+
                     default:
                         caseerror(1, 40, "uopttemp.p", 10);
                         break;
