@@ -27,8 +27,6 @@ typedef unsigned char bool;
 //#define GETBIT32(set, index) ((int)(((unsigned int)(set) & -((unsigned int)(index) < 32)) << ((index) & 31)) < 0)
 #define GETBIT32(set, index) ((unsigned int)(index) < 32U && ((set) & (1U << (31 - (index)))))
 
-
-
 #define SET_INIT(set, value)                                            \
     set[0] = ((unsigned) (value) < 0x20U) << (~(value) & 31);           \
     set[1] = ((unsigned) ((value) - 0x20) < 0x20U) << (~(value) & 31);
@@ -69,6 +67,15 @@ typedef unsigned char bool;
 #define SET64_UNION(set1, set2) (set1) |= (set2);
 #define SET64_EMPTY(set) ((set) == 0LL)
 
+#define SET32_INIT(set, value) ((set) = ((unsigned) (value) < 0x20U) << (~(value) & 31))
+#define SET32_ADD(set, value) ((set) |= ((unsigned) (value) < 0x20U) << (~(value) & 31))
+#define SET32_IN(set, value) GETBIT32(set, value)
+#define SET32_MINUS(set, value) (set) & ~(((unsigned) (value) < 0x20U) << (~(value) & 31))
+// (documentation)
+#define SET32_UNION(set1, set2) (set1) |= (set2)
+#define SET32_EMPTY(set) ((set) == 0)
+
+// packed array of bools, see Graphnode, globalcolor(), reemit()
 #define BITARR_SET(arr, index, value) \
             (arr)[(index) >> 3] = ((((((value) & 1) ^ (((unsigned int)((arr)[(index) >> 3]) << (((index) & 7) + 24)) >> 31)) << 31) >> (((index) & 7) + 24)) ^ (arr)[(index) >> 3])
 

@@ -48,7 +48,11 @@ enum RegisterColor {
     // floating point
     fp_f0,  fp_f2,  fp_f12, fp_f14, fp_f16, fp_f18,
     fp_f20, fp_f22, fp_f24, fp_f26, fp_f28, fp_f30,
-};
+}
+#ifdef __GNUC__
+__attribute__((packed))
+#endif
+;
 
 #ifdef __GNUC__
 typedef enum RegisterColor RegisterColor;
@@ -250,11 +254,11 @@ struct JumpFallthroughBB {
 };
 
 struct RegisterNode { // TODO: probably the same as JumpFallthroughBB
-    unsigned char reg;
-    bool unk1;
-    struct IChain *ichain;
-    struct RegisterNode *next;
-};
+    /* 0x0 */ unsigned char reg;
+    /* 0x1 */ bool unk1;
+    /* 0x4 */ struct IChain *ichain;
+    /* 0x8 */ struct RegisterNode *next;
+}; // size 0xC
 
 enum unk5enum {
     notloopfirstbb,
@@ -361,7 +365,7 @@ struct Graphnode {
             struct BitVector liveout; // 0x144
             struct BitVector unk14C; // 0x14C
             struct BitVector unk154; // 0x154
-            struct BitVector unk15C; // 0x15C
+            struct BitVector unk15C; // 0x15C findbbtemps
             struct BitVector unk164; // 0x164
             struct BitVector unk16C; // 0x16C
         } stage2;

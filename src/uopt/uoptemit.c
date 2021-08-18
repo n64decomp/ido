@@ -1,3 +1,12 @@
+#include "libp/libp.h"
+#include "libu/libu.h"
+#include "uoptdata.h"
+#include "uoptions.h"
+#include "uoptdbg.h"
+#include "uoptkill.h"
+#include "uoptreg1.h"
+#include "uoptutil.h"
+#include "feedback.h"
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -401,10 +410,10 @@ RO_1000B272:
 jtbl_1000B274:
     # 0042BF08 reemit
     .gpword .L0042E104
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
     .gpword .L0042D878
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042DA2C
 
     .balign 4
@@ -414,14 +423,14 @@ jtbl_1000B28C:
     .gpword .L0042DEC0
     .gpword .L0042D8D8
     .gpword .L0042E358
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042E3A0
     .gpword .L0042E358
     .gpword .L0042DD50
-    .gpword .L0042E42C
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042D9B8
 
     .balign 4
@@ -430,9 +439,9 @@ jtbl_1000B2C0:
     .gpword .L0042C8F4
     .gpword .L0042C328
     .gpword .L0042C328
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
     .gpword .L0042D4A4
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
     .gpword .L0042E318
     .gpword .L0042E2F4
 
@@ -440,41 +449,41 @@ jtbl_1000B2C0:
 jtbl_1000B2E0:
     # 0042BF08 reemit
     .gpword .L0042DAA0
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042E33C
-    .gpword .L0042E42C
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042C5E8
     .gpword .L0042C5E8
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042D1A4
-    .gpword .L0042E42C
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042E584
-    .gpword .L0042E42C
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042CB00
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
     .gpword .L0042D0E0
     .gpword .L0042DB84
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042DA58
 
     .balign 4
 jtbl_1000B348:
     # 0042BF08 reemit
     .gpword .L0042E358
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
     .gpword .L0042C8F4
     .gpword .L0042C894
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042D1D4
     .gpword .L0042C768
     .gpword .L0042C768
@@ -482,26 +491,26 @@ jtbl_1000B348:
     .gpword .L0042C768
     .gpword .L0042C768
     .gpword .L0042C768
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042D47C
-    .gpword .L0042E42C
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042D4FC
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
     .gpword .L0042D090
 
     .balign 4
 jtbl_1000B3A0:
     # 0042BF08 reemit
     .gpword .L0042C1BC
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042DD50
-    .gpword .L0042E42C
-    .gpword .L0042E42C
-    .gpword .L0042E42C
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
+    .gpword .Lreemit_error
     .gpword .L0042C1BC
 
 .data
@@ -740,15 +749,24 @@ glabel unaltab
     # 0041F6F0 base_in_reg
     # 00422AF0 func_00422AF0
     # 0042BF08 reemit
-    .space 532
+    .space 440
     .size unaltab, 532
     .type unaltab, @object
 
+# 23 + 110 space?
 
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
 
 .text
+)"");
+
+extern int eereg_saved_locs[22];
+
+__asm__(R""(
+.set noat      # allow manual use of $at
+.set noreorder # don't insert nops after branches
+
 glabel igen3
     .ent igen3
     # 00422D04 func_00422D04
@@ -13779,220 +13797,76 @@ func_0042A1C8:
 /* 0042A4C0 8FB70034 */  lw    $s7, 0x34($sp)
 /* 0042A4C4 03E00008 */  jr    $ra
 /* 0042A4C8 27BD0040 */   addiu $sp, $sp, 0x40
+)"");
 
-    .type func_0042A4CC, @function
-func_0042A4CC:
-    # 0042B1A8 func_0042B1A8
-/* 0042A4CC 3C1C0FBF */  .cpload $t9
-/* 0042A4D0 279CFDC4 */  
-/* 0042A4D4 0399E021 */  
-/* 0042A4D8 27BDFFC0 */  addiu $sp, $sp, -0x40
-/* 0042A4DC AFB1001C */  sw    $s1, 0x1c($sp)
-/* 0042A4E0 8F918DA4 */  lw     $s1, %got(u)($gp)
-/* 0042A4E4 AFBF003C */  sw    $ra, 0x3c($sp)
-/* 0042A4E8 AFBC0038 */  sw    $gp, 0x38($sp)
-/* 0042A4EC 92380001 */  lbu   $t8, 1($s1)
-/* 0042A4F0 AFB70034 */  sw    $s7, 0x34($sp)
-/* 0042A4F4 AFB60030 */  sw    $s6, 0x30($sp)
-/* 0042A4F8 AFB5002C */  sw    $s5, 0x2c($sp)
-/* 0042A4FC AFB40028 */  sw    $s4, 0x28($sp)
-/* 0042A500 AFB30024 */  sw    $s3, 0x24($sp)
-/* 0042A504 AFB20020 */  sw    $s2, 0x20($sp)
-/* 0042A508 AFB00018 */  sw    $s0, 0x18($sp)
-/* 0042A50C 2401FFE0 */  li    $at, -32
-/* 0042A510 8C4EFFF4 */  lw    $t6, -0xc($v0)
-/* 0042A514 0301C824 */  and   $t9, $t8, $at
-/* 0042A518 37280008 */  ori   $t0, $t9, 8
-/* 0042A51C 310900FF */  andi  $t1, $t0, 0xff
-/* 0042A520 2401FF1F */  li    $at, -225
-/* 0042A524 8F8C8980 */  lw     $t4, %got(curblk)($gp)
-/* 0042A528 01215024 */  and   $t2, $t1, $at
-/* 0042A52C 8DD7011C */  lw    $s7, 0x11c($t6)
-/* 0042A530 240F0070 */  li    $t7, 112
-/* 0042A534 354B0020 */  ori   $t3, $t2, 0x20
-/* 0042A538 A2280001 */  sb    $t0, 1($s1)
-/* 0042A53C A22F0000 */  sb    $t7, ($s1)
-/* 0042A540 A22B0001 */  sb    $t3, 1($s1)
-/* 0042A544 8D8C0000 */  lw    $t4, ($t4)
-/* 0042A548 8F858B34 */  lw     $a1, %got(int_reg_size)($gp)
-/* 0042A54C 8F928970 */  lw     $s2, %got(tempdisp)($gp)
-/* 0042A550 AE2C0004 */  sw    $t4, 4($s1)
-/* 0042A554 8CA50000 */  lw    $a1, ($a1)
-/* 0042A558 8E430000 */  lw    $v1, ($s2)
-/* 0042A55C AE250008 */  sw    $a1, 8($s1)
-/* 0042A560 0065001A */  div   $zero, $v1, $a1
-/* 0042A564 00002010 */  mfhi  $a0
-/* 0042A568 00856826 */  xor   $t5, $a0, $a1
-/* 0042A56C 14A00002 */  bnez  $a1, .L0042A578
-/* 0042A570 00000000 */   nop   
-/* 0042A574 0007000D */  break 7
-.L0042A578:
-/* 0042A578 2401FFFF */  li    $at, -1
-/* 0042A57C 14A10004 */  bne   $a1, $at, .L0042A590
-/* 0042A580 3C018000 */   lui   $at, 0x8000
-/* 0042A584 14610002 */  bne   $v1, $at, .L0042A590
-/* 0042A588 00000000 */   nop   
-/* 0042A58C 0006000D */  break 6
-.L0042A590:
-/* 0042A590 00657021 */  addu  $t6, $v1, $a1
-/* 0042A594 05A10002 */  bgez  $t5, .L0042A5A0
-/* 0042A598 00000000 */   nop   
-/* 0042A59C 00852021 */  addu  $a0, $a0, $a1
-.L0042A5A0:
-/* 0042A5A0 10800002 */  beqz  $a0, .L0042A5AC
-/* 0042A5A4 01C47823 */   subu  $t7, $t6, $a0
-/* 0042A5A8 AE4F0000 */  sw    $t7, ($s2)
-.L0042A5AC:
-/* 0042A5AC 8F828D38 */  lw     $v0, %got(firsteereg)($gp)
-/* 0042A5B0 8F938D40 */  lw     $s3, %got(lasteereg)($gp)
-/* 0042A5B4 90420003 */  lbu   $v0, 3($v0)
-/* 0042A5B8 92730003 */  lbu   $s3, 3($s3)
-/* 0042A5BC 305000FF */  andi  $s0, $v0, 0xff
-/* 0042A5C0 0262082B */  sltu  $at, $s3, $v0
-/* 0042A5C4 14200033 */  bnez  $at, .L0042A694
-/* 0042A5C8 26730001 */   addiu $s3, $s3, 1
-/* 0042A5CC 8F948DAC */  lw     $s4, %got(eereg_saved_locs)($gp)
-/* 0042A5D0 327300FF */  andi  $s3, $s3, 0xff
-/* 0042A5D4 8F9689FC */  lw     $s6, %got(highestmdef)($gp)
-/* 0042A5D8 8F958B48 */  lw     $s5, %got(stack_reversed)($gp)
-/* 0042A5DC 2694FFC8 */  addiu $s4, $s4, -0x38
-/* 0042A5E0 2618FFF3 */  addiu $t8, $s0, -0xd
-.L0042A5E4:
-/* 0042A5E4 2F190020 */  sltiu $t9, $t8, 0x20
-/* 0042A5E8 00194023 */  negu  $t0, $t9
-/* 0042A5EC 02E84824 */  and   $t1, $s7, $t0
-/* 0042A5F0 03095004 */  sllv  $t2, $t1, $t8
-/* 0042A5F4 05410023 */  bgez  $t2, .L0042A684
-/* 0042A5F8 02003025 */   move  $a2, $s0
-/* 0042A5FC 00105880 */  sll   $t3, $s0, 2
-/* 0042A600 028B2021 */  addu  $a0, $s4, $t3
-/* 0042A604 8C820000 */  lw    $v0, ($a0)
-/* 0042A608 54400013 */  bnezl $v0, .L0042A658
-/* 0042A60C AE22000C */   sw    $v0, 0xc($s1)
-/* 0042A610 92AC0000 */  lbu   $t4, ($s5)
-/* 0042A614 8F858B34 */  lw     $a1, %got(int_reg_size)($gp)
-/* 0042A618 8E430000 */  lw    $v1, ($s2)
-/* 0042A61C 15800007 */  bnez  $t4, .L0042A63C
-/* 0042A620 8CA50000 */   lw    $a1, ($a1)
-/* 0042A624 00656821 */  addu  $t5, $v1, $a1
-/* 0042A628 000D7023 */  negu  $t6, $t5
-/* 0042A62C AE4D0000 */  sw    $t5, ($s2)
-/* 0042A630 AC8E0000 */  sw    $t6, ($a0)
-/* 0042A634 10000005 */  b     .L0042A64C
-/* 0042A638 01A01825 */   move  $v1, $t5
-.L0042A63C:
-/* 0042A63C 00657821 */  addu  $t7, $v1, $a1
-/* 0042A640 AC830000 */  sw    $v1, ($a0)
-/* 0042A644 01E01825 */  move  $v1, $t7
-/* 0042A648 AE4F0000 */  sw    $t7, ($s2)
-.L0042A64C:
-/* 0042A64C AEC30000 */  sw    $v1, ($s6)
-/* 0042A650 8C820000 */  lw    $v0, ($a0)
-/* 0042A654 AE22000C */  sw    $v0, 0xc($s1)
-.L0042A658:
-/* 0042A658 8F998708 */  lw    $t9, %call16(coloroffset)($gp)
-/* 0042A65C 00C02025 */  move  $a0, $a2
-/* 0042A660 0320F809 */  jalr  $t9
-/* 0042A664 00000000 */   nop   
-/* 0042A668 8FBC0038 */  lw    $gp, 0x38($sp)
-/* 0042A66C A6220002 */  sh    $v0, 2($s1)
-/* 0042A670 02202025 */  move  $a0, $s1
-/* 0042A674 8F998740 */  lw    $t9, %call16(uwrite)($gp)
-/* 0042A678 0320F809 */  jalr  $t9
-/* 0042A67C 00000000 */   nop   
-/* 0042A680 8FBC0038 */  lw    $gp, 0x38($sp)
-.L0042A684:
-/* 0042A684 26100001 */  addiu $s0, $s0, 1
-/* 0042A688 321000FF */  andi  $s0, $s0, 0xff
-/* 0042A68C 5613FFD5 */  bnel  $s0, $s3, .L0042A5E4
-/* 0042A690 2618FFF3 */   addiu $t8, $s0, -0xd
-.L0042A694:
-/* 0042A694 92280001 */  lbu   $t0, 1($s1)
-/* 0042A698 8E430000 */  lw    $v1, ($s2)
-/* 0042A69C 8F948DAC */  lw     $s4, %got(eereg_saved_locs)($gp)
-/* 0042A6A0 3109FFE0 */  andi  $t1, $t0, 0xffe0
-/* 0042A6A4 24190008 */  li    $t9, 8
-/* 0042A6A8 3538000C */  ori   $t8, $t1, 0xc
-/* 0042A6AC 30620007 */  andi  $v0, $v1, 7
-/* 0042A6B0 8F958B48 */  lw     $s5, %got(stack_reversed)($gp)
-/* 0042A6B4 8F9689FC */  lw     $s6, %got(highestmdef)($gp)
-/* 0042A6B8 AE390008 */  sw    $t9, 8($s1)
-/* 0042A6BC A2380001 */  sb    $t8, 1($s1)
-/* 0042A6C0 10400004 */  beqz  $v0, .L0042A6D4
-/* 0042A6C4 2694FFC8 */   addiu $s4, $s4, -0x38
-/* 0042A6C8 00625023 */  subu  $t2, $v1, $v0
-/* 0042A6CC 254B0008 */  addiu $t3, $t2, 8
-/* 0042A6D0 AE4B0000 */  sw    $t3, ($s2)
-.L0042A6D4:
-/* 0042A6D4 8F828D38 */  lw     $v0, %got(firsteereg)($gp)
-/* 0042A6D8 8F938D40 */  lw     $s3, %got(lasteereg)($gp)
-/* 0042A6DC 90420007 */  lbu   $v0, 7($v0)
-/* 0042A6E0 92730007 */  lbu   $s3, 7($s3)
-/* 0042A6E4 305000FF */  andi  $s0, $v0, 0xff
-/* 0042A6E8 0262082B */  sltu  $at, $s3, $v0
-/* 0042A6EC 1420002D */  bnez  $at, .L0042A7A4
-/* 0042A6F0 26730001 */   addiu $s3, $s3, 1
-/* 0042A6F4 327300FF */  andi  $s3, $s3, 0xff
-/* 0042A6F8 260CFFF3 */  addiu $t4, $s0, -0xd
-.L0042A6FC:
-/* 0042A6FC 2D8D0020 */  sltiu $t5, $t4, 0x20
-/* 0042A700 000D7023 */  negu  $t6, $t5
-/* 0042A704 02EE7824 */  and   $t7, $s7, $t6
-/* 0042A708 018FC804 */  sllv  $t9, $t7, $t4
-/* 0042A70C 07210021 */  bgez  $t9, .L0042A794
-/* 0042A710 02003025 */   move  $a2, $s0
-/* 0042A714 00104080 */  sll   $t0, $s0, 2
-/* 0042A718 02882021 */  addu  $a0, $s4, $t0
-/* 0042A71C 8C820000 */  lw    $v0, ($a0)
-/* 0042A720 54400011 */  bnezl $v0, .L0042A768
-/* 0042A724 AE22000C */   sw    $v0, 0xc($s1)
-/* 0042A728 92A90000 */  lbu   $t1, ($s5)
-/* 0042A72C 8E430000 */  lw    $v1, ($s2)
-/* 0042A730 15200007 */  bnez  $t1, .L0042A750
-/* 0042A734 246B0008 */   addiu $t3, $v1, 8
-/* 0042A738 24780008 */  addiu $t8, $v1, 8
-/* 0042A73C 00185023 */  negu  $t2, $t8
-/* 0042A740 AE580000 */  sw    $t8, ($s2)
-/* 0042A744 AC8A0000 */  sw    $t2, ($a0)
-/* 0042A748 10000004 */  b     .L0042A75C
-/* 0042A74C 03001825 */   move  $v1, $t8
-.L0042A750:
-/* 0042A750 AC830000 */  sw    $v1, ($a0)
-/* 0042A754 01601825 */  move  $v1, $t3
-/* 0042A758 AE4B0000 */  sw    $t3, ($s2)
-.L0042A75C:
-/* 0042A75C AEC30000 */  sw    $v1, ($s6)
-/* 0042A760 8C820000 */  lw    $v0, ($a0)
-/* 0042A764 AE22000C */  sw    $v0, 0xc($s1)
-.L0042A768:
-/* 0042A768 8F998708 */  lw    $t9, %call16(coloroffset)($gp)
-/* 0042A76C 00C02025 */  move  $a0, $a2
-/* 0042A770 0320F809 */  jalr  $t9
-/* 0042A774 00000000 */   nop   
-/* 0042A778 8FBC0038 */  lw    $gp, 0x38($sp)
-/* 0042A77C A6220002 */  sh    $v0, 2($s1)
-/* 0042A780 02202025 */  move  $a0, $s1
-/* 0042A784 8F998740 */  lw    $t9, %call16(uwrite)($gp)
-/* 0042A788 0320F809 */  jalr  $t9
-/* 0042A78C 00000000 */   nop   
-/* 0042A790 8FBC0038 */  lw    $gp, 0x38($sp)
-.L0042A794:
-/* 0042A794 26100001 */  addiu $s0, $s0, 1
-/* 0042A798 321000FF */  andi  $s0, $s0, 0xff
-/* 0042A79C 5613FFD7 */  bnel  $s0, $s3, .L0042A6FC
-/* 0042A7A0 260CFFF3 */   addiu $t4, $s0, -0xd
-.L0042A7A4:
-/* 0042A7A4 8FBF003C */  lw    $ra, 0x3c($sp)
-/* 0042A7A8 8FB00018 */  lw    $s0, 0x18($sp)
-/* 0042A7AC 8FB1001C */  lw    $s1, 0x1c($sp)
-/* 0042A7B0 8FB20020 */  lw    $s2, 0x20($sp)
-/* 0042A7B4 8FB30024 */  lw    $s3, 0x24($sp)
-/* 0042A7B8 8FB40028 */  lw    $s4, 0x28($sp)
-/* 0042A7BC 8FB5002C */  lw    $s5, 0x2c($sp)
-/* 0042A7C0 8FB60030 */  lw    $s6, 0x30($sp)
-/* 0042A7C4 8FB70034 */  lw    $s7, 0x34($sp)
-/* 0042A7C8 03E00008 */  jr    $ra
-/* 0042A7CC 27BD0040 */   addiu $sp, $sp, 0x40
+/*
+0042B1A8 func_0042B1A8
+*/
+static void func_0042A4CC(struct Graphnode *node) {
+    RegisterColor reg;
+    int align;
+
+    OPC = Urstr;
+    DTYPE = Ldt;
+    MTYPE = Mmt;
+    IONE = curblk;
+    LENGTH = int_reg_size;
+    align = tempdisp % int_reg_size;
+    if ((align ^ int_reg_size) < 0) {
+        align += int_reg_size;
+    }
+    if (align != 0) {
+        tempdisp = tempdisp + int_reg_size - align;
+    }
+
+    for (reg = firsteereg[0]; reg <= lasteereg[0]; reg++) {
+        if (SET32_IN(node->bvs.stage3.strinsertin, reg - 13)) {
+            if (eereg_saved_locs[reg - 13 - 1] == 0) {
+                if (!stack_reversed) {
+                    tempdisp += int_reg_size;
+                    eereg_saved_locs[reg - 13 - 1] = -tempdisp;
+                } else {
+                    eereg_saved_locs[reg - 13 - 1] = tempdisp;
+                    tempdisp += int_reg_size;
+                }
+                highestmdef = tempdisp;
+            }
+            OFFSET = eereg_saved_locs[reg - 13 - 1];
+            LEXLEV = coloroffset(reg);
+            uwrite(&u);
+        }
+    }
+
+    LENGTH = 8;
+    DTYPE = Qdt;
+    if ((tempdisp & 7) != 0) {
+        tempdisp = (tempdisp - (tempdisp & 7)) + 8;
+    }
+
+    for (reg = firsteereg[1]; reg <= lasteereg[1]; reg++) {
+        if (SET32_IN(node->bvs.stage3.strinsertin, reg - 13)) {
+            if (eereg_saved_locs[reg - 13 - 1] == 0) {
+                if (!stack_reversed) {
+                    tempdisp += 8;
+                    eereg_saved_locs[reg - 13 - 1] = -tempdisp;
+                } else {
+                    eereg_saved_locs[reg - 13 - 1] = tempdisp;
+                    tempdisp += 8;
+                }
+                highestmdef = tempdisp;
+            }
+
+            OFFSET = eereg_saved_locs[reg - 13 - 1];
+            LEXLEV = coloroffset(reg);
+            uwrite(&u);
+        }
+    }
+}
+
+__asm__(R""(
+.set noat      # allow manual use of $at
+.set noreorder # don't insert nops after branches
+
 
     .type func_0042A7D0, @function
 func_0042A7D0:
@@ -14686,7 +14560,9 @@ func_0042B144:
 /* 0042B19C 27BD0020 */  addiu $sp, $sp, 0x20
 /* 0042B1A0 03E00008 */  jr    $ra
 /* 0042B1A4 00000000 */   nop   
+)"");
 
+#if 0
     .type func_0042B1A8, @function
 func_0042B1A8:
     # 0042BF08 reemit
@@ -14765,6 +14641,34 @@ func_0042B1A8:
 /* 0042B2B4 8FB30024 */  lw    $s3, 0x24($sp)
 /* 0042B2B8 03E00008 */  jr    $ra
 /* 0042B2BC 27BD0030 */   addiu $sp, $sp, 0x30
+)"");
+#endif
+
+/*
+0042BF08 reemit
+*/
+static void func_0042B1A8(struct Graphnode *node) {
+    struct RegisterNode *str;
+    RegisterColor reg;
+
+    for (str = node->unkE0; str != NULL; str = str->next) {
+        genrlodrstr(Urstr, str->reg, str->ichain);
+    }
+
+    if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.strinsertin)) {
+        func_0042A4CC(node);
+    }
+
+    for (reg = 1; reg <= 35; reg++) {
+        if (node->regdata.unk44[reg - 1] != NULL && BITARR_GET(node->unkD0, reg - 1)) {
+            genrlodrstr(Urlod, reg, node->regdata.unk44[reg - 1]);
+        }
+    }
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_0042B2C0, @function
 func_0042B2C0:
@@ -15738,6 +15642,7 @@ glabel reemit
 /* 0042C07C 27B600A8 */   addiu $s6, $sp, 0xa8
 /* 0042C080 8F998020 */  lw    $t9, %got(func_0042B1A8)($gp)
 /* 0042C084 27A200A8 */  addiu $v0, $sp, 0xa8
+                            lw $a0, -0xc($v0)
 /* 0042C088 2739B1A8 */  addiu $t9, %lo(func_0042B1A8) # addiu $t9, $t9, -0x4e58
 /* 0042C08C 0320F809 */  jalr  $t9
 /* 0042C090 00000000 */   nop   
@@ -15811,7 +15716,7 @@ glabel reemit
 /* 0042C18C 2458FF87 */   addiu $t8, $v0, -0x79
 /* 0042C190 244FFF6C */  addiu $t7, $v0, -0x94
 /* 0042C194 2DE10008 */  sltiu $at, $t7, 8
-/* 0042C198 102008A4 */  beqz  $at, .L0042E42C
+/* 0042C198 102008A4 */  beqz  $at, .Lreemit_error
 /* 0042C19C 00000000 */   nop   
 /* 0042C1A0 8F818044 */  lw    $at, %got(jtbl_1000B3A0)($gp)
 /* 0042C1A4 000F7880 */  sll   $t7, $t7, 2
@@ -17116,6 +17021,7 @@ glabel reemit
 /* 0042D4DC 8FBC0034 */  lw    $gp, 0x34($sp)
 /* 0042D4E0 02C01025 */  move  $v0, $s6
 /* 0042D4E4 8F998020 */  lw    $t9, %got(func_0042B1A8)($gp)
+                            lw $a0, -0xc($v0)
 /* 0042D4E8 2739B1A8 */  addiu $t9, %lo(func_0042B1A8) # addiu $t9, $t9, -0x4e58
 /* 0042D4EC 0320F809 */  jalr  $t9
 /* 0042D4F0 00000000 */   nop   
@@ -18067,6 +17973,7 @@ glabel reemit
 .L0042E2D8:
 /* 0042E2D8 8F998020 */  lw    $t9, %got(func_0042B1A8)($gp)
 /* 0042E2DC 02C01025 */  move  $v0, $s6
+                            lw $a0, -0xc($v0)
 /* 0042E2E0 2739B1A8 */  addiu $t9, %lo(func_0042B1A8) # addiu $t9, $t9, -0x4e58
 /* 0042E2E4 0320F809 */  jalr  $t9
 /* 0042E2E8 00000000 */   nop   
@@ -18155,7 +18062,7 @@ glabel reemit
 /* 0042E420 A02F0001 */   sb    $t7, 1($at)
 /* 0042E424 10000057 */  b     .L0042E584
 /* 0042E428 8FBC0034 */   lw    $gp, 0x34($sp)
-.L0042E42C:
+.Lreemit_error:
 /* 0042E42C 8F99861C */  lw    $t9, %call16(dbgerror)($gp)
 /* 0042E430 24040212 */  li    $a0, 530
 /* 0042E434 0320F809 */  jalr  $t9
@@ -18170,7 +18077,7 @@ glabel reemit
 /* 0042E454 1041FFB9 */  beq   $v0, $at, .L0042E33C
 /* 0042E458 244EFFAF */   addiu $t6, $v0, -0x51
 /* 0042E45C 2DC1001A */  sltiu $at, $t6, 0x1a
-/* 0042E460 1020FFF2 */  beqz  $at, .L0042E42C
+/* 0042E460 1020FFF2 */  beqz  $at, .Lreemit_error
 /* 0042E464 00000000 */   nop   
 /* 0042E468 8F818044 */  lw    $at, %got(jtbl_1000B2E0)($gp)
 /* 0042E46C 000E7080 */  sll   $t6, $t6, 2
@@ -18191,7 +18098,7 @@ glabel reemit
 /* 0042E4A4 24010031 */  li    $at, 49
 /* 0042E4A8 5041FCB1 */  beql  $v0, $at, .L0042D770
 /* 0042E4AC 8E900004 */   lw    $s0, 4($s4)
-/* 0042E4B0 1000FFDE */  b     .L0042E42C
+/* 0042E4B0 1000FFDE */  b     .Lreemit_error
 /* 0042E4B4 00000000 */   nop   
 .L0042E4B8:
 /* 0042E4B8 2C410009 */  sltiu $at, $v0, 9
@@ -18201,7 +18108,7 @@ glabel reemit
 /* 0042E4C8 10200015 */  beqz  $at, .L0042E520
 /* 0042E4CC 2459FFF1 */   addiu $t9, $v0, -0xf
 /* 0042E4D0 2F21000D */  sltiu $at, $t9, 0xd
-/* 0042E4D4 1020FFD5 */  beqz  $at, .L0042E42C
+/* 0042E4D4 1020FFD5 */  beqz  $at, .Lreemit_error
 /* 0042E4D8 00000000 */   nop   
 /* 0042E4DC 8F818044 */  lw    $at, %got(jtbl_1000B28C)($gp)
 /* 0042E4E0 0019C880 */  sll   $t9, $t9, 2
@@ -18212,7 +18119,7 @@ glabel reemit
 /* 0042E4F4 00000000 */   nop   
 .L0042E4F8:
 /* 0042E4F8 2D810006 */  sltiu $at, $t4, 6
-/* 0042E4FC 1020FFCB */  beqz  $at, .L0042E42C
+/* 0042E4FC 1020FFCB */  beqz  $at, .Lreemit_error
 /* 0042E500 00000000 */   nop   
 /* 0042E504 8F818044 */  lw    $at, %got(jtbl_1000B274)($gp)
 /* 0042E508 000C6080 */  sll   $t4, $t4, 2
@@ -18225,11 +18132,11 @@ glabel reemit
 /* 0042E520 24010020 */  li    $at, 32
 /* 0042E524 1041FD41 */  beq   $v0, $at, .L0042DA2C
 /* 0042E528 00000000 */   nop   
-/* 0042E52C 1000FFBF */  b     .L0042E42C
+/* 0042E52C 1000FFBF */  b     .Lreemit_error
 /* 0042E530 00000000 */   nop   
 .L0042E534:
 /* 0042E534 2DA10008 */  sltiu $at, $t5, 8
-/* 0042E538 1020FFBC */  beqz  $at, .L0042E42C
+/* 0042E538 1020FFBC */  beqz  $at, .Lreemit_error
 /* 0042E53C 00000000 */   nop   
 /* 0042E540 8F818044 */  lw    $at, %got(jtbl_1000B2C0)($gp)
 /* 0042E544 000D6880 */  sll   $t5, $t5, 2
@@ -18240,7 +18147,7 @@ glabel reemit
 /* 0042E558 00000000 */   nop   
 .L0042E55C:
 /* 0042E55C 2F010016 */  sltiu $at, $t8, 0x16
-/* 0042E560 1020FFB2 */  beqz  $at, .L0042E42C
+/* 0042E560 1020FFB2 */  beqz  $at, .Lreemit_error
 /* 0042E564 00000000 */   nop   
 /* 0042E568 8F818044 */  lw    $at, %got(jtbl_1000B348)($gp)
 /* 0042E56C 0018C080 */  sll   $t8, $t8, 2
@@ -18451,6 +18358,7 @@ glabel reemit
 /* 0042E860 00000000 */   nop   
 /* 0042E864 8F998020 */  lw    $t9, %got(func_0042B1A8)($gp)
 /* 0042E868 02C01025 */  move  $v0, $s6
+                            lw $a0, -0xc($v0)
 /* 0042E86C 2739B1A8 */  addiu $t9, %lo(func_0042B1A8) # addiu $t9, $t9, -0x4e58
 /* 0042E870 0320F809 */  jalr  $t9
 /* 0042E874 00000000 */   nop   
@@ -18638,3 +18546,1584 @@ glabel reemit
     .size reemit, .-reemit
     .end reemit
 )"");
+
+#if 0
+? fflush(FILE *); // extern
+? boundswarning(); // static
+u16 coloroffset(s32); // static
+? epilog(struct Graphnode *, u8); // static
+? findbbtemps(struct Graphnode *); // static
+? func_00422AF0(); // static
+? func_004230F0(struct Expression *, ?, struct Expression *, u8); // static
+? func_00424FFC(struct Expression *, struct Expression *); // static
+? func_00425594(struct JumpFallthroughBB *); // static
+? func_0042A1C8(); // static
+? func_0042A7D0(); // static
+? func_0042AADC(struct Expression *, struct Expression *); // static
+? func_0042B09C(); // static
+? func_0042B144(); // static
+? func_0042B1A8(); // static
+? func_0042B890(struct Statement *, u8); // static
+? func_0042BB4C(struct Statement *); // static
+? func_0042BD94(u32, u32, s8, s8); // static
+u8 func_0042BE58(struct Loop *); // static
+? gen_outparcode(struct Graphnode *); // static
+? gen_static_link(); // static
+? genrop(?, s32, u8, u8); // static
+? gettemp(s32 *, ?); // static
+? igen3(?, struct IChain *, u8); // static
+s32 inreg(struct IChain *, struct Graphnode *, s32 *, ?); // static
+? next_char(FILE *); // static
+? prolog(); // static
+s8 read_char(FILE *); // static
+? readln(FILE *); // static
+? reset(struct PascalFile *, ? *, ?, ?); // static
+? spilltemplodstr(?, ?, s32); // static
+s32 varlodstr(?, struct IChain *, struct Graphnode *, ?); // static
+static ? D_10010688; // unable to generate initializer
+static ? eereg_saved_locs;
+static s8 gpunaltab[24];
+static u8 has_ix;
+static s32 loopno;
+static s8 spunaltab[24];
+static ? unaltab;
+static u8 use_ix = 0;
+u8 allcallersave;
+struct Expression *baseregexpr[23];
+s32 curblk;
+s32 curlevel;
+s32 curlocln;
+s32 curlocpg;
+struct Statement *curmst;
+struct Proc *curproc;
+u8 do_opt_saved_regs;
+s8 entnam0[1024];
+u32 entnam0len;
+struct PascalFile err = {(FILE *)0xFB4EE64, NULL};
+s32 firsteereg[2];
+s32 firsterreg[2];
+s32 firstparmreg[2];
+u8 genbbnum;
+struct Graphnode *graphhead;
+s32 highestmdef;
+u8 lang;
+s32 lasteereg[2];
+s32 lasterreg[2];
+s32 maxlabnam;
+u8 mips3_64data;
+u8 mipsflag;
+s32 numcalls;
+u8 propagate_ee_saves;
+s32 regsinclass1;
+u8 someusefp;
+s32 staticlinkloc;
+struct PascalFile strp;
+s32 strpdisplace;
+union Bcode u;
+s32 ugen_saved_eeregs;
+u8 usefeedback;
+s8 *ustrptr;
+#endif
+
+#if 0
+void reemit() {
+    struct Graphnode *sp9C;
+    u8 sp97;
+    u8 sp95;
+    s32 sp90;
+    u8 sp8A;
+    s32 sp84;
+    void *temp_v0;
+    s32 temp_a0_2;
+    s32 temp_a0_4;
+    s32 temp_a1_10;
+    s32 temp_a1_11;
+    s32 temp_a1_5;
+    s32 temp_a1_6;
+    s32 temp_a1_7;
+    s32 temp_a1_8;
+    s32 temp_a1_9;
+    s32 temp_a2;
+    s32 temp_a3_3;
+    s32 temp_a3_4;
+    s32 temp_s0_15;
+    s32 temp_s0_16;
+    s32 temp_s0_17;
+    s32 temp_s0_19;
+    s32 temp_s0_20;
+    s32 temp_s0_3;
+    s32 temp_s0_4;
+    s32 temp_s0_5;
+    s32 temp_s0_6;
+    s32 temp_s1;
+    s32 temp_s1_2;
+    s32 temp_s1_3;
+    s32 temp_s1_4;
+    s32 temp_s1_5;
+    s32 temp_s1_6;
+    s32 temp_s1_7;
+    s32 temp_s1_8;
+    s32 temp_s2;
+    s32 temp_s3_10;
+    s32 temp_s3_11;
+    s32 temp_s3_12;
+    s32 temp_s3_5;
+    s32 temp_s3_6;
+    s32 temp_s3_7;
+    s32 temp_s3_8;
+    s32 temp_s3_9;
+    s32 temp_t2_4;
+    s32 temp_t4_3;
+    s32 temp_t8;
+    s32 temp_t8_3;
+    s32 temp_t9_4;
+    s32 temp_v0_20;
+    s32 temp_v0_21;
+    s32 temp_v0_22;
+    s32 temp_v0_8;
+    s32 temp_v1;
+    s32 temp_v1_17;
+    s32 temp_v1_2;
+    s32 temp_v1_5;
+    s32 temp_v1_7;
+    s8 *temp_v1_23;
+    s8 *temp_v1_24;
+    s8 temp_t7_3;
+    s8 temp_t9_2;
+    struct Expression **temp_v0_2;
+    struct Expression *temp_a0_7;
+    struct Expression *temp_s0;
+    struct Expression *temp_s0_10;
+    struct Expression *temp_s0_11;
+    struct Expression *temp_s0_12;
+    struct Expression *temp_s0_13;
+    struct Expression *temp_s0_18;
+    struct Expression *temp_s0_2;
+    struct Expression *temp_s0_7;
+    struct Expression *temp_s0_8;
+    struct Expression *temp_s0_9;
+    struct Expression *temp_v0_11;
+    struct Expression *temp_v0_12;
+    struct Expression *temp_v0_14;
+    struct Expression *temp_v0_15;
+    struct Expression *temp_v0_4;
+    struct Expression *temp_v0_6;
+    struct Graphnode *temp_a1_2;
+    struct Graphnode *temp_v1_14;
+    struct GraphnodeList *temp_a0_5;
+    struct RegstakenParregs *temp_s0_21;
+    struct Statement *temp_a0_3;
+    struct Statement *stat;
+    struct Statement *temp_s4_2;
+    struct Statement *temp_s4_3;
+    struct Statement *temp_s4_4;
+    struct Statement *temp_s4_5;
+    struct VarAccessList *temp_s3;
+    struct VarAccessList *temp_s3_3;
+    u16 temp_v0_19;
+    u32 temp_a0_6;
+    u32 temp_a1_3;
+    u32 temp_hi;
+    u32 temp_hi_2;
+    u32 temp_hi_3;
+    u32 temp_t2_5;
+    u32 temp_t3_3;
+    u32 temp_t4_4;
+    u32 temp_t5_2;
+    u32 temp_t6_3;
+    u32 temp_t7;
+    u32 temp_t7_2;
+    u32 temp_t8_2;
+    u32 temp_t9_3;
+    u32 temp_v0_17;
+    u32 temp_v0_18;
+    u32 temp_v0_3;
+    u8 *temp_v0_23;
+    u8 temp_a1;
+    u8 temp_a1_4;
+    u8 temp_a2_2;
+    u8 temp_a2_3;
+    u8 temp_a3;
+    u8 temp_a3_2;
+    u8 temp_a3_5;
+    u8 temp_a3_6;
+    u8 temp_a3_7;
+    u8 temp_s0_14;
+    u8 temp_t2;
+    u8 temp_t2_2;
+    u8 temp_t2_3;
+    u8 temp_t3;
+    u8 temp_t3_2;
+    u8 temp_t4;
+    u8 temp_t4_2;
+    u8 temp_t4_5;
+    u8 temp_t5;
+    u8 temp_t6;
+    u8 temp_t6_2;
+    u8 temp_t9;
+    u8 temp_v0_13;
+    u8 temp_v0_16;
+    u8 temp_v0_5;
+    u8 temp_v0_7;
+    u8 temp_v1_10;
+    u8 temp_v1_11;
+    u8 temp_v1_12;
+    u8 temp_v1_13;
+    u8 temp_v1_15;
+    u8 temp_v1_16;
+    u8 temp_v1_18;
+    u8 temp_v1_19;
+    u8 temp_v1_20;
+    u8 temp_v1_21;
+    u8 temp_v1_22;
+    u8 temp_v1_3;
+    u8 temp_v1_4;
+    u8 temp_v1_6;
+    u8 temp_v1_8;
+    u8 temp_v1_9;
+    void *temp_s3_2;
+    void *temp_s3_4;
+    void *temp_v0_10;
+    void *temp_v0_9;
+    void *phi_v0;
+    void *phi_v0_3;
+    s32 phi_v1;
+    void *phi_v0_4;
+    s32 phi_v1_2;
+    s8 *phi_t0;
+    s8 *phi_t1;
+    s32 phi_s1;
+    struct Statement *stat; // s4
+    s32 phi_t8;
+    u8 phi_a3;
+    s32 phi_s0;
+    s32 phi_s0_2;
+    void *phi_v0_5;
+    s32 phi_s1_2;
+    u8 phi_a2;
+    u8 phi_a2_2;
+    s32 phi_v0_6;
+    s32 phi_s0_3;
+    s32 phi_v0_7;
+    u8 phi_a3_2;
+    struct Statement *stat;
+    s32 phi_s0_4;
+    s32 phi_s0_5;
+    s32 phi_s0_6;
+    s32 phi_s0_7;
+    s32 phi_v0_8;
+    s32 phi_a1;
+    s32 phi_s1_3;
+    s32 phi_s3;
+    s32 phi_s1_4;
+    s32 phi_s0_8;
+    struct Statement *stat;
+    u8 phi_a3_3;
+    s8 *phi_v1_3;
+    u32 phi_t4;
+    u32 phi_t7;
+    u32 phi_t3;
+    u8 *phi_v0_9;
+    s32 phi_s1_5;
+    u8 *phi_v0_10;
+    s32 phi_s1_6;
+    u8 *phi_v0_11;
+    s32 phi_s1_7;
+    u8 *phi_v0_12;
+    s32 phi_s1_8;
+    u8 *phi_v0_13;
+    s32 phi_s1_9;
+    s8 *phi_a3_4;
+    s32 phi_v1_4;
+    void *phi_v0_14;
+    void *phi_v0_15;
+    s32 phi_a3_5;
+    struct Statement *stat;
+    struct Statement *stat;
+
+    sp95 = 0;
+    phi_v0 = &eereg_saved_locs;
+loop_1:
+    temp_v0 = phi_v0 + 4;
+    temp_v0->unk-4 = 0;
+    phi_v0 = temp_v0;
+    if (temp_v0 != (&eereg_saved_locs + 0x58)) {
+        goto loop_1;
+    }
+
+    reset(&strp, " ", 0, 0);
+    strpdisplace = 0;
+    prolog();
+    stat = graphhead->stat_head;
+    has_ix = false;
+    sp9C = graphhead;
+    curlocpg = 0;
+    curlocln = 0;
+    numcalls = 0;
+    findbbtemps(graphhead);
+    baseregexpr = {0};
+
+    phi_s1 = 1;
+
+#if 0
+    phi_v0_2 = baseregexpr;
+loop_3:
+    temp_v0_2 = phi_v0_2 + 4;
+    temp_v0_2->unk-4 = 0;
+    phi_v0_2 = temp_v0_2;
+    if (temp_v0_2 != (baseregexpr + 0x5C)) {
+        goto loop_3;
+    }
+#endif
+
+    gpunaltab = {0};
+    spunaltab = {0};
+    unaltab = {0};
+#if 0
+    phi_t0 = gpunaltab;
+    phi_t1 = spunaltab;
+    phi_a3_4 = unaltab;
+loop_5:
+    temp_a2 = 23 & 3;
+    phi_v1 = 1;
+    phi_v1_4 = 1;
+    if (temp_a2 == 0) {
+        goto block_9;
+    }
+    phi_v0_3 = phi_a3_4 + 1;
+loop_7:
+    temp_v1 = phi_v1 + 1;
+    phi_v0_3->unk-1 = 0;
+    phi_v0_3 += 1;
+    phi_v1 = temp_v1;
+    phi_v1_4 = temp_v1;
+    if ((temp_a2 + 1) != temp_v1) {
+        goto loop_7;
+    }
+    if (temp_v1 == 0x18) {
+        goto block_11;
+    }
+block_9:
+    phi_v0_4 = phi_a3_4 + phi_v1_4;
+    phi_v1_2 = phi_v1_4;
+loop_10:
+    temp_v1_2 = phi_v1_2 + 4;
+    phi_v0_4->unk-1 = 0;
+    phi_v0_4->unk0 = 0;
+    phi_v0_4->unk1 = 0;
+    phi_v0_4->unk2 = 0;
+    phi_v0_4 += 4;
+    phi_v1_2 = temp_v1_2;
+    if (temp_v1_2 != 0x18) {
+        goto loop_10;
+    }
+block_11:
+    temp_s1 = phi_s1 + 1;
+    *phi_t0 = 0;
+    *phi_t1 = 0;
+    phi_t0 += 1;
+    phi_t1 += 1;
+    phi_s1 = temp_s1;
+    phi_a3_4 += 0x17;
+    if (temp_s1 != 0x18) {
+        goto loop_5;
+    }
+#endif
+
+    sp90 = temp_s1;
+    if (stat->opc != Ulab) {
+        func_0042B1A8();
+    }
+
+    sp97 = 0;
+    stat = stat;
+
+loop_15:
+    temp_t7 = stat->opc - 0x60;
+    temp_t8 = temp_t7 < 0x40U;
+    phi_t8 = temp_t8;
+    if (temp_t8 == 0) {
+        goto block_17;
+    }
+    phi_t8 = (*(&D_10010688 + (((s32) temp_t7 >> 5) * 4)) << temp_t7) < 0;
+block_17:
+
+    if (stat->opc == Uret || stat->opc == Uujp) {
+        sp97 = 1;
+        func_0042AADC();
+        func_0042B09C();
+        if (do_opt_saved_regs != 0 && sp9C->bvs.stage3.strinsertin != NULL) {
+            func_0042A1C8();
+        }
+        func_0042B144();
+    }
+
+block_22:
+    temp_v0_3 = stat->opc & 0xFF;
+    if (temp_v0_3 < 0x32U) {
+        goto block_273;
+    }
+    if (temp_v0_3 < 0x6BU) {
+        goto block_269;
+    }
+    temp_t8_2 = temp_v0_3 - 121;
+    if (temp_v0_3 < 0x8FU) {
+        goto block_288;
+    }
+    temp_t7_2 = temp_v0_3 - 148;
+    if (temp_t7_2 >= 8U) {
+        goto block_268;
+    }
+    switch (*(&jtbl_1000B3A0 + (temp_t7_2 * 4)) + saved_reg_gp); // switch 1; unable to parse jump table
+
+    switch (stat->opc) {
+        case Uirst: // switch 1
+        case Uirsv: // switch 1
+            temp_v0_4 = stat->u.store.expr;
+            temp_t6 = temp_v0_4->type;
+            if (((-(s32) ((u32) temp_t6 < 0x20U) & 0x12000000) << temp_t6) < 0) {
+                temp_v0_4->datatype = stat->u.store.u.istr.dtype;
+            }
+            func_00424FFC(stat->expr, stat->u.store.baseaddr);
+            func_00424FFC(stat->u.store.expr, NULL);
+            phi_a3 = has_ix;
+            if (phi_a3 != 0) {
+                temp_v0_5 = stat->u.store.u.istr.dtype;
+                phi_a3 = temp_v0_5 == Qdt || temp_v0_5 == Rdt;
+            }
+            func_004230F0(stat->expr, 3, stat->u.store.baseaddr, phi_a3);
+            use_ix = 0U;
+            func_004230F0(stat->u.store.expr, 3, NULL, 0U);
+            temp_v1_3 = u.unk1;
+            OPC = Uirst;
+            u.unk1 = (u8) (((stat->u.store.u.istr.dtype ^ ((u32) (temp_v1_3 << 0x1B) >> 0x1B)) & 0x1F) ^ temp_v1_3);
+            u.Ucode.I1 = stat->u.store.u.str.unk30;
+            u.Ucode.Uopcde.uiequ1.Length = stat->u.store.size;
+            u.Ucode.Lexlev = (u16) stat->u.store.u.istr.align;
+            u.Ucode.Uopcde.uiequ1.offset = (s32) stat->u.store.u.istr.mtagno;
+            if (stat->opc == 0x40) {
+                u.Ucode.Lexlev |= 1;
+            }
+            uwrite(&u);
+            goto block_290;
+
+        case Uistr: // switch 5
+        case Uistv: // switch 5
+            temp_v0_14 = stat->u.store.expr;
+            temp_t2_3 = temp_v0_14->type;
+            if (((-(s32) ((u32) temp_t2_3 < 0x20U) & 0x12000000) << temp_t2_3) < 0) {
+                temp_v0_14->datatype = stat->u.store.u.istr.dtype;
+            }
+            temp_s0_13 = stat->expr;
+            if (temp_s0_13 == 0) {
+                phi_v0_7 = 0;
+            } else {
+                temp_a3_3 = temp_s0_13->type == 1;
+                phi_a3_5 = temp_a3_3;
+                if (temp_a3_3 != 0) {
+                    temp_a3_4 = stat->opc == 0x3F;
+                    phi_a3_5 = temp_a3_4;
+                    if (temp_a3_4 != 0) {
+                        phi_a3_5 = inreg(temp_s0_13->ichain, sp9C, &sp90, 1) == 0;
+                    }
+                }
+                phi_v0_7 = phi_a3_5 & 0xFF;
+            }
+            if (phi_v0_7 != 0) {
+                func_00424FFC(stat->u.store.expr, NULL);
+                func_004230F0(stat->u.store.expr, 3, NULL, 0U);
+                temp_v1_11 = u.unk1;
+                temp_v0_15 = stat->expr;
+                OPC = Ustr;
+                u.unk1 = (u8) (((stat->u.store.u.istr.dtype ^ ((u32) (temp_v1_11 << 0x1B) >> 0x1B)) & 0x1F) ^ temp_v1_11);
+                temp_v1_12 = u.unk1;
+                u.unk1 = (u8) (((u32) ((temp_v0_15->unk32 ^ ((u32) (temp_v1_12 << 0x18) >> 0x1D)) << 0x1D) >> 0x18) ^ temp_v1_12);
+                u.Ucode.I1 = (s32) ((u32) temp_v0_15->data.isop.unk30 >> 0xB);
+                u.Ucode.Uopcde.uiequ1.offset = (s32) ((s32) temp_v0_15->data.isop.opc + stat->u.store.u.str.unk30);
+                u.Ucode.Lexlev = 0;
+                u.Ucode.Uopcde.uiequ1.Length = stat->u.store.size;
+                uwrite(&u);
+            } else {
+                func_00424FFC(stat->expr, stat->u.store.baseaddr);
+                func_00424FFC(stat->u.store.expr, NULL);
+                temp_a3_5 = has_ix;
+                phi_a3_2 = temp_a3_5;
+                if (temp_a3_5 != 0) {
+                    temp_v0_16 = stat->u.store.u.istr.dtype;
+                    temp_a3_6 = temp_v0_16 == 0xC;
+                    phi_a3_2 = temp_a3_6;
+                    if (temp_a3_6 == 0) {
+                        phi_a3_2 = temp_v0_16 == 0xD;
+                    }
+                }
+                func_004230F0(stat->expr, 3, stat->u.store.baseaddr, phi_a3_2);
+                temp_s0_14 = use_ix;
+                use_ix = 0U;
+                func_004230F0(stat->u.store.expr, 3, NULL, 0U);
+                if (temp_s0_14 != 0) {
+                    OPC = Uisti;
+                } else {
+                    OPC = Uistr;
+                }
+                temp_v1_13 = u.unk1;
+                u.unk1 = (u8) (((stat->u.store.u.istr.dtype ^ ((u32) (temp_v1_13 << 0x1B) >> 0x1B)) & 0x1F) ^ temp_v1_13);
+                u.Ucode.I1 = (s32) stat->u.store.u.str.unk30;
+                u.Ucode.Uopcde.uiequ1.Length = stat->u.store.size;
+                u.Ucode.Lexlev = (u16) stat->u.store.u.istr.align;
+                u.Ucode.Uopcde.uiequ1.offset = (s32) stat->u.store.u.istr.mtagno;
+                if (stat->opc == 0x40) {
+                    u.Ucode.Lexlev |= 1;
+                }
+                uwrite(&u);
+            }
+            goto block_290;
+
+        case Umov: // switch 2
+        case Umovv: // switch 2
+            temp_s0_11 = stat->expr;
+            temp_t9 = temp_s0_11->type;
+            if (((-(s32) ((u32) temp_t9 < 0x20U) & 0x12000000) << temp_t9) < 0) {
+                temp_t3 = temp_s0_11->datatype;
+                if (((-(s32) ((u32) temp_t3 < 0x20U) & 0x88000000) << temp_t3) >= 0) {
+                    temp_s0_11->datatype = 0;
+                }
+            }
+            temp_v0_12 = stat->u.store.expr;
+            temp_t4 = temp_v0_12->type;
+            if (((-(s32) ((u32) temp_t4 < 0x20U) & 0x12000000) << temp_t4) < 0) {
+                temp_t2 = temp_v0_12->datatype;
+                if (((-(s32) ((u32) temp_t2 < 0x20U) & 0x88000000) << temp_t2) >= 0) {
+                    temp_v0_12->datatype = 0;
+                }
+            }
+            func_00424FFC(stat->expr, stat->u.store.baseaddr);
+            func_00424FFC(stat->u.store.expr, (struct Expression *) stat->u.store.u.str.unk2C);
+            func_004230F0(stat->expr, 3, stat->u.store.baseaddr, 0U);
+            func_004230F0(stat->u.store.expr, 3, (struct Expression *) stat->u.store.u.str.unk2C, 0U);
+            OPC = Umov;
+            u.unk1 = (u8) ((u.unk1 & 0xFFE0) | 9);
+            u.Ucode.Uopcde.uiequ1.Length = stat->u.store.size;
+            u.Ucode.I1 = (s32) stat->u.store.u.mov.src_align;
+            u.Ucode.Lexlev = (u16) stat->u.store.u.mov.dst_align;
+            if (stat->opc == 0x59) {
+                u.Ucode.Lexlev |= 1;
+            }
+            uwrite(&u);
+            goto block_290;
+
+        case Utpeq: // switch 6
+        case Utpge: // switch 6
+        case Utpgt: // switch 6
+        case Utple: // switch 6
+        case Utplt: // switch 6
+        case Utpne: // switch 6
+            temp_s0 = stat->expr;
+            temp_t5 = temp_s0->type;
+            if (((-(s32) ((u32) temp_t5 < 0x20U) & 0x12000000) << temp_t5) < 0) {
+                temp_s0->datatype = stat->u.store.u.istr.dtype;
+            }
+            temp_v0_6 = stat->u.store.expr;
+            temp_t6_2 = temp_v0_6->type;
+            if (((-(s32) ((u32) temp_t6_2 < 0x20U) & 0x12000000) << temp_t6_2) < 0) {
+                temp_v0_6->datatype = stat->u.store.u.istr.dtype;
+            }
+            func_00424FFC(stat->expr, NULL);
+            func_00424FFC(stat->u.store.expr, NULL);
+            func_004230F0(stat->expr, 3, NULL, 0U);
+            func_004230F0(stat->u.store.expr, 3, NULL, 0U);
+            OPC = stat->opc;
+            temp_v1_4 = u.unk1;
+            u.unk1 = (u8) (((stat->u.store.u.istr.dtype ^ ((u32) (temp_v1_4 << 0x1B) >> 0x1B)) & 0x1F) ^ temp_v1_4);
+            u.Ucode.I1 = stat->u.store.u.str.unk30;
+            uwrite(&u);
+            goto block_290;
+
+        case Ustsp: // switch 6
+            func_00424FFC(stat->expr, NULL);
+            func_004230F0(stat->expr, 0, NULL, 0U);
+            OPC = Ustsp;
+            uwrite(&u);
+            goto block_290;
+
+        case Uisst: // switch 5
+        case Ustr: // switch 6
+            if (!stat->outpar) {
+                temp_v0_11 = stat->expr->data.isop.unk34;
+                if ((temp_v0_11 != 0) && (temp_v0_11->type != 4)) {
+                    temp_v0_11->ichain->unk1 = (u8) temp_v0_11->datatype;
+                }
+                if (stat->unk2 != 1) {
+                    if (stat->opc == Uisst) {
+                        func_00424FFC(stat->u.store.expr, NULL);
+                    }
+                    func_00424FFC(stat->expr->data.isop.unk34, NULL);
+                    if (stat->opc == Uisst) {
+                        func_004230F0(stat->u.store.expr, 0, NULL, 0U);
+                    }
+                    func_004230F0(stat->expr->data.isop.unk34, 3, NULL, 0U);
+                    temp_s0_7 = stat->expr;
+                    temp_s0_7->ichain->dtype = temp_s0_7->datatype;
+                    temp_s0_8 = stat->expr;
+                    temp_s0_8->ichain->isvar_issvar.size = (u8) temp_s0_8->data.isop.opc;
+                    if (stat->opc == Ustr) {
+                        if (varlodstr(Ustr, stat->expr->ichain, sp9C, 0) != 0) {
+                            temp_s0_9 = stat->expr;
+                            igen3(Ustr, temp_s0_9->ichain, temp_s0_9->data.isop.datatype);
+                        }
+                    } else {
+                        temp_s0_10 = stat->expr;
+                        igen3(Uisst, temp_s0_10->ichain, temp_s0_10->data.isop.datatype);
+                    }
+                    if (stat->is_increment != 0) {
+                        func_0042B890(stat);
+                        func_0042BB4C(stat);
+                    }
+                } else if (stat->is_increment != 0) {
+                    func_0042B890(stat, stat->opc);
+                    func_0042BB4C(stat);
+                }
+            }
+            goto block_290;
+
+        case Upar: // switch 2
+            temp_s0_12 = stat->expr;
+            if (temp_s0_12->type != 4) {
+                temp_s0_12->ichain->dtype = temp_s0_12->datatype;
+            }
+            func_00424FFC(stat->expr, NULL);
+            temp_a0_3 = curmst;
+            if (temp_a0_3->u.store.size->unkC == 0) {
+                temp_v1_7 = stat->u.store.var_access_list_item;
+                if (temp_v1_7 < 5) {
+                    sp8A = 0;
+                    phi_s0_3 = 0;
+                    if (stat->u.store.unk1C < (s32) temp_a0_3->u.store.var_access_list_item) {
+                        phi_s1_2 = firstparmreg->unk4 + temp_v1_7;
+                    } else {
+                        phi_s1_2 = firstparmreg->unk0 + temp_v1_7;
+                    }
+                    temp_s1_2 = phi_s1_2 - 1;
+                    sp90 = temp_s1_2;
+                    if (sp9C->regsused[1][temp_s1_2].unk4 == 0) {
+                        func_004230F0(stat->expr, 3, NULL, 0U);
+                        if ((mips3_64data == 0) && (temp_t2_2 = (u8) stat->u.store.expr, (((-(s32) ((u32) temp_t2_2 < 0x20U) & 0x5000000) << temp_t2_2) < 0))) {
+                            sp8A = 1;
+                        } else {
+                            genrop(0x7B, sp90, (u8) stat->u.store.expr, stat->u.par.size);
+                            sp90 = sp90;
+                        }
+                    }
+                    phi_a2_2 = (u8) stat->u.store.expr;
+                } else {
+                    func_004230F0(stat->expr, 3, NULL, 0U);
+                    phi_a2_2 = (u8) stat->u.store.expr;
+                    phi_v0_6 = stat->u.store.unk1C;
+                    phi_s0_3 = 1;
+                }
+            } else {
+                temp_v0_13 = stat->u.aent.push;
+                if (temp_v0_13 != 0) {
+                    sp8A = 0;
+                    sp90 = (s32) temp_v0_13;
+                    phi_s0_3 = 0;
+                    if (sp9C->regsused[1][temp_v0_13].unk4 == 0) {
+                        func_004230F0(stat->expr, 3, NULL, 0U);
+                        temp_a2_2 = (u8) stat->u.store.expr;
+                        phi_a2 = temp_a2_2;
+                        if ((temp_a2_2 == 0xC) && ((s32) stat->u.aent.push < 0x18)) {
+                            OPC = Ucvt;
+                            u.Ucode.Uopcde.uiequ1.Length = 0xC;
+                            u.unk1 = (u8) ((u.unk1 & 0xFFE0) | 6);
+                            u.Ucode.Lexlev = 0;
+                            uwrite(&u);
+                            stat->u.store.expr = 6;
+                            writeln(err.c_file);
+                            write_string(err.c_file, "uopt: Warning: " /* not null-terminated */, 0xFU, 0xFU);
+                            write_string(err.c_file, entnam0, 0x400U, entnam0len);
+                            write_string(err.c_file, " line " /* not null-terminated */, 6U, 6U);
+                            write_integer(err.c_file, curlocln, 0, 10);
+                            write_string(err.c_file, ": double float parameter passed for integer;" /* not null-terminated */, 0x2CU, 0x2CU);
+                            writeln(err.c_file);
+                            fflush(err.c_file);
+                            phi_a2 = (u8) stat->u.store.expr;
+                        } else {
+                            temp_a1 = stat->u.aent.push;
+                            if ((((-(s32) ((u32) temp_a2_2 < 0x20U) & 0xC0000) << temp_a2_2) >= 0) && ((s32) temp_a1 >= 0x18)) {
+                                OPC = Utyp;
+                                if (sizeoftyp(temp_a2_2) == 4) {
+                                    u.unk1 = (u8) ((u.unk1 & 0xFFE0) | 0xD);
+                                } else {
+                                    u.unk1 = (u8) ((u.unk1 & 0xFFE0) | 0xC);
+                                }
+                                u.Ucode.Lexlev = 0;
+                                u.Ucode.Uopcde.uiequ1.Length = (u8) stat->u.store.expr;
+                                uwrite(&u);
+                                temp_t9_2 = u.unk1 & 0x1F;
+                                stat->u.store.expr = temp_t9_2;
+                                phi_a2 = temp_t9_2 & 0xFF;
+                            } else if ((((-(s32) ((u32) temp_a2_2 < 0x20U) & 0xC0000) << temp_a2_2) < 0) && ((s32) temp_a1 < 0x18)) {
+                                OPC = Utyp;
+                                if (sizeoftyp(temp_a2_2) == 4) {
+                                    u.unk1 = (u8) ((u.unk1 & 0xFFE0) | 6);
+                                } else {
+                                    u.unk1 = (u8) ((u.unk1 & 0xFFE0) | 5);
+                                }
+                                u.Ucode.Lexlev = 0;
+                                u.Ucode.Uopcde.uiequ1.Length = (u8) stat->u.store.expr;
+                                uwrite(&u);
+                                temp_t7_3 = u.unk1 & 0x1F;
+                                stat->u.store.expr = temp_t7_3;
+                                phi_a2 = temp_t7_3 & 0xFF;
+                            }
+                        }
+                        genrop(0x7B, (s32) stat->u.aent.push, phi_a2, stat->u.par.size);
+                    }
+                    phi_a2_2 = (u8) stat->u.store.expr;
+                } else {
+                    func_004230F0(stat->expr, 3, NULL, 0U);
+                    phi_a2_2 = (u8) stat->u.store.expr;
+                    phi_s0_3 = 1;
+                }
+                phi_v0_6 = stat->u.store.unk1C;
+            }
+            temp_v1_8 = u.unk1;
+            u.unk1 = (u8) (((phi_a2_2 ^ ((u32) (temp_v1_8 << 0x1B) >> 0x1B)) & 0x1F) ^ temp_v1_8);
+            u.Ucode.I1 = 0;
+            u.unk1 = (u8) ((u.unk1 & 0xFF1F) | 0x40);
+            u.Ucode.Uopcde.uiequ1.offset = phi_v0_6;
+            u.Ucode.Uopcde.uiequ1.Length = (s32) stat->u.par.size;
+            if (phi_s0_3 != 0) {
+                temp_v1_9 = u.unk1;
+                OPC = Ustr;
+                u.Ucode.Lexlev = 0;
+                if ((temp_v1_9 & 0x1F) == 9) {
+                    u.unk1 = (u8) ((temp_v1_9 & 0xFFE0) | 8);
+                }
+            } else if (sp8A != 0) {
+                sp90 = sp90;
+                OPC = Upar;
+            } else {
+                OPC = Urpar;
+                temp_a0_4 = sp90;
+                sp90 = sp90;
+                u.Ucode.Lexlev = coloroffset(temp_a0_4);
+            }
+            uwrite(&u);
+            goto block_290;
+
+        case Uxpar: // switch 6
+            func_004230F0(stat->expr, 4, NULL, 0U);
+            OPC = Uxpar;
+            u.unk1 = (u8) (u.unk1 & 0xFFE0);
+            uwrite(&u);
+            goto block_290;
+
+        case Upmov: // switch 2
+            func_00424FFC(stat->expr, NULL);
+            func_004230F0(stat->expr, 3, NULL, 0U);
+            if (curmst->u.store.size->unkC != 0) {
+                OPC = Umpmv;
+            } else {
+                OPC = Upmov;
+            }
+            temp_t4_2 = (u.unk1 & 0xFFE0) | 9;
+            temp_t8_3 = temp_t4_2 & 0xFF1F;
+            u.unk1 = temp_t4_2;
+            u.unk1 = (u8) (temp_t8_3 | 0x40);
+            u.Ucode.I1 = 0;
+            u.Ucode.Uopcde.uiequ1.offset = (s32) (u16) stat->u.store.u.mov.offset;
+            u.Ucode.Uopcde.uiequ1.Length = stat->u.store.size;
+            u.Ucode.Lexlev = (u16) stat->u.store.u.mov.src_align;
+            uwrite(&u);
+            goto block_290;
+
+        case Umst: // switch 2
+            curmst = stat;
+            OPC = Umst;
+            u.Ucode.Lexlev = (u16) stat->u.store.expr;
+            uwrite(&u);
+            goto block_290;
+
+        case Utjp: // switch 6
+        case Ufjp:
+block_135:
+            sp97 = 1;
+            func_00424FFC(stat->expr, NULL);
+            func_0042AADC();
+            func_004230F0(stat->expr, 0, NULL, 0U);
+            func_0042B09C();
+            if ((do_opt_saved_regs != 0) && (sp9C->bvs.stage2.unk11C.blocks != 0)) {
+                func_0042A1C8();
+            }
+            u.Ucode.Lexlev = 0;
+            if (usefeedback != 0) {
+                temp_a0_5 = sp9C->successors;
+                temp_v1_14 = stat->next->graphnode;
+                temp_a1_2 = temp_a0_5->graphnode;
+                if (temp_v1_14->num == temp_a1_2->num) {
+                    temp_v0_17 = temp_v1_14->unk2C;
+                    temp_a1_3 = temp_a0_5->next->graphnode->unk2C;
+                    if (temp_v0_17 < temp_a1_3) {
+                        u.Ucode.Lexlev = 1;
+                    } else if (temp_a1_3 < temp_v0_17) {
+                        u.Ucode.Lexlev = 2;
+                    }
+                } else {
+                    temp_v0_18 = temp_v1_14->unk2C;
+                    temp_a0_6 = temp_a1_2->unk2C;
+                    if (temp_v0_18 < temp_a0_6) {
+                        u.Ucode.Lexlev = 1;
+                    } else if (temp_a0_6 < temp_v0_18) {
+                        u.Ucode.Lexlev = 2;
+                    }
+                }
+            }
+            if (sp9C->jump_bbs == 0) {
+                OPC = stat->opc;
+                u.Ucode.I1 = (s32) stat->u.store.expr;
+                uwrite(&u);
+                func_00425594(sp9C->fallthrough_bbs);
+            } else {
+                if (stat->opc == 0x26) {
+                    OPC = Utjp;
+                } else {
+                    OPC = Ufjp;
+                }
+                temp_v0_19 = u.Ucode.Lexlev;
+                temp_t4_3 = maxlabnam + 1;
+                u.Ucode.I1 = temp_t4_3;
+                maxlabnam = temp_t4_3;
+                if (temp_v0_19 != 0) {
+                    u.Ucode.Lexlev = 3 - temp_v0_19;
+                }
+                uwrite(&u);
+                func_00425594(sp9C->jump_bbs);
+                OPC = Uujp;
+                u.Ucode.I1 = (s32) stat->u.store.expr;
+                uwrite(&u);
+                OPC = Ulab;
+                u.Ucode.Lexlev = 0;
+                u.Ucode.Uopcde.uiequ1.Length = 0;
+                u.Ucode.I1 = maxlabnam;
+                uwrite(&u);
+                func_00425594(sp9C->fallthrough_bbs);
+            }
+            goto block_290;
+
+        case Uujp: // switch 6
+            OPC = stat->opc;
+            u.Ucode.I1 = (s32) stat->u.store.expr;
+            uwrite(&u);
+            goto block_290;
+
+        case Ulab: // switch 5
+            OPC = stat->opc;
+            u.Ucode.I1 = (s32) stat->u.store.expr;
+            u.Ucode.Lexlev = (u16) (u8) stat->u.store.baseaddr;
+            u.Ucode.Uopcde.uiequ1.Length = (s32) stat->u.store.var_access_list_item;
+            uwrite(&u);
+            func_0042B1A8();
+            goto block_290;
+
+        case Uxjp: // switch 6
+            temp_s0_2 = stat->expr;
+            if ((temp_s0_2->type == 2) && (temp_v0_7 = temp_s0_2->datatype, (temp_v0_7 != 5)) && (temp_v0_7 != 7)) {
+                func_0042AADC(temp_s0_2, NULL);
+                func_0042B09C();
+                if ((do_opt_saved_regs != 0) && (sp9C->bvs.stage2.unk11C.blocks != 0)) {
+                    func_0042A1C8();
+                }
+                OPC = Uujp;
+                temp_v1_5 = stat->u.store.ichain;
+                temp_s0_3 = stat->expr->data.isop.opc;
+                if ((temp_s0_3 < temp_v1_5) || (stat->u.store.u.str.unk30 < temp_s0_3)) {
+                    u.Ucode.I1 = stat->u.store.unk1C;
+                } else {
+                    temp_s0_4 = (temp_s0_3 - temp_v1_5) + 1;
+                    temp_a0_2 = -(s32) (temp_s0_4 & 3);
+                    temp_v0_8 = stat->u.store.size;
+                    phi_s0 = temp_s0_4;
+                    phi_s0_2 = temp_s0_4;
+                    phi_v0_14 = (void *) temp_v0_8;
+                    phi_v0_15 = (void *) temp_v0_8;
+                    if (temp_a0_2 != 0) {
+                        do {
+                            temp_s0_5 = phi_s0 - 1;
+                            temp_v0_9 = phi_v0_14->unk8;
+                            phi_s0 = temp_s0_5;
+                            phi_s0_2 = temp_s0_5;
+                            phi_v0_5 = temp_v0_9;
+                            phi_v0_14 = temp_v0_9;
+                            phi_v0_15 = temp_v0_9;
+                        } while ((temp_a0_2 + temp_s0_4) != temp_s0_5);
+                        if (temp_s0_5 != 0) {
+                            goto loop_171;
+                        }
+                    } else {
+                        do {
+loop_171:
+                            temp_s0_6 = phi_s0_2 - 4;
+                            temp_v0_10 = phi_v0_15->unk8->unk8->unk8->unk8;
+                            phi_s0_2 = temp_s0_6;
+                            phi_v0_5 = temp_v0_10;
+                            phi_v0_15 = temp_v0_10;
+                        } while (temp_s0_6 != 0);
+                    }
+                    u.Ucode.I1 = phi_v0_5->unk14;
+                }
+                uwrite(&u);
+            } else {
+                sp97 = 1;
+                func_00424FFC(temp_s0_2, NULL);
+                func_0042AADC();
+                func_004230F0(stat->expr, 0, NULL, 0U);
+                func_0042B09C();
+                if ((do_opt_saved_regs != 0) && (sp9C->bvs.stage2.unk11C.blocks != 0)) {
+                    func_0042A1C8();
+                }
+                temp_v1_6 = u.unk1;
+                OPC = Uxjp;
+                u.unk1 = (u8) ((((u8) stat->u.store.expr ^ ((u32) (temp_v1_6 << 0x1B) >> 0x1B)) & 0x1F) ^ temp_v1_6);
+                u.Ucode.I1 = stat->u.store.var_access_list_item;
+                u.Ucode.Uopcde.uiequ1.Length = stat->u.store.unk1C;
+                u.Ucode.Uopcde.uiequ1.uop2.Constval.dwpart.dwval_l = stat->u.store.ichain;
+                u.Ucode.Uopcde.uiequ1.uop2.Constval.dwval = stat->u.store.baseaddr;
+                u.Ucode.Uopcde.uiequ1.uop2.uxjp.swbnds.hbound_l = stat->u.store.u.str.unk30;
+                u.Ucode.Uopcde.uiequ1.uop2.uxjp.dwbnds.hbound = (s32) stat->u.store.u.str.unk2C;
+                uwrite(&u);
+            }
+            goto block_290;
+
+block_178:
+        case Uijp:
+            sp97 = 1;
+            if (stat->expr == 0) {
+                dbgerror(0x45C);
+            }
+            func_00424FFC(stat->expr, NULL);
+            func_0042AADC();
+            func_004230F0(stat->expr, 0, NULL, 0U);
+            func_0042B09C();
+            if ((do_opt_saved_regs != 0) && (sp9C->bvs.stage2.unk11C.blocks != 0)) {
+                func_0042A1C8();
+            }
+            func_0042B144();
+            OPC = Uijp;
+            uwrite(&u);
+            goto block_290;
+
+        case Uaos: // switch 4
+            func_00424FFC(stat->expr, NULL);
+            func_004230F0(stat->expr, 0, NULL, 0U);
+            OPC = 5;
+            uwrite(&u);
+            goto block_290;
+
+        case Uclab: // switch 3
+            if (stat->u.store.unk1C != 0) {
+                OPC = Uclab;
+                u.Ucode.I1 = (s32) stat->u.store.expr;
+                u.Ucode.Uopcde.uiequ1.Length = (s32) stat->u.store.var_access_list_item;
+                uwrite(&u);
+                temp_s3 = stat->u.store.var_access_list_item;
+                if ((s32) temp_s3 > 0) {
+                    temp_s3_2 = temp_s3 + 1;
+                    phi_s0_4 = 1;
+                    do {
+                        temp_s4_2 = stat->next;
+                        OPC = temp_s4_2->opc;
+                        u.Ucode.I1 = temp_s4_2->u.store.expr;
+                        uwrite(&u);
+                        temp_s0_15 = phi_s0_4 + 1;
+                        stat = temp_s4_2;
+                        phi_s0_4 = temp_s0_15;
+                        stat = temp_s4_2;
+                    } while (temp_s0_15 != temp_s3_2);
+                }
+            } else {
+                temp_s3_3 = stat->u.store.var_access_list_item;
+                if ((s32) temp_s3_3 > 0) {
+                    temp_s3_4 = temp_s3_3 + 1;
+                    temp_v1_17 = (s32) (temp_s3_4 - 1) & 3;
+                    phi_s0_5 = 1;
+                    phi_s0_6 = 1;
+                    if (temp_v1_17 != 0) {
+                        do {
+                            temp_s0_16 = phi_s0_5 + 1;
+                            temp_s4_3 = stat->next;
+                            phi_s0_5 = temp_s0_16;
+                            phi_s0_6 = temp_s0_16;
+                            stat = temp_s4_3;
+                            stat = temp_s4_3;
+                            stat = temp_s4_3;
+                        } while ((temp_v1_17 + 1) != temp_s0_16);
+                        if (temp_s0_16 != temp_s3_4) {
+                            goto loop_195;
+                        }
+                    } else {
+                        do {
+loop_195:
+                            temp_s0_17 = phi_s0_6 + 4;
+                            temp_s4_4 = stat->next->unk8->unk8->unk8;
+                            phi_s0_6 = temp_s0_17;
+                            stat = temp_s4_4;
+                            stat = temp_s4_4;
+                        } while (temp_s0_17 != temp_s3_4);
+                    }
+                }
+            }
+            goto block_290;
+
+        case Udef: // switch 3
+            temp_v1_18 = u.unk1;
+            temp_a2_3 = (u8) stat->u.store.expr;
+            OPC = Udef;
+            u.unk1 = (u8) (((u32) ((temp_a2_3 ^ ((u32) (temp_v1_18 << 0x18) >> 0x1D)) << 0x1D) >> 0x18) ^ temp_v1_18);
+            if (temp_a2_3 == 1) {
+                sp95 = 1;
+                u.Ucode.Uopcde.uiequ1.Length = highestmdef;
+            } else {
+                u.Ucode.Uopcde.uiequ1.Length = (s32) stat->u.store.var_access_list_item;
+            }
+            uwrite(&u);
+            goto block_290;
+
+        case Ubgnb: // switch 4
+        case Uendb:
+block_201:
+            OPC = stat->opc;
+            u.Ucode.I1 = (s32) stat->u.store.expr;
+            uwrite(&u);
+            goto block_290;
+
+        case Uret: // switch 2
+            if (lang == 3) {
+                epilog(sp9C, stat->opc);
+            }
+            OPC = Uret;
+            uwrite(&u);
+            goto block_290;
+
+        case Uloc: // switch 2
+            OPC = Uloc;
+            u.Ucode.Lexlev = (u16) stat->u.store.expr;
+            u.Ucode.I1 = (s32) stat->u.store.var_access_list_item;
+            uwrite(&u);
+            curlocpg = (s32) stat->u.store.expr;
+            curlocln = (s32) stat->u.store.var_access_list_item;
+            goto block_290;
+
+        case Uchkt: // switch 3
+            temp_s0_18 = stat->expr;
+            if ((temp_s0_18->type == 2) && ((s32) temp_s0_18->data.isop.opc == 0)) {
+                boundswarning();
+            }
+            func_00424FFC(stat->expr, NULL);
+            func_004230F0(stat->expr, 0, NULL, 0U);
+            OPC = Uchkt;
+            u.Ucode.Lexlev = 0;
+            uwrite(&u);
+            goto block_290;
+
+        case Upop: // switch 2
+            if ((stat->u.par.size != 0) && (stat->u.aent.push != 0)) {
+                func_004230F0(stat->expr, 3, NULL, 0U);
+                gettemp(&sp84, 4);
+                spilltemplodstr(0x7B, 2, sp84);
+                func_0042AADC();
+                spilltemplodstr(0x52, 2, sp84);
+            } else {
+                func_00424FFC(stat->expr, NULL);
+                if (stat->u.par.size != 0) {
+                    func_0042AADC();
+                }
+                func_004230F0(stat->expr, 3, NULL, 0U);
+                if (stat->u.par.size == 0) {
+                    temp_v1_10 = u.unk1;
+                    OPC = Upop;
+                    u.unk1 = (u8) ((((u8) stat->u.store.expr ^ ((u32) (temp_v1_10 << 0x1B) >> 0x1B)) & 0x1F) ^ temp_v1_10);
+                    uwrite(&u);
+                } else if ((OPC == 0x52) && (((u32) (u.unk1 << 0x18) >> 0x1D) == 3) && (u.Ucode.Uopcde.uiequ1.offset == 0x1F)) {
+                    OPC = Ustr;
+                    u.Ucode.Uopcde.uiequ1.offset = 0xF;
+                    uwrite(&u);
+                    OPC = Ulod;
+                    uwrite(&u);
+                }
+            }
+            goto block_290;
+
+        case Urcuf: // switch 1
+        case Ucup: // switch 3
+        case Uicuf:
+block_221:
+            sp97 = 1;
+            numcalls += 1;
+            if (stat->opc == Ucup) {
+                func_0042AADC();
+            }
+            func_0042B09C();
+            temp_a1_4 = stat->opc;
+            OPC = temp_a1_4;
+            temp_v1_15 = u.unk1;
+            u.unk1 = (u8) ((((u8) stat->u.store.var_access_list_item ^ ((u32) (temp_v1_15 << 0x1B) >> 0x1B)) & 0x1F) ^ temp_v1_15);
+            if (temp_a1_4 == 0x17) {
+                u.Ucode.I1 = (s32) stat->u.store.expr->type;
+                u.Ucode.Lexlev = (u16) stat->u.call.level;
+            } else if (temp_a1_4 == 0x97) {
+                u.Ucode.I1 = stat->u.store.size;
+            }
+            u.Ucode.Uopcde.uiequ1.Length = stat->u.store.unk1C;
+            u.unk9 = (u8) stat->u.store.unk1D;
+            u.Ucode.Uopcde.uiequ1.offset = (s32) stat->u.call.extrnal_flags;
+            uwrite(&u);
+            if ((do_opt_saved_regs != 0) && (sp9C->bvs.stage2.unk11C.blocks != 0)) {
+                func_0042A1C8();
+            }
+            func_0042B144();
+            if ((s32) curmst->u.store.unk1C >= 0) {
+                gen_outparcode(sp9C->successors->graphnode);
+            }
+            goto block_290;
+
+        case Ucia: // switch 3
+            sp97 = 1;
+            func_0042AADC();
+            func_0042B09C();
+            temp_a1_5 = (s32) stat->u.store.unk1C;
+            OPC = Ucia;
+            u.Ucode.Uopcde.uiequ1.Length = temp_a1_5;
+            u.Ucode.Lexlev = (u16) (u8) stat->u.store.var_access_list_item;
+            temp_v1_19 = u.unk1;
+            u.unk1 = (u8) (((stat->u.call.level ^ ((u32) (temp_v1_19 << 0x1B) >> 0x1B)) & 0x1F) ^ temp_v1_19);
+            u.Ucode.Uopcde.uiequ1.offset = stat->u.store.size;
+            u.Ucode.Uopcde.uiequ1.uop2.Constval.dwval = temp_a1_5;
+            temp_a0_7 = stat->u.store.expr;
+            temp_v0_20 = strpdisplace;
+            phi_v0_8 = temp_v0_20;
+            if (temp_v0_20 < (s32) temp_a0_7) {
+                if (temp_a0_7 != temp_v0_20) {
+                    do {
+                        next_char(strp.c_file);
+                        temp_v0_21 = strpdisplace + 1;
+                        strpdisplace = temp_v0_21;
+                    } while (stat->u.store.expr != temp_v0_21);
+                    phi_v0_8 = temp_v0_21;
+                }
+            } else if ((s32) temp_a0_7 < temp_v0_20) {
+                reset(&strp, " " /* not null-terminated */, 0, 0);
+                strpdisplace = 0;
+                phi_v0_8 = 0;
+                if (stat->u.store.expr != 0) {
+                    do {
+                        next_char(strp.c_file);
+                        temp_v0_22 = strpdisplace + 1;
+                        strpdisplace = temp_v0_22;
+                        phi_v0_8 = temp_v0_22;
+                    } while (stat->u.store.expr != temp_v0_22);
+                }
+            }
+            temp_a1_6 = (s32) stat->u.store.unk1C;
+            phi_a1 = temp_a1_6;
+            if (temp_a1_6 > 0) {
+                temp_s3_5 = temp_a1_6 + 1;
+                phi_s0_7 = 1;
+                do {
+                    if (eoln(strp.c_file) != 0) {
+                        readln(strp.c_file);
+                        ustrptr[phi_s0_7].unk-1 = 10;
+                    } else {
+                        ustrptr[phi_s0_7].unk-1 = read_char(strp.c_file);
+                    }
+                    temp_s0_19 = phi_s0_7 + 1;
+                    phi_s0_7 = temp_s0_19;
+                } while (temp_s0_19 != temp_s3_5);
+                phi_v0_8 = strpdisplace;
+                phi_a1 = (s32) stat->u.store.unk1C;
+            }
+            strpdisplace = phi_v0_8 + phi_a1;
+            u.Ucode.Uopcde.uiequ1.uop2.Constval.dwpart.dwval_l = (s32) ustrptr;
+            uwrite(&u);
+            if ((do_opt_saved_regs != 0) && (sp9C->bvs.stage2.unk11C.blocks != 0)) {
+                func_0042A1C8();
+            }
+            func_0042B144();
+            goto block_290;
+
+        case Uaent: // switch 4
+            temp_v1_22 = u.unk1;
+            OPC = 3;
+            u.unk1 = (u8) ((((u8) stat->u.store.expr ^ ((u32) (temp_v1_22 << 0x1B) >> 0x1B)) & 0x1F) ^ temp_v1_22);
+            u.Ucode.Lexlev = (u16) curlevel;
+            u.Ucode.I1 = (s32) stat->u.store.var_access_list_item;
+            u.Ucode.Uopcde.uiequ1.Length = stat->u.par.size;
+            u.unk9 = (u8) stat->u.aent.push;
+            u.Ucode.Uopcde.uiequ1.offset = (s32) stat->u.aent.extrnal_flags;
+            uwrite(&u);
+            temp_t4_5 = (u.unk1 & 0xFFE0) | 8;
+            temp_t9_4 = temp_t4_5 & 0xFF1F;
+            u.unk1 = temp_t4_5;
+            temp_s3_6 = (s32) stat->u.store.unk1C;
+            OPC = Updef;
+            u.unk1 = (u8) (temp_t9_4 | 0x40);
+            u.Ucode.Uopcde.uiequ1.Length = 4;
+            u.Ucode.Lexlev = 1;
+            u.Ucode.I1 = curblk;
+            if (temp_s3_6 > 0) {
+                temp_s2 = ((temp_s3_6 + 1) * 4) - 4;
+                phi_s1_3 = 0;
+                do {
+                    u.Ucode.Uopcde.uiequ1.offset = phi_s1_3;
+                    uwrite(&u);
+                    temp_s1_3 = phi_s1_3 + 4;
+                    phi_s1_3 = temp_s1_3;
+                } while (temp_s1_3 != temp_s2);
+            }
+            if (staticlinkloc != 0) {
+                gen_static_link();
+            }
+            if (do_opt_saved_regs != 0) {
+                func_0042A7D0();
+            }
+            temp_s3_7 = (s32) stat->u.store.unk1C;
+            temp_t3_2 = (u.unk1 & 0xFFE0) | 8;
+            temp_t2_4 = temp_t3_2 & 0xFF1F;
+            u.unk1 = temp_t3_2;
+            OPC = Urstr;
+            u.unk1 = (u8) (temp_t2_4 | 0x40);
+            u.Ucode.Uopcde.uiequ1.Length = 4;
+            u.Ucode.I1 = curblk;
+            phi_s3 = temp_s3_7;
+            if (temp_s3_7 >= 5) {
+                phi_s3 = 4;
+            }
+            if (phi_s3 > 0) {
+                phi_s1_4 = 0;
+                phi_s0_8 = 1;
+                do {
+                    u.Ucode.Uopcde.uiequ1.offset = phi_s1_4;
+                    u.Ucode.Lexlev = coloroffset((firstparmreg->unk0 + phi_s0_8) - 1);
+                    uwrite(&u);
+                    temp_s0_20 = phi_s0_8 + 1;
+                    phi_s1_4 += 4;
+                    phi_s0_8 = temp_s0_20;
+                } while (temp_s0_20 != (phi_s3 + 1));
+            }
+            func_0042B1A8();
+            goto block_290;
+
+        case Ulbgn: // switch 5
+            OPC = stat->opc;
+            u.Ucode.I1 = (s32) stat->u.store.expr;
+            uwrite(&u);
+            goto block_290;
+
+        case Ulbdy: // switch 5
+            OPC = stat->opc;
+            u.Ucode.Lexlev = (u16) (u8) stat->u.store.expr;
+            uwrite(&u);
+            goto block_290;
+
+        case Ultrm: // switch 2
+        case Ulend:
+block_265:
+            OPC = stat->opc;
+            uwrite(&u);
+            goto block_290;
+
+        case Uclbd: // switch 3
+        case Ucubd: // switch 3
+        case Ustep: // switch 6
+            temp_v1_16 = u.unk1;
+            OPC = stat->opc;
+            u.unk1 = (u8) ((((u8) stat->u.store.expr ^ ((u32) (temp_v1_16 << 0x1B) >> 0x1B)) & 0x1F) ^ temp_v1_16);
+            u.Ucode.I1 = (s32) stat->u.store.var_access_list_item;
+            uwrite(&u);
+            goto block_290;
+
+        case Uctrl: // switch 3
+            temp_v1_20 = u.unk1;
+            OPC = Uctrl;
+            u.unk1 = (u8) ((((u8) stat->u.store.expr ^ ((u32) (temp_v1_20 << 0x1B) >> 0x1B)) & 0x1F) ^ temp_v1_20);
+            u.Ucode.Uopcde.uiequ1.Length = (s32) stat->u.par.size;
+            u.Ucode.Uopcde.uiequ1.offset = (s32) stat->u.store.var_access_list_item;
+            u.Ucode.I1 = (s32) ((u32) stat->u.store.unk1C >> 0xB);
+            temp_v1_21 = u.unk1;
+            u.unk1 = (u8) (((u32) ((stat->u.store.unk1E ^ ((u32) (temp_v1_21 << 0x18) >> 0x1D)) << 0x1D) >> 0x18) ^ temp_v1_21);
+            uwrite(&u);
+            goto block_290;
+
+        case Unop: // switch 2
+            break;
+
+        case Uldrc: // switch 1
+        case Umsym: // switch 1
+        case Uksym: // switch 1
+        case Uosym: // switch 1
+        case Uirlv: // switch 1
+        case Ulod: // switch 2
+        case Ulsym: // switch 2
+        case Umax: // switch 2
+        case Umin: // switch 2
+        case Umod: // switch 2
+        case Umpmv: // switch 2
+        case Umpy: // switch 2
+        case Umus: // switch 2
+        case Uneg: // switch 2
+        case Uneq: // switch 2
+        case Unot: // switch 2
+        case Uodd: // switch 2
+        case Uoptn: // switch 2
+        case Updef: // switch 2
+        case Uregs: // switch 2
+        case Urem: // switch 2
+        case Ucomm: // switch 3
+        case Ucsym: // switch 3
+        case Ucvt: // switch 3
+        case Ucvtl: // switch 3
+        case Udec: // switch 3
+        case Uand: // switch 4
+        case Uasym: // switch 4
+        case Ubgn: // switch 4
+        case Uixa: // switch 5
+        case Ulbd: // switch 5
+        case Ustp: // switch 6
+        case Usub: // switch 6
+        case Uswp: // switch 6
+        case Utyp: // switch 6
+        case Uubd: // switch 6
+        case Uunal: // switch 6
+        case Uuni: // switch 6
+        case Uvreg: // switch 6
+        case Uxor: // switch 6
+block_268:
+            dbgerror(0x212);
+            goto block_290;
+#if 0
+block_269:
+            temp_t5_2 = temp_v0_3 - 62;
+            if (temp_v0_3 < 0x46U) {
+                goto block_286;
+            }
+            temp_t6_3 = temp_v0_3 - 81;
+            if (temp_v0_3 == Ulend) {
+                goto block_265;
+            }
+            if (temp_t6_3 >= 0x1AU) {
+                goto block_268;
+            }
+            switch (*(&jtbl_1000B2E0 + (temp_t6_3 * 4)) + saved_reg_gp); // switch 2; unable to parse jump table
+block_273:
+            if (temp_v0_3 < 0x21U) {
+                goto block_278;
+            }
+            if (temp_v0_3 == Ufjp) {
+                goto block_135;
+            }
+            if (temp_v0_3 == Uicuf) {
+                goto block_221;
+            }
+            if (temp_v0_3 == Uijp) {
+                goto block_178;
+            }
+            goto block_268;
+block_278:
+            temp_t4_4 = temp_v0_3 - 3;
+            if (temp_v0_3 < 9U) {
+                goto block_282;
+            }
+            temp_t9_3 = temp_v0_3 - 15;
+            if (temp_v0_3 >= 0x1CU) {
+                goto block_284;
+            }
+            if (temp_t9_3 >= 0xDU) {
+                goto block_268;
+            }
+            switch (*(&jtbl_1000B28C + (temp_t9_3 * 4)) + saved_reg_gp); // switch 3; unable to parse jump table
+block_282:
+            if (temp_t4_4 >= 6U) {
+                goto block_268;
+            }
+            switch (*(&jtbl_1000B274 + (temp_t4_4 * 4)) + saved_reg_gp); // switch 4; unable to parse jump table
+block_284:
+            if (temp_v0_3 == Uendb) {
+                goto block_201;
+            }
+            goto block_268;
+block_286:
+            if (temp_t5_2 >= 8U) {
+                goto block_268;
+            }
+            switch (*(&jtbl_1000B2C0 + (temp_t5_2 * 4)) + saved_reg_gp); // switch 5; unable to parse jump table
+block_288:
+            if (temp_t8_2 >= 0x16U) {
+                goto block_268;
+            }
+            switch (*(&jtbl_1000B348 + (temp_t8_2 * 4)) + saved_reg_gp); // switch 6; unable to parse jump table
+#endif
+    }
+
+block_290:
+    temp_s4_5 = stat->next;
+    stat = temp_s4_5;
+    if ((temp_s4_5 != 0) && (sp9C != temp_s4_5->graphnode)) {
+        sp97 = 0;
+        if (sp97 == 0) {
+            func_0042AADC();
+            func_0042B09C();
+            if ((do_opt_saved_regs != 0) && (sp9C->bvs.stage2.unk11C.blocks != 0)) {
+                func_0042A1C8();
+            }
+            func_0042B144();
+        }
+        sp9C = temp_s4_5->graphnode;
+        findbbtemps(temp_s4_5->graphnode);
+        temp_a3_7 = mipsflag == 3;
+        phi_a3_3 = temp_a3_7;
+        if (temp_a3_7 != 0) {
+            phi_a3_3 = func_0042BE58(sp9C->loop);
+        }
+        has_ix = phi_a3_3;
+        if ((phi_a3_3 & 0xFF) != 0) {
+            loopno = (s32) sp9C->loop->loopno;
+        }
+        if (genbbnum) {
+            OPC = Ucomm;
+            u.unk1 = (u8) ((u.unk1 & 0xFFE0) | 9);
+            u.Ucode.Uopcde.uiequ1.uop2.Constval.dwval = 20;
+            if (sp9C->terminal == 0) {
+                ustrptr[0] = '?';
+            } else {
+                ustrptr[0] = '-';
+            }
+            ustrptr[1] = '-';
+            ustrptr[2] = '-';
+            ustrptr[3] = 'B';
+            ustrptr[4] = 'B';
+            ustrptr[5] = ' ';
+            phi_t4 = sp9C->num % 1000;
+            if (phi_t4 < 0) {
+                phi_t4 = phi_t4 + 1000;
+            }
+            ustrptr[6] = ((phi_t4 / 100) + '0');
+            temp_hi_2 = (u32) sp9C->num % 100;
+            phi_t7 = temp_hi_2;
+            if ((temp_hi_2 ^ 0x64U) < 0) {
+                phi_t7 = temp_hi_2 + 0x64U;
+            }
+            ustrptr[7] = (s8) ((phi_t7 / 10) + 0x30);
+            temp_hi_3 = (u32) sp9C->num % 10;
+            phi_t3 = temp_hi_3;
+            if ((temp_hi_3 ^ 10) < 0) {
+                phi_t3 = temp_hi_3 + 10;
+            }
+            ustrptr[8] = (s8) (phi_t3 + 0x30);
+            ustrptr[9] = ' ';
+            func_0042BD94(sp9C->unk2C, 10, '-', 0x20);
+            u.Ucode.Uopcde.uiequ1.uop2.Constval.dwpart.dwval_l = (s32) ustrptr;
+            uwrite(&u);
+        }
+        func_00422AF0();
+        if ((sp9C->blockno == 0) && (sp9C->stat_head->opc != 3)) {
+            func_0042B1A8();
+        }
+    }
+block_315:
+    if (temp_s4_5 != 0) {
+        goto loop_15;
+    }
+
+    if (sp97 == 0) {
+        func_0042B09C();
+        if ((do_opt_saved_regs != 0) && (sp9C->bvs.stage2.unk11C.blocks != 0)) {
+            func_0042A1C8();
+        }
+    }
+    if (sp95 == 0) {
+        OPC = Udef;
+        u.unk1 = (u8) ((u.unk1 & 0xFF1F) | 0x20);
+        u.Ucode.Uopcde.uiequ1.Length = highestmdef;
+        uwrite(&u);
+    }
+    if (allcallersave != 0) {
+        temp_s0_21 = curproc->regstaken_parregs;
+        if (propagate_ee_saves != 0) {
+            temp_s3_8 = firsteereg->unk0;
+            temp_a1_7 = lasteereg->unk0;
+            phi_s1_5 = temp_s3_8;
+            if (temp_a1_7 >= temp_s3_8) {
+                phi_v0_9 = &temp_s0_21->regstaken[temp_s3_8];
+                do {
+                    temp_t2_5 = phi_s1_5 - 0xD;
+                    if ((phi_v0_9->unk-1 != 0) && (((ugen_saved_eeregs & -(s32) (temp_t2_5 < 0x20U)) << temp_t2_5) >= 0)) {
+                        phi_v0_9->unk-1 = 0U;
+                    }
+                    temp_s1_4 = phi_s1_5 + 1;
+                    phi_v0_9 += 1;
+                    phi_s1_5 = temp_s1_4;
+                } while (temp_s1_4 != (temp_a1_7 + 1));
+            }
+            temp_s3_9 = firsteereg->unk4;
+            temp_a1_8 = lasteereg->unk4;
+            phi_s1_6 = temp_s3_9;
+            if (temp_a1_8 >= temp_s3_9) {
+                phi_v0_10 = &temp_s0_21->regstaken[temp_s3_9];
+                do {
+                    temp_t3_3 = phi_s1_6 - 0xD;
+                    if ((phi_v0_10->unk-1 != 0) && (((ugen_saved_eeregs & -(s32) (temp_t3_3 < 0x20U)) << temp_t3_3) >= 0)) {
+                        phi_v0_10->unk-1 = 0U;
+                    }
+                    temp_s1_5 = phi_s1_6 + 1;
+                    phi_v0_10 += 1;
+                    phi_s1_6 = temp_s1_5;
+                } while (temp_s1_5 != (temp_a1_8 + 1));
+            }
+        } else {
+            temp_s3_10 = firsteereg->unk0;
+            temp_a1_9 = lasteereg->unk0;
+            phi_s1_7 = temp_s3_10;
+            if (temp_a1_9 >= temp_s3_10) {
+                phi_v0_11 = &temp_s0_21->regstaken[temp_s3_10];
+                do {
+                    temp_s1_6 = phi_s1_7 + 1;
+                    phi_v0_11->unk-1 = 0;
+                    phi_v0_11 += 1;
+                    phi_s1_7 = temp_s1_6;
+                } while (temp_s1_6 != (temp_a1_9 + 1));
+            }
+            temp_s3_11 = firsteereg->unk4;
+            temp_a1_10 = lasteereg->unk4;
+            phi_s1_8 = temp_s3_11;
+            if (temp_a1_10 >= temp_s3_11) {
+                phi_v0_12 = &temp_s0_21->regstaken[temp_s3_11];
+                do {
+                    temp_s1_7 = phi_s1_8 + 1;
+                    phi_v0_12->unk-1 = 0;
+                    phi_v0_12 += 1;
+                    phi_s1_8 = temp_s1_7;
+                } while (temp_s1_7 != (temp_a1_10 + 1));
+            }
+        }
+        temp_s0_21->unkC = 1U;
+        temp_v0_23 = &temp_s0_21->regstaken[regsinclass1];
+        temp_v0_23->unk-1 = 1U;
+        if (someusefp != 0) {
+            temp_v0_23->unk-2 = 1U;
+        }
+        temp_s3_12 = firsterreg->unk4;
+        temp_a1_11 = lasterreg->unk4;
+        phi_s1_9 = temp_s3_12;
+        if (temp_a1_11 >= temp_s3_12) {
+            phi_v0_13 = &temp_s0_21->regstaken[temp_s3_12];
+            do {
+                temp_s1_8 = phi_s1_9 + 1;
+                phi_v0_13->unk-1 = 1U;
+                phi_v0_13 += 1;
+                phi_s1_9 = temp_s1_8;
+            } while (temp_s1_8 != (temp_a1_11 + 1));
+        }
+    }
+block_348:
+    return;
+}
+#endif

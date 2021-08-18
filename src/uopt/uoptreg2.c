@@ -2356,7 +2356,6 @@ void globalcolor(void) {
                         SET_ADD(bbtab[bb]->regsused[regclass - 1], chosen_reg);
                     }
                 }
-
             } else {
                 if (dowhyuncolor) {
                     if (liverange->unk23 == 1) {
