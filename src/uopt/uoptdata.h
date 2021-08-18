@@ -843,14 +843,8 @@ struct Expression {
             /* 0x28 */ int level;
             /* 0x2C */ struct VariableLocation address; // absolute address
             /* 0x34 */ struct Expression *outer_stack;
-            /* 0x38 */ int unk38;
+            /* 0x38 */ struct Temploc *unk38;
         } islda_isilda;
-        struct {
-            /* 0x20 */ union Constant number;
-            /* 0x28 */ int size; // in bytes
-            /* 0x2C */ int real_significand;
-            /* 0x30 */ int real_exponent;
-        } isconst;
         struct {
             /* 0x20 */ unsigned char size; // in bytes
             /* 0x21 */ bool veqv;
@@ -861,7 +855,7 @@ struct Expression {
             /* 0x30 */ struct Expression *copy;   // copypropagate, points to the expression that this one is a copy of
             /* 0x34 */ struct Expression *assigned_value;
             /* 0x38 */ struct Statement *assignment;
-            /* 0x3C */ int unk3C;
+            /* 0x3C */ struct Temploc *unk3C;
         } isvar_issvar;
         struct {
             /* 0x20 */ Uopcode opc;
@@ -872,7 +866,7 @@ struct Expression {
             /* 0x28 */ struct Expression *op2;
             /* 0x2C */ int datasize; // calculated result? seems to also sometimes be size in bits of the datatype.
                                      // Also used as offset in bytes for ilod
-            /* 0x30 */ int unk30;
+            /* 0x30 */ struct Temploc *unk30;
             /* 0x34 */ struct Expression *unk34; // return value from findbaseaddr
             union {
                 /* 0x38 */ Datatype cvtfrom; // if opc == Ucvt, seems to be a union here
@@ -892,6 +886,12 @@ struct Expression {
                 /* 0x3C */ struct TrepImageThing *unk3C_trep;
             } aux2;
         } isop;
+        struct {
+            /* 0x20 */ union Constant number;
+            /* 0x28 */ int size; // in bytes
+            /* 0x2C */ int real_significand;
+            /* 0x30 */ int real_exponent;
+        } isconst;
         struct {
             /* 0x20 */ unsigned short value;
             /* 0x24 */ int unk24;
