@@ -241,7 +241,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Umpy:
                     case Uuni:
                     case Uxor:
-                        if (ichain->dtype == expr->datatype && 
+                        if (ichain->dtype == expr->datatype &&
                                 ((ichain->isop.op1 == op1 && ichain->isop.op2 == op2) ||
                                  (ichain->isop.op1 == op2 && ichain->isop.op2 == op1))) {
                             if (ichain->isop.overflow_attr == expr->data.isop.aux2.v1.overflow_attr) {
@@ -253,7 +253,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     // Commutative ops
                     case Uequ:
                     case Uneq:
-                        if (ichain->dtype == expr->datatype && 
+                        if (ichain->dtype == expr->datatype &&
                                 ((ichain->isop.op1 == op1 && ichain->isop.op2 == op2) ||
                                  (ichain->isop.op1 == op2 && ichain->isop.op2 == op1))) {
                             found = true;
@@ -273,7 +273,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Ushl:
                     case Ushr:
                     case Usign:
-                        if (ichain->dtype == expr->datatype && 
+                        if (ichain->dtype == expr->datatype &&
                                 (ichain->isop.op1 == op1 && ichain->isop.op2 == op2)) {
                             if (ichain->isop.overflow_attr == expr->data.isop.aux2.v1.overflow_attr) {
                                 found = true;
@@ -286,23 +286,22 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Ugrt:
                     case Uleq:
                     case Ules:
-                        if (ichain->dtype == expr->datatype && 
+                        if (ichain->dtype == expr->datatype &&
                                 ichain->isop.op1 == op1 && ichain->isop.op2 == op2) {
                             found = true;
                         }
                         break;
 
                     case Uinn:
-                        if (ichain->dtype == expr->datatype && 
+                        if (ichain->dtype == expr->datatype &&
                                 ichain->isop.op1 == op1 && ichain->isop.op2 == op2 &&
                                 ichain->isop.s.bit == expr->data.isop.aux2.v1.unk3C) {
                             found = true;
                         }
-                        
                         break;
 
                     case Uixa:
-                        if (ichain->dtype == expr->datatype && 
+                        if (ichain->dtype == expr->datatype &&
                                 ichain->isop.size == expr->data.isop.datasize &&
                                 (ichain->isop.op1 == op1 && ichain->isop.op2 == op2)) {
                             found = true;
@@ -687,7 +686,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
     return ichain;
 }
 
-/* 
+/*
 0041550C func_0041550C
 00445E44 exprimage
 0046BD90 change_to_var_eq
@@ -695,9 +694,8 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
 void trep_image(struct Expression *expr, bool op1, bool ant, bool av, bool arg4) {
     unsigned short cg1hash; // sp3C
     struct IChain *ichain; // sp38, sp24
-    struct TrepImageThing *trepThing;    // sp30
+    struct TrepImageThing *trep;    // sp30
     struct Expression *op; // a3, sp2C
-    struct Expression *next;
     bool found;
 
     if (op1) {
@@ -706,24 +704,16 @@ void trep_image(struct Expression *expr, bool op1, bool ant, bool av, bool arg4)
         op = expr->data.isop.op2;
     }
 
-    if (op->type == isvar || op->type == issvar) {
-        next = op->data.isvar_issvar.copy;
-        while (next != NULL && next != nocopy) {
-            op = next;
-
-            if (next->type == isvar || next->type == issvar) {
-                next = next->data.isvar_issvar.copy;
-            } else {
-                break;
-            }
-        }
+    while ((op->type == isvar || op->type == issvar) &&
+           (op->data.isvar_issvar.copy != NULL && op->data.isvar_issvar.copy != nocopy)) {
+        op = op->data.isvar_issvar.copy;
     }
 
-    trepThing = alloc_new(sizeof (struct TrepImageThing), &perm_heap);
+    trep = alloc_new(sizeof (struct TrepImageThing), &perm_heap);
     if (op->type == islda || op->type == isilda || op->type == isconst) {
-        trepThing->ichain = NULL;
+        trep->ichain = NULL;
     } else if (op->type != isvar && op->count != 1) {
-        trepThing->ichain = NULL;
+        trep->ichain = NULL;
     } else {
         cg1hash = opvalihash(Ucg1, op->ichain, expr->graphnode->num);
         ichain = itable[cg1hash];
@@ -738,7 +728,7 @@ void trep_image(struct Expression *expr, bool op1, bool ant, bool av, bool arg4)
         }
 
         if (found && !arg4) {
-            trepThing->ichain = NULL;
+            trep->ichain = NULL;
         } else {
             if (!found) {
                 ichain = appendichain(cg1hash, false);
@@ -754,7 +744,7 @@ void trep_image(struct Expression *expr, bool op1, bool ant, bool av, bool arg4)
                 setbit(&trepexp, ichain->bitpos);
             }
 
-            trepThing->ichain = ichain;
+            trep->ichain = ichain;
             setbit(&expr->graphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
             if (ant) {
                 setbit(&expr->graphnode->bvs.stage1.antlocs, ichain->bitpos);
@@ -769,9 +759,9 @@ void trep_image(struct Expression *expr, bool op1, bool ant, bool av, bool arg4)
     }
 
     if (op1) {
-        expr->data.isop.aux.unk38_trep = trepThing;
+        expr->data.isop.aux.unk38_trep = trep;
     } else {
-        expr->data.isop.aux2.unk3C_trep = trepThing;
+        expr->data.isop.aux2.unk3C_trep = trep;
     }
 }
 

@@ -902,14 +902,7 @@ struct Expression {
 struct TrepImageThing {
     /* 0x00 */ struct IChain *ichain;
     /* 0x04 */ struct IChain *ichain2;
-    /* 0x08 */ Uopcode opc;
-    /* 0x0C */ unsigned int unkC;
-    /* 0x10 */ unsigned int unk10;
-    /* 0x14 */ unsigned int unk14;
-    /* 0x18 */ unsigned int unk18; // used to create a Constant
-    /* 0x1C */ unsigned int unk1C;
-    /* 0x20 */ unsigned int unk20;
-    /* 0x24 */ unsigned int unk24;
+    /* 0x08 */ union Bcode u;
     /* 0x28 */ struct IChain *unk28;
     /* 0x2C */ unsigned int unk2C;
 }; // size 0x30
