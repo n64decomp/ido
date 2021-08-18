@@ -243,10 +243,17 @@ struct GraphnodeList {
 
 // See put_in_fallthru_bb and put_in_jump_bb
 struct JumpFallthroughBB {
-    bool unk0;
+    unsigned char reg;
     bool unk1;
-    void *unk4; // Taken from unk44 array in Graphnode
+    struct IChain *ichain;
     struct JumpFallthroughBB *next;
+};
+
+struct RegisterNode { // TODO: probably the same as JumpFallthroughBB
+    unsigned char reg;
+    bool unk1;
+    struct IChain *ichain;
+    struct RegisterNode *next;
 };
 
 enum unk5enum {
@@ -255,11 +262,6 @@ enum unk5enum {
     canunroll
 };
 
-struct RegisterNode {
-    unsigned char reg;
-    struct IChain *ichain;
-    struct RegisterNode *next;
-};
 
 struct Graphnode {
     /* 0x00 */ int blockno;
@@ -758,7 +760,7 @@ struct InterfereList {
     /* 0x0 */ struct LiveRange *liverange;
     /* 0x4 */ struct InterfereList *next;
     /* 0x8 */ unsigned char unk8;
-    /* 0x9 */ unsigned char unk9;
+    /* 0x9 */ unsigned char shared;
 }; // size 0xC
 
 struct LiveRange {
@@ -769,10 +771,10 @@ struct LiveRange {
     /* 0x14 */ struct BitVector unk14; // livebbs?
     /* 0x1C */ int unk1C; // precolor?
     /* 0x20 */ unsigned char assigned_reg; // printregs
-    /* 0x21 */ unsigned char unk21;
+    /* 0x21 */ unsigned char unk21; // regsleft
     /* 0x22 */ bool hasstore;
-    /* 0x23 */ unsigned char unk23; // probably the number of register moves
-    /* 0x24 */ int unk24;
+    /* 0x23 */ unsigned char unk23;
+    /* 0x24 */ int unk24; // num_interfering
     /* 0x28 */ int forbidden[2];
     /* 0x30 */ float adjsave;
     /* 0x34 */ struct LiveRange *next;

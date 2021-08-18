@@ -37,8 +37,11 @@ typedef unsigned char bool;
     set[0] |= ((unsigned) (value) < 0x20U) << (~(value) & 31);          \
     set[1] |= ((unsigned) ((value) - 0x20) < 0x20U) << (~(value) & 31);
 
-
 #define SET_IN(set, value) (GETBIT32((set)[0], (value)) || GETBIT32((set)[1], (value) - 0x20))
+
+#define SET_MINUS(dest, set, value)   \
+    dest[0] = set[0] & ~(((unsigned) (value) < 0x20U) << (~(value) & 31));          \
+    dest[1] = set[1] & ~(((unsigned) ((value) - 0x20) < 0x20U) << (~(value) & 31));
 
 #define SET_UNION(set1, set2)                                       \
     (set1)[0] |= (set2)[0],                                         \
@@ -46,12 +49,24 @@ typedef unsigned char bool;
 
 #define SET_EMPTY(set) (((set)[0] | (set)[1]) == 0)
 
+#define SET_EQ(set1, set2) \
+    ((((set1)[0] ^ (set2)[0]) | ((set1)[1] ^ (set2)[1])) == 0)
+
+#define SET_NEQ(set1, set2) \
+    ((((set1)[0] ^ (set2)[0]) | ((set1)[1] ^ (set2)[1])) != 0)
+
+#define SET_EQ64(set1, set64) \
+    ((((set1)[0] ^ (unsigned int)((set64) >> 32)) | ((set1)[1] ^ (unsigned int)(set64))) == 0)
+
+#define SET_NEQ64(set1, set64) \
+    ((((set1)[0] ^ (unsigned int)((set64) >> 32)) | ((set1)[1] ^ (unsigned int)(set64))) != 0)
+
 #define SET64_INIT(set, value) (set) = ((unsigned long long)((value) < 64U) << ((~(value)) & 63));
 #define SET64_ADD(set, value) (set) |= ((unsigned long long)((value) < 64U) << ((~(value)) & 63))
-//#define SET64_IN(set, value) (((set) & (1ll << ((~(value)) & 0x3f))) != 0)
 #define SET64_IN(set, value) ((unsigned int)(value) < 64U && ((set) & (1ULL << (~(value) & 63))))
 #define SET64_MINUS(set, value) ((set) & ~((unsigned long long)((value) < 64U) << ((~(value)) & 63)))
 // (documentation)
+#define SET64_UNION(set1, set2) (set1) |= (set2);
 #define SET64_EMPTY(set) ((set) == 0LL)
 
 #define BITARR_SET(arr, index, value) \
