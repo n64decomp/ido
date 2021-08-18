@@ -71,6 +71,7 @@ void regdataflow(void) {
     struct BitVector colored_vars;
     struct Graphnode *node;
     struct GraphnodeList *succ;
+    struct GraphnodeList *pred;
     struct IChain *ichain;
     int i;
     bool changed;
@@ -89,8 +90,7 @@ void regdataflow(void) {
     checkbvlist(&coloreditems);
     checkbvlist(&coloredparms);
 
-    node = graphhead;
-    while (node != NULL) {
+    for (node = graphhead; node != NULL; node = node->next) {
         checkbvlist(&node->bvs.stage2.appear);
         checkbvlist(&node->bvs.stage2.loclive);
         checkbvlist(&node->bvs.stage2.locdef);
@@ -153,8 +153,6 @@ void regdataflow(void) {
         if (lang == LANG_ADA && node->successors == NULL) {
             unionintsect(&node->bvs.stage2.loclive, &coloredparms, &outmodebits);
         }
-
-        node = node->next;
     }
     if (outofmem) {
         return;
@@ -163,26 +161,21 @@ void regdataflow(void) {
     lastdftime = getclock();
     numdataflow += 3;
 
-    node = graphhead;
-    while (node != NULL) {
+    for (node = graphhead; node != NULL; node = node->next) {
         checkbvlist(&node->bvs.stage2.active);
         checkbvlist(&node->bvs.stage2.unk11C);
         bvectcopy(&node->bvs.stage2.active, &node->bvs.stage2.loclive);
 
-        succ = node->successors;
         if (node->stat_tail->opc == Ucia || node->stat_tail->opc == Ucup || node->stat_tail->opc == Uicuf) {
-            while (succ != NULL) {
+            for (succ = node->successors; succ != NULL; succ = succ->next) {
                 unionminus(&node->bvs.stage2.active, &succ->graphnode->bvs.stage2.loclive, &node->bvs.stage2.ppin);
-                succ = succ->next;
             }
         } else {
-            while (succ != NULL) {
+            for (succ = node->successors; succ != NULL; succ = succ->next) {
                 bvectunion(&node->bvs.stage2.active, &succ->graphnode->bvs.stage2.loclive);
-                succ = succ->next;
             }
         }
         bvectcopy(&node->bvs.stage2.unk11C, &node->bvs.stage2.appear);
-        node = node->next;
     }
     if (outofmem) {
         return;
@@ -192,24 +185,20 @@ void regdataflow(void) {
 
     do {
         dataflowiter++;
-        node = graphtail;
         changed = false;
-        while (node != NULL) {
+        for (node = graphtail; node != NULL; node = node->prev) {
             if (node->successors != NULL) {
-                succ = node->successors;
                 if (!changed) {
                     bvectcopy(&old, &node->bvs.stage2.active);
                 }
 
                 if (node->stat_tail->opc == Ucia || node->stat_tail->opc == Ucup || node->stat_tail->opc == Uicuf) {
-                    while (succ != NULL) {
+                    for (succ = node->successors; succ != NULL; succ = succ->next) {
                         uminusminus(&node->bvs.stage2.active, &succ->graphnode->bvs.stage2.active, &succ->graphnode->bvs.stage2.locdef, &node->bvs.stage2.ppin);
-                        succ = succ->next;
                     }
                 } else {
-                    while (succ != NULL) {
+                    for (succ = node->successors; succ != NULL; succ = succ->next) {
                         unionminus(&node->bvs.stage2.active, &succ->graphnode->bvs.stage2.active, &succ->graphnode->bvs.stage2.locdef);
-                        succ = succ->next;
                     }
                 }
 
@@ -217,42 +206,35 @@ void regdataflow(void) {
                     changed = true;
                 }
             }
-            node = node->prev;
         }
     } while (changed);
 
     do {
-        node = graphhead;
         dataflowiter++;
         changed = false;
-        while (node != NULL) {
-            succ = node->predecessors;
+        for (node = graphhead; node != NULL; node = node->next) {
             if (!changed) {
                 bvectcopy(&old, &node->bvs.stage2.unk11C);
             }
 
-            while (succ != NULL) {
-                if (succ->graphnode->stat_tail->opc == Ucia ||
-                        succ->graphnode->stat_tail->opc == Ucup ||
-                        succ->graphnode->stat_tail->opc == Uicuf) {
-                    unionminus(&node->bvs.stage2.unk11C, &succ->graphnode->bvs.stage2.unk11C, &succ->graphnode->bvs.stage2.ppin);
+            for (pred = node->predecessors; pred != NULL; pred = pred->next) {
+                if (pred->graphnode->stat_tail->opc == Ucia ||
+                        pred->graphnode->stat_tail->opc == Ucup ||
+                        pred->graphnode->stat_tail->opc == Uicuf) {
+                    unionminus(&node->bvs.stage2.unk11C, &pred->graphnode->bvs.stage2.unk11C, &pred->graphnode->bvs.stage2.ppin);
                 } else {
-                    bvectunion(&node->bvs.stage2.unk11C, &succ->graphnode->bvs.stage2.unk11C);
+                    bvectunion(&node->bvs.stage2.unk11C, &pred->graphnode->bvs.stage2.unk11C);
                 }
-                succ = succ->next;
             }
 
             if (!changed && !bvecteq(&old, &node->bvs.stage2.unk11C)) {
                 changed = true;
             }
-            node = node->next;
         }
     } while (changed);
 
-    node = graphhead;
-    while (node != NULL) {
+    for (node = graphhead; node != NULL; node = node->next) {
         bvectunion(&node->bvs.stage2.loclive, &node->indiracc);
-        node = node->next;
     }
 
     colored_vars.num_blocks = 0;
@@ -261,8 +243,7 @@ void regdataflow(void) {
     bvectcopy(&colored_vars, &varbits);
     bvectintsect(&colored_vars, &iscolored12);
     bvectminus(&colored_vars, &mvarbits);
-    node = graphhead;
-    while (node != NULL) {
+    for (node = graphhead; node != NULL; node = node->next) {
         bvectintsect(&node->bvs.stage2.active, &node->bvs.stage2.unk11C);
         bvectunion(&node->bvs.stage2.active, &node->bvs.stage2.appear);
         checkinitbvlivran(&node->bvs.stage2.unk11C);
@@ -274,29 +255,25 @@ void regdataflow(void) {
         if (node->successors == NULL && (!is_cup(node) || (lang != LANG_PL1 && lang != LANG_COBOL))) {
             bvectunion(&node->bvs.stage2.liveout, &colored_vars);
         } else {
-            succ = node->successors;
-            if (succ == NULL) {
+            if (node->successors == NULL) {
                 bvectunion(&node->bvs.stage2.liveout, &node->bvs.stage2.ppin);
             } else {
                 if (node->stat_tail->opc == Ucia || node->stat_tail->opc == Ucup || node->stat_tail->opc == Uicuf) {
                     bvectunion(&node->bvs.stage2.liveout, &node->bvs.stage2.ppin);
-                    while (succ != NULL) {
+                    for (succ = node->successors; succ != NULL; succ = succ->next) {
                         bvectunion(&node->bvs.stage2.liveout, &succ->graphnode->bvs.stage2.loclive);
-                        succ = succ->next;
                     }
 
                     if (!node->terminal && has_exc_handler) {
                         unionintsect(&node->bvs.stage2.liveout, &iscolored12, &varbits);
                     }
                 } else {
-                    while (succ != NULL) {
+                    for (succ = node->successors; succ != NULL; succ = succ->next) {
                         bvectunion(&node->bvs.stage2.liveout, &succ->graphnode->bvs.stage2.loclive);
-                        succ = succ->next;
                     }
                 }
             }
         }
-        node = node->next;
     }
 
     if (outofmem) {
@@ -306,18 +283,15 @@ void regdataflow(void) {
     do {
         dataflowiter++;
 
-        node = graphtail;
         changed = false;
-        while (node != NULL) {
+        for (node = graphtail; node != NULL; node = node->prev) {
             if (node->successors != NULL) {
-                succ = node->successors;
                 if (!changed) {
                     bvectcopy(&old, &node->bvs.stage2.liveout);
                 }
 
-                while (succ != NULL) {
+                for (succ = node->successors; succ != NULL; succ = succ->next) {
                     unionminus(&node->bvs.stage2.liveout, &succ->graphnode->bvs.stage2.liveout, &succ->graphnode->bvs.stage2.locdef);
-                    succ = succ->next;
                 }
 
                 if (!changed && !bvecteq(&old, &node->bvs.stage2.liveout)) {
@@ -335,31 +309,26 @@ void regdataflow(void) {
                     changed = true;
                 }
             }
-            node = node->prev;
         }
     } while (changed);
 
     checkinitbvlivran(&old);
     do {
-        node = graphtail;
         changed = false;
-        while (node != NULL) {
+        for (node = graphtail; node != NULL; node = node->prev) {
             if (node->successors != NULL) {
-                succ = node->successors;
                 if (!changed) {
                     bvectcopy(&old, &node->bvs.stage2.unk11C);
                 }
 
-                while (succ != NULL) {
+                for (succ = node->successors; succ != NULL; succ = succ->next) {
                     bvectunion(&node->bvs.stage2.unk11C, &succ->graphnode->bvs.stage2.unk11C);
-                    succ = succ->next;
                 }
 
                 if (!changed && !bvecteq(&old, &node->bvs.stage2.unk11C)) {
                     changed = true;
                 }
             }
-            node = node->prev;
         }
     } while (changed);
     dataflowtime = (dataflowtime + getclock()) - lastdftime;
@@ -484,16 +453,13 @@ struct LiveUnit *alloc_livbb(void) {
 bool r2_overlap_r3(unsigned short hash) {
     struct Expression *expr;
 
-    expr = table[hash];
-    while (expr != NULL) {
-
+    for (expr = table[hash]; expr != NULL; expr = expr->next) {
         if ((expr->type == isvar || expr->type == dumped) &&
                 expr->data.isvar_issvar.location.memtype == Rmt &&
                 expr->data.isvar_issvar.location.addr == r_v0 &&
                 expr->data.isvar_issvar.size > 4) {
             return true;
         }
-        expr = expr->next;
     }
 
     return false;
@@ -517,10 +483,8 @@ void localcolor(void) {
     formingtab = alloc_new(curstaticno * sizeof(struct Graphnode *), &perm_heap);
     bbtab = alloc_new(curstaticno * sizeof(struct Graphnode *), &perm_heap);
 
-    node = graphhead;
-    while (node != NULL) {
+    for (node = graphhead; node != NULL; node = node->next) {
         bbtab[node->num] = node;
-        node = node->next;
     }
 
     formbvlivran(&livrantemp);
@@ -534,20 +498,18 @@ void localcolor(void) {
         bittab[i].liverange->interfere = NULL;
         if (ichain->type != isvar || ichain->isvar_issvar.location.memtype != Rmt) {
             bittab[i].liverange->hasstore = false;
-            lu = bittab[i].liverange->liveunits;
             initbv(&livrantemp, (struct BitVectorBlock) {0});
-            while (lu != NULL) {
+
+            for (lu = bittab[i].liverange->liveunits; lu != NULL; lu = lu->next) {
                 if (lu->store_count != 0 || lu->firstisstr) {
                     bittab[i].liverange->hasstore = true;
                     bvectunion(&livrantemp, &lu->node->bvs.stage2.unk11C);
                 }
                 lu->deadout = !bvectin(i, &lu->node->bvs.stage2.liveout);
-                lu = lu->next;
             }
         }
 
-        node = graphhead;
-        while (node != NULL) {
+        for (node = graphhead; node != NULL; node = node->next) {
             if (bvectin(i, &node->bvs.stage2.active) &&
                     !bvectin(node->num, &bittab[i].liverange->unk14) &&
                     !bvectin(i, &node->indiracc)) {
@@ -626,7 +588,6 @@ void localcolor(void) {
 
                 setbitbb(&bittab[i].liverange->unk14, node->num);
             }
-            node = node->next;
         }
 
         if (ichain->type == isvar && ichain->isvar_issvar.location.memtype == Rmt) {
@@ -674,8 +635,7 @@ void localcolor(void) {
                 }
             }
         } else {
-            lu = bittab[i].liverange->liveunits;
-            while (lu != NULL) {
+            for (lu = bittab[i].liverange->liveunits; lu != NULL; lu = lu->next) {
                 if (!lu->firstisstr) {
                     if (lu->node->predecessors == NULL || lu->node->interprocedural_controlflow) {
                         lu->needreglod = true;
@@ -689,7 +649,6 @@ void localcolor(void) {
                         lu->needreglod = !preallmember(lu->node->predecessors, bittab[i].liverange);
                     }
                 }
-                lu = lu->next;
             }
 
             if (!bvectempty(&bittab[i].liverange->unkC)) {
@@ -727,8 +686,7 @@ void localcolor(void) {
             }
 
             if (bittab[i].liverange->hasstore) {
-                lu = bittab[i].liverange->liveunits;
-                while (lu != NULL) {
+                for (lu = bittab[i].liverange->liveunits; lu != NULL; lu = lu->next) {
                     if (!lu->deadout && (lu->store_count != 0 || lu->firstisstr || bvectin(lu->node->num, &livrantemp))) {
                         if (lu->node->successors == NULL) {
                             if (ichain->isvar_issvar.location.memtype & 7 == Pmt && ichain->isvar_issvar.location.blockno == curblk &&
@@ -750,7 +708,6 @@ void localcolor(void) {
                             }
                         }
                     }
-                    lu = lu->next;
                 }
 
                 if (!bvectempty(&bittab[i].liverange->unkC)) {
@@ -850,9 +807,8 @@ static void func_00465DA4(struct LiveRange *lr1, struct LiveRange *lr2) {
    Find the Temploc with the given index
 */
 static struct Temploc *func_00465E18(int index) {
-    struct Temploc *temploc;
+    struct Temploc *temploc = templochead;
 
-    temploc = templochead;
     while (temploc->index != index) {
         temploc = temploc->next;
     }
@@ -918,8 +874,7 @@ void spilltemps(void) {
 
             initbv(&setofspills, (struct BitVectorBlock) {0});
 
-            node = graphhead;
-            while (node != NULL) {
+            for (node = graphhead; node != NULL; node = node->next) {
                 if (bvectin(bit, &node->bvs.stage2.unk15C)) {
                     for (i = 0; i < bit; i++) {
                         if (bvectin(i, &node->bvs.stage2.unk15C)) {
@@ -943,7 +898,6 @@ void spilltemps(void) {
                         }
                     }
                 }
-                node = node->next;
             }
 
             if (ichain->type == isop) {
@@ -1147,8 +1101,7 @@ void addadjacents(struct LiveRange *lr1, struct LiveRange *lr2, struct LiveUnit 
     struct GraphnodeList *succ;
     struct InterfereList *intf;
 
-    succ = formingtab[forminginx]->successors;
-    while (succ != NULL) {
+    for (succ = formingtab[forminginx]->successors; succ != NULL; succ = succ->next) {
         if (!bvectin(succ->graphnode->num, &lr2->unk14) && bvectin(succ->graphnode->num, &lr1->unk14)) {
             lu = gettolivbb(lr1->ichain, succ->graphnode);
             oldforbidden[0] = lr2->forbidden[0];
@@ -1176,27 +1129,22 @@ void addadjacents(struct LiveRange *lr1, struct LiveRange *lr2, struct LiveUnit 
                 setbitbb(&lr2->unk14, succ->graphnode->num);
                 lr2->unk24 += shared;
 
-                intf = lr1->interfere;
-                while (intf != NULL) {
+                for (intf = lr1->interfere; intf != NULL; intf = intf->next) {
                     if (intf->shared) {
                         intf->unk8 = true;
                         intf->shared = false;
                     }
-                    intf = intf->next;
                 }
             } else {
                 lr2->unk21 = oldunk21;
                 lr2->forbidden[0] = oldforbidden[0];
                 lr2->forbidden[1] = oldforbidden[1];
 
-                intf = lr1->interfere;
-                while (intf != NULL) {
+                for (intf = lr1->interfere; intf != NULL; intf = intf->next) {
                     intf->shared = false;
-                    intf = intf->next;
                 }
             }
         }
-        succ = succ->next;
     }
 }
 
@@ -1449,8 +1397,7 @@ void compute_save(struct LiveRange *lr) {
     float phi_f20;
 
     lr->unk1C = 0;
-    lu = lr->liveunits;
-    while (lu != NULL) {
+    for (lu = lr->liveunits; lu != NULL; lu = lu->next) {
         phi_f20 = (lu->load_count + lu->store_count) * lu->node->unk2C;
 
         if (lu->needreglod && (lu->node->unk5 == notloopfirstbb || !canmoverlod(lu->node, lu->liverange))) {
@@ -1462,7 +1409,6 @@ void compute_save(struct LiveRange *lr) {
         }
         phi_f22 += phi_f20;
         lr->unk1C += 1;
-        lu = lu->next;
     }
 
     lr->unk1C += bvectcard(&lr->unkC);
@@ -1497,8 +1443,7 @@ void whyuncolored(struct LiveRange *lr) {
     phi_s5 = 0;
     phi_s2 = 0;
     phi_f20 = 0.0f;
-    lu = lr->liveunits;
-    while (lu != NULL) {
+    for (lu = lr->liveunits; lu != NULL; lu = lu->next) {
         phi_s5 += (lu->load_count + lu->store_count) * lu->node->unk2C;
         if (lu->needreglod && (lu->node->unk5 == notloopfirstbb || !canmoverlod(lu->node, lu->liverange))) {
             phi_f20 = phi_f20 + lu->node->unk2C;
@@ -1508,7 +1453,6 @@ void whyuncolored(struct LiveRange *lr) {
             phi_f20 += lu->node->unk2C;
         }
         phi_s2 += lu->node->unk2C;
-        lu = lu->next;
     }
 
     for (i = 0; i < curstaticno; i++) {
@@ -1538,9 +1482,7 @@ void whyuncolored(struct LiveRange *lr) {
 void inc_allococ(struct LiveRange *lr) {
     struct LiveUnit *lu;
 
-    lu = lr->liveunits;
-    while (lu != NULL) {
-        lu = lu->next;
+    for (lu = lr->liveunits; lu != NULL; lu = lu->next) {
         allococ += lu->load_count + lu->store_count;
     }
 }
@@ -1573,13 +1515,10 @@ bool needsplit(struct LiveRange *lr, int regclass) {
     } else {
         cantsplit = true;
         if (lr->unk24 < 30 || ((lr->unk23 == 0 || lr->adjsave > 0.2f) && lr->unk24 < 800)) {
-            lu = lr->liveunits;
-            while (lu != NULL && cantsplit) {
+            for (lu = lr->liveunits; lu != NULL && cantsplit; lu = lu->next) {
                 if ((lu->reg != 0 || SET_NEQ64(lu->node->regsused[regclass - 1], setregs[regclass - 1])) &&
                         lu->load_count + lu->store_count != 0) {
                     cantsplit = false;
-                } else {
-                    lu = lu->next;
                 }
             }
         }
@@ -1590,12 +1529,10 @@ bool needsplit(struct LiveRange *lr, int regclass) {
             resetbit(&colorcand, lr->bitpos);
             resetbit(&unconstrain, lr->bitpos);
 
-            intf = lr->interfere;
-            while (intf != NULL) {
+            for (intf = lr->interfere; intf != NULL; intf = intf->next) {
                 if (intf->liverange != NULL) {
                     intf->liverange->unk24--;
                 }
-                intf = intf->next;
             }
 
             if (dbugno == 6) {
@@ -1634,8 +1571,7 @@ void split(struct LiveRange **src, struct LiveRange **dest, int regclass, bool a
     struct InterfereList *intf;
     struct InterfereList *prev;
     struct InterfereList *next;
-    struct InterfereList *phi_v1_2;
-    struct InterfereList *phi_v0_2;
+    struct InterfereList *intf2;
 
     *dest = alloc_new(sizeof(struct LiveRange), &perm_heap);
     if (*dest == NULL) {
@@ -1715,14 +1651,12 @@ void split(struct LiveRange **src, struct LiveRange **dest, int regclass, bool a
 
         formingtab[0] = lu->node;
         formingmax = 0;
-        forminginx = 0;
-        while (forminginx <= formingmax) {
+        for (forminginx = 0; forminginx <= formingmax; forminginx++) {
             if (gettolivbb((*src)->ichain, formingtab[forminginx])->deadout == false &&
                     (!arg3 || !is_cup_affecting_regs(formingtab[forminginx])) &&
                     formingtab[forminginx]->stat_tail->opc != Uijp) {
                 addadjacents(*dest, *src, &lu, regclass);
             }
-            forminginx++;
         }
         numsplitlu += forminginx;
     }
@@ -1743,12 +1677,10 @@ block_37: // TODO: weird control flow
         resetbit(&colorcand, (*src)->bitpos);
         resetbit(&colorcand, (*dest)->bitpos);
 
-        intf = (*dest)->interfere;
-        while (intf != NULL) {
+        for (intf = (*dest)->interfere; intf != NULL; intf = intf->next) {
             if (intf->liverange != NULL) {
                 intf->liverange->unk24--;
             }
-            intf = intf->next;
         }
 
         if (dbugno == 6) {
@@ -1785,10 +1717,10 @@ block_37: // TODO: weird control flow
                     (*dest)->interfere = intf->next;
                 } else {
                     prev = (*dest)->interfere;
-                    phi_v1_2 = (*dest)->interfere->next;
-                    while (phi_v1_2 != intf) {
-                        prev = phi_v1_2;
-                        phi_v1_2 = phi_v1_2->next;
+                    intf2 = (*dest)->interfere->next;
+                    while (intf2 != intf) {
+                        prev = intf2;
+                        intf2 = intf2->next;
                     }
                     prev->next = intf->next;
                 }
@@ -1797,11 +1729,11 @@ block_37: // TODO: weird control flow
                 (*src)->interfere = intf;
             }
         } else if (intf->liverange != NULL) {
-            phi_v0_2 = intf->liverange->interfere;
-            while (*src != phi_v0_2->liverange) {
-                phi_v0_2 = phi_v0_2->next;
+            intf2 = intf->liverange->interfere;
+            while (*src != intf2->liverange) {
+                intf2 = intf2->next;
             }
-            phi_v0_2->liverange = *dest;
+            intf2->liverange = *dest;
         }
 
         intf = next;
@@ -1819,10 +1751,8 @@ block_37: // TODO: weird control flow
     updatelivran(*src);
     (*dest)->forbidden[1] = 0;
     (*dest)->forbidden[0] = 0;
-    lu = (*dest)->liveunits;
-    while (lu != NULL) {
+    for (lu = (*dest)->liveunits; lu != NULL; lu = lu->next) {
         updateforbidden(lu->node, lu->reg, *dest, regclass);
-        lu = lu->next;
     }
 
     if (!bvectempty(&(*dest)->unkC)) {
@@ -1841,13 +1771,11 @@ block_37: // TODO: weird control flow
         setbit(&colorcand, (*dest)->bitpos);
     }
 
-    intf = (*src)->interfere;
-    while (intf != NULL) {
+    for (intf = (*src)->interfere; intf != NULL; intf = intf->next) {
         if (intf->liverange != NULL && bvectin0(intf->liverange->bitpos, &unconstrain) && isconstrained(intf->liverange)) {
             resetbit(&unconstrain, intf->liverange->bitpos);
             setbit(&colorcand, intf->liverange->bitpos);
         }
-        intf = intf->next;
     }
     finalnumlr += 1;
 
@@ -1860,12 +1788,10 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
     struct Graphnode *node;
     struct Statement *stat;
     struct LiveUnit *lu; // s1
+    float cost = 0.0f;
     int bb;
-    float cost;
 
-    lu = liverange->liveunits;
-    cost = 0.0f;
-    while (lu != NULL) {
+    for (lu = liverange->liveunits; lu != NULL; lu = lu->next) {
         if (!lu->needreglod) {
             if (lu->node->predecessors != NULL &&
                     is_cup_affecting_regs(lu->node->predecessors->graphnode) &&
@@ -1930,8 +1856,6 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
         if (lu->reg != 0 && lu->reg != reg) {
             cost += (movcostused * lu->node->unk2C) / 10.0f;
         }
-
-        lu = lu->next;
     }
 
     if (!bvectempty(&liverange->unkC)) {
@@ -2110,12 +2034,10 @@ void globalcolor(void) {
 
                         liverange->assigned_reg = -1;
                         resetbit(&colorcand, i);
-                        intf = liverange->interfere;
-                        while (intf != NULL) {
+                        for (intf = liverange->interfere; intf != NULL; intf = intf->next) {
                             if (intf->liverange != NULL) {
                                 intf->liverange->unk24--;
                             }
-                            intf = intf->next;
                         }
 
                         if (dbugno == 6) {
