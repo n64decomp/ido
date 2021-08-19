@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <string.h>
 #include "libp/libp.h"
 #include "libu/libu.h"
 #include "uoptdata.h"
@@ -742,7 +744,17 @@ extern bool use_ix;
 extern bool has_ix;
 extern int loopno;
 
+extern unsigned char gpunaltab[23];
+extern unsigned char spunaltab[23];
+
 extern int eereg_saved_locs[22];
+
+extern struct IChain *baseregexpr[23];
+
+// what is this
+extern struct Unal {
+    unsigned char data[23];
+} unaltab[23];
 
 __asm__(R""(
 .set noat      # allow manual use of $at
@@ -5045,152 +5057,56 @@ glabel gen_outparcode
     .type gen_outparcode, @function
     .size gen_outparcode, .-gen_outparcode
     .end gen_outparcode
+)"");
 
-    .type func_00422AF0, @function
-func_00422AF0:
-    # 0042BF08 reemit
-/* 00422AF0 3C1C0FBF */  .cpload $t9
-/* 00422AF4 279C77A0 */  
-/* 00422AF8 0399E021 */  
-/* 00422AFC 27BDFF88 */  addiu $sp, $sp, -0x78
-/* 00422B00 AFB40024 */  sw    $s4, 0x24($sp)
-/* 00422B04 8F948DA4 */  lw     $s4, %got(u)($gp)
-/* 00422B08 AFBE0038 */  sw    $fp, 0x38($sp)
-/* 00422B0C AFB6002C */  sw    $s6, 0x2c($sp)
-/* 00422B10 928F0001 */  lbu   $t7, 1($s4)
-/* 00422B14 AFB50028 */  sw    $s5, 0x28($sp)
-/* 00422B18 240E0089 */  li    $t6, 137
-/* 00422B1C 24190018 */  li    $t9, 24
-/* 00422B20 24080004 */  li    $t0, 4
-/* 00422B24 31F8FFE0 */  andi  $t8, $t7, 0xffe0
-/* 00422B28 AFBF003C */  sw    $ra, 0x3c($sp)
-/* 00422B2C AFBC0034 */  sw    $gp, 0x34($sp)
-/* 00422B30 AFB70030 */  sw    $s7, 0x30($sp)
-/* 00422B34 AFB30020 */  sw    $s3, 0x20($sp)
-/* 00422B38 AFB2001C */  sw    $s2, 0x1c($sp)
-/* 00422B3C AFB10018 */  sw    $s1, 0x18($sp)
-/* 00422B40 AFB00014 */  sw    $s0, 0x14($sp)
-/* 00422B44 AFA20074 */  sw    $v0, 0x74($sp)
-/* 00422B48 AFA8005C */  sw    $t0, 0x5c($sp)
-/* 00422B4C AFB90068 */  sw    $t9, 0x68($sp)
-/* 00422B50 24150001 */  li    $s5, 1
-/* 00422B54 24160002 */  li    $s6, 2
-/* 00422B58 8F9E8DB0 */  lw     $fp, %got(baseregexpr)($gp)
-/* 00422B5C A28E0000 */  sb    $t6, ($s4)
-/* 00422B60 A2980001 */  sb    $t8, 1($s4)
-.L00422B64:
-/* 00422B64 8FC20000 */  lw    $v0, ($fp)
-/* 00422B68 8FA90074 */  lw    $t1, 0x74($sp)
-/* 00422B6C 8FAB005C */  lw    $t3, 0x5c($sp)
-/* 00422B70 50400052 */  beql  $v0, $zero, .L00422CBC
-/* 00422B74 8FB8005C */   lw    $t8, 0x5c($sp)
-/* 00422B78 8D2AFFF4 */  lw    $t2, -0xc($t1)
-/* 00422B7C 00157080 */  sll   $t6, $s5, 2
-/* 00422B80 01D57023 */  subu  $t6, $t6, $s5
-/* 00422B84 014B6021 */  addu  $t4, $t2, $t3
-/* 00422B88 8D8D0040 */  lw    $t5, 0x40($t4)
-/* 00422B8C 000E70C0 */  sll   $t6, $t6, 3
-/* 00422B90 01D57023 */  subu  $t6, $t6, $s5
-/* 00422B94 104D0048 */  beq   $v0, $t5, .L00422CB8
-/* 00422B98 02A02025 */   move  $a0, $s5
-/* 00422B9C 8F998D98 */  lw     $t9, %got(spunaltab)($gp)
-/* 00422BA0 8F8F8DC4 */  lw     $t7, %got(unaltab)($gp)
-/* 00422BA4 8F988D94 */  lw     $t8, %got(gpunaltab)($gp)
-/* 00422BA8 2739FFFF */  addiu $t9, $t9, -1
-/* 00422BAC 02B94021 */  addu  $t0, $s5, $t9
-/* 00422BB0 8F998708 */  lw    $t9, %call16(coloroffset)($gp)
-/* 00422BB4 25EFFFE9 */  addiu $t7, $t7, -0x17
-/* 00422BB8 2718FFFF */  addiu $t8, $t8, -1
-/* 00422BBC 02B8B821 */  addu  $s7, $s5, $t8
-/* 00422BC0 01CF9021 */  addu  $s2, $t6, $t7
-/* 00422BC4 0320F809 */  jalr  $t9
-/* 00422BC8 AFA80044 */   sw    $t0, 0x44($sp)
-/* 00422BCC 8FBC0034 */  lw    $gp, 0x34($sp)
-/* 00422BD0 A6820002 */  sh    $v0, 2($s4)
-/* 00422BD4 24100001 */  li    $s0, 1
-/* 00422BD8 24130018 */  li    $s3, 24
-/* 00422BDC 26510001 */  addiu $s1, $s2, 1
-.L00422BE0:
-/* 00422BE0 9222FFFF */  lbu   $v0, -1($s1)
-/* 00422BE4 00104880 */  sll   $t1, $s0, 2
-/* 00422BE8 01304823 */  subu  $t1, $t1, $s0
-/* 00422BEC 10400014 */  beqz  $v0, .L00422C40
-/* 00422BF0 000948C0 */   sll   $t1, $t1, 3
-/* 00422BF4 8F8B8DC4 */  lw     $t3, %got(unaltab)($gp)
-/* 00422BF8 01304823 */  subu  $t1, $t1, $s0
-/* 00422BFC 01355021 */  addu  $t2, $t1, $s5
-/* 00422C00 256BFFE9 */  addiu $t3, $t3, -0x17
-/* 00422C04 16C2000C */  bne   $s6, $v0, .L00422C38
-/* 00422C08 014B9021 */   addu  $s2, $t2, $t3
-/* 00422C0C 8F998708 */  lw    $t9, %call16(coloroffset)($gp)
-/* 00422C10 02002025 */  move  $a0, $s0
-/* 00422C14 0320F809 */  jalr  $t9
-/* 00422C18 00000000 */   nop   
-/* 00422C1C 8FBC0034 */  lw    $gp, 0x34($sp)
-/* 00422C20 AE820004 */  sw    $v0, 4($s4)
-/* 00422C24 02802025 */  move  $a0, $s4
-/* 00422C28 8F998740 */  lw    $t9, %call16(uwrite)($gp)
-/* 00422C2C 0320F809 */  jalr  $t9
-/* 00422C30 00000000 */   nop   
-/* 00422C34 8FBC0034 */  lw    $gp, 0x34($sp)
-.L00422C38:
-/* 00422C38 A220FFFF */  sb    $zero, -1($s1)
-/* 00422C3C A240FFFF */  sb    $zero, -1($s2)
-.L00422C40:
-/* 00422C40 26100001 */  addiu $s0, $s0, 1
-/* 00422C44 1613FFE6 */  bne   $s0, $s3, .L00422BE0
-/* 00422C48 26310001 */   addiu $s1, $s1, 1
-/* 00422C4C 92E20000 */  lbu   $v0, ($s7)
-/* 00422C50 5040000B */  beql  $v0, $zero, .L00422C80
-/* 00422C54 8FAD0044 */   lw    $t5, 0x44($sp)
-/* 00422C58 16C20007 */  bne   $s6, $v0, .L00422C78
-/* 00422C5C 240C001C */   li    $t4, 28
-/* 00422C60 AE8C0004 */  sw    $t4, 4($s4)
-/* 00422C64 8F998740 */  lw    $t9, %call16(uwrite)($gp)
-/* 00422C68 02802025 */  move  $a0, $s4
-/* 00422C6C 0320F809 */  jalr  $t9
-/* 00422C70 00000000 */   nop   
-/* 00422C74 8FBC0034 */  lw    $gp, 0x34($sp)
-.L00422C78:
-/* 00422C78 A2E00000 */  sb    $zero, ($s7)
-/* 00422C7C 8FAD0044 */  lw    $t5, 0x44($sp)
-.L00422C80:
-/* 00422C80 91A20000 */  lbu   $v0, ($t5)
-/* 00422C84 5040000C */  beql  $v0, $zero, .L00422CB8
-/* 00422C88 AFC00000 */   sw    $zero, ($fp)
-/* 00422C8C 16C20007 */  bne   $s6, $v0, .L00422CAC
-/* 00422C90 240E001D */   li    $t6, 29
-/* 00422C94 AE8E0004 */  sw    $t6, 4($s4)
-/* 00422C98 8F998740 */  lw    $t9, %call16(uwrite)($gp)
-/* 00422C9C 02802025 */  move  $a0, $s4
-/* 00422CA0 0320F809 */  jalr  $t9
-/* 00422CA4 00000000 */   nop   
-/* 00422CA8 8FBC0034 */  lw    $gp, 0x34($sp)
-.L00422CAC:
-/* 00422CAC 8FAF0044 */  lw    $t7, 0x44($sp)
-/* 00422CB0 A1E00000 */  sb    $zero, ($t7)
-/* 00422CB4 AFC00000 */  sw    $zero, ($fp)
-.L00422CB8:
-/* 00422CB8 8FB8005C */  lw    $t8, 0x5c($sp)
-.L00422CBC:
-/* 00422CBC 8FA80068 */  lw    $t0, 0x68($sp)
-/* 00422CC0 26B50001 */  addiu $s5, $s5, 1
-/* 00422CC4 27190004 */  addiu $t9, $t8, 4
-/* 00422CC8 AFB9005C */  sw    $t9, 0x5c($sp)
-/* 00422CCC 16A8FFA5 */  bne   $s5, $t0, .L00422B64
-/* 00422CD0 27DE0004 */   addiu $fp, $fp, 4
-/* 00422CD4 8FBF003C */  lw    $ra, 0x3c($sp)
-/* 00422CD8 8FB00014 */  lw    $s0, 0x14($sp)
-/* 00422CDC 8FB10018 */  lw    $s1, 0x18($sp)
-/* 00422CE0 8FB2001C */  lw    $s2, 0x1c($sp)
-/* 00422CE4 8FB30020 */  lw    $s3, 0x20($sp)
-/* 00422CE8 8FB40024 */  lw    $s4, 0x24($sp)
-/* 00422CEC 8FB50028 */  lw    $s5, 0x28($sp)
-/* 00422CF0 8FB6002C */  lw    $s6, 0x2c($sp)
-/* 00422CF4 8FB70030 */  lw    $s7, 0x30($sp)
-/* 00422CF8 8FBE0038 */  lw    $fp, 0x38($sp)
-/* 00422CFC 03E00008 */  jr    $ra
-/* 00422D00 27BD0078 */   addiu $sp, $sp, 0x78
+/*
+0042BF08 reemit
+*/
+static void func_00422AF0(struct Graphnode *node) {
+    RegisterColor reg;
+    RegisterColor reg2;
+
+    OPC = Uunal;
+    DTYPE = 0;
+    for (reg = 1; reg <= 23; reg++) {
+        if (baseregexpr[reg - 1] != NULL && baseregexpr[reg - 1] != node->regdata.unk44[reg - 1]) {
+            LEXLEV = coloroffset(reg);
+            for (reg2 = 1; reg2 <= 23; reg2++) {
+                if (unaltab[reg - 1].data[reg2 - 1] != 0) {
+                    if (unaltab[reg - 1].data[reg2 - 1] == 2) {
+                        IONE = coloroffset(reg2);
+                        uwrite(&u);
+                    }
+
+                    unaltab[reg  - 1].data[reg2 - 1] = 0;
+                    unaltab[reg2 - 1].data[reg  - 1] = 0;
+                }
+            }
+
+            if (gpunaltab[reg - 1] != 0) {
+                if (gpunaltab[reg - 1] == 2) {
+                    IONE = r_gp;
+                    uwrite(&u);
+                }
+                gpunaltab[reg - 1] = 0;
+            }
+
+            if (spunaltab[reg - 1] != 0) {
+                if (spunaltab[reg - 1] == 2) {
+                    IONE = r_sp;
+                    uwrite(&u);
+                }
+                spunaltab[reg - 1] = 0;
+            }
+
+            baseregexpr[reg - 1] = NULL;
+        }
+    }
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
     .type func_00422D04, @function
 func_00422D04:
