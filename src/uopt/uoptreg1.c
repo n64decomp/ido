@@ -295,9 +295,9 @@ static void func_0045E45C(struct TrepImageThing *trep, bool is_equ_neq, struct G
 00461AAC makelivranges
 */
 static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Graphnode *node_shared, struct LiveUnit **livbb_shared) {
-    struct LiveUnit *livbb_saved;
+    struct LiveUnit *old_lu;
     int phi_s1;
-    struct IChain *phi_a3;
+    struct IChain *ichain;
 
     *livbb_shared = NULL;
     if (expr == NULL) {
@@ -678,38 +678,38 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                         expr->ichain->isop.unk24_cand != NULL && expr->ichain->isop.unk24_cand != nota_candof) {
 
                     if (expr->ichain->isop.unk24_cand->unk18 == 0) {
-                        phi_a3 = alloc_new(sizeof (struct IChain), &perm_heap);
-                        *phi_a3 = *expr->ichain->isop.unk24_cand->ichain;
+                        ichain = alloc_new(sizeof (struct IChain), &perm_heap);
+                        *ichain = *expr->ichain->isop.unk24_cand->ichain;
 
-                        phi_a3->isop.opc = Ucg1;
-                        expr->ichain->isop.unk24_cand->unk18 = newbit(phi_a3, NULL);
-                        phi_a3->bitpos = expr->ichain->isop.unk24_cand->unk18;
+                        ichain->isop.opc = Ucg1;
+                        expr->ichain->isop.unk24_cand->unk18 = newbit(ichain, NULL);
+                        ichain->bitpos = expr->ichain->isop.unk24_cand->unk18;
 
                         if ((tempdisp & 3) != 0) {
                             tempdisp = (tempdisp - (tempdisp & 3)) + 4;
                         }
 
-                        phi_a3->isop.temploc = alloc_new(0x14, &perm_heap);
+                        ichain->isop.temploc = alloc_new(0x14, &perm_heap);
                         if (!stack_reversed) {
                             tempdisp += 4;
-                            phi_a3->isop.temploc->disp = -tempdisp;
+                            ichain->isop.temploc->disp = -tempdisp;
                         } else {
-                            phi_a3->isop.temploc->disp = tempdisp;
+                            ichain->isop.temploc->disp = tempdisp;
                             tempdisp += 4;
                         }
                     } else {
-                        phi_a3 = bittab[expr->ichain->isop.unk24_cand->unk18].ichain;
+                        ichain = bittab[expr->ichain->isop.unk24_cand->unk18].ichain;
                     }
 
-                    if ((phi_a3->isop.datatype != Idt && phi_a3->isop.datatype != Kdt) || dwopcode) {
-                        livbb_saved = *livbb_shared;
+                    if ((ichain->isop.datatype != Idt && ichain->isop.datatype != Kdt) || dwopcode) {
+                        old_lu = *livbb_shared;
                         formlivbb(expr->ichain->isop.unk24_cand->ichain_unk10, node_shared, livbb_shared);
                         if ((*livbb_shared)->load_count == 0 && (*livbb_shared)->store_count == 0) {
                             setbit(&node_shared->bvs.stage2.loclive, expr->ichain->isop.unk24_cand->ichain_unk10->bitpos);
                         }
 
                         (*livbb_shared)->load_count++;
-                        formlivbb(phi_a3, node_shared, livbb_shared);
+                        formlivbb(ichain, node_shared, livbb_shared);
                         (*livbb_shared)->store_count++;
 
                         setbit(&node_shared->bvs.stage2.locdef, expr->ichain->isop.unk24_cand->unk18);
@@ -717,7 +717,7 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                             (*livbb_shared)->firstisstr = 1;
                         }
 
-                        *livbb_shared = livbb_saved;
+                        *livbb_shared = old_lu;
                     }
                 }
             } else {
@@ -1246,7 +1246,7 @@ static void func_00461084(struct IChain *ichain, struct Graphnode *node_shared) 
 00461AAC makelivranges
 */
 static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared) {
-    struct LiveUnit *sp68;
+    struct LiveUnit *lu;
     int sp58;
     bool phi_s6;
     struct ExpSourceThing *phi_s2;
@@ -1266,18 +1266,18 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared)
     while (phi_s2 != NULL) {
         if (!phi_s6 || !check_ix_candidate(phi_s2->ichain, sp58)) {
             if ((phi_s2->ichain->isop.datatype != Idt && phi_s2->ichain->isop.datatype != Kdt) || dwopcode) {
-                formlivbb(phi_s2->ichain, node_shared, &sp68);
+                formlivbb(phi_s2->ichain, node_shared, &lu);
                 if (outofmem) {
                     return;
                 }
-                sp68->load_count += 1;
+                lu->load_count += 1;
                 if (phi_s6 && check_ix_source(phi_s2->ichain, sp58)) {
-                    sp68->load_count += 2;
+                    lu->load_count += 2;
                 }
-                if (sp68->load_count == 1 && sp68->store_count == 0) {
+                if (lu->load_count == 1 && lu->store_count == 0) {
                     setbit(&node_shared->bvs.stage2.loclive, phi_s2->ichain->bitpos);
                 }
-                sp68->store_count += 1;
+                lu->store_count += 1;
                 setbit(&node_shared->bvs.stage2.locdef, phi_s2->ichain->bitpos);
             }
 
@@ -1310,9 +1310,9 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared)
                     }
 
                     if ((phi_s1->isop.datatype != Idt && phi_s1->isop.datatype != Kdt) || dwopcode) {
-                        formlivbb(phi_s1, node_shared, &sp68);
-                        sp68->load_count++;
-                        if (sp68->load_count == 1) {
+                        formlivbb(phi_s1, node_shared, &lu);
+                        lu->load_count++;
+                        if (lu->load_count == 1) {
                             setbit(&node_shared->bvs.stage2.loclive, phi_s1->bitpos);
                         }
                     }
