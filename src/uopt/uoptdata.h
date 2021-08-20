@@ -904,7 +904,7 @@ struct TrepImageThing {
     /* 0x04 */ struct IChain *ichain2;
     /* 0x08 */ union Bcode u;
     /* 0x28 */ struct IChain *unk28;
-    /* 0x2C */ unsigned int unk2C;
+    /* 0x2C */ int unk2C;
 }; // size 0x30
 
 extern union Bcode u;
