@@ -248,7 +248,7 @@ struct GraphnodeList {
 // See put_in_fallthru_bb and put_in_jump_bb
 struct JumpFallthroughBB {
     unsigned char reg;
-    bool unk1;
+    bool unk1; // true = rlod, false = rstr
     struct IChain *ichain;
     struct JumpFallthroughBB *next;
 };
@@ -265,7 +265,6 @@ enum unk5enum {
     loopfirstbb,
     canunroll
 };
-
 
 struct Graphnode {
     /* 0x00 */ int blockno;
@@ -718,8 +717,8 @@ struct IChain { // TODO: rename
             /* 0x18 */ struct IChain *op2;
             /* 0x1C */ int size;
             union {
-            /* 0x20 */ struct Statement *stat;
-                       struct Temploc *temploc;
+                /* 0x20 */ struct Statement *stat;
+                /* 0x20 */ struct Temploc *temploc;
             };
             union {
                 /* 0x24 */ Datatype cvtfrom;
@@ -745,6 +744,14 @@ struct IChain { // TODO: rename
         } isrconst;
     };
 }; // size 0x28
+
+// reemit inner function
+struct IChainList {
+    /*  0x0 */ struct IChain ichain; // why
+    /* 0x28 */ struct IChainList *prev;
+    /* 0x2C */ struct IChainList *next;
+}; // size 0x30
+
 
 struct LiveUnit {
     /* 0x00 */ struct Graphnode *node;

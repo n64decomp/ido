@@ -3205,58 +3205,6 @@ glabel inside_loop
     .end inside_loop
 )"");
 
-#if 0
-__asm__(R""(
-.set noat
-.set noreorder
-
-glabel check_ix_candidate
-    .ent check_ix_candidate
-    # 0042AADC func_0042AADC
-    # 0042B890 func_0042B890
-    # 0046123C func_0046123C
-    # 00480540 check_loop_nest_ix_cand
-/* 004804CC 3C1C0FBA */  .cpload $t9
-/* 004804D0 279C9DC4 */
-/* 004804D4 0399E021 */
-/* 004804D8 8F8E8A0C */  lw     $t6, %got(looptab)($gp)
-/* 004804DC 00057880 */  sll   $t7, $a1, 2
-/* 004804E0 01E57823 */  subu  $t7, $t7, $a1
-/* 004804E4 8DCE0000 */  lw    $t6, ($t6)
-/* 004804E8 000F7880 */  sll   $t7, $t7, 2
-/* 004804EC 01CFC021 */  addu  $t8, $t6, $t7
-/* 004804F0 8F030004 */  lw    $v1, 4($t8)
-/* 004804F4 50600010 */  beql  $v1, $zero, .L00480538
-/* 004804F8 00001025 */   move  $v0, $zero
-/* 004804FC 8C790000 */  lw    $t9, ($v1)
-.L00480500:
-/* 00480500 5499000A */  bnel  $a0, $t9, .L0048052C
-/* 00480504 8C630008 */   lw    $v1, 8($v1)
-/* 00480508 90680010 */  lbu   $t0, 0x10($v1)
-/* 0048050C 24010001 */  li    $at, 1
-/* 00480510 15010003 */  bne   $t0, $at, .L00480520
-/* 00480514 00000000 */   nop
-/* 00480518 03E00008 */  jr    $ra
-/* 0048051C 90620011 */   lbu   $v0, 0x11($v1)
-
-.L00480520:
-/* 00480520 03E00008 */  jr    $ra
-/* 00480524 00001025 */   move  $v0, $zero
-
-/* 00480528 8C630008 */  lw    $v1, 8($v1)
-.L0048052C:
-/* 0048052C 5460FFF4 */  bnezl $v1, .L00480500
-/* 00480530 8C790000 */   lw    $t9, ($v1)
-/* 00480534 00001025 */  move  $v0, $zero
-.L00480538:
-/* 00480538 03E00008 */  jr    $ra
-/* 0048053C 00000000 */   nop
-    .type check_ix_candidate, @function
-    .size check_ix_candidate, .-check_ix_candidate
-    .end check_ix_candidate
-)"");
-#endif
-
 /*
 0042AADC func_0042AADC
 0042B890 func_0042B890
@@ -3352,55 +3300,6 @@ glabel check_loop_nest_ix_cand
     .end check_loop_nest_ix_cand
 )"");
 
-#if 0
-__asm__(R""(
-.set noat
-.set noreorder
-
-glabel check_ix_source
-    .ent check_ix_source
-    # 0046123C func_0046123C
-/* 00480624 3C1C0FBA */  .cpload $t9
-/* 00480628 279C9C6C */
-/* 0048062C 0399E021 */
-/* 00480630 8F8E8A0C */  lw     $t6, %got(looptab)($gp)
-/* 00480634 00057880 */  sll   $t7, $a1, 2
-/* 00480638 01E57823 */  subu  $t7, $t7, $a1
-/* 0048063C 8DCE0000 */  lw    $t6, ($t6)
-/* 00480640 000F7880 */  sll   $t7, $t7, 2
-/* 00480644 01CFC021 */  addu  $t8, $t6, $t7
-/* 00480648 8F030004 */  lw    $v1, 4($t8)
-/* 0048064C 50600010 */  beql  $v1, $zero, .L00480690
-/* 00480650 00001025 */   move  $v0, $zero
-/* 00480654 8C790000 */  lw    $t9, ($v1)
-.L00480658:
-/* 00480658 5499000A */  bnel  $a0, $t9, .L00480684
-/* 0048065C 8C630008 */   lw    $v1, 8($v1)
-/* 00480660 90680010 */  lbu   $t0, 0x10($v1)
-/* 00480664 24010003 */  li    $at, 3
-/* 00480668 15010003 */  bne   $t0, $at, .L00480678
-/* 0048066C 00000000 */   nop
-/* 00480670 03E00008 */  jr    $ra
-/* 00480674 90620011 */   lbu   $v0, 0x11($v1)
-
-.L00480678:
-/* 00480678 03E00008 */  jr    $ra
-/* 0048067C 00001025 */   move  $v0, $zero
-
-/* 00480680 8C630008 */  lw    $v1, 8($v1)
-.L00480684:
-/* 00480684 5460FFF4 */  bnezl $v1, .L00480658
-/* 00480688 8C790000 */   lw    $t9, ($v1)
-/* 0048068C 00001025 */  move  $v0, $zero
-.L00480690:
-/* 00480690 03E00008 */  jr    $ra
-/* 00480694 00000000 */   nop
-    .type check_ix_source, @function
-    .size check_ix_source, .-check_ix_source
-    .end check_ix_source
-)"");
-#endif
-
 /*
 0046123C func_0046123C
 */
@@ -3421,41 +3320,16 @@ bool check_ix_source(struct IChain *ichain, int loopno) {
     return false;
 }
 
-__asm__(R""(
-.set noat
-.set noreorder
+/*
+004230F0 func_004230F0
+0042AADC func_0042AADC
+*/
+struct ScmThing *get_ix_source(unsigned char unk11, int loopnum) {
+    struct ScmThing *source;
 
-glabel get_ix_source
-    .ent get_ix_source
-    # 004230F0 func_004230F0
-    # 0042AADC func_0042AADC
-/* 00480698 3C1C0FBA */  .cpload $t9
-/* 0048069C 279C9BF8 */
-/* 004806A0 0399E021 */
-/* 004806A4 8F8E8A0C */  lw     $t6, %got(looptab)($gp)
-/* 004806A8 00057880 */  sll   $t7, $a1, 2
-/* 004806AC 01E57823 */  subu  $t7, $t7, $a1
-/* 004806B0 8DCE0000 */  lw    $t6, ($t6)
-/* 004806B4 000F7880 */  sll   $t7, $t7, 2
-/* 004806B8 24020003 */  li    $v0, 3
-/* 004806BC 01CFC021 */  addu  $t8, $t6, $t7
-/* 004806C0 8F030004 */  lw    $v1, 4($t8)
-.L004806C4:
-/* 004806C4 90790011 */  lbu   $t9, 0x11($v1)
-/* 004806C8 14990006 */  bne   $a0, $t9, .L004806E4
-/* 004806CC 00000000 */   nop
-/* 004806D0 90680010 */  lbu   $t0, 0x10($v1)
-/* 004806D4 14480003 */  bne   $v0, $t0, .L004806E4
-/* 004806D8 00000000 */   nop
-/* 004806DC 03E00008 */  jr    $ra
-/* 004806E0 00601025 */   move  $v0, $v1
-
-.L004806E4:
-/* 004806E4 1000FFF7 */  b     .L004806C4
-/* 004806E8 8C630008 */   lw    $v1, 8($v1)
-/* 004806EC 03E00008 */  jr    $ra
-/* 004806F0 00000000 */   nop
-    .type get_ix_source, @function
-    .size get_ix_source, .-get_ix_source
-    .end get_ix_source
-)"");
+    source = looptab[loopnum].unk4;
+    if (source->unk11 != unk11 || source->unk10 != 3) {
+        source = source->next;
+    }
+    return source;
+}
