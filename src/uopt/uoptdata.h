@@ -540,7 +540,7 @@ struct Statement {
             /* 0x14 */ Datatype dtype;
             /* 0x15 */ unsigned char size;
             /* 0x16 */ unsigned char reg; // unset, but used in reg1
-            /* 0x16 */ unsigned char unk17;
+            /* 0x17 */ unsigned char unk17;
             /* 0x18 */ int index; // parcount or OFFSET/4
             /* 0x1C */ int loc; // OFFSET
             /* 0x20 */ struct Expression *baseaddr;
