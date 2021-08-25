@@ -460,7 +460,7 @@ struct Statement {
                 } outpar;
                 struct {
                     struct ExpSourceThing *unk2C;
-                    struct RecurThing *unk30;
+                    struct RecurThing *unk30; // used when emitting vreg
                 } str;
                 struct {
                     Datatype dtype; // 0x2C
