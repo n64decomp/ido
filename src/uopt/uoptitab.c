@@ -817,7 +817,6 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
 
                     default:    // Cdt, Mdt, Pdt, Qdt, Rdt, Sdt, Wdt, Xdt, Zdt
                         hash = realihash(expr->data.isconst.number);
-                        //hash = realihash(expr->data.islda_isilda.offset, expr->data.islda_isilda.size);
                         break;
                 }
                 ichain = isearchloop(hash, expr, NULL, NULL);
@@ -866,20 +865,19 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 ichain = isearchloop(isvarihash(expr->data.isvar_issvar.location), expr, NULL, NULL);
                 if (outofmem) return NULL; // used to return UB sp8C
 
-                // Most iffy part... compiler originally added 1 to r2bb and subtracted 4/8 from r2bitpos/setofr2bbs.
                 if (expr->data.isvar_issvar.location.memtype == Rmt) {
                     if (expr->data.isvar_issvar.location.addr != r_sp) {
                         switch (expr->data.isvar_issvar.location.addr) {
                             case r_v0:
-                                r2bb = 0;
-                                break;
-
-                            case r_f0:
                                 r2bb = 1;
                                 break;
 
-                            case r_f2:
+                            case r_f0:
                                 r2bb = 2;
+                                break;
+
+                            case r_f2:
+                                r2bb = 3;
                                 break;
 
                             case r_f1:
@@ -888,22 +886,22 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                                 break;
 
                         }
-                        r2bitpos[r2bb] = ichain->bitpos;
+                        r2bitpos[r2bb - 1] = ichain->bitpos;
 
-                        if (curgraphnode->num >= (setofr2bbs[r2bb].num_blocks << 7)) {
+                        if (curgraphnode->num >= (setofr2bbs[r2bb - 1].num_blocks << 7)) {
                             newblocks = ((unsigned) curstaticno >> 7) + 1;
-                            setofr2bbs[r2bb].blocks = alloc_realloc(setofr2bbs[r2bb].blocks, setofr2bbs[r2bb].num_blocks, newblocks, &perm_heap);
+                            setofr2bbs[r2bb - 1].blocks = alloc_realloc(setofr2bbs[r2bb - 1].blocks, setofr2bbs[r2bb - 1].num_blocks, newblocks, &perm_heap);
 
-                            memset(setofr2bbs[r2bb].blocks + setofr2bbs[r2bb].num_blocks, 0, (newblocks - setofr2bbs[r2bb].num_blocks) * sizeof(struct BitVectorBlock));
-                            setofr2bbs[r2bb].num_blocks = newblocks;
+                            memset(setofr2bbs[r2bb - 1].blocks + setofr2bbs[r2bb - 1].num_blocks, 0, (newblocks - setofr2bbs[r2bb - 1].num_blocks) * sizeof(struct BitVectorBlock));
+                            setofr2bbs[r2bb - 1].num_blocks = newblocks;
                         }
-                        setbitbb(&setofr2bbs[r2bb], curgraphnode->num);
+                        setbitbb(&setofr2bbs[r2bb - 1], curgraphnode->num);
                         // Original:
                         //unsigned int blockpos = curgraphnode->num & 0x7F;
-                        //setofr2bbs[r2bb].blocks[curgraphnode->num >> 7].words[0] |= (blockpos < 0x20U) << ((~blockpos) & 0x1f);
-                        //setofr2bbs[r2bb].blocks[curgraphnode->num >> 7].words[1] |= ((unsigned) (blockpos - 0x20) < 0x20U) << ((~blockpos) & 0x1f);
-                        //setofr2bbs[r2bb].blocks[curgraphnode->num >> 7].words[2] |= ((unsigned) (blockpos - 0x40) < 0x20U) << ((~blockpos) & 0x1f);
-                        //setofr2bbs[r2bb].blocks[curgraphnode->num >> 7].words[3] |= ((unsigned) (blockpos - 0x60) < 0x20U) << ((~blockpos) & 0x1f);
+                        //setofr2bbs[r2bb - 1].blocks[curgraphnode->num >> 7].words[0] |= (blockpos < 0x20U) << ((~blockpos) & 0x1f);
+                        //setofr2bbs[r2bb - 1].blocks[curgraphnode->num >> 7].words[1] |= ((unsigned) (blockpos - 0x20) < 0x20U) << ((~blockpos) & 0x1f);
+                        //setofr2bbs[r2bb - 1].blocks[curgraphnode->num >> 7].words[2] |= ((unsigned) (blockpos - 0x40) < 0x20U) << ((~blockpos) & 0x1f);
+                        //setofr2bbs[r2bb - 1].blocks[curgraphnode->num >> 7].words[3] |= ((unsigned) (blockpos - 0x60) < 0x20U) << ((~blockpos) & 0x1f);
                     }
                 }
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
