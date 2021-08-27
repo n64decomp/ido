@@ -3348,7 +3348,7 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
                         uwrite(&u);
                     }
 
-                    if (trep->unk28->type == islda || trep->unk28->isvar_issvar.location.addr != NULL) {
+                    if (trep->unk28->type == islda || trep->unk28->isvar_issvar.location.addr != 0) {
                         sp74 = trep;
                         uwrite(&trep->u);
                         OPC = Uadd;

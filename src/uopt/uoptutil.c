@@ -3228,77 +3228,21 @@ bool check_ix_candidate(struct IChain *ichain, int loopno) {
     return false;
 }
 
-__asm__(R""(
-.set noat
-.set noreorder
+/*
+004230F0 func_004230F0
+*/
+void check_loop_nest_ix_cand(struct IChain *ichain, int *loopno, int *ix_cand) {
+    struct Loop *loop;
+    printf("called \n");
 
-glabel check_loop_nest_ix_cand
-    .ent check_loop_nest_ix_cand
-    # 004230F0 func_004230F0
-/* 00480540 3C1C0FBA */  .cpload $t9
-/* 00480544 279C9D50 */
-/* 00480548 0399E021 */
-/* 0048054C 27BDFFD0 */  addiu $sp, $sp, -0x30
-/* 00480550 8F998718 */  lw    $t9, %call16(check_ix_candidate)($gp)
-/* 00480554 AFB00014 */  sw    $s0, 0x14($sp)
-/* 00480558 00A08025 */  move  $s0, $a1
-/* 0048055C AFBF002C */  sw    $ra, 0x2c($sp)
-/* 00480560 AFBC0028 */  sw    $gp, 0x28($sp)
-/* 00480564 AFB40024 */  sw    $s4, 0x24($sp)
-/* 00480568 AFB30020 */  sw    $s3, 0x20($sp)
-/* 0048056C AFB2001C */  sw    $s2, 0x1c($sp)
-/* 00480570 AFB10018 */  sw    $s1, 0x18($sp)
-/* 00480574 00809825 */  move  $s3, $a0
-/* 00480578 00C0A025 */  move  $s4, $a2
-/* 0048057C 0320F809 */  jalr  $t9
-/* 00480580 8CA50000 */   lw    $a1, ($a1)
-/* 00480584 8FBC0028 */  lw    $gp, 0x28($sp)
-/* 00480588 1440001E */  bnez  $v0, .L00480604
-/* 0048058C AE820000 */   sw    $v0, ($s4)
-/* 00480590 8E0F0000 */  lw    $t7, ($s0)
-/* 00480594 2412000C */  li    $s2, 12
-/* 00480598 8F918A0C */  lw     $s1, %got(looptab)($gp)
-/* 0048059C 01F20019 */  multu $t7, $s2
-/* 004805A0 8E2E0000 */  lw    $t6, ($s1)
-/* 004805A4 0000C012 */  mflo  $t8
-/* 004805A8 01D8C821 */  addu  $t9, $t6, $t8
-/* 004805AC 8F280000 */  lw    $t0, ($t9)
-/* 004805B0 8D020010 */  lw    $v0, 0x10($t0)
-/* 004805B4 50400014 */  beql  $v0, $zero, .L00480608
-/* 004805B8 8FBF002C */   lw    $ra, 0x2c($sp)
-/* 004805BC 8C450000 */  lw    $a1, ($v0)
-.L004805C0:
-/* 004805C0 02602025 */  move  $a0, $s3
-/* 004805C4 AE050000 */  sw    $a1, ($s0)
-/* 004805C8 8F998718 */  lw    $t9, %call16(check_ix_candidate)($gp)
-/* 004805CC 0320F809 */  jalr  $t9
-/* 004805D0 00000000 */   nop
-/* 004805D4 8FBC0028 */  lw    $gp, 0x28($sp)
-/* 004805D8 1440000A */  bnez  $v0, .L00480604
-/* 004805DC AE820000 */   sw    $v0, ($s4)
-/* 004805E0 8E0B0000 */  lw    $t3, ($s0)
-/* 004805E4 8E2A0000 */  lw    $t2, ($s1)
-/* 004805E8 01720019 */  multu $t3, $s2
-/* 004805EC 00006012 */  mflo  $t4
-/* 004805F0 014C6821 */  addu  $t5, $t2, $t4
-/* 004805F4 8DAF0000 */  lw    $t7, ($t5)
-/* 004805F8 8DE20010 */  lw    $v0, 0x10($t7)
-/* 004805FC 5440FFF0 */  bnezl $v0, .L004805C0
-/* 00480600 8C450000 */   lw    $a1, ($v0)
-.L00480604:
-/* 00480604 8FBF002C */  lw    $ra, 0x2c($sp)
-.L00480608:
-/* 00480608 8FB00014 */  lw    $s0, 0x14($sp)
-/* 0048060C 8FB10018 */  lw    $s1, 0x18($sp)
-/* 00480610 8FB2001C */  lw    $s2, 0x1c($sp)
-/* 00480614 8FB30020 */  lw    $s3, 0x20($sp)
-/* 00480618 8FB40024 */  lw    $s4, 0x24($sp)
-/* 0048061C 03E00008 */  jr    $ra
-/* 00480620 27BD0030 */   addiu $sp, $sp, 0x30
-    .type check_loop_nest_ix_cand, @function
-    .size check_loop_nest_ix_cand, .-check_loop_nest_ix_cand
-    .end check_loop_nest_ix_cand
-)"");
+    *ix_cand = check_ix_candidate(ichain, *loopno);
+    loop = looptab[*loopno].loop->outer;
+    while (!*ix_cand && loop != NULL) {
+        *loopno = loop->loopno;
+        *ix_cand = check_ix_candidate(ichain, *loopno);
+        loop = looptab[*loopno].loop->outer;
+    }
+}
 
 /*
 0046123C func_0046123C

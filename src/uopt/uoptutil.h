@@ -77,6 +77,10 @@ int val_when_exponent0(int a, int exponent10);
 int coloroffset(int index);
 int in_reg_masks(int index, int arg1, int arg2);
 void skipproc(int reason);
+bool check_ix_candidate(struct IChain *ichain, int loopno);
+void check_loop_nest_ix_cand(struct IChain *ichain, int *loopno, int *ix_cand);
+bool check_ix_source(struct IChain *ichain, int loopno);
+struct ScmThing *get_ix_source(unsigned char unk11, int loopnum);
 
 bool check_ix_candidate(struct IChain *ichain, int loopno);
 bool check_ix_source(struct IChain *ichain, int loopno);
