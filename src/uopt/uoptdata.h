@@ -807,8 +807,8 @@ struct PdefEntry {
     /* 0x2 */ bool outmode; // lexlev & 2
     /* 0x3 */ bool unk3;
     /* 0x4 */ bool inmode; // lexlev & 1
-    /* 0x8 */ int offset; // from u.intarray[3]
-    /* 0xC */ int size; // from u.intarray[2]
+    /* 0x8 */ int offset;
+    /* 0xC */ int size;
 }; // size 0x10
 
 struct TailRecParameter {
