@@ -802,14 +802,14 @@ struct BittabItem {
 };
 
 struct PdefEntry {
-    Uopcode opc;
-    Datatype dtype;
-    bool outmode; // lexlev & 2
-    bool unk3;
-    bool inmode; // lexlev & 1
-    int offset; // from u.intarray[3]
-    int size; // from u.intarray[2]
-};
+    /* 0x0 */ Uopcode opc;
+    /* 0x1 */ Datatype dtype;
+    /* 0x2 */ bool outmode; // lexlev & 2
+    /* 0x3 */ bool unk3;
+    /* 0x4 */ bool inmode; // lexlev & 1
+    /* 0x8 */ int offset; // from u.intarray[3]
+    /* 0xC */ int size; // from u.intarray[2]
+}; // size 0x10
 
 struct TailRecParameter {
     /* 0x00 */ struct Statement *stat;
