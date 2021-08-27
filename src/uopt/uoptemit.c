@@ -4558,7 +4558,7 @@ static bool func_0042BE58(struct Loop *loop) {
 void reemit() {
     struct Graphnode *node; // sp9C, v0 - 0xc
     bool sp97;
-    bool sp95;
+    bool stackDefined; // sp95
     int reg;
     bool sp8B;
     bool sp8A;
@@ -4571,7 +4571,7 @@ void reemit() {
     int length;
     struct Statement *target_ujp;
 
-    sp95 = 0;
+    stackDefined = false;
     memset(eereg_saved_locs, 0, sizeof(eereg_saved_locs));
 
     reset(&strp, " ", 0, 0);
@@ -4596,13 +4596,13 @@ void reemit() {
         func_0042B1A8(node);
     }
 
-    sp97 = 0;
+    sp97 = false;
     while (stat != NULL) {
         if (stat->opc == Uret || stat->opc == Uujp) {
-            sp97 = 1;
+            sp97 = true;
             func_0042AADC(node);
             func_0042B09C(node);
-            if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.strinsertin)) {
+            if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                 func_0042A1C8(node);
             }
             func_0042B144(node);
@@ -4919,12 +4919,12 @@ void reemit() {
 
             case Utjp:
             case Ufjp:
-                sp97 = 1;
+                sp97 = true;
                 func_00424FFC(stat->expr, NULL, node);
                 func_0042AADC(node);
                 func_004230F0(stat->expr, 0, NULL, false, node);
                 func_0042B09C(node);
-                if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.strinsertin)) {
+                if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                     func_0042A1C8(node);
                 }
 
@@ -4999,7 +4999,7 @@ void reemit() {
                 if (stat->expr->type == isconst && (stat->expr->datatype != Idt && stat->expr->datatype != Kdt)) {
                     func_0042AADC(node);
                     func_0042B09C(node);
-                    if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.strinsertin)) {
+                    if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                         func_0042A1C8(node);
                     }
 
@@ -5016,12 +5016,12 @@ void reemit() {
                     }
                     uwrite(&u);
                 } else {
-                    sp97 = 1;
+                    sp97 = true;
                     func_00424FFC(stat->expr, NULL, node);
                     func_0042AADC(node);
                     func_004230F0(stat->expr, 0, NULL, false, node);
                     func_0042B09C(node);
-                    if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.strinsertin)) {
+                    if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                         func_0042A1C8(node);
                     }
                     OPC = Uxjp;
@@ -5037,7 +5037,7 @@ void reemit() {
                 break;
 
             case Uijp:
-                sp97 = 1;
+                sp97 = true;
                 if (stat->expr == NULL) {
                     dbgerror(0x45C);
                 }
@@ -5045,7 +5045,7 @@ void reemit() {
                 func_0042AADC(node);
                 func_004230F0(stat->expr, 0, NULL, false, node);
                 func_0042B09C(node);
-                if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.strinsertin)) {
+                if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                     func_0042A1C8(node);
                 }
                 func_0042B144(node);
@@ -5084,7 +5084,7 @@ void reemit() {
                 OPC = Udef;
                 MTYPE = stat->u.def.mtype;
                 if (MTYPE == Mmt) {
-                    sp95 = 1;
+                    stackDefined = true;
                     LENGTH = highestmdef;
                 } else {
                     LENGTH = stat->u.def.unk18;
@@ -5131,9 +5131,9 @@ void reemit() {
                 if (stat->u.pop.unk15 != 0 && stat->u.pop.unk16 != 0) {
                     func_004230F0(stat->expr, 3, NULL, false, node);
                     gettemp(&sp84, 4);
-                    spilltemplodstr(Ustr, 2, sp84);
+                    spilltemplodstr(Ustr, Fdt, sp84);
                     func_0042AADC(node);
-                    spilltemplodstr(Ulod, 2, sp84);
+                    spilltemplodstr(Ulod, Fdt, sp84);
                 } else {
                     func_00424FFC(stat->expr, NULL, node);
                     if (stat->u.pop.unk15 != 0) {
@@ -5144,9 +5144,9 @@ void reemit() {
                         OPC = Upop;
                         DTYPE = stat->u.pop.dtype;
                         uwrite(&u);
-                    } else if (OPC == Ulod && MTYPE == Rmt && OFFSET == 31) {
+                    } else if (OPC == Ulod && MTYPE == Rmt && OFFSET == r_ra) {
                         OPC = Ustr;
-                        OFFSET = 15;
+                        OFFSET = r_t7;
                         uwrite(&u);
                         OPC = Ulod;
                         uwrite(&u);
@@ -5157,7 +5157,7 @@ void reemit() {
             case Urcuf:
             case Ucup:
             case Uicuf:
-                sp97 = 1;
+                sp97 = true;
                 numcalls += 1;
                 if (stat->opc == Ucup) {
                     func_0042AADC(node);
@@ -5175,7 +5175,7 @@ void reemit() {
                 PUSH = stat->u.call.push_flags;
                 EXTRNAL = stat->u.call.extrnal_flags;
                 uwrite(&u);
-                if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.strinsertin)) {
+                if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                     func_0042A1C8(node);
                 }
                 func_0042B144(node);
@@ -5185,7 +5185,7 @@ void reemit() {
                 break;
 
             case Ucia:
-                sp97 = 1;
+                sp97 = true;
                 func_0042AADC(node);
                 func_0042B09C(node);
                 OPC = Ucia;
@@ -5219,7 +5219,7 @@ void reemit() {
                 CONSTVAL.swpart.Chars = ustrptr;
                 uwrite(&u);
 
-                if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.strinsertin)) {
+                if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                     func_0042A1C8(node);
                 }
                 func_0042B144(node);
@@ -5318,17 +5318,19 @@ void reemit() {
                 break;
         }
 
+        // entered next basic block
         stat = stat->next;
         if (stat != NULL && node != stat->graphnode) {
-            if (sp97 == 0) {
+            if (!sp97) {
                 func_0042AADC(node);
                 func_0042B09C(node);
-                if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.strinsertin)) {
+                if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                     func_0042A1C8(node);
                 }
                 func_0042B144(node);
             }
-            sp97 = 0;
+
+            sp97 = false;
             node = stat->graphnode;
             findbbtemps(stat->graphnode);
 
@@ -5342,6 +5344,7 @@ void reemit() {
                 OPC = Ucomm;
                 DTYPE = Mdt;
                 CONSTVAL.swpart.Ival = 20;
+
                 if (!node->terminal) {
                     ustrptr[0] = '?';
                 } else {
@@ -5371,12 +5374,12 @@ void reemit() {
 
     if (!sp97) {
         func_0042B09C(node);
-        if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.strinsertin)) {
+        if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
             func_0042A1C8(node);
         }
     }
 
-    if (!sp95) {
+    if (!stackDefined) {
         OPC = Udef;
         MTYPE = Mmt;
         LENGTH = highestmdef;
