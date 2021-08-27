@@ -745,7 +745,7 @@ struct IChain { // TODO: rename
     };
 }; // size 0x28
 
-// reemit inner function
+// reemit inner function, used for constant folding
 struct IChainList {
     /*  0x0 */ struct IChain ichain; // why
     /* 0x28 */ struct IChainList *prev;
