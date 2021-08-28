@@ -27,17 +27,17 @@ D_10011A10:
     # 0048A194 st_paux_iaux
     # 0048A260 st_str_ifd_iss
     # 0048A330 st_ppd_ifd_isym
-    .ascii "routine: you didn't initialize with st_cuinit or st_readst\n\x00"
+    .ascii "routine: you didn't initialize with st_cuinit or st_readst\n\0"
 
 D_10011A4C:
     # 00489CA0 st_symadd
     # 00489F38 st_ifd_pcfd
     # 0048A194 st_paux_iaux
-    .ascii "routine: no current routine, see fdadd or setfd\n\x00\x00\x00\x00"
+    .ascii "routine: no current routine, see fdadd or setfd\n\0\0\0\0"
 
 D_10011A80:
     # 00489CA0 st_symadd
-    .ascii "routine: cannot add to this entry it was readin from disk\n\x00\x00\x00\x00\x00\x00"
+    .ascii "routine: cannot add to this entry it was readin from disk\n\0\0\0\0\0\0"
 
 
 

@@ -27,11 +27,11 @@ RO_1000F008:
 D_10011AC0:
     # 0048A5E8 _md_st_str_iss
     # 0048A86C _md_st_setfd
-    .ascii "routine: you didn't initialize with st_cuinit or st_readst\n\x00"
+    .ascii "routine: you didn't initialize with st_cuinit or st_readst\n\0"
 
 D_10011AFC:
     # 0048A5E8 _md_st_str_iss
-    .ascii "routine: no current routine, see fdadd or setfd\n\x00\x00\x00\x00"
+    .ascii "routine: no current routine, see fdadd or setfd\n\0\0\0\0"
 
 
 

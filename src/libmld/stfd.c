@@ -96,7 +96,7 @@ D_10011950:
     # 004898C0 st_paux_ifd_iaux
     # 004899B0 st_pline_ifd_iline
     # 00489AA0 st_str_iss
-    .ascii "routine: you didn't initialize with st_cuinit or st_readst\n\x00"
+    .ascii "routine: you didn't initialize with st_cuinit or st_readst\n\0"
 
 D_1001198C:
     # 0048932C st_auxadd
@@ -104,14 +104,14 @@ D_1001198C:
     # 004895E4 st_lineadd
     # 0048970C st_stradd
     # 00489AA0 st_str_iss
-    .ascii "routine: no current routine, see fdadd or setfd\n\x00\x00\x00\x00"
+    .ascii "routine: no current routine, see fdadd or setfd\n\0\0\0\0"
 
 D_100119C0:
     # 0048932C st_auxadd
     # 00489458 st_pdadd
     # 004895E4 st_lineadd
     # 0048970C st_stradd
-    .ascii "routine: cannot add to this entry it was readin from disk\n\x00\x00"
+    .ascii "routine: cannot add to this entry it was readin from disk\n\0\0"
 
 D_100119FC:
     # 00488C8C st_fdadd

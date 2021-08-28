@@ -1,0 +1,1090 @@
+[split]
+#.text            .rodata           .data             .bss              COMMON variables
+
+/ugen/crt1.c
+0040A5E0-0040A708         -                 -                 -         __Argc-__rld_obj_head
+
+# __start
+# func_0040A5EC
+# _mcount
+
+/ugen/binfile.c
+0040A710-0040AD9C 10008000-100081E0         -         10018630-100186C0       -              
+
+# open_bin_file
+# close_bin_file
+# output_inst_bin
+# cat_files
+
+/ugen/foldconst.c
+0040ADA0-0040BBC4 100081E0-10008520         -                 -         print_warnings-print_warnings
+
+# warning
+# func_0040AE00
+# func_0040AEAC
+# fold_constant
+# fold_identities
+# fold_idempotents
+
+/ugen/ugendata.c
+        -                 -                 -                 -         current_line-regs
+
+/ugen/aio.c
+0040BBD0-0040E0A4 10008520-10008BD0 10010E60-100124C0         -               -              
+
+# put_integer_ws
+# put_sym
+# hex8
+# put_hex10
+# hex_2
+# put_alpha
+# put_string
+# write_instruction
+# print_source
+# write_directive
+# output_inst_ascii
+
+/ugen/build.c
+0040E0B0-00413F4C 10008BD0-10009380 100124C0-10012570         -               -              
+
+# set_domtag
+# get_domtag
+# search_label
+# find_label
+# init_build
+# func_0040E238
+# func_0040E24C
+# func_0040E280
+# func_0040E2AC
+# func_0040E474
+# func_0040E884
+# func_0040EC54
+# func_0040EED4
+# func_0040EF8C
+# func_0040EFBC
+# func_0040F0B8
+# func_0040F1BC
+# func_0040F230
+# func_0040F328
+# build_tree
+
+/ugen/emit.c
+00413F50-0041AF4C 10009380-10009690 10012570-10013640         -               -              
+
+# save_i_ptrs
+# restore_i_ptrs
+# init_ibuffer
+# grow_ibuffer
+# create_local_label
+# emit_vers
+# emit_rob
+# emit_rab
+# emit_rrab
+# emit_rllb
+# emit_ra
+# emit_ri_
+# emit_rii
+# emit_rfi
+# emit_rrfi
+# emit_rrr
+# emit_rri_
+# emit_rrri
+# emit_rr
+# emit_a
+# emit_r
+# emit_i
+# emit_rrl
+# emit_rrll
+# emit_rl
+# emit_rll
+# emit_l
+# emit_ll
+# emit_ril
+# emit_rill
+# define_label
+# emit_itext
+# demit_itext
+# emit_dir0
+# emit_dir1
+# emit_dir2
+# emit_alias
+# emit_regmask
+# emit_loopno
+# emit_dir_ll
+# demit_rob_
+# demit_ri
+# demit_rr
+# demit_a
+# demit_regmask
+# demit_rrr
+# demit_rri
+# demit_rrll
+# demit_i
+# demit_ra
+# demit_dir0
+# demit_dir1
+# demit_dir2
+# demit_edata
+# demit_weakext
+# emit_cpload
+# ddefine_label
+# define_exception_label
+# append_i
+# append_d
+# clear_ibuffer
+# emit_vreg
+# emit_pic
+# demit_cpalias
+# emit_cpalias
+# emit_cpadd
+
+/ugen/emit_dw.c
+0041AF70-0042080C 10009690-10009830         -                 -               -              
+
+# func_0041AF70
+# func_0041AFE4
+# func_0041B07C
+# func_0041B1BC
+# func_0041B2FC
+# func_0041B43C
+# func_0041B57C
+# func_0041B6BC
+# func_0041B7FC
+# func_0041B93C
+# emit_branch_rrll
+# func_0041BCC0
+# func_0041BD30
+# func_0041BDC8
+# func_0041BE80
+# func_0041BF38
+# func_0041BFF0
+# func_0041C0A8
+# func_0041C160
+# func_0041C218
+# func_0041C2D0
+# emit_branch_rill
+# func_0041C694
+# func_0041C710
+# func_0041C7AC
+# func_0041C86C
+# func_0041C92C
+# func_0041C9EC
+# emit_trap_rri
+# func_0041CC60
+# func_0041CCD0
+# func_0041CD64
+# func_0041CE18
+# func_0041CECC
+# func_0041CF80
+# emit_trap_ri
+# func_0041D1E8
+# func_0041D39C
+# func_0041D534
+# func_0041D958
+# func_0041DDE0
+# func_0041DF18
+# func_0041E05C
+# func_0041E1C0
+# func_0041E304
+# dw_emit_rrr
+# func_0041E800
+# func_0041EA00
+# func_0041EC08
+# func_0041EE78
+# func_0041F194
+# func_0041F368
+# func_0041F4F0
+# func_0041F678
+# func_0041F800
+# func_0041F988
+# func_0041FB10
+# dw_emit_rri
+# func_00420360
+# func_00420524
+# func_00420590
+# func_00420654
+# dw_emit_rr
+
+/ugen/entry_exit.c
+00420810-0042314C 10009830-10009980 10013640-10013641         -               -              
+
+# gen_entry_exit
+# gen_entry
+# clear_saved_regs
+# is_empty_saved_regs
+# home_parameters
+# gen_reg_save_restore
+# gen_reg_save
+# demit_mask
+# demit_frame
+# emit_file
+# emit_optimize_level
+
+/ugen/eval.c
+004231F0-004349D4 10009980-1000B040 10013644-10016170         -         first_ent-pdefs
+
+# is_end_return
+# move_dreg_to_regs
+# move_two_regs
+# fasm
+# fop
+# uop_to_asm
+# jump
+# trap
+# is_saved_reg
+# is_parm_reg
+# is_fp_reg
+# restore_from_temp
+# reg
+# binary_regs
+# flt_reg
+# func_0042567C
+# binary_flt_regs
+# get_dest
+# move_to_dest
+# lsopc
+# loadstore
+# func_00426B44
+# func_00426C54
+# iloadistore
+# func_00427538
+# rloadrstore
+# loadstore_for_two_words
+# unaligned_loadstore_for_fp_word
+# unaligned_loadstore_for_two_fp_w
+# loadstore_for_two_fp_words
+# func_00427FB8
+# func_004280C4
+# func_00428190
+# unaligned_loadstore
+# eval_2ops
+# eval_fp_cond
+# eval_fp_min_max
+# eval2
+# ureg
+# copy
+# eval_mov
+# get_ops
+# eval_irel
+# save_vreg
+# pass_in_register
+# load_parm_vreg
+# in_parm_regs
+# gen_regs
+# get_saved_regs_size
+# unhome_parms
+# home_parms
+# clean_tree
+# clear_pmov_regs
+# save_pmov_reg
+# load_pmov_regs
+# cvt_tab
+# rnd_tab
+# invert_livereg
+# eval
+# init_eval
+# load_fp_literal
+# eval_int_flt_cvt
+# eval_flt_int_cvt
+# func_004340D4
+# func_00434374
+# func_00434430
+# func_00434500
+# func_00434618
+# eval_int_int_cvt
+# eval_flt_flt_cvt
+
+/ugen/fold.c
+004349E0-004350D4         -                 -                 -               -              
+
+# add_overflow
+# sub_overflow
+# is_constant
+# llconst
+# fold
+# fold1
+
+/ugen/frame_offset.c
+004350E0-00435180         -                 -                 -               -              
+
+# frame_offset
+# frame_offset1
+
+/ugen/libmld/st_feinit.c
+00435180-00435188         -                 -                 -               -              
+
+/ugen/swap.c
+00435190-004351B8         -                 -                 -               -              
+# swap_tree
+# swap_int
+
+/ugen/labelopt.c
+004351C0-004366A8 1000B040-1000B170 10016170-100161F0         -               -              
+
+# func_004351C0
+# func_004352AC
+# func_004357C4
+# func_0043595C
+# func_00435C44
+# func_00435DE8
+# func_00435E68
+# func_00435EA0
+# func_00435EF0
+# func_00435F40
+# func_00435FA4
+# func_00436148
+# labelopt
+
+/ugen/lit_mgr.c
+004366B0-00436F34 1000B170-1000B2D0         -                 -         small_strings-sets
+
+# reset_pool
+# select_data_section
+# emit_list
+# output_pool
+# new_lit
+# add_to_list_no_check
+# valu_equ
+# add_to_list
+# add_to_pool
+
+/ugen/loop_header.c
+00436F40-00438C3C 1000B2D0-1000B750 100161F0-100162D0         -         pay-pay
+
+# insert
+# append
+# make_new_label
+# make_new_jump
+# cmp_tree
+# cmp_tree_again
+# move_label
+# get_prior_stm
+# get_prior_stm1
+# find_br
+# match_uconds
+# cmp_br
+# match_conds
+# cross_jump
+
+/ugen/opt.c
+00438C40-00438DF8 1000B750-1000B770         -                 -               -              
+
+# set_opts
+
+/ugen/parm_mgr.c
+00438E00-00439828         -         100162D0-10016300         -         pars-fix_amt
+# (guess)
+
+# pass_in_reg
+# parm_reg
+# map_pdefs_to_regs
+# map_pars_to_regs
+# check_amt
+# check_amt_ref
+# fix_amt_ref
+
+/ugen/reg_mgr.c
+00439850-0043D648 1000B770-1000C4F0 10016300-10016730         -         gp_regs_free-restricted_fp_regs
+
+# clear_restricted_regs
+# add_restricted_reg
+# add_restricted_fp_reg
+# find_non_special_reg
+# get_reg_kind
+# kind_of_register
+# init_regs
+# fill_reg
+# copy_reg
+# list_is_empty
+# dump_reg
+# print_regs
+# remove_direg
+# get_head
+# remove_head
+# append_to_list
+# remove_from_list
+# spill
+# spill_reg
+# get_one_reg
+# get_two_regs
+# get_reg
+# get_reg1
+# get_fp_reg
+# get_fp_reg1
+# free_reg_is_available
+# can_get_two_regs
+# spill_two_regs
+# get_two_free_regs
+# get_one_free_reg
+# get_free_reg
+# get_free_fp_reg
+# content_of
+# inc_usage
+# dec_usage
+# free_reg
+# free_fp_reg
+# force_free_reg
+# add_to_free_list
+# add_to_fp_free_list
+# remove_from_free_list
+# remove_from_fp_free_list
+# is_available
+# check_no_used
+# usage_count
+# move_to_end_fp_list
+# move_to_end_gp_list
+# get_free_fp_reg_special
+# get_free_reg_special
+
+/ugen/report.c
+0043D650-0043DA88 1000C4F0-1000C5E0 10016730-10016770         -         errors-errors
+
+# reset_errors
+# report_error
+# has_errors
+# assertion_error
+
+/ugen/symbol.c
+0043DA90-00440BF4 1000C5E0-1000D270 10016770-10016780         -         sym_hash_tab-sym_hash_tab
+
+# sym_hash
+# get_data_area
+# get_sym_type
+# make_new_sym
+# change_sym_type
+# lookup_sym
+# clear_sym_tab
+# gen_sym
+# set_lex_level
+# set_size
+# some_init_overlap
+# complex_init_duplicate_p
+# integral_type
+# complex_insert_init
+# append_init
+# add_init
+# choose_area
+# force_alignment
+# emit_init
+# emit_symbol
+# output_decls
+# output_entry_point
+# change_label_number
+# set_mtag
+# get_mtag
+# get_sym_kind
+
+/ugen/tmp_mgr.c
+00440C10-0044181C 1000D270-1000D630         -                 -         temps-current_temp_index
+
+# init_temps
+# lookup_temp
+# make_new_temp
+# find_free_temp
+# gen_store
+# spill_to_temp
+# free_temp
+# temp_offset
+# temp_usage_count
+# get_temp_area_size
+# set_temps_offset
+
+/ugen/translate.c
+00441860-00449128 1000D630-1000E240 10016780-100169C0         -         max_vreg_offset-calls
+
+# force_casting
+# is_power_of_two
+# get_set_const
+# gen_set_str
+# gen_set_istr
+# gen_set_equ
+# set_rewrite
+# set_rewrite_indexed
+# translate_tree
+# translate
+# cse_equ
+# cse
+# overlap
+# free_tree_and_cse
+# check_vreg
+# find_vreg_mtag
+# check_reg
+# assign_vreg
+# load_cse
+# uses
+# add_store
+# is_reg
+# translate_cvtl
+# need_check_hl
+# build_ucond0
+# check_loads_exprs
+
+/ugen/tree_print.c
+00449130-00449F44 1000E240-1000E300 100169C0-10016F60         -               -              
+
+# indent_tree
+# print_ucode
+# print_node_1
+# print_node
+# func_00449D24
+# print_tree
+# debug_tree
+
+/ugen/tree_utils.c
+00449F50-0044B118 1000E300-1000E570 10016F60-10016FB0         -         tree_mark-label_id_counter
+
+# initialize_tree
+# gen_label_id
+# new_tree
+# build_u
+# build_u1
+# build_u2
+# build_op
+# build_1op
+# build_2op
+# free_node
+# free_tree
+# delete_statement
+# dup_tree
+# next_mark
+# ivalue
+# dwvalue
+# rvalue
+# is_zero
+# is_ivalue
+# result_type
+# func_0044AED0
+# const_equal
+
+/ugen/u_tree.c
+0044B120-0044B288         -         10016FB0-10016FD0         -               -              
+
+# u_tree
+
+/ugen/ugen.c
+0044B290-0044E9C8 1000E570-1000F510         -                 -               -              
+
+# func_0044B290
+# func_0044B2EC
+# func_0044B384
+# func_0044B640
+# func_0044BA38
+# func_0044BBD8
+# func_0044BC78
+# func_0044BE70
+# func_0044BEA8
+# main
+
+/ugen/val_util.c
+0044E9D0-0044F428 1000F510-1000F780 10016FD0-10017060         -               -              
+
+# emit_composite_val
+# emit_val
+# emit_label_val
+# find_val_type
+
+/ugen/libu/uini.c
+0044F430-004551EC 1000F780-1000F9E0         -                 -               -              
+
+# func_0044F430
+# func_0044F480
+# uini
+# getutabrec
+
+/ugen/libu/bwri.c
+004551F0-00455C80         -         10017060-100170B0         -               -              
+
+# inituwrite
+# idlen
+# fnamelen
+# uwrite
+# getdtyname
+# getmtyname
+# ucoid
+# ucofname
+# stopucode
+# ubittobyte
+# set_u_indent
+
+/ugen/libu/ucio.c
+00455C80-004564B4 1000F9E0-1000FB50 100170B0-100170C0 100186C0-10021080       -              
+
+# uputinit
+# uputinitfd
+# uputint
+# uputflush
+# uputclose
+# uputkill
+# ugetinit
+# ugetinitfd
+# ugetbufinit
+# ugetint
+# ugeteof
+# ugetclose
+
+/ugen/libu/bread.c
+004564C0-00456C78         -         100170C0-10017100         -         dtytype-u_indent
+
+# resetur
+# func_004564F4
+# readuinstr
+# initur
+# ubytetobit
+
+/ugen/libmld/stfe.c
+00456C80-00458528 1000FB50-1000FBE0 10017100-10017110 10021080-100210A0       -              
+
+# __sgi_mld_st_commonbegin
+# st_filebegin
+# st_endallfiles
+# st_fileend
+# st_textblock
+# _sgi_st_blockbegin
+# st_blockbegin
+# st_blockend
+# st_blockpop
+# st_procend
+# st_procbegin
+# st_sym_idn
+# st_str_idn
+# st_fglobal_idn
+# st_psym_idn_offset
+# st_fixextindex
+# st_fixextsc
+# st_pdadd_idn
+# st_fixiss
+# st_changedn
+# st_file_idn
+
+/ugen/libmld/stfd.c
+00458530-0045961C 1000FBE0-1000FE30 10017110-100171D0 100210A0-100211E0       -              
+
+# st_currentifd
+# st_ifdmax
+# st_setfd
+# st_fdadd
+# st_auxadd
+# st_pdadd
+# st_lineadd
+# st_stradd
+# st_non_gp
+# st_set_non_gp
+# st_paux_ifd_iaux
+# st_pline_ifd_iline
+# st_str_iss
+# st_malloc
+
+/ugen/libmld/md_stfd.c
+00459620-00459D80 1000FE30-1000FEC0 100171D0-10017280         -               -              
+
+# st_symadd
+# st_ifd_pcfd
+# st_pcfd_ifd
+# st_psym_ifd_isym
+# st_paux_iaux
+# st_str_ifd_iss
+# st_ppd_ifd_isym
+
+/ugen/libmld/stcu.c
+00459D80-0045A750 1000FEC0-100100B4 10017280-10017290         -         st_pchdr-pcfdcur            
+
+# st_setchdr
+# st_currentpchdr
+# st_free
+# st_extstradd
+# st_str_extiss
+# st_idn_dn
+# st_idn_rndx
+# st_rndx_idn
+# st_setidn
+# st_pext_dn
+# st_iextmax
+# st_setmsgname
+
+/ugen/libmld/sterror.c
+0045A750-0045A80C 100100B4-10010120         -                 -               -              
+
+# st_error
+
+/ugen/libmld/sex.c
+0045A810-0045A840         -                 -                 -               -              
+
+# gethostsex
+
+/ugen/libmld/md_mldfunc.c
+0045A840-0045ACEC 10010120-10010210 10017290-10017300         -               -              
+
+# _md_st_internal
+# _md_st_error
+# _md_st_str_extiss
+# _md_st_str_iss
+# _md_st_iextmax
+# _md_st_currentifd
+# _md_st_malloc
+# _md_st_ifdmax
+# _md_st_setfd
+
+/ugen/libmld/md_stcu.c
+0045ACF0-0045B17C 10010210-10010320         -                 -               -              
+
+# st_cuinit
+# st_extadd
+# st_pext_iext
+# st_idn_index_fext
+# st_pdn_idn
+
+/ugen/libmld/stinternal.c
+0045B180-0045B23C 10010320-10010340         -                 -               -              
+
+# st_internal
+
+/ugen/libmld/staux.c
+0045B240-0045BB88 10010340-100103A0         -                 -               -              
+
+# st_tqhigh_iaux
+# st_shifttq
+# st_iaux_copyty
+# st_changeaux
+# st_addtq
+# st_changeauxrndx
+# st_auxbtadd
+# st_auxisymadd
+# st_auxrndxadd
+# st_auxbtsize
+# st_auxrndxadd_idn
+# st_addcontinued
+
+/ugen/libmld/stio.c
+0045BB90-0045DC8C 100103A0-10010560 10017300-10017330 100211E0-100211F0       -              
+
+# st_readbinary
+# st_readst
+# func_0045CBB8
+# st_writebinary
+# st_writest
+# st_setstmagic
+
+/ugen/libmld/swap.c
+0045DC90-00460B0C 10010560-100105B0         -                 -               -              
+
+# swap_filehdr
+# swap_aouthdr
+# swap_scnhdr
+# swap_libscn
+# swap_hdr
+# swap_fd
+# swap_fi
+# swap_sym
+# swap_ext
+# swap_pd
+# swap_dn
+# swap_rpd
+# swap_opt
+# swap_aux
+# swap_reloc
+# swap_ranlib
+# swap_gpt
+# swap_dynamic
+# swap_rel_dyn
+# swap_reginfo
+# swap_dynsym
+# swap_conflict
+# swap_got
+# swap_liblist
+# swap_msym
+# swap_ehdr
+# swap_phdr
+# swap_shdr
+
+/ugen/libmld/stwarning.c
+00460B10-00460BD4 100105B0-100105D0         -                 -               -              
+
+# st_warning
+
+/ugen/libmld/ldfsymorder.c
+00460BE0-00460F40         -                 -                 -               -              
+
+# ldfsymorder
+
+/ugen/libp/textinput.c
+00460F50-00464010 100105D0-10010B70 10017330-100173B0 100211F0-100211F4 _libp_pascal_file_counter-_libp_ansi_pascal
+
+# eof
+# eoln
+# peek_char
+# next_char
+# read_char
+# read_char_range
+# readln
+# read_string
+# read_boolean
+# read_enum
+# read_integer
+# read_integer_range
+# read_cardinal
+# read_double
+# read_real
+# read_int64
+# read_int64_range
+# read_card64
+
+/ugen/libp/textoutput.c
+00464020-00466730 10010B70-10010CC0 100173B0-100173E0         -               -              
+
+# func_00464020
+# func_004641A0
+# writeln
+# page
+# write_char
+# write_string
+# write_enum
+# write_integer
+# write_cardinal
+# write_real
+# write_double
+# write_boolean
+# write_card64
+# write_int64
+
+/ugen/libp/err.c
+        -                 -         100173E0-100173E8         -               -              
+
+/ugen/libp/data.c
+        -                 -         100173F0-10017A40         -               -              
+
+/ugen/libp/output.c
+        -                 -         10017A40-10017A50         -               -              
+
+/ugen/libp/new.c
+00466730-004667DC         -                 -                 -               -              
+
+# new
+# dispose
+
+/ugen/libp/rewrite.c
+004667E0-00466A00 10010CC0-10010D10         -                 -               -              
+
+# rewrite
+
+/ugen/libp/get_arg.c
+00466A00-00466AB8         -                 -                 -               -              
+
+# get_arg
+
+/ugen/libp/get.c
+00466AC0-00466BA4 10010D10-10010D60         -                 -               -              
+
+# get
+
+/ugen/libp/reset.c
+00466BB0-00466EB4 10010D60-10010D80         -                 -               -              
+
+# calc_size
+# reset
+
+/ugen/libp/getbuf.c
+00466EC0-00466FB8 10010D80-10010D90         -                 -               -              
+
+# _getbuf
+
+/ugen/libp/caseerror.c
+00466FC0-00467104 10010D90-10010DF0         -                 -               -              
+
+# caseerror
+# assert_err
+
+/ugen/libp/exit.c
+00467110-00467224 10010DF0-10010E60         -                 -               -              
+
+# exit
+
+/ugen/libxmalloc/alloc.c
+00467230-004676B0         -                 -                 -         malloc_scb-malloc_scb
+
+# xrealloc
+# xfree
+# alloc_dispose
+# xmalloc
+# alloc_new
+
+/ugen/libxmalloc/allocator.c
+004676B0-00467BF4         -         10017A50-10017A60         -               -              
+
+# alloc_page
+# alloc_free
+# alloc_scb
+# alloc_mark
+# alloc_release
+# alloc_next_scb
+# alloc_resize
+
+[/split]
+
+[common-order]
+__Argc
+__Argv
+__rld_obj_head
+print_warnings
+current_line
+current_file
+excpt
+non_local_mtag
+ibuffer_size
+ibuffer
+i_ptr
+old_i_ptr
+d_ptr
+old_d_ptr
+lsb_first
+sdata_max
+ascii_out
+ms_stamp
+ls_stamp
+fp_initialized
+source_language
+use_fp
+will_use_real_fp_for_proc
+no_jal_use_jalr_only
+pseudo_leaf
+isa
+apc
+align8
+align16
+align32
+align64
+mscoff
+stack_limit_bn
+opcode_arch
+basicint
+debug_ugen
+pic_level
+cpalias_ok
+saw_cap_g
+use_cpalias
+framesz_relocatable
+in_file
+current_linen
+source_file_name
+source_file
+val64
+n_parm_regs
+n_fp_parm_regs
+n_saved_regs
+n_saved_fp_regs
+n_unsaved_regs
+n_unsaved_fp_regs
+n_cg_regs
+n_fp_cg_regs
+ufsa
+ufsm
+ugen_fp_callee_saved
+fp32regs
+addr_dtype
+unitsperaddr
+opt_cse
+opt_labels
+opt_parms
+ignore_vreg
+tail_call_opt
+glevel
+olevel
+sgi_unsigned_conv
+nooffsetopt
+has_cia_in_file
+tree_heap
+tree_heap_mark
+frame_pointer
+aframe_pointer
+frame_size
+use_real_fp_for_all
+use_real_fp_for_proc
+home_vararg_reg
+reversed_stack
+resident_text
+first_pmt_offset
+getfilename
+label_hash_table
+strp
+domtag
+saved_regs
+init_dynmem
+max_stack
+uses_gp
+has_calls
+i_ptrs_for_gp_offset
+num_i_ptr_indexes
+regs
+first_ent
+local_var_size
+temp_size
+noalias_regs
+noalias_on_off
+pmov_regs
+generate_again
+first_loc
+first_file_number
+first_line_number
+max_arg_build
+reloc_arg_build
+saved_regs_size
+has_aent
+load_stack_limit
+entry_point_index
+curlev
+current_text_sec
+pdefs
+small_strings
+large_strings
+floats
+doubles
+sets
+pay
+pars
+fix_amt
+gp_regs_free
+gp_regs_used
+fp_regs_free
+fp_regs_used
+restricted_regs
+restricted_fp_regs
+errors
+sym_hash_tab
+temps
+temps_offset
+current_temp_index
+max_vreg_offset
+max_fp_vreg_offset
+vreg_offset
+fp_vreg_offset
+vreg_count
+vregs
+mst_node
+expr_count
+exprs
+load_count
+loads
+bb_size
+leaf
+has_entry
+varargs
+calls
+tree_mark
+tree_counter
+label_id_counter
+dtytype
+mtytype
+opchashtab
+memorychars
+datachars
+setconstantchars
+utab
+dtyname
+mtyname
+noerrorsyet
+u_indent
+st_pchdr
+pcfdcur
+_libp_pascal_file_counter
+_libp_ansi_pascal
+malloc_scb
+[/common-order]
