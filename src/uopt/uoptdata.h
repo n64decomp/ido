@@ -213,7 +213,6 @@ struct IntervalList {
     /* 0x04 */ struct IntervalList* next;
 }; // size 0x8
 
-
 enum IntervalType {
     intv_unvisited, // 0
     intv_unreduced, // 1
@@ -433,14 +432,14 @@ struct Proc {
 };
 
 struct Statement {
-    Uopcode opc;
-    bool is_increment;
-    bool unk2; // bool or unsigned char?
-    bool outpar; // first store to parameter build area?
-    struct Expression *expr; // 0x4
-    struct Statement *next; // 0x8, towards tail
-    struct Statement *prev; // 0xC, towards head
-    struct Graphnode *graphnode; // 0x10
+    /*  0x0 */ Uopcode opc;
+    /*  0x1 */ bool is_increment;
+    /*  0x2 */ bool unk2; // bool or unsigned char?
+    /*  0x3 */ bool outpar; // first store to parameter build area?
+    /*  0x4 */ struct Expression *expr;
+    /*  0x8 */ struct Statement *next; // towards tail
+    /*  0xC */ struct Statement *prev; // towards head
+    /* 0x10 */ struct Graphnode *graphnode;
 
     union {
         struct {

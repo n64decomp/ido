@@ -10,15 +10,20 @@ struct BitVector {
     struct BitVectorBlock *blocks;
 };
 
-int bvectin(int bitpos, struct BitVector *bv);
-int bvectin0(int bitpos, struct BitVector *bv);
+// parameter order for these macros follows the inconsistent order used in the functions, with block always after bit
+// maybe not a good idea...
 
-#define BVINBLOCK(bitpos, block, bv) (((bv).blocks[(block)].words[((bit) & 0x7f) >> 5] << ((bit) & 0x1f)) < 0)
+#define BVBLOCK_SETBIT(bv, bit, block) ((bv).blocks[(block)].words[((bit) & 0x7f) >> 5] |= (1U << (~(bit) & 0x1f)))
+#define BVBLOCK_RESETBIT(bv, bit, block) ((bv).blocks[(block)].words[((bit) & 0x7f) >> 5] &= ~(1U << (~(bit) & 0x1f)))
+#define BVINBLOCK(bit, block, bv) (((bv).blocks[(block)].words[((bit) & 0x7f) >> 5] << ((bit) & 0x1f)) < 0)
 #define BVBLOCKEMPTY(bv, block)            \
     (((bv).blocks[(block)].words[0] |      \
       (bv).blocks[(block)].words[1] |      \
       (bv).blocks[(block)].words[2] |      \
       (bv).blocks[(block)].words[3]) == 0)
+
+int bvectin(int bitpos, struct BitVector *bv);
+int bvectin0(int bitpos, struct BitVector *bv);
 
 void initbv(struct BitVector *bv, struct BitVectorBlock repeated_data);
 void setbit(struct BitVector *bv, int bitpos);
