@@ -13,6 +13,7 @@
 #include "uoptppss.h"
 #include "uoptitab.h"
 #include "uoptind.h"
+#include "uoptprep.h"
 
 /*
 00430680 func_00430680

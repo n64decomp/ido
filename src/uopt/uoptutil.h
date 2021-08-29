@@ -33,6 +33,7 @@ int blktolev(int blk);
 int newbit(struct IChain *ichain, struct LiveRange *liverange);
 
 bool exproccurred(struct IChain *ichain, struct Expression *expr);
+bool iexproccurred(struct IChain *target, struct IChain *ichain2);
 
 bool addovfw_signed(int a, int b);
 bool subovfw_signed(int a, int b);

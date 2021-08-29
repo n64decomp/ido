@@ -43,38 +43,6 @@ jtbl_1000E1F0:
     .gpword .L0047C228
     .gpword .L0047C080
 
-RO_1000E284:
-    # 0047D000 exproccurred
-    .asciz "uoptutil.p"
-
-    .balign 4
-jtbl_1000E290:
-    # 0047D000 exproccurred
-    .gpword .L0047D060
-    .gpword .L0047D060
-    .gpword .L0047D084
-    .gpword .L0047D0D0
-    .gpword .L0047D068
-    .gpword .L0047D084
-    .gpword .L0047D148
-    .gpword .L0047D060
-
-RO_1000E2B0:
-    # 0047D188 iexproccurred
-    .asciz "uoptutil.p"
-
-    .balign 4
-jtbl_1000E2BC:
-    # 0047D188 iexproccurred
-    .gpword .L0047D1E4
-    .gpword .L0047D1E4
-    .gpword .L0047D204
-    .gpword .L0047D22C
-    .gpword .L0047D1EC
-    .gpword .L0047D204
-    .gpword .L0047D2A0
-    .gpword .L0047D1E4
-
 RO_1000E2DC:
     # 0047D878 deccount
     .asciz "uoptutil.p"
@@ -1295,240 +1263,111 @@ int newbit(struct IChain *ichain, struct LiveRange *liverange) {
     return insertpos;
 }
 
-__asm__(R""(
-.set noat
-.set noreorder
+/*
+004127C8 checkexpoccur
+0042FEA0 func_0042FEA0
+00474AF0 inpathbefore
+00474C58 inpathafter
+0047D000 exproccurred
+*/
+bool exproccurred(struct IChain *ichain, struct Expression *expr) {
+    switch (expr->type) {
+        case islda:
+        case isconst:
+        case isrconst:
+            return false;
+            break;
 
-glabel exproccurred
-    .ent exproccurred
-    # 004127C8 checkexpoccur
-    # 0042FEA0 func_0042FEA0
-    # 00474AF0 inpathbefore
-    # 00474C58 inpathafter
-    # 0047D000 exproccurred
-/* 0047D000 3C1C0FBA */  .cpload $t9
-/* 0047D004 279CD290 */
-/* 0047D008 0399E021 */
-/* 0047D00C 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0047D010 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047D014 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047D018 00A03025 */  move  $a2, $a1
-/* 0047D01C 240A0003 */  li    $t2, 3
-/* 0047D020 8F898DBC */  lw     $t1, %got(optab)($gp)
-/* 0047D024 24080006 */  li    $t0, 6
-/* 0047D028 8F8789CC */  lw     $a3, %got(nocopy)($gp)
-.L0047D02C:
-/* 0047D02C 90C30000 */  lbu   $v1, ($a2)
-/* 0047D030 00C02825 */  move  $a1, $a2
-/* 0047D034 246EFFFF */  addiu $t6, $v1, -1
-/* 0047D038 2DC10008 */  sltiu $at, $t6, 8
-/* 0047D03C 10200044 */  beqz  $at, .L0047D150
-/* 0047D040 00000000 */   nop
-/* 0047D044 8F818044 */  lw    $at, %got(jtbl_1000E290)($gp)
-/* 0047D048 000E7080 */  sll   $t6, $t6, 2
-/* 0047D04C 002E0821 */  addu  $at, $at, $t6
-/* 0047D050 8C2EE290 */  lw    $t6, %lo(jtbl_1000E290)($at)
-/* 0047D054 01DC7021 */  addu  $t6, $t6, $gp
-/* 0047D058 01C00008 */  jr    $t6
-/* 0047D05C 00000000 */   nop
-.L0047D060:
-/* 0047D060 10000044 */  b     .L0047D174
-/* 0047D064 00001825 */   move  $v1, $zero
-.L0047D068:
-/* 0047D068 8CCF0014 */  lw    $t7, 0x14($a2)
-/* 0047D06C 148F0003 */  bne   $a0, $t7, .L0047D07C
-/* 0047D070 00000000 */   nop
-/* 0047D074 1000003F */  b     .L0047D174
-/* 0047D078 24030001 */   li    $v1, 1
-.L0047D07C:
-/* 0047D07C 1000FFEB */  b     .L0047D02C
-/* 0047D080 8CA60034 */   lw    $a2, 0x34($a1)
-.L0047D084:
-/* 0047D084 8CC20030 */  lw    $v0, 0x30($a2)
-/* 0047D088 50400007 */  beql  $v0, $zero, .L0047D0A8
-/* 0047D08C 8CD90014 */   lw    $t9, 0x14($a2)
-/* 0047D090 8CF80000 */  lw    $t8, ($a3)
-/* 0047D094 53020004 */  beql  $t8, $v0, .L0047D0A8
-/* 0047D098 8CD90014 */   lw    $t9, 0x14($a2)
-/* 0047D09C 1000FFE3 */  b     .L0047D02C
-/* 0047D0A0 8CA60030 */   lw    $a2, 0x30($a1)
-/* 0047D0A4 8CD90014 */  lw    $t9, 0x14($a2)
-.L0047D0A8:
-/* 0047D0A8 14990003 */  bne   $a0, $t9, .L0047D0B8
-/* 0047D0AC 00000000 */   nop
-/* 0047D0B0 10000030 */  b     .L0047D174
-/* 0047D0B4 24030001 */   li    $v1, 1
-.L0047D0B8:
-/* 0047D0B8 15030003 */  bne   $t0, $v1, .L0047D0C8
-/* 0047D0BC 00000000 */   nop
-/* 0047D0C0 1000FFDA */  b     .L0047D02C
-/* 0047D0C4 8CA60024 */   lw    $a2, 0x24($a1)
-.L0047D0C8:
-/* 0047D0C8 1000002A */  b     .L0047D174
-/* 0047D0CC 00001825 */   move  $v1, $zero
-.L0047D0D0:
-/* 0047D0D0 8CCB0014 */  lw    $t3, 0x14($a2)
-/* 0047D0D4 548B0004 */  bnel  $a0, $t3, .L0047D0E8
-/* 0047D0D8 90CC0020 */   lbu   $t4, 0x20($a2)
-/* 0047D0DC 10000025 */  b     .L0047D174
-/* 0047D0E0 24030001 */   li    $v1, 1
-/* 0047D0E4 90CC0020 */  lbu   $t4, 0x20($a2)
-.L0047D0E8:
-/* 0047D0E8 018A0019 */  multu $t4, $t2
-/* 0047D0EC 00006812 */  mflo  $t5
-/* 0047D0F0 012D7021 */  addu  $t6, $t1, $t5
-/* 0047D0F4 91CF0002 */  lbu   $t7, 2($t6)
-/* 0047D0F8 11E00011 */  beqz  $t7, .L0047D140
-/* 0047D0FC 00000000 */   nop
-/* 0047D100 8F998668 */  lw    $t9, %call16(exproccurred)($gp)
-/* 0047D104 8CC50024 */  lw    $a1, 0x24($a2)
-/* 0047D108 AFA40028 */  sw    $a0, 0x28($sp)
-/* 0047D10C 0320F809 */  jalr  $t9
-/* 0047D110 AFA6002C */   sw    $a2, 0x2c($sp)
-/* 0047D114 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047D118 8FA40028 */  lw    $a0, 0x28($sp)
-/* 0047D11C 14400006 */  bnez  $v0, .L0047D138
-/* 0047D120 8FA6002C */   lw    $a2, 0x2c($sp)
-/* 0047D124 8F998668 */  lw    $t9, %call16(exproccurred)($gp)
-/* 0047D128 8CC50028 */  lw    $a1, 0x28($a2)
-/* 0047D12C 0320F809 */  jalr  $t9
-/* 0047D130 00000000 */   nop
-/* 0047D134 8FBC0018 */  lw    $gp, 0x18($sp)
-.L0047D138:
-/* 0047D138 1000000E */  b     .L0047D174
-/* 0047D13C 304300FF */   andi  $v1, $v0, 0xff
-.L0047D140:
-/* 0047D140 1000FFBA */  b     .L0047D02C
-/* 0047D144 8CA60024 */   lw    $a2, 0x24($a1)
-.L0047D148:
-/* 0047D148 1000000A */  b     .L0047D174
-/* 0047D14C 00001825 */   move  $v1, $zero
-.L0047D150:
-/* 0047D150 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0047D154 8F868044 */  lw    $a2, %got(RO_1000E284)($gp)
-/* 0047D158 24040001 */  li    $a0, 1
-/* 0047D15C 24050254 */  li    $a1, 596
-/* 0047D160 2407000A */  li    $a3, 10
-/* 0047D164 0320F809 */  jalr  $t9
-/* 0047D168 24C6E284 */   addiu $a2, %lo(RO_1000E284) # addiu $a2, $a2, -0x1d7c
-/* 0047D16C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047D170 93A30027 */  lbu   $v1, 0x27($sp)
-.L0047D174:
-/* 0047D174 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047D178 27BD0028 */  addiu $sp, $sp, 0x28
-/* 0047D17C 00601025 */  move  $v0, $v1
-/* 0047D180 03E00008 */  jr    $ra
-/* 0047D184 00000000 */   nop
-    .type exproccurred, @function
-    .size exproccurred, .-exproccurred
-    .end exproccurred
+        case isilda:
+            if (ichain == expr->ichain) {
+                return true;
+            } else {
+                return exproccurred(ichain, expr->data.islda_isilda.outer_stack);
+            }
+            break;
 
-glabel iexproccurred
-    .ent iexproccurred
-    # 00431508 func_00431508
-    # 0047D188 iexproccurred
-/* 0047D188 3C1C0FBA */  .cpload $t9
-/* 0047D18C 279CD108 */
-/* 0047D190 0399E021 */
-/* 0047D194 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0047D198 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0047D19C AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0047D1A0 00A03025 */  move  $a2, $a1
-/* 0047D1A4 24090003 */  li    $t1, 3
-/* 0047D1A8 8F888DBC */  lw     $t0, %got(optab)($gp)
-/* 0047D1AC 24070006 */  li    $a3, 6
-.L0047D1B0:
-/* 0047D1B0 90C30000 */  lbu   $v1, ($a2)
-/* 0047D1B4 00C02825 */  move  $a1, $a2
-/* 0047D1B8 246EFFFF */  addiu $t6, $v1, -1
-/* 0047D1BC 2DC10008 */  sltiu $at, $t6, 8
-/* 0047D1C0 10200037 */  beqz  $at, .L0047D2A0
-/* 0047D1C4 00000000 */   nop
-/* 0047D1C8 8F818044 */  lw    $at, %got(jtbl_1000E2BC)($gp)
-/* 0047D1CC 000E7080 */  sll   $t6, $t6, 2
-/* 0047D1D0 002E0821 */  addu  $at, $at, $t6
-/* 0047D1D4 8C2EE2BC */  lw    $t6, %lo(jtbl_1000E2BC)($at)
-/* 0047D1D8 01DC7021 */  addu  $t6, $t6, $gp
-/* 0047D1DC 01C00008 */  jr    $t6
-/* 0047D1E0 00000000 */   nop
-.L0047D1E4:
-/* 0047D1E4 10000037 */  b     .L0047D2C4
-/* 0047D1E8 00001825 */   move  $v1, $zero
-.L0047D1EC:
-/* 0047D1EC 14C40003 */  bne   $a2, $a0, .L0047D1FC
-/* 0047D1F0 00000000 */   nop
-/* 0047D1F4 10000033 */  b     .L0047D2C4
-/* 0047D1F8 24030001 */   li    $v1, 1
-.L0047D1FC:
-/* 0047D1FC 1000FFEC */  b     .L0047D1B0
-/* 0047D200 8CA60020 */   lw    $a2, 0x20($a1)
-.L0047D204:
-/* 0047D204 14C40003 */  bne   $a2, $a0, .L0047D214
-/* 0047D208 00000000 */   nop
-/* 0047D20C 1000002D */  b     .L0047D2C4
-/* 0047D210 24030001 */   li    $v1, 1
-.L0047D214:
-/* 0047D214 14E30003 */  bne   $a3, $v1, .L0047D224
-/* 0047D218 00000000 */   nop
-/* 0047D21C 1000FFE4 */  b     .L0047D1B0
-/* 0047D220 8CA6001C */   lw    $a2, 0x1c($a1)
-.L0047D224:
-/* 0047D224 10000027 */  b     .L0047D2C4
-/* 0047D228 00001825 */   move  $v1, $zero
-.L0047D22C:
-/* 0047D22C 54C40004 */  bnel  $a2, $a0, .L0047D240
-/* 0047D230 90CF0010 */   lbu   $t7, 0x10($a2)
-/* 0047D234 10000023 */  b     .L0047D2C4
-/* 0047D238 24030001 */   li    $v1, 1
-/* 0047D23C 90CF0010 */  lbu   $t7, 0x10($a2)
-.L0047D240:
-/* 0047D240 01E90019 */  multu $t7, $t1
-/* 0047D244 0000C012 */  mflo  $t8
-/* 0047D248 0118C821 */  addu  $t9, $t0, $t8
-/* 0047D24C 932A0002 */  lbu   $t2, 2($t9)
-/* 0047D250 11400011 */  beqz  $t2, .L0047D298
-/* 0047D254 00000000 */   nop
-/* 0047D258 8F99866C */  lw    $t9, %call16(iexproccurred)($gp)
-/* 0047D25C 8CC50014 */  lw    $a1, 0x14($a2)
-/* 0047D260 AFA40028 */  sw    $a0, 0x28($sp)
-/* 0047D264 0320F809 */  jalr  $t9
-/* 0047D268 AFA6002C */   sw    $a2, 0x2c($sp)
-/* 0047D26C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047D270 8FA40028 */  lw    $a0, 0x28($sp)
-/* 0047D274 14400006 */  bnez  $v0, .L0047D290
-/* 0047D278 8FA6002C */   lw    $a2, 0x2c($sp)
-/* 0047D27C 8F99866C */  lw    $t9, %call16(iexproccurred)($gp)
-/* 0047D280 8CC50018 */  lw    $a1, 0x18($a2)
-/* 0047D284 0320F809 */  jalr  $t9
-/* 0047D288 00000000 */   nop
-/* 0047D28C 8FBC0018 */  lw    $gp, 0x18($sp)
-.L0047D290:
-/* 0047D290 1000000C */  b     .L0047D2C4
-/* 0047D294 304300FF */   andi  $v1, $v0, 0xff
-.L0047D298:
-/* 0047D298 1000FFC5 */  b     .L0047D1B0
-/* 0047D29C 8CA60014 */   lw    $a2, 0x14($a1)
-.L0047D2A0:
-/* 0047D2A0 8F9988A4 */  lw    $t9, %call16(caseerror)($gp)
-/* 0047D2A4 8F868044 */  lw    $a2, %got(RO_1000E2B0)($gp)
-/* 0047D2A8 24040001 */  li    $a0, 1
-/* 0047D2AC 2405027A */  li    $a1, 634
-/* 0047D2B0 2407000A */  li    $a3, 10
-/* 0047D2B4 0320F809 */  jalr  $t9
-/* 0047D2B8 24C6E2B0 */   addiu $a2, %lo(RO_1000E2B0) # addiu $a2, $a2, -0x1d50
-/* 0047D2BC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0047D2C0 93A30027 */  lbu   $v1, 0x27($sp)
-.L0047D2C4:
-/* 0047D2C4 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0047D2C8 27BD0028 */  addiu $sp, $sp, 0x28
-/* 0047D2CC 00601025 */  move  $v0, $v1
-/* 0047D2D0 03E00008 */  jr    $ra
-/* 0047D2D4 00000000 */   nop
-    .type iexproccurred, @function
-    .size iexproccurred, .-iexproccurred
-    .end iexproccurred
+        case isvar:
+        case issvar:
+            if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
+                return exproccurred(ichain, expr->data.isvar_issvar.copy);
+            } else if (ichain == expr->ichain) {
+                return true;
+            } else if (expr->type == issvar) {
+                return exproccurred(ichain, expr->data.isvar_issvar.outer_stack);
+            } else {
+                return false;
+            }
 
-)"");
+        case isop:
+            if (ichain == expr->ichain) {
+                return true;
+            } else if (optab[expr->data.isop.opc].is_binary_op) {
+                return exproccurred(ichain, expr->data.isop.op1) ||  exproccurred(ichain, expr->data.isop.op2);
+            } else {
+                return exproccurred(ichain, expr->data.isop.op1);
+            }
+            break;
+
+        case dumped:
+            return false;
+            break;
+
+        default:
+            caseerror(1, 0x254, "uoptutil.p", 0xA);
+            break;
+    }
+    return false;
+}
+
+/*
+00431508 func_00431508
+0047D188 iexproccurred
+*/
+bool iexproccurred(struct IChain *target, struct IChain *ichain2) {
+    switch (ichain2->type) {
+        case islda:
+        case isconst:
+        case isrconst:
+            return false;
+            break;
+
+        case isilda:
+            if (ichain2 == target) {
+                return true;
+            } else {
+                return iexproccurred(target, ichain2->islda_isilda.outer_stack_ichain);
+            }
+            break;
+
+        case isvar:
+        case issvar:
+            if (ichain2 == target) {
+                return true;
+            } else if (ichain2->type == issvar) {
+                return iexproccurred(target, ichain2->isvar_issvar.outer_stack_ichain);
+            } else {
+                return false;
+            }
+
+            break;
+
+        case isop:
+            if (ichain2 == target) {
+                return true;
+            } else if (optab[ichain2->isop.opc].is_binary_op) {
+                return iexproccurred(target, ichain2->isop.op1) || iexproccurred(target, ichain2->isop.op2);
+            } else {
+                return iexproccurred(target, ichain2->isop.op1);
+            }
+            break;
+
+        default:
+            caseerror(1, 0x27A, "uoptutil.p", 0xA);
+            break;
+    }
+
+    return false;
+}
 
 /*
 0047D4A8 addovfw
