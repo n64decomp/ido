@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "common.h": "c",
+        "atomic": "c",
+        "*.tcc": "c",
+        "fstream": "c",
+        "sstream": "c",
+        "types.h": "c",
+        "unistd.h": "c"
+    }
+}

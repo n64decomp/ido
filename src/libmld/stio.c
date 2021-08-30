@@ -1,3 +1,25 @@
+
+#include <stddef.h>
+#include "libmld.h"
+#include "common.h"
+#include <sys/types.h>
+#include <fcntl.h>
+
+int st_readbinary(const char filename[128], char how){
+    int temp_v0;
+    int result;
+
+    result = open(filename,0, 0);
+    if (result < 0) {
+        return -2;
+    }
+    temp_v0 = st_readst(result, how, 0, 0, -1);
+    close(result);
+    return temp_v0;
+}
+
+
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -84,53 +106,7 @@ B_1001C2B0:
 
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
-
 .text
-glabel st_readbinary
-    .ent st_readbinary
-    # 00434720 processargs
-/* 0048D050 3C1C0FB9 */  .cpload $t9
-/* 0048D054 279CD240 */  
-/* 0048D058 0399E021 */  
-/* 0048D05C 8F99808C */  lw    $t9, %call16(open)($gp)
-/* 0048D060 27BDFFD0 */  addiu $sp, $sp, -0x30
-/* 0048D064 AFBF0024 */  sw    $ra, 0x24($sp)
-/* 0048D068 AFA50034 */  sw    $a1, 0x34($sp)
-/* 0048D06C AFBC0020 */  sw    $gp, 0x20($sp)
-/* 0048D070 00002825 */  move  $a1, $zero
-/* 0048D074 0320F809 */  jalr  $t9
-/* 0048D078 00003025 */   move  $a2, $zero
-/* 0048D07C 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0048D080 04410003 */  bgez  $v0, .L0048D090
-/* 0048D084 00402025 */   move  $a0, $v0
-/* 0048D088 10000011 */  b     .L0048D0D0
-/* 0048D08C 2402FFFE */   li    $v0, -2
-.L0048D090:
-/* 0048D090 8F99880C */  lw    $t9, %call16(st_readst)($gp)
-/* 0048D094 240EFFFF */  li    $t6, -1
-/* 0048D098 AFAE0010 */  sw    $t6, 0x10($sp)
-/* 0048D09C 83A50037 */  lb    $a1, 0x37($sp)
-/* 0048D0A0 00003025 */  move  $a2, $zero
-/* 0048D0A4 00003825 */  move  $a3, $zero
-/* 0048D0A8 0320F809 */  jalr  $t9
-/* 0048D0AC AFA4002C */   sw    $a0, 0x2c($sp)
-/* 0048D0B0 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0048D0B4 8FA4002C */  lw    $a0, 0x2c($sp)
-/* 0048D0B8 AFA20028 */  sw    $v0, 0x28($sp)
-/* 0048D0BC 8F998098 */  lw    $t9, %call16(close)($gp)
-/* 0048D0C0 0320F809 */  jalr  $t9
-/* 0048D0C4 00000000 */   nop   
-/* 0048D0C8 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 0048D0CC 8FA20028 */  lw    $v0, 0x28($sp)
-.L0048D0D0:
-/* 0048D0D0 8FBF0024 */  lw    $ra, 0x24($sp)
-/* 0048D0D4 27BD0030 */  addiu $sp, $sp, 0x30
-/* 0048D0D8 03E00008 */  jr    $ra
-/* 0048D0DC 00000000 */   nop   
-    .type st_readbinary, @function
-    .size st_readbinary, .-st_readbinary
-    .end st_readbinary
-
 glabel st_readst
     .ent st_readst
     # 0048D050 st_readbinary
