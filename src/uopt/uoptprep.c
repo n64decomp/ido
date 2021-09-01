@@ -186,7 +186,7 @@ bool expaltered(struct IChain *ichain, struct Graphnode *node) {
 
         case isvar:
         case issvar:
-            if (ichain->isvar_issvar.unk1A) {
+            if (ichain->isvar_issvar.veqv) {
                 altered = true;
             } else {
                 sp26 = false;
@@ -316,7 +316,7 @@ void patchvectors(void) {
                 ichain = bittab[i].ichain;
                 if (bvectin(i, &asgnbits)) {
                     if (!ichain->isvar_issvar.unk19) {
-                        if (ichain->isvar_issvar.unk1A) {
+                        if (ichain->isvar_issvar.veqv) {
                             setbit(&node->bvs.stage1.alters, i);
                         } else if (!bvectin(i, &node->bvs.stage1.alters) && !bvectin(i, &node->bvs.stage1.u.precm.expoccur)) {
                             gsptr->expr = ichain->expr;
@@ -327,7 +327,7 @@ void patchvectors(void) {
                     }
                 } else if (!bvectin(i, &node->bvs.stage1.u.precm.expoccur)) {
                     if (!bvectin(i, &storeop)) {
-                        if ((ichain->type == isvar || ichain->type == issvar) && ichain->isvar_issvar.unk1A) {
+                        if ((ichain->type == isvar || ichain->type == issvar) && ichain->isvar_issvar.veqv) {
                             setbit(&node->bvs.stage1.alters, i);
                         } else if (!bvectin(i, &node->bvs.stage1.alters) && expaltered(ichain, node)) {
                             setbit(&node->bvs.stage1.alters, i);
@@ -337,7 +337,7 @@ void patchvectors(void) {
                             phi_s2 = true;
                             phi_s1 = true;
                         } else if (ichain->isop.opc == Uisst || ichain->isop.opc == Ustr) {
-                            if (ichain->isop.op1->isvar_issvar.unk1A) {
+                            if (ichain->isop.op1->isvar_issvar.veqv) {
                                 phi_s2 = true;
                                 phi_s1 = true;
                             } else {

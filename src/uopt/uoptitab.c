@@ -459,7 +459,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
 
                 // The two bools' order is swapped!
                 ichain->isvar_issvar.unk19 = expr->data.isvar_issvar.unk22;
-                ichain->isvar_issvar.unk1A = expr->data.isvar_issvar.veqv;
+                ichain->isvar_issvar.veqv = expr->data.isvar_issvar.veqv;
                 ichain->expr = expr;
                 break;
 
@@ -469,7 +469,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
 
                 // The two bools' order is swapped!
                 ichain->isvar_issvar.unk19 = expr->data.isvar_issvar.unk22;
-                ichain->isvar_issvar.unk1A = expr->data.isvar_issvar.veqv;
+                ichain->isvar_issvar.veqv = expr->data.isvar_issvar.veqv;
                 ichain->expr = expr;
 
                 ichain->isvar_issvar.outer_stack_ichain = expr->data.isvar_issvar.outer_stack->ichain;
@@ -1269,7 +1269,7 @@ void codeimage(void) {
                     }
                 }
 
-                if (ichain->isvar_issvar.unk1A) {
+                if (ichain->isvar_issvar.veqv) {
                     setbit(&vareqv, ichain->bitpos);
                     setbit(&asgneqv, ichain->isvar_issvar.assignbit);
                 }

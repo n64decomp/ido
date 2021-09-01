@@ -48,6 +48,7 @@ bool mpyovfw(enum Datatype t, int a, int b);
 struct Expression *searchvar(unsigned short table_index, struct VariableLocation *loc);
 void vartreeinfo(struct Variable *var);
 void entervregveqv(void);
+void deccount(struct Expression *expr, struct Graphnode *node);
 void getoption(int uopt_option, int n);
 int cutbits(int val, int length, enum Datatype dtype);
 long long int cutbits64(long long val, int length, enum Datatype dtype);

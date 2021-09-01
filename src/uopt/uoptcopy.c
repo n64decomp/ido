@@ -117,7 +117,7 @@ bool entryant(struct Expression *expr) {
 */
 void vardelete(struct Expression *expr, struct Graphnode *node) {
     if (expr->type == isvar || expr->type == issvar) {
-        if (!expr->ichain->isvar_issvar.unk1A) {
+        if (!expr->ichain->isvar_issvar.veqv) {
             if (bvectin(expr->ichain->isvar_issvar.assignbit, &node->bvs.stage1.alters) && !lvalaltered(expr->ichain, node)) {
                 resetbit(&node->bvs.stage1.alters, expr->ichain->isvar_issvar.assignbit);
                 if (lvalantloc(expr->ichain, node)) {
@@ -165,7 +165,7 @@ void varinsert(struct Expression *expr, struct Graphnode *node) {
     }
 
     if ((expr->type == isvar || expr->type == issvar) &&
-            !expr->ichain->isvar_issvar.unk1A) {
+            !expr->ichain->isvar_issvar.veqv) {
         resetbit(&node->bvs.stage1.antlocs, expr->ichain->isvar_issvar.assignbit);
         setbit(&node->bvs.stage1.alters, expr->ichain->isvar_issvar.assignbit);
     }
@@ -186,7 +186,7 @@ void varinsert(struct Expression *expr, struct Graphnode *node) {
 
             if ((bittab[i].ichain->isop.opc == Uisst ||
                  bittab[i].ichain->isop.opc == Ustr) &&
-                    !bittab[i].ichain->isop.op1->isvar_issvar.unk1A &&
+                    !bittab[i].ichain->isop.op1->isvar_issvar.veqv &&
                     slkilled(bittab[i].ichain->isop.stat, expr)) {
                 setbit(&node->bvs.stage1.alters, i);
             }
@@ -2564,7 +2564,7 @@ void copypropagate(void) {
                                 setbit(&node->bvs.stage1.alters, temp_s4_3->isvar_issvar.assignbit);
                             }
 
-                            if (!temp_s4_3->isvar_issvar.unk1A && stat->u.store.unk1C) {
+                            if (!temp_s4_3->isvar_issvar.veqv && stat->u.store.unk1C) {
                                 setbit(&node->bvs.stage1.antlocs, temp_s4_3->isvar_issvar.assignbit);
                             }
 
@@ -2858,7 +2858,7 @@ void copypropagate(void) {
         } else if (node->varlisthead != NULL) {
             for (i = 0; i < bitposcount; i++) {
                 if (bvectin(i, &varbits)) {
-                    if (!bittab[i].ichain->isvar_issvar.unk19 && !bittab[i].ichain->isvar_issvar.unk1A && indirectaccessed(bittab[i].ichain->isvar_issvar.location, bittab[i].ichain->isvar_issvar.size, node->varlisthead)) {
+                    if (!bittab[i].ichain->isvar_issvar.unk19 && !bittab[i].ichain->isvar_issvar.veqv && indirectaccessed(bittab[i].ichain->isvar_issvar.location, bittab[i].ichain->isvar_issvar.size, node->varlisthead)) {
                         setbit(&node->indiracc, i);
                         setbit(&node->indiracc, i + 1);
                         aliasedlu++;
@@ -2881,7 +2881,7 @@ void copypropagate(void) {
                 }
             } else if (!bvectin(i, &node->bvs.stage1.u.precm.expoccur)) {
                 if (!bvectin(i, &storeop)) {
-                    if ((bittab[i].ichain->type == isvar || bittab[i].ichain->type == issvar) && bittab[i].ichain->isvar_issvar.unk1A) {
+                    if ((bittab[i].ichain->type == isvar || bittab[i].ichain->type == issvar) && bittab[i].ichain->isvar_issvar.veqv) {
                         phi_s3 = true;
                     } else {
                         phi_s3 = expaltered(bittab[i].ichain, node);
@@ -2895,7 +2895,7 @@ void copypropagate(void) {
                         phi_s2 = true;
                         phi_s1 = true;
                     } else if (bittab[i].ichain->isop.opc == Uisst || bittab[i].ichain->isop.opc == Ustr) {
-                        if (bittab[i].ichain->isop.op1->isvar_issvar.unk1A) {
+                        if (bittab[i].ichain->isop.op1->isvar_issvar.veqv) {
                             phi_s2 = true;
                             phi_s1 = true;
                         } else {
