@@ -77,6 +77,9 @@ void formlivbb(struct IChain *ichain, struct Graphnode *node, struct LiveUnit **
             outofmem = true;
             return;
         }
+#ifdef AVOID_UB
+        *bittab[ichain->bitpos].liverange = (struct LiveRange){0};
+#endif
 
         bittab[ichain->bitpos].liverange->ichain = ichain;
         bittab[ichain->bitpos].liverange->liveunits = NULL;
@@ -689,7 +692,7 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                             tempdisp = (tempdisp - (tempdisp & 3)) + 4;
                         }
 
-                        ichain->isop.temploc = alloc_new(0x14, &perm_heap);
+                        ichain->isop.temploc = alloc_new(sizeof (struct Temploc), &perm_heap);
                         if (!stack_reversed) {
                             tempdisp += 4;
                             ichain->isop.temploc->disp = -tempdisp;
@@ -1158,7 +1161,7 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                             if ((tempdisp & 3) != 0) {
                                 tempdisp = (tempdisp - (tempdisp & 3)) + 4;
                             }
-                            sp40->isop.temploc = alloc_new(0x14, &perm_heap);
+                            sp40->isop.temploc = alloc_new(sizeof (struct Temploc), &perm_heap);
                             if (stack_reversed == 0) {
                                 tempdisp += 4;
                                 sp40->isop.temploc->disp = -tempdisp;

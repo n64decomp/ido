@@ -1687,7 +1687,7 @@ void create_edge(struct Graphnode *node1, struct Graphnode *node2) {
 004713E8 loopunroll
 */
 void new_header_node(bool arg0) {
-    curgraphnode = alloc_new(0x174, &perm_heap);
+    curgraphnode = alloc_new(sizeof (struct Graphnode), &perm_heap);
     init_graphnode(curgraphnode);
     curgraphnode->terminal = 1;
     curgraphnode->unk7 = 2;
@@ -3238,7 +3238,7 @@ void loopunroll(void) {
         }
     }
 
-    if (dbugno) {
+    if (dbugno != 0) {
         if (proc_to_print[0] == ' ' || at_proc_to_print) {
             write_string(list.c_file, "   flow graph for " , 18, 18);
             write_string(list.c_file, entnam0, 1024, entnam0len);

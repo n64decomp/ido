@@ -654,6 +654,9 @@ struct Graphnode *ingraph(int blockno) {
 004761D0 tail_recursion
 */
 void init_graphnode(struct Graphnode *node) {
+#ifdef AVOID_UB
+    *node = (struct Graphnode) {0};
+#endif
     node->unkBb8 = 0;
     node->blockno = 0;
     node->predecessors = NULL;

@@ -349,7 +349,7 @@ static bool func_00430680(struct IChain *ichain, struct Graphnode *node) {
                 if (factor != 0) {
                     TRAP_IF(sp64 != NULL);
                     incre_result = findincre(stat->expr->data.isvar_issvar.assigned_value);
-                    recur = alloc_new(0xC, &perm_heap);
+                    recur = alloc_new(sizeof (struct RecurThing), &perm_heap);
                     recur->ichain = ichain;
                     func_00430548(recur, stat, incre_result * factor > 0);
                     if (!func_0043044C(ichain->isop.op1, ichain->isop.size + incre_result * factor, &recur->expr, stat, node)) {
