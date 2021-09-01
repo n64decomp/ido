@@ -824,7 +824,7 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
 
             sp53 = phi_a3;
             sp52 = phi_a3;
-            if (phi_a3 == 0 && !ichain->isvar_issvar.unk1A && !bvectin(ichain->bitpos, &node_shared->indiracc) &&
+            if (phi_a3 == 0 && !ichain->isvar_issvar.veqv && !bvectin(ichain->bitpos, &node_shared->indiracc) &&
                     ((ichain->dtype != Idt && ichain->dtype != Kdt) || dwopcode || ichain->isvar_issvar.location.memtype == Rmt)) {
                 formlivbb(ichain, node_shared, livbb_shared);
                 if (outofmem) {
@@ -932,7 +932,7 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                     func_0045FBB4(ichain->isop.op1->isvar_issvar.outer_stack_ichain, 0, arg2, node_shared, livbb_shared);
                 }
                 func_0045FBB4(ichain->isop.op2, 0, arg2, node_shared, livbb_shared);
-                if (ichain->isop.op1->isvar_issvar.unk1A == 0 && !bvectin(ichain->isop.op1->bitpos, &node_shared->indiracc) &&
+                if (ichain->isop.op1->isvar_issvar.veqv == 0 && !bvectin(ichain->isop.op1->bitpos, &node_shared->indiracc) &&
                         ((ichain->isop.op1->dtype != Idt && ichain->isop.op1->dtype != Kdt) || dwopcode)) {
                     formlivbb(ichain->isop.op1, node_shared, livbb_shared);
                     if (outofmem) {
@@ -1524,7 +1524,7 @@ void makelivranges(void) {
         while (access != NULL) {
             if (access->type == 2) {
                 if (access->data.var->type == isvar &&
-                        !access->data.var->ichain->isvar_issvar.unk1A &&
+                        !access->data.var->ichain->isvar_issvar.veqv &&
                         !bvectin(access->data.var->ichain->bitpos, &node->indiracc) &&
                         ((access->data.var->datatype != Idt && access->data.var->datatype != Kdt) || dwopcode || access->data.var->data.isvar_issvar.location.memtype == Rmt)) {
                     formlivbb(access->data.var->ichain, node, &lu);
@@ -1575,7 +1575,7 @@ void makelivranges(void) {
             } else if (access->type == 1 &&
                     access->data.store->opc == Ustr &&
                     !access->data.store->outpar &&
-                    !access->data.store->expr->ichain->isvar_issvar.unk1A &&
+                    !access->data.store->expr->ichain->isvar_issvar.veqv &&
                     !bvectin(access->data.store->expr->ichain->bitpos, &node->indiracc) &&
                     ((access->data.store->expr->datatype != Idt && access->data.store->expr->datatype != Kdt) ||
                      dwopcode || access->data.store->expr->data.isvar_issvar.location.memtype == Rmt)) {
@@ -1794,7 +1794,7 @@ void makelivranges(void) {
                         reg = firstparmreg[regclass - 1] + stat->u.par.index - 1;
                     }
 
-                    if (expr->type == isvar && !expr->ichain->isvar_issvar.unk1A && !bvectin(expr->ichain->bitpos, &node->indiracc)) {
+                    if (expr->type == isvar && !expr->ichain->isvar_issvar.veqv && !bvectin(expr->ichain->bitpos, &node->indiracc)) {
                         formlivbb(expr->ichain, node, &lu);
                     } else {
                         spF7 = 0;

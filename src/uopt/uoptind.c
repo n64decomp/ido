@@ -434,7 +434,7 @@ static bool func_00430D74(struct IChain *ichain, struct Graphnode *node) {
 
         case isvar:
         case issvar:
-            result = bvectin(ichain->bitpos, &node->bvs.stage1.u.precm.unk134) || !bvectin(ichain->bitpos, &node->bvs.stage1.alters);
+            result = bvectin(ichain->bitpos, &node->bvs.stage1.u.cm.iv) || !bvectin(ichain->bitpos, &node->bvs.stage1.alters);
             break;
 
         case isop:
@@ -448,7 +448,7 @@ static bool func_00430D74(struct IChain *ichain, struct Graphnode *node) {
             } else if (ichain->isop.opc == Uilod || ichain->isop.opc == Uirld) {
                 result = !bvectin(ichain->bitpos, &node->bvs.stage1.alters);
             } else {
-                result = bvectin(ichain->bitpos, &node->bvs.stage1.u.precm.unk13C) || !bvectin(ichain->bitpos, &node->bvs.stage1.alters);
+                result = bvectin(ichain->bitpos, &node->bvs.stage1.u.cm.cand) || !bvectin(ichain->bitpos, &node->bvs.stage1.alters);
             }
             break;
 
@@ -467,7 +467,7 @@ static bool func_00430D74(struct IChain *ichain, struct Graphnode *node) {
 static void func_00430FF4(struct IChain *ichain, struct Graphnode *node) {
     if (ichain->type == isop) {
         if (bvectin(ichain->bitpos, &node->bvs.stage1.alters)) {
-            setbit(&node->bvs.stage1.u.precm.unk13C, ichain->bitpos);
+            setbit(&node->bvs.stage1.u.cm.cand, ichain->bitpos);
         }
 
         func_00430FF4(ichain->isop.op1, node);
@@ -503,7 +503,7 @@ static bool func_004310EC(struct IChain *ichain, bool *sp43, struct Graphnode *n
             if (ichain->isop.opc == Uilod || ichain->isop.opc == Uirld) {
                 result = !bvectin(ichain->bitpos, &node->bvs.stage1.alters);
             } else {
-                result = bvectin(ichain->bitpos, &node->bvs.stage1.u.precm.unk13C) || !bvectin(ichain->bitpos, &node->bvs.stage1.alters);
+                result = bvectin(ichain->bitpos, &node->bvs.stage1.u.cm.cand) || !bvectin(ichain->bitpos, &node->bvs.stage1.alters);
             }
             break;
 
@@ -607,7 +607,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                 if (sp40) {
                     if (!bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.alters)) {
                         sp42 = false;
-                    } else if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.precm.unk13C)) {
+                    } else if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand)) {
                         if (ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld) {
                             sp42 = true;
                         } else {
@@ -622,7 +622,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                 } else {
                     if (!bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.alters)) {
                         sp42 = false;
-                    } else if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.precm.unk13C)) {
+                    } else if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.cand)) {
                         if (ichain->isop.op2->isop.opc != Uilod && ichain->isop.op2->isop.opc != Uirld) {
                             sp42 = true;
                         } else {
@@ -666,7 +666,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                     if (ichain->isop.op1->type != isop) {
                         sp42 = false;
                     } else {
-                        sp42 = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.precm.unk13C);
+                        sp42 = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand);
                         if (sp42) {
                             sp42 = (ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld);
                         }
@@ -681,7 +681,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                     }
                     if (!bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.alters)) {
                         if (ichain->isop.op1->type == isop) {
-                            if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.precm.unk13C)) {
+                            if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand)) {
                                 if (ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld) {
                                     sp42 = true;
                                 }
@@ -694,7 +694,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                     sp42 = false;
                     if (!bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.alters)) {
                         if (ichain->isop.op1->type == isop) {
-                            if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.precm.unk13C)) {
+                            if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand)) {
                                 if (ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld) {
                                     sp42 = true;
                                 }
@@ -702,7 +702,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                         }
                     } else {
                         if (func_004310EC(ichain->isop.op1, &sp43, node)) {
-                            if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.precm.unk13C)) {
+                            if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.cand)) {
                                 if (ichain->isop.op2->isop.opc != Uilod && ichain->isop.op2->isop.opc != Uirld) {
                                     sp42 = true;
                                 }
@@ -736,7 +736,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
             if (ichain->isop.op1->type != isop) {
                 sp42 = false;
             } else {
-                sp42 = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.precm.unk13C);
+                sp42 = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand);
                 if (sp42) {
                     sp42 = ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld;
                 }
@@ -747,7 +747,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
         case Uadd:
             sp42 = false;
             if (ichain->isop.op1->type == isop) {
-                if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.precm.unk13C)) {
+                if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand)) {
                     if (ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld) {
                         sp42 = func_004310EC(ichain->isop.op2, &sp43, node);
                     }
@@ -755,7 +755,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
 
                 if (!sp42) {
                     if (ichain->isop.op2->type == isop) {
-                        if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.precm.unk13C)) {
+                        if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.cand)) {
                             if (ichain->isop.op2->isop.opc != Uilod && ichain->isop.op2->isop.opc != Uirld) {
                                 sp42 = func_004310EC(ichain->isop.op1, &sp43, node);
                             }
@@ -764,7 +764,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                 }
             } else {
                 if (ichain->isop.op2->type == isop) {
-                    if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.precm.unk13C)) {
+                    if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.cand)) {
                         if (ichain->isop.op2->isop.opc != Uilod && ichain->isop.op2->isop.opc != Uirld) {
                             sp42 = func_004310EC(ichain->isop.op1, &sp43, node);
                         }
@@ -798,7 +798,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
             if (ichain->isop.op1->type != isop) {
                 sp42 = false;
             } else {
-                sp42 = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.precm.unk13C);
+                sp42 = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand);
                 if (sp42) {
                     sp42 = ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld;
                 }
@@ -891,30 +891,30 @@ void findinduct(void) {
 
     node = graphhead;
     while (node != NULL) {
-        node->bvs.stage1.u.precm.unk134.num_blocks = 0;
-        node->bvs.stage1.u.precm.unk134.blocks = NULL;
-        checkbvlist(&node->bvs.stage1.u.precm.unk134);
-        bvectcopy(&node->bvs.stage1.u.precm.unk134, &varbits);
-        bvectminus(&node->bvs.stage1.u.precm.unk134, &vareqv);
-        bvectintsect(&node->bvs.stage1.u.precm.unk134, &node->bvs.stage1.alters);
+        node->bvs.stage1.u.cm.iv.num_blocks = 0;
+        node->bvs.stage1.u.cm.iv.blocks = NULL;
+        checkbvlist(&node->bvs.stage1.u.cm.iv);
+        bvectcopy(&node->bvs.stage1.u.cm.iv, &varbits);
+        bvectminus(&node->bvs.stage1.u.cm.iv, &vareqv);
+        bvectintsect(&node->bvs.stage1.u.cm.iv, &node->bvs.stage1.alters);
 
         if (node->stat_tail->opc == Ucia) {
             if (lang == LANG_ADA) {
-                initbv(&node->bvs.stage1.u.precm.unk134, (struct BitVectorBlock) {0});
+                initbv(&node->bvs.stage1.u.cm.iv, (struct BitVectorBlock) {0});
             } else {
                 block = 0;
                 i = 0;
                 while (i < bitposcount) {
-                    if (BVBLOCKEMPTY(node->bvs.stage1.u.precm.unk134, block)) {
+                    if (BVBLOCKEMPTY(node->bvs.stage1.u.cm.iv, block)) {
                         i += 0x80;
                     } else {
                         bit = 0;
                         while (i < bitposcount && bit < 0x80) {
-                            if (BVINBLOCK(bit, block, node->bvs.stage1.u.precm.unk134)) {
+                            if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.iv)) {
                                 if (IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags) && cupaltered(bittab[i].ichain, curlevel, indirprocs)) {
-                                    BVBLOCK_RESETBIT(node->bvs.stage1.u.precm.unk134, bit, block);
+                                    BVBLOCK_RESETBIT(node->bvs.stage1.u.cm.iv, bit, block);
                                 } else if (listplkilled(node->stat_tail->u.cia.parameters, bittab[i].ichain->expr, bittab[i].ichain->isvar_issvar.unk19)) {
-                                    BVBLOCK_RESETBIT(node->bvs.stage1.u.precm.unk134, bit, block);
+                                    BVBLOCK_RESETBIT(node->bvs.stage1.u.cm.iv, bit, block);
                                 }
                             }
                             i++;
@@ -928,16 +928,16 @@ void findinduct(void) {
             block = 0;
             i = 0;
             while (i < bitposcount) {
-                if (BVBLOCKEMPTY(node->bvs.stage1.u.precm.unk134, block)) {
+                if (BVBLOCKEMPTY(node->bvs.stage1.u.cm.iv, block)) {
                     i += 0x80;
                 } else {
                     bit = 0;
                     while (i < bitposcount && bit < 0x80) {
-                        if (BVINBLOCK(bit, block, node->bvs.stage1.u.precm.unk134)) {
+                        if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.iv)) {
                             if (cupaltered(bittab[i].ichain, node->stat_tail->u.call.level, node->stat_tail->u.call.proc)) {
-                                BVBLOCK_RESETBIT(node->bvs.stage1.u.precm.unk134, bit, block);
+                                BVBLOCK_RESETBIT(node->bvs.stage1.u.cm.iv, bit, block);
                             } else if (listplkilled(node->stat_tail->u.call.parameters, bittab[i].ichain->expr, bittab[i].ichain->isvar_issvar.unk19)) {
-                                BVBLOCK_RESETBIT(node->bvs.stage1.u.precm.unk134, bit, block);
+                                BVBLOCK_RESETBIT(node->bvs.stage1.u.cm.iv, bit, block);
                             }
                         }
                         i++;
@@ -953,21 +953,21 @@ void findinduct(void) {
             if (access->type == 1) {
                 if (access->data.store->opc == Uisst || access->data.store->opc == Ustr) {
                     if (!access->data.store->is_increment) {
-                        resetbit(&node->bvs.stage1.u.precm.unk134, access->data.store->expr->ichain->bitpos);
+                        resetbit(&node->bvs.stage1.u.cm.iv, access->data.store->expr->ichain->bitpos);
                     }
                 } else {
                     block = 0;
                     i = 0;
                     while (i < bitposcount) {
-                        if (BVBLOCKEMPTY(node->bvs.stage1.u.precm.unk134, block)) {
+                        if (BVBLOCKEMPTY(node->bvs.stage1.u.cm.iv, block)) {
                             i += 0x80;
                         } else {
                             bit = 0;
                             while (i < bitposcount && bit < 0x80) {
-                                if (BVINBLOCK(bit, block, node->bvs.stage1.u.precm.unk134) &&
+                                if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.iv) &&
                                         bvectin(i, &node->indiracc) &&
                                         slkilled(access->data.store, bittab[i].ichain->expr)) {
-                                    BVBLOCK_RESETBIT(node->bvs.stage1.u.precm.unk134, bit, block);
+                                    BVBLOCK_RESETBIT(node->bvs.stage1.u.cm.iv, bit, block);
                                 }
                                 i++;
                                 bit++;
@@ -980,23 +980,23 @@ void findinduct(void) {
             access = access->next;
         }
 
-        node->bvs.stage1.u.precm.unk13C.num_blocks = 0;
-        node->bvs.stage1.u.precm.unk13C.blocks = NULL;
-        checkbvlist(&node->bvs.stage1.u.precm.unk13C);
-        bvectcopy(&node->bvs.stage1.u.precm.unk13C, &indmults);
-        bvectunion(&node->bvs.stage1.u.precm.unk13C, &trapop);
-        bvectintsect(&node->bvs.stage1.u.precm.unk13C, &node->bvs.stage1.alters);
+        node->bvs.stage1.u.cm.cand.num_blocks = 0;
+        node->bvs.stage1.u.cm.cand.blocks = NULL;
+        checkbvlist(&node->bvs.stage1.u.cm.cand);
+        bvectcopy(&node->bvs.stage1.u.cm.cand, &indmults);
+        bvectunion(&node->bvs.stage1.u.cm.cand, &trapop);
+        bvectintsect(&node->bvs.stage1.u.cm.cand, &node->bvs.stage1.alters);
         block = 0;
         i = 0;
         while (i < bitposcount) {
-            if (BVBLOCKEMPTY(node->bvs.stage1.u.precm.unk13C, block)) {
+            if (BVBLOCKEMPTY(node->bvs.stage1.u.cm.cand, block)) {
                 i += 0x80;
             } else {
                 bit = 0;
                 while (i < bitposcount && bit < 0x80) {
-                    if (BVINBLOCK(bit, block, node->bvs.stage1.u.precm.unk13C) &&
+                    if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.cand) &&
                             !func_00431508(bittab[i].ichain, node)) {
-                        BVBLOCK_RESETBIT(node->bvs.stage1.u.precm.unk13C, bit, block);
+                        BVBLOCK_RESETBIT(node->bvs.stage1.u.cm.cand, bit, block);
                     }
                     i++;
                     bit++;
@@ -1005,7 +1005,7 @@ void findinduct(void) {
             block++;
         }
 
-        unionintsect(&node->bvs.stage1.u.precm.unk13C, &slvarbits, &node->bvs.stage1.u.precm.unk134);
+        unionintsect(&node->bvs.stage1.u.cm.cand, &slvarbits, &node->bvs.stage1.u.cm.iv);
         if (curproc->has_trap) {
             bvectcopy(&old, &trapconstop);
             intsectunion(&old, &node->bvs.stage1.antlocs, &node->bvs.stage1.avlocs);

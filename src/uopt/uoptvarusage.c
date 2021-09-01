@@ -237,6 +237,11 @@ glabel check_loop_coincidence
     .type check_loop_coincidence, @function
     .size check_loop_coincidence, .-check_loop_coincidence
     .end check_loop_coincidence
+)"");
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel expr_has_direct_usage
     .ent expr_has_direct_usage

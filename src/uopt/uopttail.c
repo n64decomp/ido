@@ -158,11 +158,11 @@ void fix_par_vreg(struct Statement *pmov_stmt) {
 # 0047606C func_0047606C
 # 004761D0 tail_recursion
 */
-static struct TailRecParameter *func_00476034(int arg0, struct TailRecParameter **tailRecParHead) {
+static struct TailRecParameter *func_00476034(int num, struct TailRecParameter **tailRecParHead) {
     struct TailRecParameter *par = *tailRecParHead;
 
     while (par != NULL) {
-        if (arg0 == par->parnum) {
+        if (num == par->parnum) {
             return par;
         }
         par = par->next;
@@ -190,7 +190,7 @@ static void func_0047606C(struct Expression *expr, struct TailRecParameter **tai
                     *tailRecParHead = par;
                 }
             }
-            return;
+            break;
 
         case isop:
             func_0047606C(expr->data.isop.op1, tailRecParHead, parnum);
@@ -198,7 +198,7 @@ static void func_0047606C(struct Expression *expr, struct TailRecParameter **tai
                 // originally optimized by tail recursion
                 func_0047606C(expr->data.isop.op2, tailRecParHead, parnum);
             }
-            return;
+            break;
 
         case empty:
         case dumped:
@@ -208,7 +208,6 @@ static void func_0047606C(struct Expression *expr, struct TailRecParameter **tai
         default:
             break;
     }
-    return;
 }
 
 /* 

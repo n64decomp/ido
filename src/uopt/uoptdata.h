@@ -696,9 +696,9 @@ struct IChain { // TODO: rename
             /* 0x10 */ struct VariableLocation location;
             /* 0x18 */ unsigned char size;
                        // The order of these two bools is swapped from expr's isvar_issvar
-                       // unk19 = unk22, and unk1A = unk21
+                       // 0x19 = 0x22, and 0x1A = 0x21
             /* 0x19 */ bool unk19; // see fix_par_vreg inner function
-            /* 0x1A */ bool unk1A; // codeimage
+            /* 0x1A */ bool veqv;
             /* 0x1B */ unsigned char unk1B;
             /* 0x1C */ struct IChain *outer_stack_ichain;
             /* 0x20 */ struct Temploc *temploc;
@@ -905,6 +905,7 @@ struct Expression {
     } data;
 }; // size 0x40
 
+// Linear Function Test Replacement
 struct TrepImageThing {
     /* 0x00 */ struct IChain *ichain;
     /* 0x04 */ struct IChain *ichain2;
