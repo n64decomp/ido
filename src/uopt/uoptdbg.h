@@ -61,6 +61,6 @@ void printregs(void);
 void printinterproc(void);
 void printsav(void);
 void printstat(void);
-void print_loop_relations(void *, int num_dashes); // TODO: arg0 type
+void print_loop_relations(struct Loop *loop, int level);
 
 #endif
