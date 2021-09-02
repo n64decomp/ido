@@ -134,10 +134,17 @@ int _md_st_str_iss(int arg0) {
     return 0;
 }
 
+/*
+0048A260 st_str_ifd_iss
+*/
 int _md_st_iextmax(void) {
     return st_pchdr->cext;
 }
 
+/*
+0048A954 st_extadd
+0048ABB0 st_idn_index_fext
+*/
 int _md_st_currentifd(void) {
     if (pcfdcur == NULL) {
         return -1;
