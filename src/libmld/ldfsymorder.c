@@ -1,5 +1,8 @@
 #include "libmld.h"
 
+/*
+# 0048D0E0 st_readst
+*/
 int ldfsymorder(HDRR* hdr, int offset) {
     int temp_v1;
     int temp_v1_10;

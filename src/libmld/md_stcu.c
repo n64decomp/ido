@@ -19,7 +19,17 @@ CHDRR* st_cuinit(void) {
     return st_pchdr;
 }
 
-
+/*
+    # 0040BCA0 path_blockno
+    # 0048A06C st_psym_ifd_isym
+    # 0048BA18 st_procend
+    # 0048BC7C st_procbegin
+    # 0048C0B0 st_psym_idn_offset
+    # 0048C2E0 st_fixextindex
+    # 0048C394 st_fixextsc
+    # 0048C410 st_pdadd_idn
+    # 0048C494 st_fixiss
+*/
 EXTR* st_pext_iext(int index) {
     if ((index < 0) || (st_pchdr->cext < index)) {
         _md_st_internal("st_pext_iext: index out of range (%d)\n", index);
@@ -28,6 +38,11 @@ EXTR* st_pext_iext(int index) {
     return &st_pchdr->pext[index];
 }
 
+/*
+    # 0048AE84 st_filebegin
+    # 0048B83C st_blockend
+    # 0048BA18 st_procend
+*/
 
 int st_idn_index_fext(int index, int fext) {
     DNR* sp30; //TODO Verify type
@@ -55,6 +70,22 @@ int st_idn_index_fext(int index, int fext) {
     return oldCdn;
 }
 
+/*
+    # 0040BCA0 path_blockno
+    # 0048B2F0 st_fileend
+    # 0048BA18 st_procend
+    # 0048BC7C st_procbegin
+    # 0048BE8C st_sym_idn
+    # 0048BF74 st_str_idn
+    # 0048C008 st_fglobal_idn
+    # 0048C0B0 st_psym_idn_offset
+    # 0048C2E0 st_fixextindex
+    # 0048C394 st_fixextsc
+    # 0048C410 st_pdadd_idn
+    # 0048C494 st_fixiss
+    # 0048C520 st_changedn
+    # 0048CFAC st_auxrndxadd_idn
+*/
 DNR* st_pdn_idn(int idn) {
     if ((idn < 0) || (st_pchdr->cdn < idn)) {
         _md_st_internal("st_pdn_idn: idn (%d) less than 0 or greater than max (%d)\n", idn, st_pchdr->cdn);
