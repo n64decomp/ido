@@ -1,4 +1,20 @@
 #include "libmld.h"
+/*
+# 00488BB0 st_currentifd
+# 00488C1C st_setfd
+# 00488C8C st_fdadd
+# 0048932C st_auxadd
+# 00489458 st_pdadd
+# 004895E4 st_lineadd
+# 0048970C st_stradd
+# 00489AA0 st_str_iss
+# 00489CA0 st_symadd
+# 00489F38 st_ifd_pcfd
+# 0048A194 st_paux_iaux
+# 0048A5E8 _md_st_str_iss
+# 0048A6B4 _md_st_currentifd
+# 0048A86C _md_st_setfd
+*/
 
 CFDR* pcfdcur;
 

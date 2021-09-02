@@ -2,7 +2,48 @@
 #include <string.h> /* bzero */
 #include "libmld.h"
 
-
+/*
+# 00488120 st_setchdr
+# 00488138 st_currentpchdr
+# 00488150 st_free
+# 00488434 st_extstradd
+# 00488550 st_str_extiss
+# 00488590 st_idn_dn
+# 004886A8 st_idn_rndx
+# 004887CC st_rndx_idn
+# 004888DC st_setidn
+# 00488984 st_pext_dn
+# 00488A2C st_iextmax
+# 00488C00 st_ifdmax
+# 00488C1C st_setfd
+# 00488C8C st_fdadd
+# 0048932C st_auxadd
+# 00489458 st_pdadd
+# 004895E4 st_lineadd
+# 0048970C st_stradd
+# 004898C0 st_paux_ifd_iaux
+# 004899B0 st_pline_ifd_iline
+# 00489AA0 st_str_iss
+# 00489CA0 st_symadd
+# 00489F38 st_ifd_pcfd
+# 00489FC4 st_pcfd_ifd
+# 0048A06C st_psym_ifd_isym
+# 0048A194 st_paux_iaux
+# 0048A260 st_str_ifd_iss
+# 0048A330 st_ppd_ifd_isym
+# 0048A5A8 _md_st_str_extiss
+# 0048A5E8 _md_st_str_iss
+# 0048A698 _md_st_iextmax
+# 0048A850 _md_st_ifdmax
+# 0048A86C _md_st_setfd
+# 0048A8E0 st_cuinit
+# 0048A954 st_extadd
+# 0048AB3C st_pext_iext
+# 0048ABB0 st_idn_index_fext
+# 0048ACEC st_pdn_idn
+# 0048D0E0 st_readst
+# 0048E1D8 st_writest
+*/
 CHDRR *st_pchdr;
 
 void _md_st_error(const char *format, ...);
