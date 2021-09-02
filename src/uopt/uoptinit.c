@@ -917,6 +917,10 @@ void procinit(void) {
     has_exc_handler = false;
     can_elim_tail = true;
     use_c_semantics = false;
+#ifdef AVOID_UB
+    // toplevelloops is never cleared after the first function, so print_loop_relations crashes
+    toplevelloops = NULL;
+#endif
 }
 
 #define BIT(pos) ((unsigned long long int)((unsigned int)(pos) < 64) << (~(pos) & 0x3f))

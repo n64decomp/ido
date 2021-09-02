@@ -751,7 +751,6 @@ struct IChainList {
     /* 0x2C */ struct IChainList *next;
 }; // size 0x30
 
-
 struct LiveUnit {
     /* 0x00 */ struct Graphnode *node;
     /* 0x04 */ struct LiveUnit *next;
@@ -780,7 +779,7 @@ struct LiveRange {
     /*  0xC */ struct BitVector unkC;
     /* 0x14 */ struct BitVector unk14; // livebbs?
     /* 0x1C */ int unk1C; // precolor?
-    /* 0x20 */ unsigned char assigned_reg; // printregs
+    /* 0x20 */ char assigned_reg; // printregs
     /* 0x21 */ unsigned char unk21; // regsleft
     /* 0x22 */ bool hasstore;
     /* 0x23 */ unsigned char unk23;

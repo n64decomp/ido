@@ -6,6 +6,8 @@
         "fstream": "c",
         "sstream": "c",
         "types.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "libmld.h": "c",
+        "stext.h": "c"
     }
 }

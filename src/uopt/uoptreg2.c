@@ -1059,7 +1059,7 @@ int findsharedintf(struct InterfereList *intf, int nodenum) {
 
     while (intf != NULL) {
         if (intf->liverange != NULL) {
-            if (intf->liverange->assigned_reg == 0xff) {
+            if (intf->liverange->assigned_reg == -1) {
                 intf->liverange = NULL;
             } else if (bvectin(nodenum, &intf->liverange->unk14)) {
                 intf->unk8 = true;
@@ -1240,7 +1240,7 @@ void updatelivran(struct LiveRange *lr) {
     bool found_store;
     int bb;
 
-    if (lr->assigned_reg == 0xff) {
+    if (lr->assigned_reg == -1) {
         return;
     }
 
@@ -1579,6 +1579,10 @@ void split(struct LiveRange **src, struct LiveRange **dest, int regclass, bool a
         return;
     }
 
+#ifdef AVOID_UB
+    (*dest)->adjsave = 0;
+    (*dest)->unk24 = 0;
+#endif
     (*dest)->next = (*src)->next;
     (*src)->next = *dest;
     (*dest)->ichain = (*src)->ichain;

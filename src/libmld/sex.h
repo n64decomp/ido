@@ -44,90 +44,55 @@ extern "C" {
 #define swap_word(a) ( ((a) << 24) | \
 		      (((a) << 8) & 0x00ff0000) | \
 		      (((a) >> 8) & 0x0000ff00) | \
-	((unsigned long)(a) >>24) )
+	((unsigned int)(a) >>24) )
 
 #define swap_half(a) ( ((a & 0xff) << 8) | ((unsigned short)(a) >> 8) )
 
+#include "syms.h"
 struct aouthdr;
-struct fdr;
 struct filehdr;
 union  gp_table;
-struct pdr;
 struct reloc;
 struct scnhdr;
-union  __sgi_auxu_u;
-struct __sgi_extr__;
-struct __sgi_hdrr_s;
-struct __sgi_optr_s;
-struct __sgi_symr_s;
 
-extern
-int
-gethostsex(void);
+int gethostsex(void);
 
-extern
-void
-swap_filehdr(struct filehdr *, long);
+void swap_filehdr(struct filehdr *, int);
 
-extern
-void
-swap_aouthdr(struct aouthdr *, long);
+void swap_aouthdr(struct aouthdr *, int);
 
-extern
-void
-swap_scnhdr(struct scnhdr *, long);
+void swap_scnhdr(struct scnhdr *, int);
 
-extern
-void
-swap_hdr(struct __sgi_hdrr_s *, long);
+void swap_hdr(struct __sgi_hdrr_s *, int);
 
-extern
-void
-swap_fd(struct fdr *, long, long);
+void swap_fd(struct fdr *, int, int);
 
-extern
-void
-swap_fi(long * , long, long);
+void swap_fi(int *, int, int);
 
-extern
-void
-swap_sym(struct __sgi_symr_s *, long,long);
+void swap_sym(struct __sgi_symr_s *, int, int);
 
-extern
-void
-swap_ext(struct __sgi_extr__ *,long,long);
+void swap_ext(struct __sgi_extr__ *, int, int);
 
-extern
-void
-swap_pd(struct pdr *,long,long);
+void swap_dn(pDNR pdn, int idnMax, int hostsex);
 
-extern
-void
-swap_opt(struct __sgi_optr_s *,long,long);
+void swap_pd(struct pdr *, int, int);
 
-extern
-void
-swap_aux(union __sgi_auxu_u *,long,long);
+void swap_opt(struct __sgi_optr_s *, int, int);
+
+void swap_aux(union __sgi_auxu_u *, int, int);
 
 #if 0 /* currently no such function available */
-extern
-void
-swap_line();
+void swap_line();
 #endif
 
-extern
-void
-swap_reloc(struct reloc *,long,long);
+void swap_reloc(struct reloc *, int, int);
 
 #ifndef __sgi /* prototype moved to ar.h */
-extern
-void
-swap_ranlib(struct ranlib *,long);
+struct ranlib;
+void swap_ranlib(struct ranlib *, int);
 #endif
 
-extern
-void
-swap_gpt(union gp_table *,long,long);
+void swap_gpt(union gp_table *, int, int);
 
 #ifdef __cplusplus
 }
