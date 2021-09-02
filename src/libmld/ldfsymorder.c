@@ -1,281 +1,93 @@
-__asm__(R""(
-.macro glabel label
-    .global \label
-    .balign 4
-    \label:
-.endm
+#include "libmld.h"
 
+int ldfsymorder(HDRR* hdr, int offset) {
+    int temp_v1;
+    int temp_v1_10;
+    int temp_v1_11;
+    int temp_v1_3;
+    int temp_v1_4;
+    int temp_v1_5;
+    int temp_v1_6;
+    int temp_v1_7;
+    int temp_v1_8;
+    int temp_v1_9;
 
+    if ((hdr->cbLineOffset != 0) && (hdr->cbLine != 0) && ((offset + 0x60) != hdr->cbLineOffset)) {
+        return 0;
+    }
+    if (( hdr->cbLine & 3) != 0) {
+        return 0;
+    }
+    if ((hdr->cbPdOffset != 0) && (hdr->ipdMax != 0) && (((offset + 0x60) +  hdr->cbLine) != hdr->cbPdOffset)) {
+        return 0;
+    }
+    temp_v1_3 =  hdr->cbLine + (hdr->ipdMax * 0x34);
+    if ((temp_v1_3 & 3) != 0) {
+        return 0;
+    }
+    if (( hdr->cbSymOffset != 0) && (hdr->isymMax != 0) && (((offset + 0x60) + temp_v1_3) !=  hdr->cbSymOffset)) {
+        return 0;
+    }
+    temp_v1_4 = temp_v1_3 + (hdr->isymMax * 0xC);
+    if ((temp_v1_4 & 3) != 0) {
+        return 0;
+    }
+    if (( hdr->cbOptOffset != 0) && (hdr->ioptMax != 0) && (((offset + 0x60) + temp_v1_4) !=  hdr->cbOptOffset)) {
+        return 0;
+    }
+    temp_v1_5 = temp_v1_4 + (hdr->ioptMax * 0xC);
+    if ((temp_v1_5 & 3) != 0) {
+        return 0;
+    } 
+    if ((hdr->cbAuxOffset != 0) && (hdr->iauxMax != 0) && (((offset + 0x60) + temp_v1_5) != hdr->cbAuxOffset)) {
+        return 0;
+    }
+    temp_v1_6 = temp_v1_5 + (hdr->iauxMax * 4);
+    if ((temp_v1_6 & 3) != 0) {
+        return 0;
+    }
+    if (( hdr->cbSsOffset != 0) && (hdr->issMax != 0) && (((offset + 0x60) + temp_v1_6) !=  hdr->cbSsOffset)) {
+        return 0;
+    }
+    temp_v1_7 = temp_v1_6 + hdr->issMax;
+    if ((temp_v1_7 & 3) != 0) {
+        return 0;
+    }
+    if (( hdr->cbSsExtOffset != 0) && (hdr->issExtMax != 0) && (((offset + 0x60) + temp_v1_7) !=  hdr->cbSsExtOffset)) {
+        return 0;
+    }
+    temp_v1_8 = temp_v1_7 + hdr->issExtMax;
+    if ((temp_v1_8 & 3) != 0) {
+        return 0;
+    }
+    if ((hdr->cbFdOffset != 0) && (hdr->ifdMax != 0) && (((offset + 0x60) + temp_v1_8) != hdr->cbFdOffset)) {
+        return 0;
+    }
+    temp_v1_9 = temp_v1_8 + (hdr->ifdMax * 0x48);
+    if ((temp_v1_9 & 3) != 0) {
+        return 0;
+    }
+    if ((hdr->cbRfdOffset != 0) && (hdr->crfd != 0) && (((offset + 0x60) + temp_v1_9) != hdr->cbRfdOffset)) {
+        return 0;
+    }
+    temp_v1_10 = temp_v1_9 + (hdr->crfd * 4);
+    if ((temp_v1_10 & 3) != 0) {
+        return 0;
+    }
+    if ((hdr->cbExtOffset != 0) && (hdr->iextMax != 0) && (((offset + 0x60) + temp_v1_10) != hdr->cbExtOffset)) {
+        return 0;
+    }
+    temp_v1_11 = temp_v1_10 + (hdr->iextMax * 0x10);
+    if ((temp_v1_11 & 3) != 0) {
+        return 0;
+    }
+    if ((hdr->cbDnOffset != 0) && (hdr->idnMax != 0) && (((offset + 0x60) + temp_v1_11) != hdr->cbDnOffset)) {
+        return 0;
+    }
+    temp_v1 = temp_v1_11 + (hdr->idnMax * 8);
+    if ((temp_v1 & 3) != 0) {
+        return 0;
+    }
+    return temp_v1;
+}
 
-
-.set noat      # allow manual use of $at
-.set noreorder # don't insert nops after branches
-
-.text
-glabel ldfsymorder
-    .ent ldfsymorder
-    # 0048D0E0 st_readst
-/* 004920A0 8C86000C */  lw    $a2, 0xc($a0)
-/* 004920A4 24A20060 */  addiu $v0, $a1, 0x60
-/* 004920A8 50C00009 */  beql  $a2, $zero, .L004920D0
-/* 004920AC 8C830008 */   lw    $v1, 8($a0)
-/* 004920B0 8C8E0008 */  lw    $t6, 8($a0)
-/* 004920B4 51C00006 */  beql  $t6, $zero, .L004920D0
-/* 004920B8 8C830008 */   lw    $v1, 8($a0)
-/* 004920BC 50460004 */  beql  $v0, $a2, .L004920D0
-/* 004920C0 8C830008 */   lw    $v1, 8($a0)
-/* 004920C4 03E00008 */  jr    $ra
-/* 004920C8 00001025 */   move  $v0, $zero
-
-/* 004920CC 8C830008 */  lw    $v1, 8($a0)
-.L004920D0:
-/* 004920D0 306F0003 */  andi  $t7, $v1, 3
-/* 004920D4 51E00004 */  beql  $t7, $zero, .L004920E8
-/* 004920D8 8C85001C */   lw    $a1, 0x1c($a0)
-/* 004920DC 03E00008 */  jr    $ra
-/* 004920E0 00001025 */   move  $v0, $zero
-
-/* 004920E4 8C85001C */  lw    $a1, 0x1c($a0)
-.L004920E8:
-/* 004920E8 50A0000A */  beql  $a1, $zero, .L00492114
-/* 004920EC 8C880018 */   lw    $t0, 0x18($a0)
-/* 004920F0 8C980018 */  lw    $t8, 0x18($a0)
-/* 004920F4 53000007 */  beql  $t8, $zero, .L00492114
-/* 004920F8 8C880018 */   lw    $t0, 0x18($a0)
-/* 004920FC 0043C821 */  addu  $t9, $v0, $v1
-/* 00492100 53250004 */  beql  $t9, $a1, .L00492114
-/* 00492104 8C880018 */   lw    $t0, 0x18($a0)
-/* 00492108 03E00008 */  jr    $ra
-/* 0049210C 00001025 */   move  $v0, $zero
-
-/* 00492110 8C880018 */  lw    $t0, 0x18($a0)
-.L00492114:
-/* 00492114 00084880 */  sll   $t1, $t0, 2
-/* 00492118 01284823 */  subu  $t1, $t1, $t0
-/* 0049211C 00094880 */  sll   $t1, $t1, 2
-/* 00492120 01284821 */  addu  $t1, $t1, $t0
-/* 00492124 00094880 */  sll   $t1, $t1, 2
-/* 00492128 00691821 */  addu  $v1, $v1, $t1
-/* 0049212C 306A0003 */  andi  $t2, $v1, 3
-/* 00492130 51400004 */  beql  $t2, $zero, .L00492144
-/* 00492134 8C850024 */   lw    $a1, 0x24($a0)
-/* 00492138 03E00008 */  jr    $ra
-/* 0049213C 00001025 */   move  $v0, $zero
-
-/* 00492140 8C850024 */  lw    $a1, 0x24($a0)
-.L00492144:
-/* 00492144 50A0000A */  beql  $a1, $zero, .L00492170
-/* 00492148 8C8D0020 */   lw    $t5, 0x20($a0)
-/* 0049214C 8C8B0020 */  lw    $t3, 0x20($a0)
-/* 00492150 00436021 */  addu  $t4, $v0, $v1
-/* 00492154 51600006 */  beql  $t3, $zero, .L00492170
-/* 00492158 8C8D0020 */   lw    $t5, 0x20($a0)
-/* 0049215C 51850004 */  beql  $t4, $a1, .L00492170
-/* 00492160 8C8D0020 */   lw    $t5, 0x20($a0)
-/* 00492164 03E00008 */  jr    $ra
-/* 00492168 00001025 */   move  $v0, $zero
-
-/* 0049216C 8C8D0020 */  lw    $t5, 0x20($a0)
-.L00492170:
-/* 00492170 2406000C */  li    $a2, 12
-/* 00492174 01A60019 */  multu $t5, $a2
-/* 00492178 00007012 */  mflo  $t6
-/* 0049217C 006E1821 */  addu  $v1, $v1, $t6
-/* 00492180 306F0003 */  andi  $t7, $v1, 3
-/* 00492184 51E00004 */  beql  $t7, $zero, .L00492198
-/* 00492188 8C85002C */   lw    $a1, 0x2c($a0)
-/* 0049218C 03E00008 */  jr    $ra
-/* 00492190 00001025 */   move  $v0, $zero
-
-/* 00492194 8C85002C */  lw    $a1, 0x2c($a0)
-.L00492198:
-/* 00492198 50A0000A */  beql  $a1, $zero, .L004921C4
-/* 0049219C 8C880028 */   lw    $t0, 0x28($a0)
-/* 004921A0 8C980028 */  lw    $t8, 0x28($a0)
-/* 004921A4 53000007 */  beql  $t8, $zero, .L004921C4
-/* 004921A8 8C880028 */   lw    $t0, 0x28($a0)
-/* 004921AC 0043C821 */  addu  $t9, $v0, $v1
-/* 004921B0 53250004 */  beql  $t9, $a1, .L004921C4
-/* 004921B4 8C880028 */   lw    $t0, 0x28($a0)
-/* 004921B8 03E00008 */  jr    $ra
-/* 004921BC 00001025 */   move  $v0, $zero
-
-/* 004921C0 8C880028 */  lw    $t0, 0x28($a0)
-.L004921C4:
-/* 004921C4 01060019 */  multu $t0, $a2
-/* 004921C8 00004812 */  mflo  $t1
-/* 004921CC 00691821 */  addu  $v1, $v1, $t1
-/* 004921D0 306A0003 */  andi  $t2, $v1, 3
-/* 004921D4 51400004 */  beql  $t2, $zero, .L004921E8
-/* 004921D8 8C850034 */   lw    $a1, 0x34($a0)
-/* 004921DC 03E00008 */  jr    $ra
-/* 004921E0 00001025 */   move  $v0, $zero
-
-/* 004921E4 8C850034 */  lw    $a1, 0x34($a0)
-.L004921E8:
-/* 004921E8 50A0000A */  beql  $a1, $zero, .L00492214
-/* 004921EC 8C8D0030 */   lw    $t5, 0x30($a0)
-/* 004921F0 8C8B0030 */  lw    $t3, 0x30($a0)
-/* 004921F4 00436021 */  addu  $t4, $v0, $v1
-/* 004921F8 51600006 */  beql  $t3, $zero, .L00492214
-/* 004921FC 8C8D0030 */   lw    $t5, 0x30($a0)
-/* 00492200 51850004 */  beql  $t4, $a1, .L00492214
-/* 00492204 8C8D0030 */   lw    $t5, 0x30($a0)
-/* 00492208 03E00008 */  jr    $ra
-/* 0049220C 00001025 */   move  $v0, $zero
-
-/* 00492210 8C8D0030 */  lw    $t5, 0x30($a0)
-.L00492214:
-/* 00492214 000D7080 */  sll   $t6, $t5, 2
-/* 00492218 006E1821 */  addu  $v1, $v1, $t6
-/* 0049221C 306F0003 */  andi  $t7, $v1, 3
-/* 00492220 51E00004 */  beql  $t7, $zero, .L00492234
-/* 00492224 8C85003C */   lw    $a1, 0x3c($a0)
-/* 00492228 03E00008 */  jr    $ra
-/* 0049222C 00001025 */   move  $v0, $zero
-
-/* 00492230 8C85003C */  lw    $a1, 0x3c($a0)
-.L00492234:
-/* 00492234 50A0000A */  beql  $a1, $zero, .L00492260
-/* 00492238 8C880038 */   lw    $t0, 0x38($a0)
-/* 0049223C 8C980038 */  lw    $t8, 0x38($a0)
-/* 00492240 53000007 */  beql  $t8, $zero, .L00492260
-/* 00492244 8C880038 */   lw    $t0, 0x38($a0)
-/* 00492248 0043C821 */  addu  $t9, $v0, $v1
-/* 0049224C 53250004 */  beql  $t9, $a1, .L00492260
-/* 00492250 8C880038 */   lw    $t0, 0x38($a0)
-/* 00492254 03E00008 */  jr    $ra
-/* 00492258 00001025 */   move  $v0, $zero
-
-/* 0049225C 8C880038 */  lw    $t0, 0x38($a0)
-.L00492260:
-/* 00492260 00681821 */  addu  $v1, $v1, $t0
-/* 00492264 30690003 */  andi  $t1, $v1, 3
-/* 00492268 51200004 */  beql  $t1, $zero, .L0049227C
-/* 0049226C 8C850044 */   lw    $a1, 0x44($a0)
-/* 00492270 03E00008 */  jr    $ra
-/* 00492274 00001025 */   move  $v0, $zero
-
-/* 00492278 8C850044 */  lw    $a1, 0x44($a0)
-.L0049227C:
-/* 0049227C 50A0000A */  beql  $a1, $zero, .L004922A8
-/* 00492280 8C8C0040 */   lw    $t4, 0x40($a0)
-/* 00492284 8C8A0040 */  lw    $t2, 0x40($a0)
-/* 00492288 00435821 */  addu  $t3, $v0, $v1
-/* 0049228C 51400006 */  beql  $t2, $zero, .L004922A8
-/* 00492290 8C8C0040 */   lw    $t4, 0x40($a0)
-/* 00492294 51650004 */  beql  $t3, $a1, .L004922A8
-/* 00492298 8C8C0040 */   lw    $t4, 0x40($a0)
-/* 0049229C 03E00008 */  jr    $ra
-/* 004922A0 00001025 */   move  $v0, $zero
-
-/* 004922A4 8C8C0040 */  lw    $t4, 0x40($a0)
-.L004922A8:
-/* 004922A8 006C1821 */  addu  $v1, $v1, $t4
-/* 004922AC 306D0003 */  andi  $t5, $v1, 3
-/* 004922B0 51A00004 */  beql  $t5, $zero, .L004922C4
-/* 004922B4 8C85004C */   lw    $a1, 0x4c($a0)
-/* 004922B8 03E00008 */  jr    $ra
-/* 004922BC 00001025 */   move  $v0, $zero
-
-/* 004922C0 8C85004C */  lw    $a1, 0x4c($a0)
-.L004922C4:
-/* 004922C4 50A0000A */  beql  $a1, $zero, .L004922F0
-/* 004922C8 8C980048 */   lw    $t8, 0x48($a0)
-/* 004922CC 8C8E0048 */  lw    $t6, 0x48($a0)
-/* 004922D0 00437821 */  addu  $t7, $v0, $v1
-/* 004922D4 51C00006 */  beql  $t6, $zero, .L004922F0
-/* 004922D8 8C980048 */   lw    $t8, 0x48($a0)
-/* 004922DC 51E50004 */  beql  $t7, $a1, .L004922F0
-/* 004922E0 8C980048 */   lw    $t8, 0x48($a0)
-/* 004922E4 03E00008 */  jr    $ra
-/* 004922E8 00001025 */   move  $v0, $zero
-
-/* 004922EC 8C980048 */  lw    $t8, 0x48($a0)
-.L004922F0:
-/* 004922F0 0018C8C0 */  sll   $t9, $t8, 3
-/* 004922F4 0338C821 */  addu  $t9, $t9, $t8
-/* 004922F8 0019C8C0 */  sll   $t9, $t9, 3
-/* 004922FC 00791821 */  addu  $v1, $v1, $t9
-/* 00492300 30680003 */  andi  $t0, $v1, 3
-/* 00492304 51000004 */  beql  $t0, $zero, .L00492318
-/* 00492308 8C850054 */   lw    $a1, 0x54($a0)
-/* 0049230C 03E00008 */  jr    $ra
-/* 00492310 00001025 */   move  $v0, $zero
-
-/* 00492314 8C850054 */  lw    $a1, 0x54($a0)
-.L00492318:
-/* 00492318 50A0000A */  beql  $a1, $zero, .L00492344
-/* 0049231C 8C8B0050 */   lw    $t3, 0x50($a0)
-/* 00492320 8C890050 */  lw    $t1, 0x50($a0)
-/* 00492324 00435021 */  addu  $t2, $v0, $v1
-/* 00492328 51200006 */  beql  $t1, $zero, .L00492344
-/* 0049232C 8C8B0050 */   lw    $t3, 0x50($a0)
-/* 00492330 51450004 */  beql  $t2, $a1, .L00492344
-/* 00492334 8C8B0050 */   lw    $t3, 0x50($a0)
-/* 00492338 03E00008 */  jr    $ra
-/* 0049233C 00001025 */   move  $v0, $zero
-
-/* 00492340 8C8B0050 */  lw    $t3, 0x50($a0)
-.L00492344:
-/* 00492344 000B6080 */  sll   $t4, $t3, 2
-/* 00492348 006C1821 */  addu  $v1, $v1, $t4
-/* 0049234C 306D0003 */  andi  $t5, $v1, 3
-/* 00492350 51A00004 */  beql  $t5, $zero, .L00492364
-/* 00492354 8C85005C */   lw    $a1, 0x5c($a0)
-/* 00492358 03E00008 */  jr    $ra
-/* 0049235C 00001025 */   move  $v0, $zero
-
-/* 00492360 8C85005C */  lw    $a1, 0x5c($a0)
-.L00492364:
-/* 00492364 50A0000A */  beql  $a1, $zero, .L00492390
-/* 00492368 8C980058 */   lw    $t8, 0x58($a0)
-/* 0049236C 8C8E0058 */  lw    $t6, 0x58($a0)
-/* 00492370 00437821 */  addu  $t7, $v0, $v1
-/* 00492374 51C00006 */  beql  $t6, $zero, .L00492390
-/* 00492378 8C980058 */   lw    $t8, 0x58($a0)
-/* 0049237C 51E50004 */  beql  $t7, $a1, .L00492390
-/* 00492380 8C980058 */   lw    $t8, 0x58($a0)
-/* 00492384 03E00008 */  jr    $ra
-/* 00492388 00001025 */   move  $v0, $zero
-
-/* 0049238C 8C980058 */  lw    $t8, 0x58($a0)
-.L00492390:
-/* 00492390 0018C900 */  sll   $t9, $t8, 4
-/* 00492394 00791821 */  addu  $v1, $v1, $t9
-/* 00492398 30680003 */  andi  $t0, $v1, 3
-/* 0049239C 51000004 */  beql  $t0, $zero, .L004923B0
-/* 004923A0 8C850014 */   lw    $a1, 0x14($a0)
-/* 004923A4 03E00008 */  jr    $ra
-/* 004923A8 00001025 */   move  $v0, $zero
-
-/* 004923AC 8C850014 */  lw    $a1, 0x14($a0)
-.L004923B0:
-/* 004923B0 50A0000A */  beql  $a1, $zero, .L004923DC
-/* 004923B4 8C8B0010 */   lw    $t3, 0x10($a0)
-/* 004923B8 8C890010 */  lw    $t1, 0x10($a0)
-/* 004923BC 00435021 */  addu  $t2, $v0, $v1
-/* 004923C0 51200006 */  beql  $t1, $zero, .L004923DC
-/* 004923C4 8C8B0010 */   lw    $t3, 0x10($a0)
-/* 004923C8 51450004 */  beql  $t2, $a1, .L004923DC
-/* 004923CC 8C8B0010 */   lw    $t3, 0x10($a0)
-/* 004923D0 03E00008 */  jr    $ra
-/* 004923D4 00001025 */   move  $v0, $zero
-
-/* 004923D8 8C8B0010 */  lw    $t3, 0x10($a0)
-.L004923DC:
-/* 004923DC 000B60C0 */  sll   $t4, $t3, 3
-/* 004923E0 006C1821 */  addu  $v1, $v1, $t4
-/* 004923E4 306D0003 */  andi  $t5, $v1, 3
-/* 004923E8 11A00003 */  beqz  $t5, .L004923F8
-/* 004923EC 00601025 */   move  $v0, $v1
-/* 004923F0 03E00008 */  jr    $ra
-/* 004923F4 00001025 */   move  $v0, $zero
-
-.L004923F8:
-/* 004923F8 03E00008 */  jr    $ra
-/* 004923FC 00000000 */   nop   
-    .type ldfsymorder, @function
-    .size ldfsymorder, .-ldfsymorder
-    .end ldfsymorder
-)"");

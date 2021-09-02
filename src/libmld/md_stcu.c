@@ -21,7 +21,7 @@ CHDRR* st_cuinit(void) {
 
 
 EXTR* st_pext_iext(int index) {
-    if ((index < 0) || (st_pchdr->cext < index)) { //TODO UB?
+    if ((index < 0) || (st_pchdr->cext < index)) {
         _md_st_internal("st_pext_iext: index out of range (%d)\n", index);
     }
 
