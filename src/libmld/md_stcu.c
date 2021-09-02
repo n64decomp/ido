@@ -37,7 +37,7 @@ int st_idn_index_fext(int index, int fext) {
         _md_st_internal("st_idn_index_fext: you didn't initialize with cuinit or readst\n");
     }
     if (st_pchdr->cdn >= st_pchdr->cdnMax) {
-        st_pchdr->pdn = _md_st_malloc(st_pchdr->pdn, st_pchdr + 0x40, 8, 0x80);
+        st_pchdr->pdn = _md_st_malloc(st_pchdr->pdn, st_pchdr->pssext, 8, 0x80);
     }
     if (st_pchdr->cdnMax == 0) {
         bzero(st_pchdr->pdn, sizeof(st_pchdr->pdn));

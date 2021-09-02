@@ -1,3 +1,7 @@
+#include "libmld.h"
+
+CFDR* pcfdcur;
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -41,10 +45,10 @@ D_10011A80:
 
 
 
-.bss
-    .balign 4
+#.bss
+#    .balign 4
 # 1001C68C
-glabel pcfdcur
+#glabel pcfdcur
     # 00488BB0 st_currentifd
     # 00488C1C st_setfd
     # 00488C8C st_fdadd
@@ -59,9 +63,9 @@ glabel pcfdcur
     # 0048A5E8 _md_st_str_iss
     # 0048A6B4 _md_st_currentifd
     # 0048A86C _md_st_setfd
-    .space 4
-    .size pcfdcur, 4
-    .type pcfdcur, @object
+#   .space 4
+#   .size pcfdcur, 4
+#   .type pcfdcur, @object
 
 
 .set noat      # allow manual use of $at

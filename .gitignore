@@ -32,3 +32,6 @@ build/*
 
 # mips_to_c context
 context.txt
+
+# Text editor remnants
+.vscode/
