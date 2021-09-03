@@ -6,7 +6,7 @@
 #include "uoptkill.h"
 #include "uoptreg1.h"
 #include "uoptutil.h"
-#include "feedback.h"
+#include "uoptfeedback.h"
 
 /*
 00469280 globalcolor

@@ -89,7 +89,7 @@ int st_readbinary(char *filename, char how) {
     int fn;
     int result;
 
-    fn = open(filename, 0, 0);
+    fn = open(filename, O_RDONLY, 0);
     if (fn < 0) {
         return -2;
     }
@@ -155,7 +155,7 @@ int st_readst(int fn, char how, int filebase, CHDRR *pchdr, int flags) {
 
     flags &= ~st_pchdr->flags;
     if (pchdr == NULL || (flags & ST_PHEADER)) {
-        seek_offset = lseek(fn, 0, 1);
+        seek_offset = lseek(fn, 0, SEEK_CUR);
         flags |= (ST_PFDS | ST_PHEADER);
         if (read(fn, &spC0, sizeof (HDRR)) != sizeof (HDRR)) {
             return -3;
@@ -236,7 +236,7 @@ int st_readst(int fn, char how, int filebase, CHDRR *pchdr, int flags) {
         }
     }
 
-    sp4C = flags & 1;
+    sp4C = flags & ST_PEXTS;
     if (sp4C) {
         if (st_pchdr->pext == NULL) {
             st_pchdr->pext = st_malloc(st_pchdr->pext, &size, sizeof (EXTR), spC0.iextMax + 1);
@@ -467,53 +467,23 @@ static int st_read(int fn, int fsymorder, int fileOffset, void *ptr, int size) {
     return 0;
 }
 
+/*
+00439B60 write_updated_st
+*/
+void st_writebinary(char *filename, int flags) {
+    int fn;
+
+    fn = open(filename, O_CREAT | O_RDWR, 0666);
+    if (fn < 0) {
+        st_error("cannot open symbol table file %s\n", filename);
+    }
+    st_writest(fn, flags);
+    close(fn);
+}
+
 __asm__(R""(
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
-
-glabel st_writebinary
-    .ent st_writebinary
-    # 00439B60 write_updated_st
-/* 0048E148 3C1C0FB9 */  .cpload $t9
-/* 0048E14C 279CC148 */  
-/* 0048E150 0399E021 */  
-/* 0048E154 8F99808C */  lw    $t9, %call16(open)($gp)
-/* 0048E158 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 0048E15C AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0048E160 AFA5002C */  sw    $a1, 0x2c($sp)
-/* 0048E164 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0048E168 AFA40028 */  sw    $a0, 0x28($sp)
-/* 0048E16C 24050102 */  li    $a1, 258
-/* 0048E170 0320F809 */  jalr  $t9
-/* 0048E174 240601B6 */   li    $a2, 438
-/* 0048E178 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0048E17C 04410007 */  bgez  $v0, .L0048E19C
-/* 0048E180 AFA20024 */   sw    $v0, 0x24($sp)
-/* 0048E184 8F998788 */  lw    $t9, %call16(st_error)($gp)
-/* 0048E188 8F848044 */  lw    $a0, %got(RO_1000F34C)($gp)
-/* 0048E18C 8FA50028 */  lw    $a1, 0x28($sp)
-/* 0048E190 0320F809 */  jalr  $t9
-/* 0048E194 2484F34C */   addiu $a0, %lo(RO_1000F34C) # addiu $a0, $a0, -0xcb4
-/* 0048E198 8FBC0018 */  lw    $gp, 0x18($sp)
-.L0048E19C:
-/* 0048E19C 8F998814 */  lw    $t9, %call16(st_writest)($gp)
-/* 0048E1A0 8FA40024 */  lw    $a0, 0x24($sp)
-/* 0048E1A4 8FA5002C */  lw    $a1, 0x2c($sp)
-/* 0048E1A8 0320F809 */  jalr  $t9
-/* 0048E1AC 00000000 */   nop   
-/* 0048E1B0 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0048E1B4 8FA40024 */  lw    $a0, 0x24($sp)
-/* 0048E1B8 8F998098 */  lw    $t9, %call16(close)($gp)
-/* 0048E1BC 0320F809 */  jalr  $t9
-/* 0048E1C0 00000000 */   nop   
-/* 0048E1C4 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0048E1C8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0048E1CC 27BD0028 */  addiu $sp, $sp, 0x28
-/* 0048E1D0 03E00008 */  jr    $ra
-/* 0048E1D4 00000000 */   nop   
-    .type st_writebinary, @function
-    .size st_writebinary, .-st_writebinary
-    .end st_writebinary
 
 glabel st_writest
     .ent st_writest
@@ -1567,6 +1537,655 @@ glabel st_writest
     .type st_writest, @function
     .size st_writest, .-st_writest
     .end st_writest
+)"");
+#if 0
+? bzero(s16 *, ?); // extern
+s32 dup(s32); // extern
+? fclose(s32); // extern
+s32 fdopen(s32, ? *); // extern
+? fflush(s32); // extern
+? fseek(s32, s32, ?); // extern
+s32 fwrite(s8 *, s32, u16, s32); // extern
+s32 lseek(s32, ?, ?); // extern
+? st_error(? *, s32); // static
+static s8 B_1001C2B0;
+static ? msg_err; // unable to generate initializer
+static ? msg_werr; // unable to generate initializer
+static void *st_pchdr;
+static s16 stmagic = 0x7009;
+
+void st_writest(s32 fn, s32 flags) {
+    CFDR *sp1D4;
+    s32 sp1C4;
+    s32 sp1C0;
+    s32 sp1BC;
+    s32 sp1B8;
+    u16 sp1B6;
+    u16 sp1B4;
+    s32 sp1B0;
+    s32 sp1AC;
+    s32 sp1A0;
+    s32 sp19C;
+    s32 sp198;
+    s32 sp194;
+    s16 sp18C;
+    void *sp188;
+    s32 sp184;
+    s32 sp180;
+    s32 sp17C;
+    s32 sp178;
+    s32 sp174;
+    s32 sp170;
+    s32 sp16C;
+    s32 sp168;
+    s32 sp164;
+    s32 sp160;
+    s32 sp15C;
+    s32 sp158;
+    s32 sp154;
+    s32 sp150;
+    s32 sp14C;
+    s32 sp148;
+    s32 sp144;
+    s32 sp140;
+    s32 sp13C;
+    s32 sp138;
+    s32 sp134;
+    s32 sp130;
+    s32 sp12C;
+    s16 sp12A;
+    s16 sp128;
+    s32 sp124;
+    s32 sp120;
+    s32 sp11C;
+    s32 sp118;
+    s32 sp114;
+    s32 sp110;
+    s32 sp10C;
+    u32 sp108;
+    void *spFC;
+    ? spE8;
+    s8 sp68;
+    s32 sp58;
+    CFDR *temp_v0_10;
+    CFDR *temp_v0_11;
+    CFDR *temp_v0_12;
+    CFDR *temp_v0_15;
+    CFDR *temp_v0_7;
+    CFDR *temp_v0_9;
+    s16 *temp_a0_7;
+    s32 *temp_s3;
+    s32 *temp_s3_2;
+    s32 *temp_v0_4;
+    s32 *temp_v1_2;
+    s32 *temp_v1_3;
+    s32 temp_a0_2;
+    s32 temp_a0_3;
+    s32 temp_a0_4;
+    s32 temp_a0_5;
+    s32 temp_a0_6;
+    s32 temp_a1;
+    s32 temp_a2;
+    s32 temp_a2_2;
+    s32 temp_a2_3;
+    s32 temp_a2_4;
+    s32 temp_a2_5;
+    s32 temp_a2_6;
+    s32 temp_s1_3;
+    s32 temp_t4_2;
+    s32 temp_t4_3;
+    s32 temp_t4_4;
+    s32 temp_t5_3;
+    s32 temp_t5_4;
+    s32 temp_t6;
+    s32 temp_t6_2;
+    s32 temp_t6_3;
+    s32 temp_t6_4;
+    s32 temp_t7;
+    s32 temp_t8;
+    s32 temp_t8_2;
+    s32 temp_t9_5;
+    s32 temp_v0;
+    s32 temp_v0_3;
+    s32 temp_v0_5;
+    s32 temp_v0_6;
+    s32 temp_v1;
+    s32 temp_v1_4;
+    s32 temp_v1_5;
+    s32 temp_v1_6;
+    s32 temp_v1_7;
+    s32 temp_v1_8;
+    u16 temp_s0;
+    u16 temp_s0_2;
+    u16 temp_s0_3;
+    u16 temp_s1;
+    u16 temp_s1_2;
+    u16 temp_s1_4;
+    u16 temp_v0_8;
+    u32 temp_a0;
+    u32 temp_t4;
+    void *temp_t0;
+    void *temp_t5_2;
+    void *temp_t6_5;
+    void *temp_t9;
+    void *temp_t9_2;
+    void *temp_t9_3;
+    void *temp_t9_4;
+    void *temp_v0_13;
+    void *temp_v0_14;
+    void *temp_v0_16;
+    void *temp_v0_17;
+    void *temp_v0_18;
+    PDR *phi_v1;
+    s32 phi_a1;
+    u32 phi_a0;
+    s32 phi_a1_2;
+    s32 *phi_s3;
+    s32 *phi_v1_2;
+    s16 phi_v1_3;
+    s8 phi_s2;
+    s32 phi_s4;
+    s8 *phi_s0;
+    u32 phi_v0;
+    s8 *phi_s0_2;
+    void *phi_t0;
+    s32 phi_t2;
+    u32 phi_v1_4;
+    u32 phi_s1;
+    s32 phi_t2_2;
+    void **phi_t0_2;
+    void **phi_t0_3;
+    s32 phi_a1_3;
+    s32 phi_a0_2;
+    s32 phi_s5;
+    s8 *phi_s0_3;
+    s32 phi_t2_3;
+    s32 phi_t2_4;
+    s32 phi_t2_5;
+    s32 t3;
+    CFDR *t1;
+
+    sp120 = 0;
+    bzero(&sp18C, 0x48);
+    bzero(&sp128, sizeof (HDRR)); // 0x60
+    sp114 = st_ifdmax();
+    sp110 = lseek(fn, 0, 1);
+    sp11C = lseek(fn, 0x60, 1);
+    st_pchdr->unkC = sp114;
+    temp_v0 = fdopen(dup(fn), "w");
+    t3 = sp120;
+    sp10C = temp_v0;
+    if (temp_v0 == 0) {
+        sp120 = t3;
+        st_error("st_writest: cannot write to file number %d\n", fn);
+    }
+
+    if ((flags & ST_PLINES) != 0) {
+        if (sp114 > 0) {
+            sp118 = 0;
+            do {
+                sp124 = 0;
+                sp120 = t3;
+                t1 = st_pcfd_ifd(sp118);
+                sp188 = t1->pfd;
+                temp_v1 = t1->pfd->unk1C;
+                phi_t2_2 = sp124;
+                phi_t2_3 = sp124;
+                if ((temp_v1 != 0) && (t1->pline != 0)) {
+                    t1->pfd->unk18 = sp12C;
+                    sp12C += temp_v1;
+                    sp188->unk40 = t3;
+                    sp108 = 0;
+                    temp_s1 = sp188->unk2A;
+                    phi_s1 = (u32) temp_s1;
+                    if (temp_s1 != 0) {
+                        sp58 = 0;
+                        do {
+                            temp_t0 = t1->ppd + sp58;
+                            phi_t0 = temp_t0;
+                            phi_t2 = phi_t2_3;
+                            phi_t2_5 = phi_t2_3;
+                            if ((temp_t0->unk8 != -1) && (temp_t0->unk28 != -1) && (temp_t0->unk2C != -1)) {
+                                temp_t0->unk30 = (s32) (t3 - sp188->unk40);
+                                temp_s1_2 = sp188->unk2A;
+                                temp_a1 = sp188->unk1C;
+                                phi_a1 = temp_a1;
+                                phi_a0 = 0U;
+                                phi_a1_2 = temp_a1;
+                                phi_s1 = (u32) temp_s1_2;
+                                if (temp_s1_2 != 0) {
+                                    phi_v1 = t1->ppd;
+                                    do {
+                                        temp_v0_3 = phi_v1->iline;
+                                        temp_a0 = phi_a0 + 1;
+                                        phi_a0 = temp_a0;
+                                        phi_a1_3 = phi_a1;
+                                        if ((temp_t0->unk8 < temp_v0_3) && (phi_v1->lnLow != -1) && (phi_v1->lnHigh != -1) && (temp_v0_3 < phi_a1)) {
+                                            phi_a1_3 = temp_v0_3;
+                                        }
+                                        phi_v1 += 0x34;
+                                        phi_a1 = phi_a1_3;
+                                        phi_a1_2 = phi_a1_3;
+                                    } while (temp_a0 < (u32) temp_s1_2);
+                                }
+                                if (phi_a1_2 > 0) {
+                                    temp_a2 = temp_t0->unk8;
+                                    phi_s2 = -1;
+                                    phi_s4 = 0;
+                                    if (temp_a2 >= 0) {
+                                        temp_v0_4 = t1->pline;
+                                        temp_s3 = &temp_v0_4[temp_a2];
+                                        temp_v1_2 = &temp_v0_4[phi_a1_2];
+                                        phi_s3 = temp_s3;
+                                        phi_v1_2 = temp_v1_2;
+                                        phi_s0 = &sp68;
+                                        phi_s5 = temp_t0->unk28;
+                                        if ((u32) temp_v1_2 >= (u32) temp_s3) {
+                                            do {
+                                                phi_s0_2 = phi_s0;
+                                                phi_s0_3 = phi_s0;
+                                                phi_t2_4 = phi_t2;
+                                                if (phi_s3 == phi_v1_2) {
+                                                    phi_v1_3 = 1;
+                                                } else {
+                                                    temp_v0_5 = *phi_s3;
+                                                    phi_a0_2 = temp_v0_5;
+                                                    if (temp_v0_5 == 0) {
+                                                        phi_a0_2 = phi_t0->unk28;
+                                                    }
+                                                    phi_v1_3 = (s16) (phi_a0_2 - phi_s5);
+                                                }
+                                                if ((phi_v1_3 != 0) || (phi_v0 = phi_s0 + 3, (phi_s2 == 8))) {
+                                                    phi_s5 += phi_v1_3;
+                                                    if ((phi_s2 != -1) && (phi_s4 >= -7) && (phi_s4 < 8)) {
+                                                        phi_s0->unk0 = (s8) ((phi_s4 * 0x10) | phi_s2);
+                                                        phi_s0_3 = phi_s0 + 1;
+                                                    } else if (phi_s2 != -1) {
+                                                        phi_s0->unk0 = phi_s2;
+                                                        phi_s0->unk1 = (s8) (phi_s4 >> 8);
+                                                        phi_s0->unk2 = (s8) phi_s4;
+                                                        phi_s0->unk0 = (s8) (phi_s0->unk0 | 0x80);
+                                                        phi_s0_3 = phi_s0 + 3;
+                                                    }
+                                                    phi_v0 = phi_s0_3 + 3;
+                                                    phi_s0_2 = phi_s0_3;
+                                                    phi_s2 = 0;
+                                                    phi_s4 = (s32) phi_v1_3;
+                                                } else {
+                                                    phi_s2 += 1;
+                                                }
+                                                temp_s1_3 = phi_s0_2 - &sp68;
+                                                phi_s0 = phi_s0_2;
+                                                if ((phi_v0 >= (u32) &spE8) || ((temp_v1_3 = &t1->pline[phi_a1_2], phi_v1_4 = (u32) temp_v1_3, (phi_s3 == temp_v1_3)) && ((phi_s0_2 - &sp68) > 0))) {
+                                                    spFC = phi_t0;
+                                                    sp1D4 = t1;
+                                                    sp124 = phi_t2;
+                                                    sp120 = t3;
+                                                    fwrite(&sp68, temp_s1_3, 1U, sp10C);
+                                                    t3 += temp_s1_3;
+                                                    phi_v1_4 = (u32) &t1->pline[phi_a1_2];
+                                                    phi_s0 = &sp68;
+                                                    phi_t2_4 = phi_t2 + temp_s1_3;
+                                                }
+                                                temp_s3_2 = phi_s3 + 4;
+                                                phi_s3 = temp_s3_2;
+                                                phi_v1_2 = (s32 *) phi_v1_4;
+                                                phi_t2 = phi_t2_4;
+                                                phi_t2_5 = phi_t2_4;
+                                            } while (phi_v1_4 >= (u32) temp_s3_2);
+                                            phi_s1 = (u32) sp188->unk2A;
+                                        }
+                                    }
+                                }
+                            }
+                            temp_t4 = sp108 + 1;
+                            sp58 += 0x34;
+                            sp108 = temp_t4;
+                            phi_t2_2 = phi_t2_5;
+                            phi_t2_3 = phi_t2_5;
+                        } while (temp_t4 < phi_s1);
+                    }
+                    sp188->unk44 = phi_t2_2;
+                }
+                temp_v0_6 = sp118 + 1;
+                sp118 = temp_v0_6;
+            } while (temp_v0_6 != sp114);
+        }
+        temp_s0 = -t3 & 3;
+        if (sp12C != 0) {
+            if (temp_s0 != 0) {
+                sp120 = t3;
+                if (fwrite(&B_1001C2B0, 1, temp_s0, sp10C) != temp_s0) {
+                    sp120 = t3;
+                    st_error("cannot write round bytes for lines\n");
+                }
+                t3 += 3;
+                t3 &= -4;
+            }
+            sp130 = t3;
+            sp134 = sp11C;
+        }
+    }
+
+    if ((flags & 0x100) != 0) {
+        sp11C += t3;
+        t3 = 0;
+        if (sp114 > 0) {
+            sp118 = 0;
+            do {
+                sp120 = t3;
+                temp_v0_7 = st_pcfd_ifd(sp118);
+                temp_t5_2 = temp_v0_7->pfd;
+                sp188 = temp_t5_2;
+                temp_t5_2->unk28 = (s16) (sp1B4 + sp1B6);
+                temp_s1_4 = sp188->unk2A;
+                t3 += temp_s1_4 * 0x34;
+                if (temp_s1_4 != 0) {
+                    sp120 = t3;
+                    if (fwrite((s8 *) temp_v0_7->ppd, 0x34, temp_s1_4, sp10C) != sp188->unk2A) {
+                        sp120 = t3;
+                        st_error("cannot write pfield");
+                    }
+                }
+                sp1B4 += sp1B6;
+                temp_v0_8 = sp188->unk2A;
+                temp_v1_4 = sp118 + 1;
+                sp140 += temp_v0_8;
+                sp118 = temp_v1_4;
+                sp1B6 = temp_v0_8;
+            } while (temp_v1_4 != sp114);
+        }
+        if (sp140 != 0) {
+            sp144 = sp11C;
+        }
+    }
+    if ((flags & 2) != 0) {
+        sp11C += t3;
+        t3 = 0;
+        if (sp114 > 0) {
+            sp118 = 0;
+            do {
+                sp120 = t3;
+                temp_v0_9 = st_pcfd_ifd(sp118);
+                temp_t9 = temp_v0_9->pfd;
+                sp188 = temp_t9;
+                temp_t9->unk10 = (s32) (sp19C + sp1A0);
+                temp_a2_2 = sp188->unk14;
+                t3 += temp_a2_2 * 0xC;
+                if (temp_a2_2 != 0) {
+                    sp120 = t3;
+                    if (fwrite((s8 *) temp_v0_9->psym, 0xC, (u16) temp_a2_2, sp10C) != sp188->unk14) {
+                        sp120 = t3;
+                        st_error("cannot write pfield");
+                    }
+                }
+                sp19C += sp1A0;
+                temp_a0_2 = sp188->unk14;
+                temp_t6 = sp118 + 1;
+                sp148 += temp_a0_2;
+                sp118 = temp_t6;
+                sp1A0 = temp_a0_2;
+            } while (temp_t6 != sp114);
+        }
+        if (sp148 != 0) {
+            sp14C = sp11C;
+        }
+    }
+    if ((flags & 0x20) != 0) {
+        sp11C += t3;
+        t3 = 0;
+        if (sp114 > 0) {
+            sp118 = 0;
+            do {
+                sp120 = t3;
+                temp_v0_10 = st_pcfd_ifd(sp118);
+                temp_t9_2 = temp_v0_10->pfd;
+                sp188 = temp_t9_2;
+                temp_t9_2->unk20 = (s32) (sp1AC + sp1B0);
+                temp_a2_3 = sp188->unk24;
+                t3 += temp_a2_3 * 0xC;
+                if (temp_a2_3 != 0) {
+                    sp120 = t3;
+                    if (fwrite((s8 *) temp_v0_10->popt, 0xC, (u16) temp_a2_3, sp10C) != sp188->unk24) {
+                        sp120 = t3;
+                        st_error("cannot write pfield");
+                    }
+                }
+                sp1AC += sp1B0;
+                temp_a0_3 = sp188->unk24;
+                temp_t6_2 = sp118 + 1;
+                sp150 += temp_a0_3;
+                sp118 = temp_t6_2;
+                sp1B0 = temp_a0_3;
+            } while (temp_t6_2 != sp114);
+        }
+        if (sp150 != 0) {
+            sp154 = sp11C;
+        }
+    }
+    if ((flags & 0x400) != 0) {
+        sp11C += t3;
+        t3 = 0;
+        if (sp114 > 0) {
+            sp118 = 0;
+            do {
+                sp120 = t3;
+                temp_v0_11 = st_pcfd_ifd(sp118);
+                temp_t9_3 = temp_v0_11->pfd;
+                sp188 = temp_t9_3;
+                temp_t9_3->unk2C = (s32) (sp1B8 + sp1BC);
+                temp_a2_4 = sp188->unk30;
+                t3 += temp_a2_4 * 4;
+                if (temp_a2_4 != 0) {
+                    sp120 = t3;
+                    if (fwrite((s8 *) temp_v0_11->paux, 4, (u16) temp_a2_4, sp10C) != sp188->unk30) {
+                        sp120 = t3;
+                        st_error("cannot write pfield");
+                    }
+                }
+                sp1B8 += sp1BC;
+                temp_a0_4 = sp188->unk30;
+                temp_t6_3 = sp118 + 1;
+                sp158 += temp_a0_4;
+                sp118 = temp_t6_3;
+                sp1BC = temp_a0_4;
+            } while (temp_t6_3 != sp114);
+        }
+        if (sp158 != 0) {
+            sp15C = sp11C;
+        }
+    }
+    if ((flags & 0x80) != 0) {
+        sp11C += t3;
+        t3 = 0;
+        if (sp114 > 0) {
+            sp118 = 0;
+            do {
+                sp120 = t3;
+                temp_v0_12 = st_pcfd_ifd(sp118);
+                temp_t9_4 = temp_v0_12->pfd;
+                sp188 = temp_t9_4;
+                temp_t9_4->unk8 = (s32) (sp194 + sp198);
+                temp_a2_5 = sp188->unkC;
+                t3 += temp_a2_5;
+                if (temp_a2_5 != 0) {
+                    sp120 = t3;
+                    if (fwrite(temp_v0_12->pss, 1, (u16) temp_a2_5, sp10C) != sp188->unkC) {
+                        sp120 = t3;
+                        st_error("cannot write pfield");
+                    }
+                }
+                sp194 += sp198;
+                temp_a0_5 = sp188->unkC;
+                temp_t6_4 = sp118 + 1;
+                sp160 += temp_a0_5;
+                sp118 = temp_t6_4;
+                sp198 = temp_a0_5;
+            } while (temp_t6_4 != sp114);
+        }
+        temp_s0_2 = -t3 & 3;
+        if (temp_s0_2 != 0) {
+            sp120 = t3;
+            if (fwrite(&B_1001C2B0, 1, temp_s0_2, sp10C) != temp_s0_2) {
+                sp120 = t3;
+                st_error("cannot write round bytes for strings\n");
+            }
+            t3 += 3;
+            t3 &= -4;
+        }
+        sp160 = t3;
+        if (t3 != 0) {
+            sp164 = sp11C;
+        }
+    }
+    if ((flags & 0x800) != 0) {
+        temp_v0_13 = st_pchdr;
+        temp_t7 = sp11C + t3;
+        t3 = 0;
+        temp_t5_3 = temp_v0_13->unk28;
+        sp11C = temp_t7;
+        sp168 = temp_t5_3;
+        if (temp_t5_3 != 0) {
+            t3 = temp_v0_13->unk28;
+            sp16C = temp_t7;
+            temp_v1_5 = temp_v0_13->unk28;
+            if (temp_v1_5 != 0) {
+                sp120 = t3;
+                if (fwrite(temp_v0_13->unk24, 1, (u16) temp_v1_5, sp10C) != st_pchdr->unk28) {
+                    sp120 = t3;
+                    st_error("cannot write cur table\n");
+                }
+            }
+        }
+        temp_s0_3 = -t3 & 3;
+        if (temp_s0_3 != 0) {
+            sp120 = t3;
+            if (fwrite(&B_1001C2B0, 1, temp_s0_3, sp10C) != temp_s0_3) {
+                sp120 = t3;
+                st_error("cannot write round bytes for strings\n");
+            }
+            t3 += 3;
+            t3 &= -4;
+        }
+        sp168 = t3;
+    }
+    if ((flags & 0x200) != 0) {
+        temp_v0_14 = st_pchdr;
+        temp_t8 = temp_v0_14->unkC;
+        temp_t9_5 = sp11C + t3;
+        sp11C = temp_t9_5;
+        t3 = 0;
+        sp170 = temp_t8;
+        if (temp_t8 != 0) {
+            t3 = temp_v0_14->unkC;
+            sp174 = temp_t9_5;
+            temp_v1_6 = temp_v0_14->unkC;
+            t3 *= 8;
+            t3 *= 2;
+            t3 *= 8;
+            if (temp_v1_6 != 0) {
+                sp120 = t3;
+                if (fwrite(temp_v0_14->unk8, 0x48, (u16) temp_v1_6, sp10C) != st_pchdr->unkC) {
+                    sp120 = t3;
+                    st_error("cannot write cur table\n");
+                }
+            }
+        }
+    }
+    phi_t0_2 = &st_pchdr;
+    phi_t0_2 = &st_pchdr;
+    if ((flags & 0x40) != 0) {
+        sp11C += t3;
+        t3 = 0;
+        if (sp114 > 0) {
+            sp118 = 0;
+            do {
+                sp120 = t3;
+                temp_v0_15 = st_pcfd_ifd(sp118);
+                temp_t6_5 = temp_v0_15->pfd;
+                sp188 = temp_t6_5;
+                temp_t6_5->unk34 = (s32) (sp1C0 + sp1C4);
+                temp_a2_6 = sp188->unk38;
+                t3 += temp_a2_6 * 4;
+                if (temp_a2_6 != 0) {
+                    sp120 = t3;
+                    if (fwrite((s8 *) temp_v0_15->prfd, 4, (u16) temp_a2_6, sp10C) != sp188->unk38) {
+                        sp120 = t3;
+                        st_error("cannot write pfield");
+                    }
+                }
+                sp1C0 += sp1C4;
+                temp_a0_6 = sp188->unk38;
+                temp_t4_2 = sp118 + 1;
+                sp178 += temp_a0_6;
+                sp118 = temp_t4_2;
+                sp1C4 = temp_a0_6;
+            } while (temp_t4_2 != sp114);
+            phi_t0_2 = &st_pchdr;
+        }
+        if (sp178 != 0) {
+            sp17C = sp11C;
+        }
+    }
+    phi_t0_3 = phi_t0_2;
+    if ((flags & 1) != 0) {
+        temp_v0_16 = *phi_t0_2;
+        temp_t4_3 = temp_v0_16->unk1C;
+        temp_t5_4 = sp11C + t3;
+        sp11C = temp_t5_4;
+        t3 = 0;
+        sp180 = temp_t4_3;
+        if (temp_t4_3 != 0) {
+            t3 = temp_v0_16->unk1C;
+            sp184 = temp_t5_4;
+            temp_v1_7 = temp_v0_16->unk1C;
+            t3 *= 0x10;
+            if (temp_v1_7 != 0) {
+                sp120 = t3;
+                if (fwrite(temp_v0_16->unk18, 0x10, (u16) temp_v1_7, sp10C) != st_pchdr->unk1C) {
+                    sp120 = t3;
+                    st_error("cannot write cur table\n");
+                }
+            }
+        }
+        phi_t0_3 = &st_pchdr;
+    }
+    if ((flags & 0x10) != 0) {
+        temp_v0_17 = *phi_t0_3;
+        if (temp_v0_17->unk3C != 0) {
+            *temp_v0_17->unk38 = 0;
+            (*phi_t0_3)->unk38->unk4 = 0;
+            (*phi_t0_3)->unk38->unk8 = 0;
+            (*phi_t0_3)->unk38->unkC = 0;
+            temp_v0_18 = *phi_t0_3;
+            temp_t8_2 = temp_v0_18->unk3C;
+            temp_t4_4 = sp11C + t3;
+            sp11C = temp_t4_4;
+            sp138 = temp_t8_2;
+            if (temp_t8_2 != 0) {
+                sp13C = temp_t4_4;
+                temp_v1_8 = temp_v0_18->unk3C;
+                if ((temp_v1_8 != 0) && (fwrite(temp_v0_18->unk38, 8, (u16) temp_v1_8, sp10C) != st_pchdr->unk3C)) {
+                    st_error("cannot write cur table\n");
+                }
+            }
+        }
+    }
+    fflush(sp10C);
+    fseek(sp10C, sp110, 0);
+    sp12A = 0x70A;
+    temp_a0_7 = &sp128;
+    sp128 = stmagic;
+    if (fwrite((s8 *) temp_a0_7, 1, 0x60U, sp10C) != 0x60) {
+        st_error("cannot write symbol header\n");
+    }
+    fclose(sp10C);
+}
+#endif
+
+__asm__(R""(
+.set noat      # allow manual use of $at
+.set noreorder # don't insert nops after branches
 
 glabel st_setstmagic
     .ent st_setstmagic

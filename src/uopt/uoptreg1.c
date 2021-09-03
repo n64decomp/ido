@@ -1731,7 +1731,7 @@ void makelivranges(void) {
                     }
                 } else if (stat->opc == Upmov) {
                     func_0045E5C4(stat->expr, 3, node, &lu);
-                    if (proc->o3opt == 0) {
+                    if (!proc->o3opt) {
                         size = stat->u.store.size;
                         reg = firstparmreg[0] + stat->u.store.u.mov.offset / int_reg_size;
                         while (size > 0 && reg < firstparmreg[0] + 4) {

@@ -106,7 +106,7 @@ typedef struct __sgi_hdrr_s  {
     /* 0x5C */ long_i  cbExtOffset;    /* offset to start of external symbol entries*/
     /* If you add machine dependent fields, add them here */
 } HDRR, *pHDRR; // size 0x60
-_Static_assert(sizeof(HDRR) == 96);
+_Static_assert(sizeof(HDRR) == 0x60);
 #define cbHDRR sizeof(HDRR)
 #define hdrNil ((pHDRR)0)
 
@@ -140,12 +140,12 @@ typedef struct fdr {
     /* 0x24 */ long_i  copt;           /* count of file's optimization entries */
                                        /* the following MUST be unsigned: still
                                        ** restricts to 64K procedures. sgi */
-    unsigned short ipdFirst;/* start of procedures for this file */
-    unsigned short  cpd;    /* count of procedures for this file */
-    long_i  iauxBase;       /* file's auxiliary entries */
-    long_i  caux;           /* count of file's auxiliary entries */
-    long_i  rfdBase;        /* index into the file indirect table */
-    long_i  crfd;           /* count file indirect entries */
+    /* 0x28 */ unsigned short ipdFirst;/* start of procedures for this file */
+    /* 0x2A */ unsigned short  cpd;    /* count of procedures for this file */
+    /* 0x2C */ long_i  iauxBase;       /* file's auxiliary entries */
+    /* 0x30 */ long_i  caux;           /* count of file's auxiliary entries */
+    /* 0x34 */ long_i  rfdBase;        /* index into the file indirect table */
+    /* 0x38 */ long_i  crfd;           /* count file indirect entries */
     unsigned lang: 5;       /* language for this file */
     unsigned fMerge : 1;    /* whether this file can be merged */
     unsigned fReadin : 1;   /* true if it was read in (not just created) */

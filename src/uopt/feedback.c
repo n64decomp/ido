@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include "libxmalloc/xmalloc.h"
 #include "common.h"
+#include "libmld/libmld.h"
+#include "uoptfeedback.h"
 
 __asm__(R""(
 .macro glabel label
@@ -107,8 +109,8 @@ void read_feedback_file(const char *path) {
         func_0040B7D0("reading feedback file %s.", path);
     }
     close(fd);
-    if (0x64656566 != *(int *)filebuf) {
-        fprintf(stderr, "%s: feedback file stamp = %x, not %x.\n", __Argv[0], *(int *)filebuf, 0x64656566);
+    if (FEEDBACK_MAGIC != *(int *)filebuf) {
+        fprintf(stderr, "%s: feedback file stamp = %x, not %x.\n", __Argv[0], *(int *)filebuf, FEEDBACK_MAGIC);
         exit(1);
     }
     feedback = filebuf;
@@ -580,49 +582,22 @@ __asm__(R""(
     .type path_blockno, @function
     .size path_blockno, .-path_blockno
     .end path_blockno
-
-glabel local_in_reg
-    .ent local_in_reg
-    # 00469280 globalcolor
-/* 0040C0C0 3C1C0FC1 */  .cpload $t9
-/* 0040C0C4 279CE1D0 */  
-/* 0040C0C8 0399E021 */  
-/* 0040C0CC 8F9987F8 */  lw    $t9, %call16(st_psym_idn_offset)($gp)
-/* 0040C0D0 8F8188DC */  lw     $at, %got(sym_file_updated)($gp)
-/* 0040C0D4 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0040C0D8 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0040C0DC 240E0001 */  li    $t6, 1
-/* 0040C0E0 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0040C0E4 AFA60028 */  sw    $a2, 0x28($sp)
-/* 0040C0E8 0320F809 */  jalr  $t9
-/* 0040C0EC A02E0000 */   sb    $t6, ($at)
-/* 0040C0F0 10400012 */  beqz  $v0, .L0040C13C
-/* 0040C0F4 8FBC0018 */   lw    $gp, 0x18($sp)
-/* 0040C0F8 8C4F0008 */  lw    $t7, 8($v0)
-/* 0040C0FC 24010010 */  li    $at, 16
-/* 0040C100 000FC180 */  sll   $t8, $t7, 6
-/* 0040C104 0018CEC2 */  srl   $t9, $t8, 0x1b
-/* 0040C108 57210007 */  bnel  $t9, $at, .L0040C128
-/* 0040C10C 944B0008 */   lhu   $t3, 8($v0)
-/* 0040C110 94480008 */  lhu   $t0, 8($v0)
-/* 0040C114 3109FC1F */  andi  $t1, $t0, 0xfc1f
-/* 0040C118 352A0260 */  ori   $t2, $t1, 0x260
-/* 0040C11C 10000005 */  b     .L0040C134
-/* 0040C120 A44A0008 */   sh    $t2, 8($v0)
-/* 0040C124 944B0008 */  lhu   $t3, 8($v0)
-.L0040C128:
-/* 0040C128 316CFC1F */  andi  $t4, $t3, 0xfc1f
-/* 0040C12C 358D0080 */  ori   $t5, $t4, 0x80
-/* 0040C130 A44D0008 */  sh    $t5, 8($v0)
-.L0040C134:
-/* 0040C134 8FAE0028 */  lw    $t6, 0x28($sp)
-/* 0040C138 AC4E0004 */  sw    $t6, 4($v0)
-.L0040C13C:
-/* 0040C13C 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0040C140 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0040C144 03E00008 */  jr    $ra
-/* 0040C148 00000000 */   nop   
-    .type local_in_reg, @function
-    .size local_in_reg, .-local_in_reg
-    .end local_in_reg
 )"");
+
+/*
+00469280 globalcolor
+*/
+void local_in_reg(int blockno, int var_addr, int reg) {
+    SYMR *sym;
+
+    sym_file_updated = true;
+    sym = st_psym_idn_offset(blockno, var_addr);
+    if (sym != NULL) {
+        if (sym->sc == scVar) {
+            sym->sc = scVarRegister;
+        } else {
+            sym->sc = scRegister;
+        }
+        sym->value = reg;
+    }
+}
