@@ -5,6 +5,7 @@
 #include "sex.h"
 
 extern char *st_errname;
+extern CHDRR *st_pchdr;
 
 void st_error(const char *format, ...);
 void st_warning(const char *format, ...);

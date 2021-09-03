@@ -32,23 +32,23 @@ extern AUXU _auxtemp;
  *      only has indeces.
  */
 typedef struct {
-    pFDR    pfd;            /* file descriptor for this file */
-    pSYMR   psym;           /* symbols for this file */
-    int     csymMax;        /* max allocated */
-    pAUXU   paux;           /* auxiliaries for this file */
-    int     cauxMax;        /* max allocated */
-    char    *pss;           /* strings space for this file */
-    int     cbssMax;        /* max bytes allowed in ss */
-    pOPTR   popt;           /* optimization table for this file */
-    int     coptMax;        /* max allocated */
-    pLINER  pline;          /* lines for this file */
-    int     clineMax;       /* max allocated */
-    pRFDT   prfd;           /* file indirect for this file */
-    int     crfdMax;        /* max allocated */
-    pPDR    ppd;            /* procedure descriptor tables */
-    int     cpdMax;         /* max allocated */
-    int     freadin;        /* set if read in */
-} CFDR, *pCFDR;
+    /*  0x0 */ pFDR    pfd;            /* file descriptor for this file */
+    /*  0x4 */ pSYMR   psym;           /* symbols for this file */
+    /*  0x8 */ int     csymMax;        /* max allocated */
+    /*  0xC */ pAUXU   paux;           /* auxiliaries for this file */
+    /* 0x10 */ int     cauxMax;        /* max allocated */
+    /* 0x14 */ char    *pss;           /* strings space for this file */
+    /* 0x18 */ int     cbssMax;        /* max bytes allowed in ss */
+    /* 0x1C */ pOPTR   popt;           /* optimization table for this file */
+    /* 0x20 */ int     coptMax;        /* max allocated */
+    /* 0x24 */ pLINER  pline;          /* lines for this file */
+    /* 0x28 */ int     clineMax;       /* max allocated */
+    /* 0x2C */ pRFDT   prfd;           /* file indirect for this file */
+    /* 0x30 */ int     crfdMax;        /* max allocated */
+    /* 0x34 */ pPDR    ppd;            /* procedure descriptor tables */
+    /* 0x38 */ int     cpdMax;         /* max allocated */
+    /* 0x3C */ int     freadin;        /* set if read in */
+} CFDR, *pCFDR; // size 0x40
 #define cbCFDR sizeof (CFDR)
 #define cfdNil ((pCFDR) 0)
 #define icfdNil -1
@@ -59,30 +59,30 @@ typedef struct {
  *      only has indeces.
  */
 typedef struct {
-    int     fappend;        /* are we appending to this beast ? */
-    pCFDR   pcfd;           /* the compile time file descriptors */
-    pFDR    pfd;            /* all of the file descriptors in this cu */
-    int     cfd;            /* count of file descriptors */
-    int     cfdMax;         /* max file descriptors */
-    pSYMR   psym;           /* the symbols for this cu */
-    pEXTR   pext;           /* externals for this cu */
-    int     cext;           /* number of externals */
-    int     cextMax;        /* max currently allowed */
-    char    *pssext;        /* string space for externals */
-    int     cbssext;        /* # of bytes in ss */
-    int     cbssextMax;     /* # of bytes allowed in ss */
-    pAUXU   paux;           /* auxiliaries for this cu */
-    char    *pss;           /* string space for this cu */
-    pDNR    pdn;            /* dense number table for this cu */
-    int     cdn;            /* number of dn's */
-    int     cdnMax;         /* max currently allowed */
-    pOPTR   popt;           /* optimization table for this cu */
-    pLINER  pline;          /* lines for this cu */
-    pRFDT   prfd;           /* file indirect for this cu */
-    pPDR    ppd;            /* procedure descriptor tables */
-    int     flags;          /* which has been read in already */
-    int     fswap;          /* do dubtables need to be swapped */
-    HDRR    hdr;            /* header from disk */
+    /*  0x0 */ int     fappend;        /* are we appending to this beast ? */
+    /*  0x4 */ pCFDR   pcfd;           /* the compile time file descriptors */
+    /*  0x8 */ pFDR    pfd;            /* all of the file descriptors in this cu */
+    /*  0xC */ int     cfd;            /* count of file descriptors */
+    /* 0x10 */ int     cfdMax;         /* max file descriptors */
+    /* 0x14 */ pSYMR   psym;           /* the symbols for this cu */
+    /* 0x18 */ pEXTR   pext;           /* externals for this cu */
+    /* 0x1C */ int     cext;           /* number of externals */
+    /* 0x20 */ int     cextMax;        /* max currently allowed */
+    /* 0x24 */ char    *pssext;        /* string space for externals */
+    /* 0x28 */ int     cbssext;        /* # of bytes in ss */
+    /* 0x2C */ int     cbssextMax;     /* # of bytes allowed in ss */
+    /* 0x30 */ pAUXU   paux;           /* auxiliaries for this cu */
+    /* 0x34 */ char    *pss;           /* string space for this cu */
+    /* 0x38 */ pDNR    pdn;            /* dense number table for this cu */
+    /* 0x3C */ int     cdn;            /* number of dn's */
+    /* 0x40 */ int     cdnMax;         /* max currently allowed */
+    /* 0x44 */ pOPTR   popt;           /* optimization table for this cu */
+    /* 0x48 */ pLINER  pline;          /* lines for this cu */
+    /* 0x4C */ pRFDT   prfd;           /* file indirect for this cu */
+    /* 0x50 */ pPDR    ppd;            /* procedure descriptor tables */
+    /* 0x54 */ int     flags;          /* which has been read in already */
+    /* 0x58 */ int     fswap;          /* do dubtables need to be swapped */
+    /* 0x5C */ HDRR    hdr;            /* header from disk */
 } CHDRR, *pCHDRR; // size 0xBC
 
 _Static_assert(sizeof(CHDRR) == 188);

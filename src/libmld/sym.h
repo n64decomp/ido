@@ -146,25 +146,26 @@ typedef struct fdr {
     /* 0x30 */ long_i  caux;           /* count of file's auxiliary entries */
     /* 0x34 */ long_i  rfdBase;        /* index into the file indirect table */
     /* 0x38 */ long_i  crfd;           /* count file indirect entries */
-    unsigned lang: 5;       /* language for this file */
-    unsigned fMerge : 1;    /* whether this file can be merged */
-    unsigned fReadin : 1;   /* true if it was read in (not just created) */
-    unsigned fBigendian : 1;/* if set, was compiled on big endian machine */
-                            /*      aux's will be in compile host's sex */
-    unsigned glevel : 2;    /* level this file was compiled with */
-    unsigned signedchar : 1; /* whether files was compiled with char being signed */
-    unsigned ipdFirstMSBits: 4; /* upper bits to allow  ipdFirst to
-                     exceed 64K entries 
-                     (These are the most significant bits of what is, 
-                     after concatenating the bits, a 20 bit number) */
-    unsigned cpdMSBits: 4;  /* upper bits to allow cpd to exceed 64K
-                     entries 
-                     (These are the most significant bits of what is, 
-                     after concatenating the bits, a 20 bit number) */
-    unsigned reserved : 13;  /* reserved for future use */
-    long_i  cbLineOffset;   /* byte offset from header for this file ln's */
-    long_i  cbLine;         /* size of lines for this file */
-} FDR, *pFDR;
+    /* 0x3C */ unsigned lang: 5;       /* language for this file */
+    /* 0x3C */ unsigned fMerge : 1;    /* whether this file can be merged */
+    /* 0x3C */ unsigned fReadin : 1;   /* true if it was read in (not just created) */
+    /* 0x3C */ unsigned fBigendian : 1;/* if set, was compiled on big endian machine */
+                                       /*      aux's will be in compile host's sex */
+    /* 0x3C */ unsigned glevel : 2;    /* level this file was compiled with */
+    /* 0x3C */ unsigned signedchar : 1; /* whether files was compiled with char being signed */
+    /* 0x3C */ unsigned ipdFirstMSBits: 4; /* upper bits to allow  ipdFirst to
+                                exceed 64K entries 
+                                (These are the most significant bits of what is, 
+                                after concatenating the bits, a 20 bit number) */
+    /* 0x3C */ unsigned cpdMSBits: 4;  /* upper bits to allow cpd to exceed 64K
+                                entries 
+                                (These are the most significant bits of what is, 
+                                after concatenating the bits, a 20 bit number) */
+    /* 0x3C */ unsigned reserved : 13;  /* reserved for future use */
+    /* 0x40 */ long_i  cbLineOffset;   /* byte offset from header for this file ln's */
+    /* 0x44 */ long_i  cbLine;         /* size of lines for this file */
+} FDR, *pFDR; // size 0x48
+_Static_assert(sizeof(FDR) == 0x48);
 #define cbFDR sizeof(FDR)
 #define fdNil ((pFDR)0)
 #define ifdNil -1
@@ -201,10 +202,11 @@ typedef struct pdr {
     /* 0x20 */ long_i  frameoffset;    /* frame size */
     /* 0x22 */ short   framereg;       /* frame pointer register */
     /* 0x24 */ short   pcreg;          /* offset or reg of return pc */
-    /* 0x24 */ long_i  lnLow;          /* lowest line in the procedure */
-    /* 0x28 */ long_i  lnHigh;         /* highest line in the procedure */
-    /* 0x2C */ long_i  cbLineOffset;   /* byte offset for this procedure from the fd base */
-} PDR, *pPDR;
+    /* 0x28 */ long_i  lnLow;          /* lowest line in the procedure */
+    /* 0x2C */ long_i  lnHigh;         /* highest line in the procedure */
+    /* 0x30 */ long_i  cbLineOffset;   /* byte offset for this procedure from the fd base */
+} PDR, *pPDR; // size 0x34
+_Static_assert(sizeof(PDR) == 0x34);
 #define cbPDR sizeof(PDR)
 #define pdNil ((pPDR) 0)
 #define ipdNil  -1
@@ -214,18 +216,19 @@ typedef struct pdr {
  * for use by the static exception system.
  */
 typedef struct runtime_pdr {
-        ulong_i adr;    /* memory address of start of procedure */
-        long_i  regmask;        /* save register mask */
-        long_i  regoffset;      /* save register offset */
-        long_i  fregmask;       /* save floating point register mask */
-        long_i  fregoffset;     /* save floating point register offset */
-        long_i  frameoffset;    /* frame size */
-        short   framereg;       /* frame pointer register */
-        short   pcreg;          /* offset or reg of return pc */
-        long_i  irpss;          /* index into the runtime string table */
-        long_i  reserved;
-        struct exception_info *exception_info;/* pointer to exception array */
-} RPDR, *pRPDR;
+        /*  0x0 */ ulong_i adr;    /* memory address of start of procedure */
+        /*  0x4 */ long_i  regmask;        /* save register mask */
+        /*  0x8 */ long_i  regoffset;      /* save register offset */
+        /*  0xC */ long_i  fregmask;       /* save floating point register mask */
+        /* 0x10 */ long_i  fregoffset;     /* save floating point register offset */
+        /* 0x14 */ long_i  frameoffset;    /* frame size */
+        /* 0x18 */ short   framereg;       /* frame pointer register */
+        /* 0x1A */ short   pcreg;          /* offset or reg of return pc */
+        /* 0x1C */ long_i  irpss;          /* index into the runtime string table */
+        /* 0x20 */ long_i  reserved;
+        /* 0x24 */ struct exception_info *exception_info;/* pointer to exception array */
+} RPDR, *pRPDR; // size 0x28
+_Static_assert(sizeof(RPDR) == 0x28);
 #define cbRPDR sizeof(RPDR)
 #define rpdNil ((pRPDR) 0)
 #define rsdNil ((pSYMR) 0)
@@ -254,14 +257,14 @@ typedef long_i LINER, *pLINER;
  */
 
 typedef struct __sgi_symr_s {
-    long_i  iss;            /* index into String Space of name */
-    long_i  value;          /* value of symbol */
-    unsigned st : 6;        /* symbol type */
-    unsigned sc  : 5;       /* storage class - text, data, etc */
-    unsigned reserved : 1;  /* reserved */
-    unsigned index : 20;    /* index into sym/aux table */
-} SYMR, *pSYMR;
-_Static_assert(sizeof (SYMR) == 0xc);
+    /* 0x0 */ long_i  iss;            /* index into String Space of name */
+    /* 0x4 */ long_i  value;          /* value of symbol */
+    /* 0x8 */ unsigned st : 6;        /* symbol type */
+    /* 0x8 */ unsigned sc  : 5;       /* storage class - text, data, etc */
+    /* 0x8 */ unsigned reserved : 1;  /* reserved */
+    /* 0x8 */ unsigned index : 20;    /* index into sym/aux table */
+} SYMR, *pSYMR; // size 0xC
+_Static_assert(sizeof (SYMR) == 0xC);
 #define symNil ((pSYMR)0)
 #define cbSYMR sizeof(SYMR)
 #define isymNil -1
@@ -281,14 +284,14 @@ _Static_assert(sizeof (SYMR) == 0xc);
  *      the index is.
  */
 typedef struct __sgi_extr__ {
-    unsigned jmptbl:1;      /* symbol is a jump table entry for shlibs */
-    unsigned cobol_main:1;  /* symbol is a cobol main procedure */
-    unsigned weakext:1;     /* symbol is weak external */
-    unsigned deltacplus:1;  /* symbol is delta C++ symbol */
-    unsigned multiext:1;    /* symbol may be defined multiple times */
-    unsigned reserved:11;   /* reserved for future use */
-    short   ifd;            /* where the iss and index fields point into */
-    SYMR    asym;           /* symbol for the external */
+    /* 0x0 */ unsigned jmptbl:1;      /* symbol is a jump table entry for shlibs */
+    /* 0x0 */ unsigned cobol_main:1;  /* symbol is a cobol main procedure */
+    /* 0x0 */ unsigned weakext:1;     /* symbol is weak external */
+    /* 0x0 */ unsigned deltacplus:1;  /* symbol is delta C++ symbol */
+    /* 0x0 */ unsigned multiext:1;    /* symbol may be defined multiple times */
+    /* 0x0 */ unsigned reserved:11;   /* reserved for future use */
+    /* 0x2 */ short   ifd;            /* where the iss and index fields point into */
+    /* 0x4 */ SYMR    asym;           /* symbol for the external */
 } EXTR, *pEXTR;
 #define extNil ((pEXTR)0)
 #define cbEXTR sizeof(EXTR)
@@ -424,7 +427,8 @@ typedef union __sgi_auxu_u {
     long_i  iss;            /* index into string space (not used) */
     long_i  width;          /* width for non-default sized struc fields */
     long_i  count;          /* count of ranges for variant arm */
-} AUXU, *pAUXU;
+} AUXU, *pAUXU; // size 0x4
+_Static_assert(sizeof(AUXU) == 4);
 #define cbAUXU sizeof(AUXU)
 #define auxNil ((pAUXU)0)
 #define iauxNil -1
@@ -442,11 +446,11 @@ typedef union __sgi_auxu_u {
  */
 
 typedef struct __sgi_optr_s {
-    unsigned ot: 8;         /* optimization type */
-    unsigned value: 24;     /* address where we are moving it to */
-    RNDXR   rndx;           /* points to a symbol or opt entry */
-    ulong_i offset; /* relative offset this occured */
-} OPTR, *pOPTR;
+    /* 0x0 */ unsigned ot: 8;         /* optimization type */
+    /* 0x0 */ unsigned value: 24;     /* address where we are moving it to */
+    /* 0x4 */ RNDXR   rndx;           /* points to a symbol or opt entry */
+    /* 0x8 */ ulong_i offset; /* relative offset this occured */
+} OPTR, *pOPTR; // size 0xC
 #define optNil  ((pOPTR) 0)
 #define cbOPTR sizeof(OPTR)
 #define ioptNil -1
