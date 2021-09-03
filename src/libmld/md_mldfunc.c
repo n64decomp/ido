@@ -3,6 +3,48 @@
 #include <stdarg.h>
 #include "libmld.h"
 
+extern CHDRR* st_pchdr;
+extern CFDR* pcfdcur;
+
+/*
+Not really sure what this is doing
+void* _md_st_malloc(void* arg0, void* arg1, int arg2, int arg3) {
+    int temp_lo;
+    int temp_t0;
+    int temp_v0;
+    void* temp_s1;
+    void* temp_s1_2;
+    void* temp_v0_2;
+    void* temp_v0_4;
+    void* ret;
+
+    temp_v0 = *arg1;
+    if ((arg1 == NULL) || (arg0 == NULL) || (temp_t0 = temp_v0 * 2, (arg0 == -1))) {
+        *arg1 = arg3;
+        if (arg3 == 0) {
+            ret = malloc(1);
+            if (ret == NULL) {
+                _md_st_error("_md_st_malloc: cannot allocate item of 1 byte with malloc(3)\n");
+            }
+        } else {
+            ret = malloc(*arg1 * arg2);
+            if (ret == NULL) {
+                temp_lo = *arg1 * arg2;
+                if (temp_lo != 0) {
+                    _md_st_error("_md_st_malloc: cannot allocate item of %ld bytes with malloc(3)\n", temp_lo);
+                }
+            }
+        }
+    } else {
+        *arg1 = temp_t0;
+        ret = realloc(arg0, temp_t0 * arg2);
+        if (ret == NULL) {
+            _md_st_error("_md_st_malloc: cannot grow item to %ld bytes with realloc(3)\n", *arg1 * arg2);
+        }
+    }
+    return ret;
+}*/
+
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -22,18 +64,6 @@ RO_1000EFC4:
 RO_1000F008:
     # 0048A704 _md_st_malloc
     .asciz "_md_st_malloc: cannot grow item to %ld bytes with realloc(3)\n"
-
-.data
-D_10011AC0:
-    # 0048A5E8 _md_st_str_iss
-    # 0048A86C _md_st_setfd
-    .ascii "routine: you didn't initialize with st_cuinit or st_readst\n\x00"
-
-D_10011AFC:
-    # 0048A5E8 _md_st_str_iss
-    .ascii "routine: no current routine, see fdadd or setfd\n\x00\x00\x00\x00"
-
-
 
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
@@ -82,128 +112,48 @@ void _md_st_error(const char *format, ...) {
     exit(1);
 }
 
+char* _md_st_str_extiss(int index) {
+
+    if ((index >= 0) && (index < st_pchdr->cbssext)) {
+        return &st_pchdr->pssext[index];
+    } else {
+        return NULL;
+    }
+}
+
+int _md_st_str_iss(int arg0) {
+    if (st_pchdr->pcfd == NULL) {
+        _md_st_internal("routine: you didn't initialize with st_cuinit or st_readst\n");
+    }
+    if (pcfdcur == NULL) {
+        _md_st_internal("routine: no current routine, see fdadd or setfd\n");
+    }
+    if ((pcfdcur->pfd->cbSs != 0) && (arg0 < pcfdcur->pfd->cbSs)) {
+        return pcfdcur->pss[arg0];
+    }
+    return 0;
+}
+
+/*
+0048A260 st_str_ifd_iss
+*/
+int _md_st_iextmax(void) {
+    return st_pchdr->cext;
+}
+
+/*
+0048A954 st_extadd
+0048ABB0 st_idn_index_fext
+*/
+int _md_st_currentifd(void) {
+    if (pcfdcur == NULL) {
+        return -1;
+    } else {
+        return st_ifd_pcfd(pcfdcur);
+    }
+}
 __asm__(R""(
 .set noreorder
-glabel _md_st_str_extiss
-    .ent _md_st_str_extiss
-    # 0048A260 st_str_ifd_iss
-/* 0048A5A8 3C1C0FB9 */  .cpload $t9
-/* 0048A5AC 279CFCE8 */  
-/* 0048A5B0 0399E021 */  
-/* 0048A5B4 0480000A */  bltz  $a0, .L0048A5E0
-/* 0048A5B8 00001025 */   move  $v0, $zero
-/* 0048A5BC 8F838CB8 */  lw     $v1, %got(st_pchdr)($gp)
-/* 0048A5C0 8C630000 */  lw    $v1, ($v1)
-/* 0048A5C4 8C6E0028 */  lw    $t6, 0x28($v1)
-/* 0048A5C8 008E082A */  slt   $at, $a0, $t6
-/* 0048A5CC 10200004 */  beqz  $at, .L0048A5E0
-/* 0048A5D0 00000000 */   nop   
-/* 0048A5D4 8C6F0024 */  lw    $t7, 0x24($v1)
-/* 0048A5D8 03E00008 */  jr    $ra
-/* 0048A5DC 01E41021 */   addu  $v0, $t7, $a0
-
-.L0048A5E0:
-/* 0048A5E0 03E00008 */  jr    $ra
-/* 0048A5E4 00000000 */   nop   
-    .type _md_st_str_extiss, @function
-    .size _md_st_str_extiss, .-_md_st_str_extiss
-    .end _md_st_str_extiss
-
-glabel _md_st_str_iss
-    .ent _md_st_str_iss
-/* 0048A5E8 3C1C0FB9 */  .cpload $t9
-/* 0048A5EC 279CFCA8 */  
-/* 0048A5F0 0399E021 */  
-/* 0048A5F4 8F8E8CB8 */  lw     $t6, %got(st_pchdr)($gp)
-/* 0048A5F8 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0048A5FC AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0048A600 8DCE0000 */  lw    $t6, ($t6)
-/* 0048A604 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0048A608 AFA40020 */  sw    $a0, 0x20($sp)
-/* 0048A60C 8DCF0004 */  lw    $t7, 4($t6)
-/* 0048A610 15E00006 */  bnez  $t7, .L0048A62C
-/* 0048A614 00000000 */   nop   
-/* 0048A618 8F9987D0 */  lw    $t9, %call16(_md_st_internal)($gp)
-/* 0048A61C 8F848044 */  lw    $a0, %got(D_10011AC0)($gp)
-/* 0048A620 0320F809 */  jalr  $t9
-/* 0048A624 24841AC0 */   addiu $a0, %lo(D_10011AC0) # addiu $a0, $a0, 0x1ac0
-/* 0048A628 8FBC0018 */  lw    $gp, 0x18($sp)
-.L0048A62C:
-/* 0048A62C 8F838CBC */  lw     $v1, %got(pcfdcur)($gp)
-/* 0048A630 8C630000 */  lw    $v1, ($v1)
-/* 0048A634 54600009 */  bnezl $v1, .L0048A65C
-/* 0048A638 8C780000 */   lw    $t8, ($v1)
-/* 0048A63C 8F9987D0 */  lw    $t9, %call16(_md_st_internal)($gp)
-/* 0048A640 8F848044 */  lw    $a0, %got(D_10011AFC)($gp)
-/* 0048A644 0320F809 */  jalr  $t9
-/* 0048A648 24841AFC */   addiu $a0, %lo(D_10011AFC) # addiu $a0, $a0, 0x1afc
-/* 0048A64C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0048A650 8F838CBC */  lw     $v1, %got(pcfdcur)($gp)
-/* 0048A654 8C630000 */  lw    $v1, ($v1)
-/* 0048A658 8C780000 */  lw    $t8, ($v1)
-.L0048A65C:
-/* 0048A65C 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0048A660 8F02000C */  lw    $v0, 0xc($t8)
-/* 0048A664 5040000A */  beql  $v0, $zero, .L0048A690
-/* 0048A668 00001025 */   move  $v0, $zero
-/* 0048A66C 8FB90020 */  lw    $t9, 0x20($sp)
-/* 0048A670 8FA90020 */  lw    $t1, 0x20($sp)
-/* 0048A674 0322082A */  slt   $at, $t9, $v0
-/* 0048A678 50200005 */  beql  $at, $zero, .L0048A690
-/* 0048A67C 00001025 */   move  $v0, $zero
-/* 0048A680 8C680014 */  lw    $t0, 0x14($v1)
-/* 0048A684 10000002 */  b     .L0048A690
-/* 0048A688 01091021 */   addu  $v0, $t0, $t1
-/* 0048A68C 00001025 */  move  $v0, $zero
-.L0048A690:
-/* 0048A690 03E00008 */  jr    $ra
-/* 0048A694 27BD0020 */   addiu $sp, $sp, 0x20
-    .type _md_st_str_iss, @function
-    .size _md_st_str_iss, .-_md_st_str_iss
-    .end _md_st_str_iss
-
-glabel _md_st_iextmax
-    .ent _md_st_iextmax
-/* 0048A698 3C1C0FB9 */  .cpload $t9
-/* 0048A69C 279CFBF8 */  
-/* 0048A6A0 0399E021 */  
-/* 0048A6A4 8F8E8CB8 */  lw     $t6, %got(st_pchdr)($gp)
-/* 0048A6A8 8DCE0000 */  lw    $t6, ($t6)
-/* 0048A6AC 03E00008 */  jr    $ra
-/* 0048A6B0 8DC2001C */   lw    $v0, 0x1c($t6)
-    .type _md_st_iextmax, @function
-    .size _md_st_iextmax, .-_md_st_iextmax
-    .end _md_st_iextmax
-
-glabel _md_st_currentifd
-    .ent _md_st_currentifd
-    # 0048A954 st_extadd
-    # 0048ABB0 st_idn_index_fext
-/* 0048A6B4 3C1C0FB9 */  .cpload $t9
-/* 0048A6B8 279CFBDC */  
-/* 0048A6BC 0399E021 */  
-/* 0048A6C0 8F848CBC */  lw     $a0, %got(pcfdcur)($gp)
-/* 0048A6C4 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0048A6C8 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0048A6CC 8C840000 */  lw    $a0, ($a0)
-/* 0048A6D0 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0048A6D4 14800003 */  bnez  $a0, .L0048A6E4
-/* 0048A6D8 00000000 */   nop   
-/* 0048A6DC 10000005 */  b     .L0048A6F4
-/* 0048A6E0 2402FFFF */   li    $v0, -1
-.L0048A6E4:
-/* 0048A6E4 8F9987B8 */  lw    $t9, %call16(st_ifd_pcfd)($gp)
-/* 0048A6E8 0320F809 */  jalr  $t9
-/* 0048A6EC 00000000 */   nop   
-/* 0048A6F0 8FBC0018 */  lw    $gp, 0x18($sp)
-.L0048A6F4:
-/* 0048A6F4 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0048A6F8 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0048A6FC 03E00008 */  jr    $ra
-/* 0048A700 00000000 */   nop   
-    .type _md_st_currentifd, @function
-    .size _md_st_currentifd, .-_md_st_currentifd
-    .end _md_st_currentifd
 
 glabel _md_st_malloc
     .ent _md_st_malloc
@@ -302,52 +252,16 @@ glabel _md_st_malloc
     .type _md_st_malloc, @function
     .size _md_st_malloc, .-_md_st_malloc
     .end _md_st_malloc
-
-glabel _md_st_ifdmax
-    .ent _md_st_ifdmax
-/* 0048A850 3C1C0FB9 */  .cpload $t9
-/* 0048A854 279CFA40 */  
-/* 0048A858 0399E021 */  
-/* 0048A85C 8F8E8CB8 */  lw     $t6, %got(st_pchdr)($gp)
-/* 0048A860 8DCE0000 */  lw    $t6, ($t6)
-/* 0048A864 03E00008 */  jr    $ra
-/* 0048A868 8DC2000C */   lw    $v0, 0xc($t6)
-    .type _md_st_ifdmax, @function
-    .size _md_st_ifdmax, .-_md_st_ifdmax
-    .end _md_st_ifdmax
-
-glabel _md_st_setfd
-    .ent _md_st_setfd
-/* 0048A86C 3C1C0FB9 */  .cpload $t9
-/* 0048A870 279CFA24 */  
-/* 0048A874 0399E021 */  
-/* 0048A878 8F8E8CB8 */  lw     $t6, %got(st_pchdr)($gp)
-/* 0048A87C 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 0048A880 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 0048A884 8DCE0000 */  lw    $t6, ($t6)
-/* 0048A888 AFBC0018 */  sw    $gp, 0x18($sp)
-/* 0048A88C AFA40020 */  sw    $a0, 0x20($sp)
-/* 0048A890 8DC20004 */  lw    $v0, 4($t6)
-/* 0048A894 5440000A */  bnezl $v0, .L0048A8C0
-/* 0048A898 8FB80020 */   lw    $t8, 0x20($sp)
-/* 0048A89C 8F9987D0 */  lw    $t9, %call16(_md_st_internal)($gp)
-/* 0048A8A0 8F848044 */  lw    $a0, %got(D_10011AC0)($gp)
-/* 0048A8A4 0320F809 */  jalr  $t9
-/* 0048A8A8 24841AC0 */   addiu $a0, %lo(D_10011AC0) # addiu $a0, $a0, 0x1ac0
-/* 0048A8AC 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0048A8B0 8F8F8CB8 */  lw     $t7, %got(st_pchdr)($gp)
-/* 0048A8B4 8DEF0000 */  lw    $t7, ($t7)
-/* 0048A8B8 8DE20004 */  lw    $v0, 4($t7)
-/* 0048A8BC 8FB80020 */  lw    $t8, 0x20($sp)
-.L0048A8C0:
-/* 0048A8C0 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 0048A8C4 8F818CBC */  lw     $at, %got(pcfdcur)($gp)
-/* 0048A8C8 0018C980 */  sll   $t9, $t8, 6
-/* 0048A8CC 00594021 */  addu  $t0, $v0, $t9
-/* 0048A8D0 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0048A8D4 03E00008 */  jr    $ra
-/* 0048A8D8 AC280000 */   sw    $t0, ($at)
-    .type _md_st_setfd, @function
-    .size _md_st_setfd, .-_md_st_setfd
-    .end _md_st_setfd
 )"");
+
+int _md_st_ifdmax(void) {
+    return st_pchdr->cfd;
+}
+
+void _md_st_setfd(int arg0) {
+    if (st_pchdr->pcfd == NULL) {
+        _md_st_internal("routine: you didn't initialize with st_cuinit or st_readst\n");
+    } else {
+        pcfdcur = &st_pchdr->pcfd[arg0 << 6]; //*64?
+    }
+}
