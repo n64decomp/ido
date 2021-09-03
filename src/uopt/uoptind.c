@@ -8,7 +8,7 @@
 #include "uoptkill.h"
 #include "uoptreg1.h"
 #include "uoptutil.h"
-#include "feedback.h"
+#include "uoptfeedback.h"
 #include "uopttemp.h"
 #include "uoptppss.h"
 #include "uoptitab.h"

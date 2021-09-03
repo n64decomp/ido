@@ -12,7 +12,7 @@
 #include "uoptdbg.h"
 #include "uoptcontrolflow.h"
 #include "uoptdata.h"
-#include "feedback.h"
+#include "uoptfeedback.h"
 
 extern int __Argc;
 

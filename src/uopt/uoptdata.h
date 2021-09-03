@@ -5,6 +5,7 @@
 #include "ucode.h"
 #include "libp/libp.h"
 #include "libxmalloc/xmalloc.h"
+#include "uoptfeedback.h"
 
 #include "bitvector.h"
 
@@ -427,7 +428,7 @@ struct Proc {
     /* 0x28 */ struct Label *labels; // sent to searchlab
     /* 0x2C */ struct Proc *left; // binary search tree left (root is prochead)
     /* 0x30 */ struct Proc *right; // binary search tree right (root is prochead)
-    /* 0x34 */ void *feedback_data; // related to usefeedback
+    /* 0x34 */ struct f_per_proc *feedback_data;
     /* 0x38 */ int unk38; // mtag uses this
 };
 

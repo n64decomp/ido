@@ -83,10 +83,9 @@ typedef struct {
     int     flags;          /* which has been read in already */
     int     fswap;          /* do dubtables need to be swapped */
     HDRR    hdr;            /* header from disk */
-} CHDRR, *pCHDRR;
+} CHDRR, *pCHDRR; // size 0xBC
 
 _Static_assert(sizeof(CHDRR) == 188);
-_Static_assert(__builtin_offsetof(CHDRR, hdr) == 92);
 #define cbCHDRR sizeof (CHDRR)
 #define chdrNil ((pCHDRR) 0)
 #define ichdrNil -1
