@@ -419,16 +419,16 @@ struct utabrec {
 };
 
 enum mtagtype {
-    mtag_anything,              /* can dereference anything */
-    mtag_heap,                  /* only dereference heap memory */
-    mtag_readonly,              /* only dereference readonly memory */
-    mtag_non_local,             /* only dereference non-local memory */
-    mtag_local_stack,           /* only dereference local M memory */
-    mtag_uplevel_stack,         /* only dereference up-level M memory */
-    mtag_local_static,          /* only dereference FSYM symbols */
-    mtag_global_static,         /* only dereference non-FSYM static symbols */
-    mtag_f77_parm,              /* based on a specific f77 parameter */
-    mtag_vreg                   /* only emitted by ugen */
+    /* 0 */ mtag_anything,              /* can dereference anything */
+    /* 1 */ mtag_heap,                  /* only dereference heap memory */
+    /* 2 */ mtag_readonly,              /* only dereference readonly memory */
+    /* 3 */ mtag_non_local,             /* only dereference non-local memory */
+    /* 4 */ mtag_local_stack,           /* only dereference local M memory */
+    /* 5 */ mtag_uplevel_stack,         /* only dereference up-level M memory */
+    /* 6 */ mtag_local_static,          /* only dereference FSYM symbols */
+    /* 7 */ mtag_global_static,         /* only dereference non-FSYM static symbols */
+    /* 8 */ mtag_f77_parm,              /* based on a specific f77 parameter */
+    /* 9 */ mtag_vreg                   /* only emitted by ugen */
 };
 
 #endif
