@@ -3,7 +3,7 @@
 /*
 0048D0E0 st_readst
 */
-int ldfsymorder(HDRR* hdr, int offset) {
+int ldfsymorder(HDRR *hdr, int offset) {
     int temp_v1;
     int temp_v1_10;
     int temp_v1_11;
@@ -18,7 +18,7 @@ int ldfsymorder(HDRR* hdr, int offset) {
     if ((hdr->cbLineOffset != 0) && (hdr->cbLine != 0) && ((offset + 0x60) != hdr->cbLineOffset)) {
         return 0;
     }
-    if (( hdr->cbLine & 3) != 0) {
+    if ((hdr->cbLine & 3) != 0) {
         return 0;
     }
     if ((hdr->cbPdOffset != 0) && (hdr->ipdMax != 0) && (((offset + 0x60) +  hdr->cbLine) != hdr->cbPdOffset)) {

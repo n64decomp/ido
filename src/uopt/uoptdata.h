@@ -377,9 +377,9 @@ struct Graphnode {
             int unk118;
             int strinsertin; // 0x11C
             int lodinsertout; // 0x120
-            int unk124; // eravin?
+            int unk124;
             int eeavin; // 0x128
-            int unk12C; // eravout?
+            int unk12C;
             int eeavout; // 0x130
             int unk134[(0x174 - 0x134) / 4];
         } stage3;
