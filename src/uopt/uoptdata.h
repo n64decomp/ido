@@ -196,6 +196,7 @@ struct ScmThing {
     /* 0x00 */ struct IChain *ichain;
     /* 0x04 */ struct ExpSourceThing *unk4;
     /* 0x08 */ struct ScmThing *next;
+    /* 0x0C */ int unkC;
     /* 0x10 */ unsigned char unk10;
     /* 0x11 */ unsigned char unk11;
 }; // size 0x14

@@ -1,12 +1,5 @@
-#include "libp/libp.h"
-#include "libu/libu.h"
 #include "uoptdata.h"
 #include "uoptions.h"
-#include "uoptdbg.h"
-#include "uoptkill.h"
-#include "uoptreg1.h"
-#include "uoptutil.h"
-#include "uoptfeedback.h"
 
 /*
 00474110 opt_saved_regs
