@@ -292,7 +292,7 @@ typedef struct __sgi_extr__ {
     /* 0x0 */ unsigned reserved:11;   /* reserved for future use */
     /* 0x2 */ short   ifd;            /* where the iss and index fields point into */
     /* 0x4 */ SYMR    asym;           /* symbol for the external */
-} EXTR, *pEXTR;
+} EXTR, *pEXTR; // size 0x10
 #define extNil ((pEXTR)0)
 #define cbEXTR sizeof(EXTR)
 

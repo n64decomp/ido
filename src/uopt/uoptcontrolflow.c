@@ -4,6 +4,7 @@
 #include "uoptdata.h"
 #include "uoptutil.h"
 #include "uoptppss.h"
+#include "uoptfeedback.h"
 
 struct padded_string {
     size_t length;
@@ -39,7 +40,7 @@ void incorp_feedback(void) {
     proc_count = 0;
     do {
         procs[proc_count] = NULL;
-        block = path_blockno(&((struct padded_string *)data)->padded_name, ((struct padded_string *)data)->length);
+        block = path_blockno(data + 4, ((struct padded_string *)data)->length);
         if (block != -1) {
             procs[proc_count] = getproc(block);
         }
