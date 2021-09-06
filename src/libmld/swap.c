@@ -34,11 +34,66 @@ void swap_hdr(HDRR *phdr, int hostsex) {
 /*
 0048D0E0 st_readst
 */
+void swap_fd(FDR *pfd, int count, int destsex) {
+    int i;
+
+    for (i = 0; i < count; i++) {
+        pfd[i].adr                = swap_word(pfd[i].adr);
+        pfd[i].rss                = swap_word(pfd[i].rss);
+        pfd[i].issBase            = swap_word(pfd[i].issBase);
+        pfd[i].cbSs               = swap_word(pfd[i].cbSs);
+        pfd[i].isymBase           = swap_word(pfd[i].isymBase);
+        pfd[i].csym               = swap_word(pfd[i].csym);
+        pfd[i].ilineBase          = swap_word(pfd[i].ilineBase);
+        pfd[i].cline              = swap_word(pfd[i].cline);
+        pfd[i].ioptBase           = swap_word(pfd[i].ioptBase);
+        pfd[i].copt               = swap_word(pfd[i].copt);
+        pfd[i].ipdFirst           = swap_half(pfd[i].ipdFirst);
+        pfd[i].cpd                = swap_half(pfd[i].cpd);
+        pfd[i].iauxBase           = swap_word(pfd[i].iauxBase);
+        pfd[i].caux               = swap_word(pfd[i].caux);
+        pfd[i].rfdBase            = swap_word(pfd[i].rfdBase);
+        pfd[i].crfd               = swap_word(pfd[i].crfd);
+        *((int*)&pfd[i].crfd + 1) = swap_word(*((int*)&pfd[i].crfd + 1));
+        pfd[i].cbLineOffset       = swap_word(pfd[i].cbLineOffset);
+        pfd[i].cbLine             = swap_word(pfd[i].cbLine);
+    }
+}
+
+/*
+0048D0E0 st_readst
+*/
 void swap_fi(pFIT pfi, int count, int destsex) {
     int i;
 
     for (i = 0; i < count; i++) {
         pfi[i] = swap_word(pfi[i]);
+    }
+}
+
+/*
+0048D0E0 st_readst
+*/
+void swap_sym(SYMR *psym, int count, int destsex) {
+    int i;
+
+    for (i = 0; i < count; i++) {
+        psym[i].iss = swap_word(psym[i].iss);
+        psym[i].value = swap_word(psym[i].value);
+        // swap bitfields
+        *((int*)&psym[i].value + 1) = swap_word(*((int*)&psym[i].value + 1));
+    }
+}
+
+/*
+0048D0E0 st_readst
+*/
+void swap_ext(EXTR *pext, int count, int destsex) {
+    for (int i = 0; i < count; i++) {
+        // swap bitfields
+        *((short*)&pext[i]) = swap_half(*((short*)&pext[i]));
+        pext[i].ifd = swap_half(pext[i].ifd);
+        swap_sym(&pext[i].asym, 1, destsex);
     }
 }
 
@@ -75,5 +130,19 @@ void swap_dn(DNR *dn, int count, int destsex) {
     for (i = 0; i < count; i++) {
         dn[i].rfd   = swap_word(dn[i].rfd);
         dn[i].index = swap_word(dn[i].index);
+    }
+}
+
+/*
+0048D0E0 st_readst
+*/
+void swap_opt(OPTR *popt, int count, int destsex) {
+    int i;
+
+    for (i = 0; i < count; i++) {
+        // swap bitfields
+        *((int*)&popt[i]) = swap_word(*((int*)&popt[i]));
+        *((int*)&popt[i] + 1) = swap_word(*((int*)&popt[i]) + 1);
+        popt[i].offset = swap_word(popt[i].offset);
     }
 }

@@ -638,7 +638,6 @@ void decreasecount(struct Expression *expr) {
         case isop:
             expr->count--;
             if (expr->count == 0) {
-
                 switch (expr->data.isop.opc) {
                     case Uiequ:
                     case Uigeq:

@@ -9,6 +9,8 @@
 
 #include "bitvector.h"
 
+#include <stdbool.h>
+
 enum MipsRegister {
     r_zero,
     r_at,
@@ -36,7 +38,7 @@ __attribute__((packed))
 #ifdef __GNUC__
 typedef enum MipsRegister MipsRegister;
 #else
-typedef unsigned char MipsRegister;
+typedef char MipsRegister;
 #endif
 
 // see coloroffset
@@ -58,7 +60,7 @@ __attribute__((packed))
 #ifdef __GNUC__
 typedef enum RegisterColor RegisterColor;
 #else
-typedef unsigned char RegisterColor;
+typedef char RegisterColor;
 #endif
 
 
@@ -222,7 +224,7 @@ enum IntervalType {
     intv_loop       // 3
 };
 
-typedef unsigned char IntervalType;
+typedef char IntervalType;
 
 struct Interval {
     /* 0x00 */ struct Graphnode *graphnode;
@@ -671,7 +673,7 @@ __attribute__((packed));
 #ifdef __GNUC__
 typedef enum ExpressionType ExpressionType;
 #else
-typedef unsigned char ExpressionType;
+typedef char ExpressionType;
 #endif
 
 // Probably "Image (Chain)"
@@ -728,7 +730,7 @@ struct IChain { // TODO: rename
                 union {
                     /* 0x24 */ int word; // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
                     struct {
-                        /* 0x24 */ unsigned short bit;
+                        /* 0x24 */ unsigned short pad;
                         /* 0x26 */ unsigned short mtagno;
                     };
                 } s;
@@ -961,7 +963,7 @@ extern struct Statement *stattail;
 extern int blklev[128];
 extern int staticlinkloc;
 extern struct Expression *nocopy;
-extern void *nota_candof; // TODO: fix type (0x1C bytes allocated)
+extern struct ExpSourceThing *nota_candof;
 extern struct VarAccessList *constprop;
 extern int maxlabnam;
 extern struct LiveUnit *dft_livbb;

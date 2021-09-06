@@ -295,7 +295,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Uinn:
                         if (ichain->dtype == expr->datatype &&
                                 ichain->isop.op1 == op1 && ichain->isop.op2 == op2 &&
-                                ichain->isop.s.bit == expr->data.isop.aux2.v1.unk3C) {
+                                ichain->isop.unk24_u16 == expr->data.isop.aux2.v1.unk3C) {
                             found = true;
                         }
                         break;
@@ -350,7 +350,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
 
                     case Uadj:
                         if (ichain->isop.size == expr->data.isop.datasize &&
-                                ichain->isop.s.bit == expr->data.isop.aux2.v1.unk3C &&
+                                ichain->isop.unk24_u16 == expr->data.isop.aux2.v1.unk3C &&
                                 ichain->isop.op1 == op1) {
                             found = true;
                         }
@@ -369,7 +369,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                         if (ichain->dtype == expr->datatype &&
                                 ichain->isop.op1 == op1 &&
                                 ichain->isop.size == expr->data.isop.datasize &&
-                                ichain->isop.s.bit == expr->data.isop.aux2.v1.unk3C) {
+                                ichain->isop.unk24_u16 == expr->data.isop.aux2.v1.unk3C) {
                             found = true;
                         }
                         break;
@@ -509,7 +509,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
 
                     case Uinn:
                         ichain->isop.size = expr->data.isop.datasize;
-                        ichain->isop.s.bit = expr->data.isop.aux2.v1.unk3C;
+                        ichain->isop.unk24_u16 = expr->data.isop.aux2.v1.unk3C;
                         break;
 
                     case Uixa:
@@ -532,7 +532,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
 
                     case Uadj:
                         ichain->isop.size = expr->data.isop.datasize;
-                        ichain->isop.s.bit = expr->data.isop.aux2.v1.unk3C;
+                        ichain->isop.unk24_u16 = expr->data.isop.aux2.v1.unk3C;
                         break;
 
                     case Uilod:
@@ -540,7 +540,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Uildv:
                     case Uirlv:
                         ichain->isop.size = expr->data.isop.datasize; //! this is actually an offset from baseaddr
-                        ichain->isop.s.bit = expr->data.isop.aux2.v1.unk3C;
+                        ichain->isop.unk24_u16 = expr->data.isop.aux2.v1.unk3C;
                         ichain->isop.unk13 = expr->data.isop.aux2.v1.align;
                         ichain->expr = expr;
 
@@ -553,7 +553,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Uineq:
                         ichain->isop.size = expr->data.isop.datasize;
                         ichain->expr = expr;
-                        ichain->isop.s.bit = expr->data.isop.aux2.v1.unk3C;
+                        ichain->isop.unk24_u16 = expr->data.isop.aux2.v1.unk3C;
                         break;
 
                     case Uigeq:
@@ -562,7 +562,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                     case Uiles:
                         ichain->isop.size = expr->data.isop.datasize;
                         ichain->expr = expr;
-                        ichain->isop.s.bit = expr->data.isop.aux2.v1.unk3C;
+                        ichain->isop.unk24_u16 = expr->data.isop.aux2.v1.unk3C;
                         break;
 
                     // Ignored ops
@@ -1552,7 +1552,7 @@ void codeimage(void) {
 
 
                 if (stat->opc == Umov || stat->opc == Umovv) {
-                    store_ichain->isop.s.bit = stat->u.store.u.mov.src_align + (stat->u.store.u.mov.dst_align << 8);
+                    store_ichain->isop.unk24_u16 = stat->u.store.u.mov.src_align + (stat->u.store.u.mov.dst_align << 8);
                 }
 
                 if (stat->u.store.unk1C && stat->u.store.unk1E && exprant && storeant) {

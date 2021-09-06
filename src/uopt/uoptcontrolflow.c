@@ -381,7 +381,11 @@ void controlflow() {
         if (curnode->interprocedural_controlflow) {
             visit_successors(curnode);
             // interproc_targets := GraphnodeList.create(curnode, interproc_targets);
-            new_list = new(sizeof(struct GraphnodeList), false);
+#ifdef AVOID_UB
+            new_list = alloc_new(sizeof (struct GraphnodeList), &perm_heap);
+#else
+            new_list = new(sizeof(struct GraphnodeList), false); // never freed
+#endif
             new_list->graphnode = curnode;
             new_list->next = interproc_targets;
             interproc_targets = new_list;

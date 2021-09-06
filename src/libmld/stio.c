@@ -7,7 +7,6 @@
 
 #include "libmld.h"
 
-// XXX: Needs to be changed for little endian
 static short stmagic = 0x7009;
 const char *msg_werr = "cannot write pfield";
 const char *msg_err = "cannot write cur table\n";
@@ -254,23 +253,24 @@ int st_readst(int fn, char how, int filebase, CHDRR *pchdr, int flags) {
             swap_pd(st_pchdr->ppd, spC0.ipdMax, gethostsex());
         }
         if (sp68) {
-            //swap_sym(st_pchdr->psym, spC0.isymMax, gethostsex());
+            swap_sym(st_pchdr->psym, spC0.isymMax, gethostsex());
         }
         if (sp58) {
-            //swap_opt(st_pchdr->popt, spC0.ioptMax, gethostsex());
+            swap_opt(st_pchdr->popt, spC0.ioptMax, gethostsex());
         }
         if (sp40) {
-            //swap_fd(st_pchdr->pfd, spC0.ifdMax, gethostsex());
+            swap_fd(st_pchdr->pfd, spC0.ifdMax, gethostsex());
         }
         if (sp54) {
             swap_fi(st_pchdr->prfd, spC0.crfd, gethostsex());
         }
         if (sp4C) {
-            //swap_ext(st_pchdr->pext, spC0.iextMax, gethostsex());
+            swap_ext(st_pchdr->pext, spC0.iextMax, gethostsex());
         }
         if (sp44) {
             swap_dn(st_pchdr->pdn, spC0.idnMax, gethostsex());
         }
+        st_pchdr->fswap = false;
     }
 
     proc = 0;
@@ -540,6 +540,9 @@ void st_writest(int fn, int flags) {
             pfd->ipdFirst = fdr.ipdFirst + fdr.cpd;
             sp120 += pfd->cpd * sizeof(PDR);
             if (pfd->cpd != 0) {
+#if defined(__x86_64__) || defined(__i386__)
+                swap_pd(cfd->ppd, pfd->cpd, gethostsex());
+#endif
                 if (fwrite(cfd->ppd, sizeof(PDR), pfd->cpd, out) != pfd->cpd) {
                     st_error("cannot write pfield");
                 }
@@ -562,6 +565,9 @@ void st_writest(int fn, int flags) {
             pfd->isymBase = fdr.isymBase + fdr.csym;
             sp120 += pfd->csym * sizeof(SYMR);
             if (pfd->csym != 0) {
+#if defined(__x86_64__) || defined(__i386__)
+                swap_sym(cfd->psym, pfd->csym, gethostsex());
+#endif
                 if (fwrite(cfd->psym, sizeof(SYMR), pfd->csym, out) != pfd->csym) {
                     st_error("cannot write pfield");
                 }
@@ -584,6 +590,9 @@ void st_writest(int fn, int flags) {
             pfd->ioptBase = fdr.ioptBase + fdr.copt;
             sp120 += pfd->copt * sizeof(OPTR);
             if (pfd->copt != 0) {
+#if defined(__x86_64__) || defined(__i386__)
+                swap_opt(cfd->popt, pfd->copt, gethostsex());
+#endif
                 if (fwrite(cfd->popt, sizeof(OPTR), pfd->copt, out) != pfd->copt) {
                     st_error("cannot write pfield");
                 }
@@ -679,6 +688,9 @@ void st_writest(int fn, int flags) {
             sp120 = st_pchdr->cfd * sizeof(FDR);
             hdr.cbFdOffset = fileOffset;
             if (st_pchdr->cfd != 0) {
+#if defined(__x86_64__) || defined(__i386__)
+                swap_fd(st_pchdr->pfd, st_pchdr->cfd, gethostsex());
+#endif
                 if (fwrite(st_pchdr->pfd, sizeof(FDR), st_pchdr->cfd, out) != st_pchdr->cfd) {
                     st_error("cannot write cur table\n");
                 }
@@ -695,6 +707,9 @@ void st_writest(int fn, int flags) {
             pfd->rfdBase = fdr.rfdBase + fdr.crfd;
             sp120 += pfd->crfd * sizeof(RFDT);
             if (pfd->crfd != 0) {
+#if defined(__x86_64__) || defined(__i386__)
+                swap_fi(cfd->prfd, pfd->crfd, gethostsex());
+#endif
                 if (fwrite(cfd->prfd, sizeof(RFDT), pfd->crfd, out) != pfd->crfd) {
                     st_error("cannot write pfield");
                 }
@@ -717,6 +732,9 @@ void st_writest(int fn, int flags) {
             hdr.cbExtOffset = fileOffset;
             sp120 *= sizeof(EXTR);
             if (st_pchdr->cext != 0) {
+#if defined(__x86_64__) || defined(__i386__)
+                swap_ext(st_pchdr->pext, st_pchdr->cext, gethostsex());
+#endif
                 if (fwrite(st_pchdr->pext, sizeof(EXTR), st_pchdr->cext, out) != st_pchdr->cext) {
                     st_error("cannot write cur table\n");
                 }
@@ -735,6 +753,9 @@ void st_writest(int fn, int flags) {
             hdr.idnMax = st_pchdr->cdn;
             if (st_pchdr->cdn != 0) {
                 // ?
+#if defined(__x86_64__) || defined(__i386__)
+                swap_dn(st_pchdr->pdn, st_pchdr->cdn, gethostsex());
+#endif
                 if (st_pchdr->cdn != 0 && fwrite(st_pchdr->pdn, 8, st_pchdr->cdn, out) != st_pchdr->cdn) {
                     st_error("cannot write cur table\n");
                 }
@@ -746,6 +767,9 @@ void st_writest(int fn, int flags) {
     fseek(out, startOffset, SEEK_SET);
     hdr.vstamp = 0x070A; // 7.10
     hdr.magic = stmagic;
+#if defined(__x86_64__) || defined(__i386__)
+    swap_hdr(&hdr, gethostsex());
+#endif
     if (fwrite(&hdr, 1, sizeof(HDRR), out) != sizeof(HDRR)) {
         st_error("cannot write symbol header\n");
     }

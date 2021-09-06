@@ -668,7 +668,7 @@ void optinit(void) {
     set_optab_entry(Uxor,  0, 1, 1);
 
     perm_heap = NULL;
-    ustrptr = alloc_new(0x400, &perm_heap);
+    ustrptr = alloc_new(1024, &perm_heap);
     ustackbot = (struct UstackEntry *)alloc_new(sizeof(struct UstackEntry), &perm_heap);
     ustackbot->up = NULL;
     ustackbot->down = NULL;
@@ -746,8 +746,8 @@ void optinit(void) {
         incorp_feedback();
     }
     nocopy = alloc_new(sizeof (struct Expression), &perm_heap);
-    nota_candof = alloc_new(0x1C, &perm_heap);
-    constprop = alloc_new(0x10, &perm_heap);
+    nota_candof = alloc_new(sizeof (struct ExpSourceThing), &perm_heap);
+    constprop = alloc_new(sizeof (struct VarAccessList), &perm_heap);
 
     // see coloroffset
     // the classes were 1-indexed in the original pascal, so regsinclass[1] is "regsinclass2"

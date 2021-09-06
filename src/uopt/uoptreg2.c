@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "libp/libp.h"
 #include "libu/libu.h"
 #include "uoptdata.h"
@@ -482,6 +484,8 @@ void localcolor(void) {
 
     formingtab = alloc_new(curstaticno * sizeof(struct Graphnode *), &perm_heap);
     bbtab = alloc_new(curstaticno * sizeof(struct Graphnode *), &perm_heap);
+    memset(formingtab, 0, curstaticno * sizeof(struct Graphnode *));
+    memset(bbtab, 0, curstaticno * sizeof(struct Graphnode *));
 
     for (node = graphhead; node != NULL; node = node->next) {
         bbtab[node->num] = node;
@@ -1931,7 +1935,7 @@ void globalcolor(void) {
     struct LiveRange *splitlr;   // sp118
     struct LiveRange *liverange; // sp114, s5
     int i;                       // sp110
-    int candidate_bit;           // sp10C
+    int candidate_bit = -1;      // sp10C
     unsigned int chosen_reg;     // spDC
     long long available_regs;    // spD8
     struct Proc *prev_call;      // spC8
@@ -2121,6 +2125,7 @@ void globalcolor(void) {
                 }
             }
 
+            //! this comparison makes -mfpmath=sse necessary, because otherwise the compiler uses double comparisons
             if (liverange->adjsave * liverange->unk1C <= phi_f20) {
                 split(&liverange, &splitlr, regclass, true);
                 if (outofmem) {
@@ -2333,7 +2338,6 @@ void globalcolor(void) {
                 }
 
                 if (dbugno == 6) {
-                    liverange = liverange;
                     write_integer(list.c_file, liverange->ichain->bitpos, 4, 10);
                     write_char(list.c_file, ':', 1);
                     write_integer(list.c_file, liverange->bitpos, 5, 10);

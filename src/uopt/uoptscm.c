@@ -254,13 +254,13 @@ static void func_00474FC8(struct Statement *stat, struct Graphnode *node_shared7
                                     if (temp_s1 != 0 || sp70 != NULL) {
                                         phi_s0 = stat->u.store.u.str.unk2C;
                                         if (phi_s0 == NULL) {
-                                            expSourceThing = alloc_new(0x1C, &perm_heap);
+                                            expSourceThing = alloc_new(sizeof(struct ExpSourceThing), &perm_heap);
                                             stat->u.store.u.str.unk2C = expSourceThing;
                                         } else {
                                             while (phi_s0->next != NULL) {
                                                 phi_s0 = phi_s0->next;
                                             }
-                                            expSourceThing = alloc_new(0x1C, &perm_heap);
+                                            expSourceThing = alloc_new(sizeof(struct ExpSourceThing), &perm_heap);
                                             phi_s0->next = expSourceThing;
                                         }
 
@@ -288,7 +288,7 @@ static void func_00474FC8(struct Statement *stat, struct Graphnode *node_shared7
                                         if (mipsflag == 3 && sp62 != 0) {
                                             if (looptab[loopno].unk9 != 0) {
                                                 if (looptab[loopno].unk8 == 0) {
-                                                    unkThing2 = alloc_new(0x14, &perm_heap);
+                                                    unkThing2 = alloc_new(sizeof(struct ScmThing), &perm_heap);
                                                     unkThing2->ichain = ichain_s2;
                                                     unkThing2->unk4 = expSourceThing;
                                                     unkThing2->unk10 = 0;

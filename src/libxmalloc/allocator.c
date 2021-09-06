@@ -1,5 +1,6 @@
 #include <string.h>
 #include <inttypes.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "xmalloc.h"
 

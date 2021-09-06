@@ -440,11 +440,11 @@ void tail_recursion(void) {
         node->stat_tail = stmt;
         stathead = stmt;
         init_node_vectors(node);
-        predecessors = alloc_new(8, &perm_heap);
+        predecessors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
         predecessors->graphnode = node;
         predecessors->next = graphhead->predecessors;
         graphhead->predecessors = predecessors;
-        successors = alloc_new(8, &perm_heap);
+        successors = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
         successors->graphnode = graphhead;
         successors->next = node->successors;
         node->successors = successors;

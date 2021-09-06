@@ -54,11 +54,11 @@ bool entryav(struct Expression *expr) {
             break;
 
         case dumped:
+        default:
             caseerror(1, 70, "uoptcopy.p", 10);
             available = false; // UB
             break;
 
-        default: break;
     }
 
     return available;
@@ -1560,7 +1560,12 @@ static struct Expression *func_004150E4(struct Expression *expr, int size, Datat
         //! when expr is isconst, unaryfold overwrites this
         // but expr can also be isvar/issvar. this happens in oot
         // is this a bug, or are unk21/unk22 the same for isop/isvar/issvar
-        sp48->data.isop.unk22 = expr->data.isop.unk22;
+        if (expr->type == isop) {
+            sp48->data.isop.unk22 = expr->data.isop.unk22;
+        } else {
+            // unaligned on x86_64
+            sp48->data.isop.unk22 = expr->data.isvar_issvar.unk22;
+        }
     }
     sp48->count++;
 

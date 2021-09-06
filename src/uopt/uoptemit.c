@@ -2385,13 +2385,13 @@ static void func_00425618(struct IChain *ichain, struct Graphnode *node, struct 
         case isconst:
         case isrconst:
             if (*listTail == NULL) {
-                newlist = alloc_new(0x30, &perm_heap);
+                newlist = alloc_new(sizeof(struct IChainList), &perm_heap);
                 newlist->prev = NULL;
                 newlist->next = NULL;
                 *listTail = newlist;
             } else {
                 if ((*listTail)->next == NULL) {
-                    newlist = alloc_new(0x30, &perm_heap);
+                    newlist = alloc_new(sizeof(struct IChainList), &perm_heap);
                     (*listTail)->next = newlist;
                     newlist->prev = (*listTail);
                     newlist->next = NULL;
@@ -2436,13 +2436,13 @@ static void func_00425618(struct IChain *ichain, struct Graphnode *node, struct 
             }
 
             if (*listTail == NULL) {
-                newlist = alloc_new(0x30, &perm_heap);
+                newlist = alloc_new(sizeof(struct IChainList), &perm_heap);
                 *listTail = newlist;
                 newlist->prev = 0;
                 newlist->next = 0;
             } else {
                 if ((*listTail)->next == 0) {
-                    newlist = alloc_new(0x30, &perm_heap);
+                    newlist = alloc_new(sizeof(struct IChainList), &perm_heap);
                     (*listTail)->next = newlist;
                     newlist->prev = (*listTail);
                     newlist->next = NULL;

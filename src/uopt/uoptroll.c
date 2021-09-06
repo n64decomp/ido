@@ -126,7 +126,7 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
     struct Expression *sp78;
     bool found;
     struct IChain *sp58;
-    Uopcode sp57;
+    Uopcode condOpc;
     bool sp56;
     bool sp55;
     bool sp54;
@@ -140,9 +140,9 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
     struct IChain *phi_s3_2;
 
     if (loop_if_true == 0) {
-        sp57 = Uequ;
+        condOpc = Uequ;
     } else {
-        sp57 = Uneq;
+        condOpc = Uneq;
     }
     if (inc_var_op1) {
         phi_s3 = loopCond->data.isop.op2;
@@ -151,7 +151,7 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
     }
     phi_s3->count++;
 
-    found = 0;
+    found = false;
 
     if ((loopCond->data.isop.opc == Ules && loop_if_true != 0) || (loopCond->data.isop.opc == Ugeq && loop_if_true == 0)) {
         phi_s1 = phi_s3;
@@ -202,12 +202,12 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
 
     if (inc_var_op1) {
         loopCond->data.isop.op1->count++;
-        hash = isophash(sp57, loopCond->data.isop.op1, phi_s1);
+        hash = isophash(condOpc, loopCond->data.isop.op1, phi_s1);
         phi_s0 = table[hash];
 
         //! The asm doesn't check found here, even though it could have been set
         while (phi_s0 != 0) {
-            if (phi_s0->type == isop && sp57 == phi_s0->data.isop.opc && loopCond->datatype == phi_s0->datatype
+            if (phi_s0->type == isop && condOpc == phi_s0->data.isop.opc && loopCond->datatype == phi_s0->datatype
                     && phi_s0->data.isop.op1 == loopCond->data.isop.op1
                     && phi_s1 == phi_s0->data.isop.op2) {
                 found = 1;
@@ -221,12 +221,12 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
         }
     } else {
         loopCond->data.isop.op2->count++;
-        hash = isophash(sp57, phi_s1, loopCond->data.isop.op2);
+        hash = isophash(condOpc, phi_s1, loopCond->data.isop.op2);
         phi_s0 = table[hash];
 
         //! The asm doesn't check found here, even though it could have been set
         while (phi_s0 != 0) {
-            if (phi_s0->type == isop && sp57 == phi_s0->data.isop.opc && loopCond->datatype == phi_s0->datatype
+            if (phi_s0->type == isop && condOpc == phi_s0->data.isop.opc && loopCond->datatype == phi_s0->datatype
                     && phi_s1 == phi_s0->data.isop.op1
                     && phi_s0->data.isop.op2 == loopCond->data.isop.op2) {
                 found = true;
@@ -239,10 +239,10 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
         }
     }
 
-    if (found == 0) {
+    if (!found) {
         sp48 = appendchain(hash);
         sp48->type = isop;
-        sp48->data.isop.opc = sp57;
+        sp48->data.isop.opc = condOpc;
         sp48->datatype = loopCond->datatype;
         sp48->data.isop.datatype = loopCond->data.isop.datatype;
         if (inc_var_op1) {
@@ -296,16 +296,16 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
         if (phi_s1->data.isop.unk22) {
             setbit(&body->bvs.stage1.avlocs, phi_s3_2->bitpos);
         }
-        if ((phi_s1->data.isop.unk21 == 0) || (phi_s1->data.isop.unk22)) {
+        if (!phi_s1->data.isop.unk21 || phi_s1->data.isop.unk22) {
             setbit(&body->bvs.stage1.alters, phi_s3_2->bitpos);
         }
         setbit(&body->bvs.stage1.u.precm.expoccur, phi_s3_2->bitpos);
     }
 
     if (inc_var_op1) {
-        temp_s1_2 = isearchloop(isopihash(sp57, loopCond->ichain->isop.op1, phi_s3_2), phi_s0, loopCond->ichain->isop.op1, phi_s3_2);
+        temp_s1_2 = isearchloop(isopihash(condOpc, loopCond->ichain->isop.op1, phi_s3_2), phi_s0, loopCond->ichain->isop.op1, phi_s3_2);
     } else {
-        temp_s1_2 = isearchloop(isopihash(sp57, phi_s3_2, loopCond->ichain->isop.op2), phi_s0, phi_s3_2, loopCond->ichain->isop.op2);
+        temp_s1_2 = isearchloop(isopihash(condOpc, phi_s3_2, loopCond->ichain->isop.op2), phi_s0, phi_s3_2, loopCond->ichain->isop.op2);
     }
 
     if (phi_s0->data.isop.unk21) {
@@ -314,13 +314,13 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
     if (phi_s0->data.isop.unk22) {
         setbit(&body->bvs.stage1.avlocs, temp_s1_2->bitpos);
     }
-    if ((phi_s0->data.isop.unk21 == 0) || (phi_s0->data.isop.unk22)) {
+    if (!phi_s0->data.isop.unk21 || phi_s0->data.isop.unk22) {
         setbit(&body->bvs.stage1.alters, temp_s1_2->bitpos);
     }
 
     setbit(&body->bvs.stage1.u.precm.expoccur, temp_s1_2->bitpos);
-    trep_image(phi_s0, 1, sp56, sp55, 1);
-    trep_image(phi_s0, 0, sp54, sp53, 1);
+    trep_image(phi_s0, true,  sp56, sp55, true);
+    trep_image(phi_s0, false, sp54, sp53, true);
     return phi_s0;
 }
 
@@ -349,26 +349,26 @@ struct Expression *unroll_searchloop(unsigned short tableIdx, struct Expression 
     bool sp33; // t0
     bool sp32; // t1, killed?
     bool sp31;
-    bool sp30;
+    bool veqv;
     struct Expression *phi_s0;
 
     phi_s0 = table[tableIdx];
     sp31 = false;
-    sp30 = false;
+    veqv = false;
     if (expr->datatype == Sdt && expr->type != isconst) {
         if (expr->type != isvar && expr->type != issvar) {
             phi_s0 = NULL;
         } else if (int_reg_size < expr->data.isvar_issvar.size) {
-            sp30 = true;
+            veqv = true;
         }
     }
 
     sp33 = false;
     sp32 = false;
-    while (sp33 == 0 && sp30 == 0 && phi_s0 != 0) {
+    while (!sp33 && !veqv && phi_s0 != NULL) {
         if (phi_s0->type == isop || phi_s0->type == isilda) {
             if (curgraphnode != phi_s0->graphnode) {
-                goto block_137;
+                goto next;
             }
         }
 
@@ -387,12 +387,12 @@ struct Expression *unroll_searchloop(unsigned short tableIdx, struct Expression 
             case issvar:
                 if (phi_s0->type == expr->type && addreq(phi_s0->data.isvar_issvar.location, expr->data.isvar_issvar.location)) {
                     if (phi_s0->data.isvar_issvar.veqv) {
-                        sp30 = true;
+                        veqv = true;
                         break;
                     }
 
                     sp33 = curgraphnode == phi_s0->graphnode && !phi_s0->unk2;
-                    if (phi_s0->data.isvar_issvar.unk22 != 0) {
+                    if (phi_s0->data.isvar_issvar.unk22) {
                         sp31 = true;
                     }
                     if (!sp33) {
@@ -606,41 +606,35 @@ struct Expression *unroll_searchloop(unsigned short tableIdx, struct Expression 
                 break;
         }
 
-block_137:
+next:
         if (!sp33) {
             phi_s0 = phi_s0->next;
         }
     }
 
-    if (!sp33 || sp30) {
+    if (!sp33 || veqv) {
         phi_s0 = appendchain(tableIdx);
         phi_s0->graphnode = curgraphnode;
         if (expr->type == isvar || expr->type == issvar) {
-            phi_s0->data.isvar_issvar.veqv = sp30;
-            if (!sp30) {
-                phi_s0->data.isvar_issvar.unk22 = sp31;
-            } else {
-                phi_s0->data.isvar_issvar.unk22 = 0;
-            }
+            phi_s0->data.isvar_issvar.veqv = veqv;
+            phi_s0->data.isvar_issvar.unk22 = !veqv && sp31;
         }
 
         if (sp32) {
             phi_s0->unk3 = false;
-        } else {
-            if (expr->type == isvar || expr->type == issvar ||
-                    (expr->type == isop &&
-                     (expr->data.isop.opc == Uiequ ||
-                      expr->data.isop.opc == Uigeq ||
-                      expr->data.isop.opc == Uigrt ||
-                      expr->data.isop.opc == Uileq ||
-                      expr->data.isop.opc == Uiles ||
-                      expr->data.isop.opc == Uineq ||
-                      expr->data.isop.opc == Uilod ||
-                      expr->data.isop.opc == Uildv ||
-                      expr->data.isop.opc == Uirld ||
-                      expr->data.isop.opc == Uirlv))) {
-                phi_s0->unk3 = true;
-            }
+        } else if (expr->type == isvar || expr->type == issvar ||
+                (expr->type == isop &&
+                 (expr->data.isop.opc == Uiequ ||
+                  expr->data.isop.opc == Uigeq ||
+                  expr->data.isop.opc == Uigrt ||
+                  expr->data.isop.opc == Uileq ||
+                  expr->data.isop.opc == Uiles ||
+                  expr->data.isop.opc == Uineq ||
+                  expr->data.isop.opc == Uilod ||
+                  expr->data.isop.opc == Uildv ||
+                  expr->data.isop.opc == Uirld ||
+                  expr->data.isop.opc == Uirlv))) {
+            phi_s0->unk3 = true;
         }
     }
     return phi_s0;
@@ -685,10 +679,10 @@ bool unroll_check_istr_propcopy(struct Expression *arg1, int arg2, Datatype dtyp
     struct Expression *phi_v1;
 
     phi_s0 = curgraphnode->varlisttail;
-    while (phi_s0 != 0) {
+    while (phi_s0 != NULL) {
         if (phi_s0->type == islda) {
             store = phi_s0->data.store;
-            if (store->opc == Uistr && arg1 == store->expr && arg2 == store->u.store.u.istr.offset && store->u.store.unk1F != 0 && dtype == store->u.store.u.istr.dtype && unk3C == store->u.store.size && !treekilled(store->u.store.expr)) {
+            if (store->opc == Uistr && arg1 == store->expr && arg2 == store->u.store.u.istr.offset && store->u.store.unk1F && dtype == store->u.store.u.istr.dtype && unk3C == store->u.store.size && !treekilled(store->u.store.expr)) {
                 decreasecount(arg1);
                 phi_v1 = phi_s0->data.store->u.store.expr;
 
@@ -713,10 +707,10 @@ bool unroll_check_irst_propcopy(struct Expression *arg1, int arg2, Datatype dtyp
     struct Expression *phi_v1;
 
     phi_s0 = curgraphnode->varlisttail;
-    while (phi_s0 != 0) {
+    while (phi_s0 != NULL) {
         if (phi_s0->type == islda) {
             store = phi_s0->data.store;
-            if (store->opc == Uirst && arg1 == store->expr && arg2 == store->u.store.u.istr.offset && store->u.store.unk1F != 0 && dtype == store->u.store.u.istr.dtype && unk3C == store->u.store.size && !treekilled(store->u.store.expr)) {
+            if (store->opc == Uirst && arg1 == store->expr && arg2 == store->u.store.u.istr.offset && store->u.store.unk1F && dtype == store->u.store.u.istr.dtype && unk3C == store->u.store.size && !treekilled(store->u.store.expr)) {
                 decreasecount(arg1);
                 phi_v1 = phi_s0->data.store->u.store.expr;
 
@@ -744,8 +738,8 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
     struct Expression *sp60;
     struct Expression *sp5C;
     struct Expression *sp58;
-    int sp54;
-    int sp50;
+    int sp54 = 0;
+    int sp50 = 0;
     int sp4C;
     struct Expression *temp_a0_2;
 
@@ -1223,8 +1217,8 @@ void oneloopblockstmt(struct Statement *stat) {
     bool sp5B;
     bool sp5A;
     bool sp59;
-    int sp54;
-    int sp50;
+    int sp54 = 0;
+    int sp50 = 0;
     struct Expression *temp_a0_4;
     struct Expression *phi_s1;
     struct Statement *s0;
@@ -1252,7 +1246,8 @@ void oneloopblockstmt(struct Statement *stat) {
     switch (stat->opc) {
         case Uisst:
         case Ustr:
-            sp5C = unroll_resetincr(oneloopblockexpr(stat->expr->data.isvar_issvar.assigned_value, &sp54), sp54);
+            sp5C = oneloopblockexpr(stat->expr->data.isvar_issvar.assigned_value, &sp54);
+            sp5C = unroll_resetincr(sp5C, sp54);
             sp60 = unroll_searchloop(stat->expr->table_index, stat->expr, 0, 0);
             if (sp60->type != empty) {
                 if (sp60->data.isvar_issvar.assignment == NULL) {
@@ -1283,7 +1278,7 @@ void oneloopblockstmt(struct Statement *stat) {
                 } else {
                     if (sp5C == sp60->data.isvar_issvar.assigned_value) {
                         decreasecount(sp5C);
-                        return;
+                        break;
                     }
 
                     sp60->unk2 = 1;
@@ -1377,28 +1372,29 @@ void oneloopblockstmt(struct Statement *stat) {
             if (phi_s1->data.isvar_issvar.unk22 != 0) {
                 curgraphnode->varlisttail->unk8 = 1;
             }
-            return;
+            break;
 
         case Uchkt:
             stattail->expr = oneloopblockexpr(stat->expr, &sp54);
             stattail->expr = unroll_resetincr(stattail->expr, sp54);
             stattail->u.trap.unk18 = 0;
-            return;
+            break;
 
         case Uaos:
             stattail->expr = oneloopblockexpr(stat->expr, &sp54);
             stattail->expr = unroll_resetincr(stattail->expr, sp54);
-            return;
+            break;
 
         case Ulab:
             stattail->u.label.flags = stat->u.label.flags;
             stattail->u.label.length = stat->u.label.length;
             stattail->u.label.blockno = stat->u.label.blockno;
-            return;
+            break;
 
         case Uistr:
         case Uistv:
-            sp60 = unroll_resetincr(oneloopblockexpr(stat->u.store.expr, &sp54), sp54);
+            sp60 = oneloopblockexpr(stat->u.store.expr, &sp54);
+            sp60 = unroll_resetincr(sp60, sp54);
             temp_a0_4 = oneloopblockexpr(stat->expr, &sp54);
             sp54 += stat->u.store.u.istr.offset;
             phi_s1 = unroll_resetincr_mod(temp_a0_4, &sp54);
@@ -1452,12 +1448,14 @@ void oneloopblockstmt(struct Statement *stat) {
                 strkillprev(stattail);
                 appendstorelist();
             }
-            return;
+            break;
 
         case Uirst:
         case Uirsv:
-            sp60 = unroll_resetincr(oneloopblockexpr(stat->u.store.expr, &sp54), sp54);
-            phi_s1 = unroll_resetincr_mod(oneloopblockexpr(stat->expr, &sp54), &sp54);
+            sp60 = oneloopblockexpr(stat->u.store.expr, &sp54);
+            sp60 = unroll_resetincr(sp60, sp54);
+            phi_s1 = oneloopblockexpr(stat->expr, &sp54);
+            phi_s1 = unroll_resetincr_mod(phi_s1, &sp54);
 
             extendstat(stat->opc);
             stattail->expr = phi_s1;
@@ -1482,7 +1480,7 @@ void oneloopblockstmt(struct Statement *stat) {
 
             strkillprev(stattail);
             appendstorelist();
-            return;
+            break;
 
         case Umov:
         case Umovv:
@@ -1512,12 +1510,12 @@ void oneloopblockstmt(struct Statement *stat) {
 
             strkillprev(stattail);
             appendstorelist();
-            return;
+            break;
 
         case Ustsp:
             stattail->expr = oneloopblockexpr(stat->expr, &sp54);
             stattail->expr = unroll_resetincr(stattail->expr, sp54);
-            return;
+            break;
 
         case Utpeq:
         case Utpge:
@@ -1572,17 +1570,17 @@ void oneloopblockstmt(struct Statement *stat) {
                 stattail->u.trap.unk18 = 0;
                 stattail->u.trap.dtype = stat->u.trap.dtype;
             }
-            return;
+            break;
 
         case Uloc:
             stattail->u.loc.page = stat->u.loc.page;
             stattail->u.loc.line = stat->u.loc.line;
-            return;
+            break;
 
         case Ubgnb:
         case Uendb:
             stattail->u.bgnb.blockno = stat->u.bgnb.blockno;
-            return;
+            break;
 
         case Upop:
             stattail->expr = oneloopblockexpr(stat->expr, &sp54);
@@ -1592,11 +1590,11 @@ void oneloopblockstmt(struct Statement *stat) {
 
             stattail->u.pop.dtype = stat->u.pop.dtype;
             stattail->u.pop.unk15 = stat->u.pop.unk15;
-            return;
+            break;
 
         case Uujp:
             stattail->u.jp.target_blockno = stat->u.jp.target_blockno;
-            return;
+            break;
 
         case Ufjp:
         case Utjp:
@@ -1609,12 +1607,12 @@ void oneloopblockstmt(struct Statement *stat) {
 
             stattail->u.jp.incre = 0;
             stattail->u.jp.target_blockno = stat->u.jp.target_blockno;
-            return;
+            break;
 
         case Uijp:
             stattail->expr = oneloopblockexpr(stat->expr, &sp54);
             stattail->expr = unroll_resetincr(stattail->expr, sp54);
-            return;
+            break;
 
         case Uxjp:
             stattail->expr = oneloopblockexpr(stat->expr, &sp54);
@@ -1632,31 +1630,31 @@ void oneloopblockstmt(struct Statement *stat) {
             stattail->u.xjp.hbound_l = stat->u.xjp.hbound_l;
             stattail->u.xjp.hbound_h = stat->u.xjp.hbound_h;
             stattail->u.xjp.case_stmts = stat->u.xjp.case_stmts;
-            return;
+            break;
 
         case Uclbd:
         case Ucubd:
         case Ustep:
             stattail->u.clbd_cubd_step.dtype = stat->u.clbd_cubd_step.dtype;
             stattail->u.clbd_cubd_step.unk18 = stat->u.clbd_cubd_step.unk18;
-            return;
+            break;
 
         case Uctrl:
             stattail->u.ctrl.dtype = stat->u.ctrl.dtype;
             stattail->u.ctrl.unk15 = stat->u.ctrl.unk15;
             stattail->u.ctrl.var = stat->u.ctrl.var;
-            return;
+            break;
 
         default:
             caseerror(1, 984, "uoptroll.p", 10);
-            return;
+            break;
 
-        case Unop: // ignored 19
-        case Ulend: // ignored 20
-        case Ulbdy: // ignored 21
-        case Ulbgn: // ignored 21
-        case Ultrm: // ignored 21
-        case Uret: // ignored 21
+        case Unop:
+        case Ulend:
+        case Ulbdy:
+        case Ulbgn:
+        case Ultrm:
+        case Uret:
             break;
     }
 }
@@ -1666,18 +1664,18 @@ void oneloopblockstmt(struct Statement *stat) {
 0046FCD4 link_jump_in_loop
 004713E8 loopunroll
 */
-void create_edge(struct Graphnode *node1, struct Graphnode *node2) {
+void create_edge(struct Graphnode *from, struct Graphnode *to) {
     struct GraphnodeList *edge;
 
     edge = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-    edge->graphnode = node2;
-    edge->next = node1->successors;
-    node1->successors = edge;
+    edge->graphnode = to;
+    edge->next = from->successors;
+    from->successors = edge;
 
     edge = alloc_new(sizeof(struct GraphnodeList), &perm_heap);
-    edge->graphnode = node1;
-    edge->next = node2->predecessors;
-    node2->predecessors = edge;
+    edge->graphnode = from;
+    edge->next = to->predecessors;
+    to->predecessors = edge;
 }
 
 /*
@@ -1689,7 +1687,7 @@ void create_edge(struct Graphnode *node1, struct Graphnode *node2) {
 void new_header_node(bool arg0) {
     curgraphnode = alloc_new(sizeof (struct Graphnode), &perm_heap);
     init_graphnode(curgraphnode);
-    curgraphnode->terminal = 1;
+    curgraphnode->terminal = true;
     curgraphnode->unk7 = 2;
     curgraphnode->num = curstaticno++;
 
@@ -1706,7 +1704,7 @@ void new_header_node(bool arg0) {
     curgraphnode->predecessors = NULL;
     curgraphnode->successors = NULL;
 
-    if (arg0 != 0) {
+    if (arg0) {
         create_edge(loopheader, curgraphnode);
     }
 
@@ -1717,23 +1715,23 @@ void new_header_node(bool arg0) {
 004713E8 loopunroll
 */
 void record_labels(void) {
-    struct Graphnode *node_s0 = loopbody;
+    struct Graphnode *node = loopbody;
 
-    while (node_s0 != loopbodyend) {
-        if (node_s0 != node_s0->stat_tail->next->graphnode) {
-            node_s0 = node_s0->stat_tail->next->graphnode;
+    while (node != loopbodyend) {
+        if (node != node->stat_tail->next->graphnode) {
+            node = node->stat_tail->next->graphnode;
         } else {
-            node_s0 = node_s0->stat_tail->next->next->graphnode;
+            node = node->stat_tail->next->next->graphnode;
         }
 
-        if (node_s0->blockno != 0 && node_s0->blockno != looplab) {
-            labelmap_unused->blockno = node_s0->blockno;
-            if (labelmap_unused->next != 0) {
+        if (node->blockno != 0 && node->blockno != looplab) {
+            labelmap_unused->blockno = node->blockno;
+            if (labelmap_unused->next != NULL) {
                 labelmap_unused = labelmap_unused->next;
             } else {
                 labelmap_unused->next = alloc_new(sizeof (struct LabelMap), &perm_heap);
                 labelmap_unused = labelmap_unused->next;
-                labelmap_unused->next = 0;
+                labelmap_unused->next = NULL;
             }
         }
     }
@@ -1808,7 +1806,7 @@ void link_jump_in_loop(struct Statement *stat, bool arg1) {
         case Uret:
             curgraphnode->stat_tail = stattail;
             codeimage();
-            new_header_node(0);
+            new_header_node(false);
             if (arg1) {
                 curgraphnode->loop = loopbody->loop;
             } else {
@@ -1851,10 +1849,10 @@ void pre_loopblock(bool arg0, bool arg1) {
     while (stat != incr_stat) {
         if (stat->opc != Ulab || (stat->u.label.blockno != looplab)) {
             if (stat->opc == Ulab) {
-                if (curgraphnode->stat_head != 0) {
+                if (curgraphnode->stat_head != NULL) {
                     curgraphnode->stat_tail = stattail;
                     codeimage();
-                    new_header_node(1);
+                    new_header_node(true);
 
                     if (arg1) {
                         curgraphnode->loop = loopbody->loop;
@@ -1921,25 +1919,24 @@ void pre_loopblock(bool arg0, bool arg1) {
 004713E8 loopunroll
 */
 void post_loopblock(bool arg0, bool arg1, bool arg2) {
-    struct Statement *phi_s0;
+    struct Statement *stat;
     int i;
 
-    phi_s0 = incr_stat->next;
+    stat = incr_stat->next;
 
-    while (phi_s0 != loopbodyend->stat_tail) {
-        if (phi_s0->opc == Uclab) {
-            int length = phi_s0->u.label.length;
+    while (stat != loopbodyend->stat_tail) {
+        if (stat->opc == Uclab) {
+            int length = stat->u.label.length;
 
-            for (i = 0; i < length; i++)
-            {
-                phi_s0 = phi_s0->next;
+            for (i = 0; i < length; i++) {
+                stat = stat->next;
             }
         } else {
-            if (arg1 && phi_s0->opc == Ulab) {
-                if (curgraphnode->stat_head != 0) {
+            if (arg1 && stat->opc == Ulab) {
+                if (curgraphnode->stat_head != NULL) {
                     curgraphnode->stat_tail = stattail;
                     codeimage();
-                    new_header_node(1);
+                    new_header_node(true);
                     if (arg2) {
                         curgraphnode->loop = loopbody->loop;
                     } else {
@@ -1947,10 +1944,11 @@ void post_loopblock(bool arg0, bool arg1, bool arg2) {
                     }
                 }
             }
+
             if (arg0) {
-                oneloopblockstmt(phi_s0);
+                oneloopblockstmt(stat);
             } else {
-                switch (phi_s0->opc) {
+                switch (stat->opc) {
                     case Uaos:
                     case Uchkt:
                     case Ufjp:
@@ -1976,7 +1974,7 @@ void post_loopblock(bool arg0, bool arg1, bool arg2) {
                     case Uxjp:
                     case Uirst:
                     case Uirsv:
-                        oneloopblockstmt(phi_s0);
+                        oneloopblockstmt(stat);
                         break;
 
                     default:
@@ -1985,13 +1983,13 @@ void post_loopblock(bool arg0, bool arg1, bool arg2) {
             }
 
             if (arg1) {
-                switch (phi_s0->opc) {
+                switch (stat->opc) {
                     case Ufjp:
                     case Ulab:
                     case Uret:
                     case Utjp:
                     case Uujp:
-                        link_jump_in_loop(phi_s0, arg2);
+                        link_jump_in_loop(stat, arg2);
                         break;
 
                     default:
@@ -2000,7 +1998,7 @@ void post_loopblock(bool arg0, bool arg1, bool arg2) {
             }
         }
 
-        phi_s0 = phi_s0->next;
+        stat = stat->next;
     }
 }
 
@@ -2102,11 +2100,10 @@ int estimate_instr(struct Graphnode *body, struct Graphnode *bodyend) {
 
         if (stat->opc == Uisst || stat->opc == Ustr) {
             ret += expr_instr(stat->expr->data.isvar_issvar.assigned_value);
-        } else {
-            if (stat->opc != Uret && stat->opc != Uujp) {
-                ret += expr_instr(stat->expr);
-            }
+        } else if (stat->opc != Uret && stat->opc != Uujp) {
+            ret += expr_instr(stat->expr);
         }
+
         switch (stat->opc) {
             case Uisst:
             case Uistr:
@@ -2182,6 +2179,7 @@ struct Expression *form_bop(Uopcode opc, struct Expression *left, struct Express
             binop = binop->next;
         }
     }
+
     if (!found) {
         binop = appendchain(hash);
         binop->type = isop;
@@ -2624,7 +2622,7 @@ void loopunroll(void) {
                 switch (stat_s3->opc) {
                     case Uisst:
                     case Ustr:
-                        reset_images(stat_s3->expr->data.isop.unk34);
+                        reset_images(stat_s3->expr->data.isvar_issvar.assigned_value);
                         reset_images(stat_s3->expr);
                         if (stat_s3->opc == Uisst) {
                             reset_images(stat_s3->u.store.expr);
@@ -2739,7 +2737,7 @@ void loopunroll(void) {
                     }
 
                     if (stat_s0->opc == Uisst || stat_s0->opc == Ustr) {
-                        decreasecount(stat_s0->expr->data.isop.unk34);
+                        decreasecount(stat_s0->expr->data.isvar_issvar.assigned_value);
                         if (stat_s0->expr->ichain != NULL) {
                             fixcorr(stat_s0->expr);
                             stat_s0->expr->ichain = NULL;
@@ -2918,7 +2916,7 @@ void loopunroll(void) {
                     }
 
                     if (rem != 0) {
-                        new_header_node(1);
+                        new_header_node(true);
                         curgraphnode->loop = loopbody->loop;
                         incr_amount = 0;
 
@@ -3000,7 +2998,7 @@ void loopunroll(void) {
                         phi_s2_8 = tempdisp;
                     }
 
-                    new_header_node(1);
+                    new_header_node(true);
                     curgraphnode->loop = loopbody->loop->outer;
                     incr_amount = 0;
                     expr_s0 = oneloopblockexpr(spAC, &spCC);
@@ -3020,13 +3018,13 @@ void loopunroll(void) {
                     spB4 = maxlabnam;
                     curgraphnode->stat_tail = stattail;
                     codeimage();
-                    new_header_node(1);
+                    new_header_node(true);
                     curgraphnode->loop = loopbody->loop->outer;
                     expr_s0 = oneloopblockexpr(expr_s0, &spCC);
-                    expr_s0 = str_to_temporary(phi_s2_8, form_bop(1, expr_s0, oneloopblockexpr(spA8, &spC8)));
+                    expr_s0 = str_to_temporary(phi_s2_8, form_bop(Uadd, expr_s0, oneloopblockexpr(spA8, &spC8)));
                     curgraphnode->stat_tail = stattail;
                     codeimage();
-                    new_header_node(1);
+                    new_header_node(true);
                     curgraphnode->loop = loopbody->loop->outer;
                     sp88 = curgraphnode;
                     curgraphnode->loopdepth = loopbody->loopdepth;
@@ -3059,7 +3057,7 @@ void loopunroll(void) {
 
                     curgraphnode->stat_tail = stattail;
                     codeimage();
-                    new_header_node(1);
+                    new_header_node(true);
                     curgraphnode->loop = loopbody->loop->outer;
                     curgraphnode->unkBb8 = 0;
                     curgraphnode->unk2C = node_s1->unk2C;
@@ -3076,7 +3074,7 @@ void loopunroll(void) {
                     create_edge(curgraphnode, node_s1);
                     curgraphnode->stat_tail = stattail;
                     codeimage();
-                    new_header_node(1);
+                    new_header_node(true);
                     curgraphnode->blockno = spB4;
                     curgraphnode->loop = loopbody->loop->outer;
                     curgraphnode->unk2C = node_s1->unk2C;
@@ -3090,7 +3088,7 @@ void loopunroll(void) {
                 }
 
 
-                new_header_node(1);
+                new_header_node(true);
                 curgraphnode->loop = loopbody->loop;
                 sp88 = curgraphnode;
                 curgraphnode->loopdepth = loopbody->loopdepth;
@@ -3121,7 +3119,7 @@ void loopunroll(void) {
                 for (phi_s0_9 = 2; phi_s0_9 < unroll_times_local; phi_s0_9++) {
                     new_set_of_labels();
                     pre_loopblock(0, 1);
-                    incr_amount = incr_amount + stat_s3->u.jp.incre;
+                    incr_amount += stat_s3->u.jp.incre;
                     post_loopblock(0, 1, 1);
                 }
 
@@ -3151,7 +3149,7 @@ void loopunroll(void) {
                 stat_s3 = loopbody->stat_head;
                 do {
                     if (stat_s3->opc == Uisst || stat_s3->opc == Ustr) {
-                        decreasecount(stat_s3->expr->data.isop.unk34);
+                        decreasecount(stat_s3->expr->data.isvar_issvar.assigned_value);
                         if (stat_s3->opc == Uisst) {
                             decreasecount(stat_s3->u.store.expr);
                         }
@@ -3184,6 +3182,7 @@ void loopunroll(void) {
 
                             default:
                                 decreasecount(stat_s3->expr);
+                                break;
                         }
 
                         switch (stat_s3->opc) {
@@ -3387,7 +3386,7 @@ void par_to_str(struct Statement *par, bool arg1, int disp) {
     struct Expression *sp54;
     bool unk1C; // sp53
     bool unk1E; // sp52
-    int sp4C;
+    int sp4C = 0;
     struct VariableLocation loc;
     unsigned short hash;
     int parsize;

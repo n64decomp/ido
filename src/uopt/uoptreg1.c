@@ -1,3 +1,4 @@
+#include <string.h>
 #include "libp/libp.h"
 #include "libu/libu.h"
 #include "uoptdata.h"
@@ -105,6 +106,9 @@ void formlivbb(struct IChain *ichain, struct Graphnode *node, struct LiveUnit **
         numlu++;
 
         *dest = alloc_new(sizeof(struct LiveUnit), &perm_heap);
+#ifdef AVOID_UB
+        **dest = (struct LiveUnit) {0};
+#endif
         if (*dest == NULL) {
             outofmem = true;
             return;
@@ -1289,7 +1293,7 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared)
                     func_00461084(phi_s2->ichain_unk10, node_shared);
                 } else {
                     if (phi_s2->unk18 == 0) {
-                        phi_s1 = alloc_new(0x28, &perm_heap);
+                        phi_s1 = alloc_new(sizeof (struct IChain), &perm_heap);
                         *phi_s1 = *phi_s2->ichain;
 
                         phi_s1->isop.opc = Ucg1;
@@ -1300,7 +1304,7 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared)
                             tempdisp = (tempdisp - (tempdisp & 3)) + 4;
                         }
 
-                        phi_s1->isop.temploc = alloc_new(0x14, &perm_heap);
+                        phi_s1->isop.temploc = alloc_new(sizeof (struct Temploc), &perm_heap);
                         if (!stack_reversed) {
                             tempdisp += 4;
                             phi_s1->isop.temploc->disp = -tempdisp;

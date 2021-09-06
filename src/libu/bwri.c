@@ -139,12 +139,12 @@ void uwrite(union Bcode *bcode) {
 
     struct utabrec urec = utab[uinstr->Opc];
     for (i = 0; i < urec.instlength; i += 2) {
-        uputint(bcode->intarray[i]);
-        uputint(bcode->intarray[i + 1]);
+        uputint(bcode->intarray[i], true);
+        uputint(bcode->intarray[i + 1], true);
     }
     if (urec.hasconst) {
-        uputint(bcode->intarray[urec.instlength]);
-        uputint(bcode->intarray[urec.instlength + 1]);
+        uputint(bcode->intarray[urec.instlength], true);
+        uputint(bcode->intarray[urec.instlength + 1], true);
         if (((1 << uinstr->Dtype) & ((1 << Mdt) | (1 << Qdt) | (1 << Rdt) | (1 << Sdt) | (1 << Xdt))) || uinstr->Opc == Ucomm) {
             if (uinstr->Opc == Uinit) {
                 strlength = (uinstr->Uopcde.uiequ1.uop2.uinit.initval.swpart.Ival + 3) / 4;
@@ -160,8 +160,8 @@ void uwrite(union Bcode *bcode) {
                 str = uinstr->Uopcde.uiequ1.uop2.Constval.swpart.Chars;
             }
             for (i = 0; i < strlength; i += 2) {
-                uputint(((int *)str)[i]);
-                uputint(((int *)str)[i + 1]);
+                uputint(((int *)str)[i], false);
+                uputint(((int *)str)[i + 1], false);
             }
         }
     }

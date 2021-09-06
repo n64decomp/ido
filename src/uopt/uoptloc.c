@@ -907,7 +907,7 @@ void mergeconst(struct Expression *expr) {
                                 } else if (mpyovfw(expr->datatype, expr->data.isop.op2->data.isconst.number.intval, expr->data.isop.datasize)) {
                                     overflow = true;
                                 } else {
-                                    overflow = addovfw(false, constant->data.isconst.number.intval * left->data.isop.datasize, expr->data.isop.op2->data.isconst.number.intval * expr->data.isop.datasize);
+                                    overflow = addovfw(Adt, constant->data.isconst.number.intval * left->data.isop.datasize, expr->data.isop.op2->data.isconst.number.intval * expr->data.isop.datasize);
                                 }
                                 break;
 

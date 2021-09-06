@@ -247,7 +247,7 @@ union Valu {
   long long dwval;
 #endif
   struct {
-#ifdef _MIPSEL
+#if defined(_MIPSEL) || defined(__x86_64__) || defined(__i386__)
     int dwval_l, dwval_h;
 #else /* _MIPSEB */
     int dwval_h, dwval_l;
@@ -300,18 +300,34 @@ typedef unsigned char Uopcode;
 #endif
 
 struct Bcrec   {
+#if defined(__x86_64__) || defined(__i386__)
+          unsigned short Lexlev;
+          unsigned char  Dtype :5;
+          unsigned char  Mtype :3;
+          Uopcode Opc;
+#else
           Uopcode Opc;
           unsigned char  Mtype :3;
           unsigned char  Dtype :5;
           unsigned short  Lexlev;
+#endif
           int  I1;
           /* ------- 2 words ------- */
           union {
             struct {
+#if defined(__x86_64__) || defined(__i386__)
+              unsigned :24; enum Datatype Dtype2:8;
+#else
               enum Datatype Dtype2:8; unsigned :24;
+#endif
             }secondty;
             struct {
+#if defined(__x86_64__) || defined(__i386__)
+               unsigned int pad :16;
+               unsigned int Push :8, Pop :8;
+#else
                unsigned int Pop :8, Push :8;
+#endif
                unsigned int Extrnal;
             }uent;
             struct {
@@ -329,7 +345,7 @@ struct Bcrec   {
                     } dwbnds;
 #endif
                   struct {
-#ifdef _MIPSEL
+#if defined(_MIPSEL) || defined(__x86_64__) || defined(__i386__)
                     int lbound_l, lbound_h;
                     int hbound_l, hbound_h;
 #else        /* _MIPSEB */

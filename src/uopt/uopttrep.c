@@ -715,7 +715,7 @@ static void func_00478820(struct Expression *expr, struct Graphnode *node) {
             expr->unk5 = 4;
             break;
 
-        case 4:
+        case isop:
             if (expr->unk5 == 4) {
                 break;
             }
