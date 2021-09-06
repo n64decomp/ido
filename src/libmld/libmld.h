@@ -6,6 +6,7 @@
 
 extern char *st_errname;
 extern CHDRR *st_pchdr;
+extern CFDR* pcfdcur;
 
 void st_error(const char *format, ...);
 void st_warning(const char *format, ...);

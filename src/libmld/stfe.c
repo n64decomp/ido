@@ -1,3 +1,4 @@
+#include "libmld.h"
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -1399,165 +1400,60 @@ glabel st_fglobal_idn
     .type st_fglobal_idn, @function
     .size st_fglobal_idn, .-st_fglobal_idn
     .end st_fglobal_idn
+)"");
 
-glabel st_psym_idn_offset
-    .ent st_psym_idn_offset
-    # 0040C0C0 local_in_reg
-/* 0048C0B0 3C1C0FB9 */  .cpload $t9
-/* 0048C0B4 279CE1E0 */  
-/* 0048C0B8 0399E021 */  
-/* 0048C0BC 27BDFF98 */  addiu $sp, $sp, -0x68
-/* 0048C0C0 8F9987EC */  lw    $t9, %call16(st_pdn_idn)($gp)
-/* 0048C0C4 AFBF003C */  sw    $ra, 0x3c($sp)
-/* 0048C0C8 AFBE0038 */  sw    $fp, 0x38($sp)
-/* 0048C0CC AFBC0034 */  sw    $gp, 0x34($sp)
-/* 0048C0D0 AFB70030 */  sw    $s7, 0x30($sp)
-/* 0048C0D4 AFB6002C */  sw    $s6, 0x2c($sp)
-/* 0048C0D8 AFB50028 */  sw    $s5, 0x28($sp)
-/* 0048C0DC AFB40024 */  sw    $s4, 0x24($sp)
-/* 0048C0E0 AFB30020 */  sw    $s3, 0x20($sp)
-/* 0048C0E4 AFB2001C */  sw    $s2, 0x1c($sp)
-/* 0048C0E8 AFB10018 */  sw    $s1, 0x18($sp)
-/* 0048C0EC AFB00014 */  sw    $s0, 0x14($sp)
-/* 0048C0F0 0320F809 */  jalr  $t9
-/* 0048C0F4 AFA5006C */   sw    $a1, 0x6c($sp)
-/* 0048C0F8 8C580000 */  lw    $t8, ($v0)
-/* 0048C0FC 8FBC0034 */  lw    $gp, 0x34($sp)
-/* 0048C100 27AE0060 */  addiu $t6, $sp, 0x60
-/* 0048C104 ADD80000 */  sw    $t8, ($t6)
-/* 0048C108 8C4F0004 */  lw    $t7, 4($v0)
-/* 0048C10C 3C017FFF */  lui   $at, 0x7fff
-/* 0048C110 3421FFFF */  ori   $at, $at, 0xffff
-/* 0048C114 ADCF0004 */  sw    $t7, 4($t6)
-/* 0048C118 8FB90060 */  lw    $t9, 0x60($sp)
-/* 0048C11C 1721000D */  bne   $t9, $at, .L0048C154
-/* 0048C120 00000000 */   nop   
-/* 0048C124 8F9987E4 */  lw    $t9, %call16(st_pext_iext)($gp)
-/* 0048C128 8FA40064 */  lw    $a0, 0x64($sp)
-/* 0048C12C 0320F809 */  jalr  $t9
-/* 0048C130 00000000 */   nop   
-/* 0048C134 94480002 */  lhu   $t0, 2($v0)
-/* 0048C138 3C01000F */  lui   $at, 0xf
-/* 0048C13C 3421FFFF */  ori   $at, $at, 0xffff
-/* 0048C140 AFA80060 */  sw    $t0, 0x60($sp)
-/* 0048C144 8C49000C */  lw    $t1, 0xc($v0)
-/* 0048C148 8FBC0034 */  lw    $gp, 0x34($sp)
-/* 0048C14C 01215024 */  and   $t2, $t1, $at
-/* 0048C150 AFAA0064 */  sw    $t2, 0x64($sp)
-.L0048C154:
-/* 0048C154 8F9987C0 */  lw    $t9, %call16(st_psym_ifd_isym)($gp)
-/* 0048C158 8FA50064 */  lw    $a1, 0x64($sp)
-/* 0048C15C 8FA40060 */  lw    $a0, 0x60($sp)
-/* 0048C160 0320F809 */  jalr  $t9
-/* 0048C164 00000000 */   nop   
-/* 0048C168 8C4B0008 */  lw    $t3, 8($v0)
-/* 0048C16C 3C01000F */  lui   $at, 0xf
-/* 0048C170 3421FFFF */  ori   $at, $at, 0xffff
-/* 0048C174 01616024 */  and   $t4, $t3, $at
-/* 0048C178 8FBC0034 */  lw    $gp, 0x34($sp)
-/* 0048C17C 15810003 */  bne   $t4, $at, .L0048C18C
-/* 0048C180 00403025 */   move  $a2, $v0
-/* 0048C184 1000004A */  b     .L0048C2B0
-/* 0048C188 00001025 */   move  $v0, $zero
-.L0048C18C:
-/* 0048C18C 8F9987A8 */  lw    $t9, %call16(st_paux_ifd_iaux)($gp)
-/* 0048C190 8CC50008 */  lw    $a1, 8($a2)
-/* 0048C194 3C01000F */  lui   $at, 0xf
-/* 0048C198 3421FFFF */  ori   $at, $at, 0xffff
-/* 0048C19C 8FA40060 */  lw    $a0, 0x60($sp)
-/* 0048C1A0 0320F809 */  jalr  $t9
-/* 0048C1A4 00A12824 */   and   $a1, $a1, $at
-/* 0048C1A8 14400003 */  bnez  $v0, .L0048C1B8
-/* 0048C1AC 8FBC0034 */   lw    $gp, 0x34($sp)
-/* 0048C1B0 1000003F */  b     .L0048C2B0
-/* 0048C1B4 00001025 */   move  $v0, $zero
-.L0048C1B8:
-/* 0048C1B8 8FAD0064 */  lw    $t5, 0x64($sp)
-/* 0048C1BC 8C500000 */  lw    $s0, ($v0)
-/* 0048C1C0 241E0007 */  li    $fp, 7
-/* 0048C1C4 25AE0001 */  addiu $t6, $t5, 1
-/* 0048C1C8 01D0082B */  sltu  $at, $t6, $s0
-/* 0048C1CC 10200037 */  beqz  $at, .L0048C2AC
-/* 0048C1D0 AFAE0064 */   sw    $t6, 0x64($sp)
-/* 0048C1D4 2417000B */  li    $s7, 11
-/* 0048C1D8 2416000E */  li    $s6, 14
-/* 0048C1DC 24150006 */  li    $s5, 6
-/* 0048C1E0 24140010 */  li    $s4, 16
-/* 0048C1E4 24130005 */  li    $s3, 5
-/* 0048C1E8 24120003 */  li    $s2, 3
-/* 0048C1EC 24110004 */  li    $s1, 4
-.L0048C1F0:
-/* 0048C1F0 8F9987C0 */  lw    $t9, %call16(st_psym_ifd_isym)($gp)
-/* 0048C1F4 8FA50064 */  lw    $a1, 0x64($sp)
-/* 0048C1F8 8FA40060 */  lw    $a0, 0x60($sp)
-/* 0048C1FC 0320F809 */  jalr  $t9
-/* 0048C200 00000000 */   nop   
-/* 0048C204 8C450008 */  lw    $a1, 8($v0)
-/* 0048C208 8FBC0034 */  lw    $gp, 0x34($sp)
-/* 0048C20C 00403025 */  move  $a2, $v0
-/* 0048C210 00051E82 */  srl   $v1, $a1, 0x1a
-/* 0048C214 12230002 */  beq   $s1, $v1, .L0048C220
-/* 0048C218 00052180 */   sll   $a0, $a1, 6
-/* 0048C21C 1643000A */  bne   $s2, $v1, .L0048C248
-.L0048C220:
-/* 0048C220 000426C2 */   srl   $a0, $a0, 0x1b
-/* 0048C224 12640003 */  beq   $s3, $a0, .L0048C234
-/* 0048C228 8FAF006C */   lw    $t7, 0x6c($sp)
-/* 0048C22C 16840006 */  bne   $s4, $a0, .L0048C248
-/* 0048C230 00000000 */   nop   
-.L0048C234:
-/* 0048C234 8C580004 */  lw    $t8, 4($v0)
-/* 0048C238 15F80003 */  bne   $t7, $t8, .L0048C248
-/* 0048C23C 00000000 */   nop   
-/* 0048C240 1000001B */  b     .L0048C2B0
-/* 0048C244 00C01025 */   move  $v0, $a2
-.L0048C248:
-/* 0048C248 52A30019 */  beql  $s5, $v1, .L0048C2B0
-/* 0048C24C 00001025 */   move  $v0, $zero
-/* 0048C250 52C30017 */  beql  $s6, $v1, .L0048C2B0
-/* 0048C254 00001025 */   move  $v0, $zero
-/* 0048C258 0005C980 */  sll   $t9, $a1, 6
-/* 0048C25C 001946C2 */  srl   $t0, $t9, 0x1b
-/* 0048C260 56E8000E */  bnel  $s7, $t0, .L0048C29C
-/* 0048C264 8FA50064 */   lw    $a1, 0x64($sp)
-/* 0048C268 13C30006 */  beq   $fp, $v1, .L0048C284
-/* 0048C26C 2401001A */   li    $at, 26
-/* 0048C270 10610004 */  beq   $v1, $at, .L0048C284
-/* 0048C274 2401001B */   li    $at, 27
-/* 0048C278 10610002 */  beq   $v1, $at, .L0048C284
-/* 0048C27C 2401001C */   li    $at, 28
-/* 0048C280 14610005 */  bne   $v1, $at, .L0048C298
-.L0048C284:
-/* 0048C284 3C01000F */   lui   $at, 0xf
-/* 0048C288 3421FFFF */  ori   $at, $at, 0xffff
-/* 0048C28C 00A14824 */  and   $t1, $a1, $at
-/* 0048C290 252AFFFF */  addiu $t2, $t1, -1
-/* 0048C294 AFAA0064 */  sw    $t2, 0x64($sp)
-.L0048C298:
-/* 0048C298 8FA50064 */  lw    $a1, 0x64($sp)
-.L0048C29C:
-/* 0048C29C 24A50001 */  addiu $a1, $a1, 1
-/* 0048C2A0 00B0082B */  sltu  $at, $a1, $s0
-/* 0048C2A4 1420FFD2 */  bnez  $at, .L0048C1F0
-/* 0048C2A8 AFA50064 */   sw    $a1, 0x64($sp)
-.L0048C2AC:
-/* 0048C2AC 00001025 */  move  $v0, $zero
-.L0048C2B0:
-/* 0048C2B0 8FBF003C */  lw    $ra, 0x3c($sp)
-/* 0048C2B4 8FB00014 */  lw    $s0, 0x14($sp)
-/* 0048C2B8 8FB10018 */  lw    $s1, 0x18($sp)
-/* 0048C2BC 8FB2001C */  lw    $s2, 0x1c($sp)
-/* 0048C2C0 8FB30020 */  lw    $s3, 0x20($sp)
-/* 0048C2C4 8FB40024 */  lw    $s4, 0x24($sp)
-/* 0048C2C8 8FB50028 */  lw    $s5, 0x28($sp)
-/* 0048C2CC 8FB6002C */  lw    $s6, 0x2c($sp)
-/* 0048C2D0 8FB70030 */  lw    $s7, 0x30($sp)
-/* 0048C2D4 8FBE0038 */  lw    $fp, 0x38($sp)
-/* 0048C2D8 03E00008 */  jr    $ra
-/* 0048C2DC 27BD0068 */   addiu $sp, $sp, 0x68
-    .type st_psym_idn_offset, @function
-    .size st_psym_idn_offset, .-st_psym_idn_offset
-    .end st_psym_idn_offset
+/*
+0040C0C0 local_in_reg
+*/
+SYMR *st_psym_idn_offset(int idn, int offset) {
+    DNR sp60;
+    AUXU *aux;
+    DNR *dn;
+    EXTR *ext;
+    SYMR *sym;
+
+    dn = st_pdn_idn(idn);
+    sp60 = *dn;
+    if (sp60.rfd == ST_EXTIFD) {
+        ext = st_pext_iext(sp60.index);
+        sp60.rfd = ext->ifd;
+        sp60.index = ext->asym.index;
+    }
+
+    sym = st_psym_ifd_isym(sp60.rfd, sp60.index);
+    if (sym->index == indexNil) {
+        return NULL;
+    }
+
+    aux = st_paux_ifd_iaux(sp60.rfd, sym->index);
+    if (aux == NULL) {
+        return NULL;
+    }
+
+    sp60.index++;
+    while (sp60.index < aux->isym) {
+        sym = st_psym_ifd_isym(sp60.rfd, sp60.index);
+        if ((sym->st == stLocal || sym->st == stParam) && (sym->sc == scAbs || sym->sc == scVar) && sym->value == offset) {
+            return sym;
+        }
+
+        if (sym->st == stProc || sym->st == stStaticProc) {
+            break;
+        }
+
+        if (sym->sc == 11 && (sym->st == stBlock || sym->st == stStruct || sym->st == stUnion || sym->st == stEnum)) {
+            sp60.index = sym->index - 1;
+        }
+        
+        sp60.index++;
+    }
+
+    return NULL;
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel st_fixextindex
     .ent st_fixextindex

@@ -86,7 +86,7 @@ RO_1000F008:
 0048ABB0 st_idn_index_fext
 0048ACEC st_pdn_idn
 */
-void _md_st_internal(const char *format, ...) {
+void _Noreturn _md_st_internal(const char *format, ...) {
     va_list arglist;
 
     fprintf(stderr, "%s: Internal: ", st_errname);
@@ -101,7 +101,7 @@ void _md_st_internal(const char *format, ...) {
 0048A704 _md_st_malloc
 0048A8E0 st_cuinit
 */
-void _md_st_error(const char *format, ...) {
+void _Noreturn _md_st_error(const char *format, ...) {
     va_list arglist;
 
     fprintf(stderr, "%s: Error: ", st_errname);
@@ -124,17 +124,18 @@ char *_md_st_str_extiss(int index) {
     }
 }
 
-int _md_st_str_iss(int arg0) {
+char *_md_st_str_iss(int iss) {
     if (st_pchdr->pcfd == NULL) {
         _md_st_internal("routine: you didn't initialize with st_cuinit or st_readst\n");
     }
     if (pcfdcur == NULL) {
         _md_st_internal("routine: no current routine, see fdadd or setfd\n");
     }
-    if ((pcfdcur->pfd->cbSs != 0) && (arg0 < pcfdcur->pfd->cbSs)) {
-        return pcfdcur->pss[arg0];
+
+    if (pcfdcur->pfd->cbSs != 0 && iss < pcfdcur->pfd->cbSs) {
+        return &pcfdcur->pss[iss];
     }
-    return 0;
+    return NULL;
 }
 
 int _md_st_iextmax(void) {
@@ -258,10 +259,10 @@ int _md_st_ifdmax(void) {
     return st_pchdr->cfd;
 }
 
-void _md_st_setfd(int arg0) {
+void _md_st_setfd(int fd) {
     if (st_pchdr->pcfd == NULL) {
         _md_st_internal("routine: you didn't initialize with st_cuinit or st_readst\n");
     } else {
-        pcfdcur = &st_pchdr->pcfd[arg0 << 6]; //*64?
+        pcfdcur = &st_pchdr->pcfd[fd];
     }
 }

@@ -67,7 +67,7 @@ void swap_hdr(struct __sgi_hdrr_s *, int);
 
 void swap_fd(struct fdr *, int, int);
 
-void swap_fi(int *, int, int);
+void swap_fi(pFIT pfi, int count, int destsex);
 
 void swap_sym(struct __sgi_symr_s *, int, int);
 

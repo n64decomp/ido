@@ -81,4 +81,15 @@ void st_setidn(int idndest, int idnsrc);
 pEXTR st_pext_dn(int dn);
 pEXTR st_pext_iext(int index);
 int st_iextmax(void);
+
+void _md_st_error(const char *format, ...);
+void _md_st_internal(const char *format, ...);
+char *_md_st_str_extiss(int index);
+char *_md_st_str_iss(int iss);
+int _md_st_iextmax(void);
+int _md_st_currentifd(void);
+void *_md_st_malloc(void *ptr, int *size, int itemsize, int basesize);
+int _md_st_ifdmax(void);
+void _md_st_setfd(int fd);
+
 #endif /*STEXT_H */

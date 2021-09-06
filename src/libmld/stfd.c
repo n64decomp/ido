@@ -1,3 +1,4 @@
+#include "libmld.h"
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -165,61 +166,41 @@ B_1001C250:
 .set noreorder # don't insert nops after branches
 
 .text
-glabel st_currentifd
-    .ent st_currentifd
-    # 0048AE84 st_filebegin
-    # 0048B120 st_endallfiles
-    # 0048B2F0 st_fileend
-    # 0048B490 st_textblock
-    # 0048B590 _sgi_st_blockbegin
-    # 0048B6E8 st_blockbegin
-    # 0048B83C st_blockend
-    # 0048BA18 st_procend
-    # 0048BC7C st_procbegin
-    # 0048C2E0 st_fixextindex
-/* 00488BB0 3C1C0FB9 */  .cpload $t9
-/* 00488BB4 279C16E0 */  
-/* 00488BB8 0399E021 */  
-/* 00488BBC 8F848CBC */  lw     $a0, %got(pcfdcur)($gp)
-/* 00488BC0 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 00488BC4 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 00488BC8 8C840000 */  lw    $a0, ($a0)
-/* 00488BCC AFBC0018 */  sw    $gp, 0x18($sp)
-/* 00488BD0 14800003 */  bnez  $a0, .L00488BE0
-/* 00488BD4 00000000 */   nop   
-/* 00488BD8 10000005 */  b     .L00488BF0
-/* 00488BDC 2402FFFF */   li    $v0, -1
-.L00488BE0:
-/* 00488BE0 8F9987B8 */  lw    $t9, %call16(st_ifd_pcfd)($gp)
-/* 00488BE4 0320F809 */  jalr  $t9
-/* 00488BE8 00000000 */   nop   
-/* 00488BEC 8FBC0018 */  lw    $gp, 0x18($sp)
-.L00488BF0:
-/* 00488BF0 8FBF001C */  lw    $ra, 0x1c($sp)
-/* 00488BF4 27BD0020 */  addiu $sp, $sp, 0x20
-/* 00488BF8 03E00008 */  jr    $ra
-/* 00488BFC 00000000 */   nop   
-    .type st_currentifd, @function
-    .size st_currentifd, .-st_currentifd
-    .end st_currentifd
+)"");
 
-glabel st_ifdmax
-    .ent st_ifdmax
-    # 0040BCA0 path_blockno
-    # 0048AE84 st_filebegin
-    # 0048B120 st_endallfiles
-    # 0048C56C st_file_idn
-    # 0048E1D8 st_writest
-/* 00488C00 3C1C0FB9 */  .cpload $t9
-/* 00488C04 279C1690 */  
-/* 00488C08 0399E021 */  
-/* 00488C0C 8F8E8CB8 */  lw     $t6, %got(st_pchdr)($gp)
-/* 00488C10 8DCE0000 */  lw    $t6, ($t6)
-/* 00488C14 03E00008 */  jr    $ra
-/* 00488C18 8DC2000C */   lw    $v0, 0xc($t6)
-    .type st_ifdmax, @function
-    .size st_ifdmax, .-st_ifdmax
-    .end st_ifdmax
+/*
+0048AE84 st_filebegin
+0048B120 st_endallfiles
+0048B2F0 st_fileend
+0048B490 st_textblock
+0048B590 _sgi_st_blockbegin
+0048B6E8 st_blockbegin
+0048B83C st_blockend
+0048BA18 st_procend
+0048BC7C st_procbegin
+0048C2E0 st_fixextindex
+*/
+int st_currentifd(void) {
+    if (pcfdcur == NULL) {
+        return -1;
+    }
+    return st_ifd_pcfd(pcfdcur);
+}
+
+/*
+0040BCA0 path_blockno
+0048AE84 st_filebegin
+0048B120 st_endallfiles
+0048C56C st_file_idn
+0048E1D8 st_writest
+*/
+int st_ifdmax(void) {
+    return st_pchdr->cfd;
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel st_setfd
     .ent st_setfd
@@ -1133,78 +1114,27 @@ glabel st_set_non_gp
     .type st_set_non_gp, @function
     .size st_set_non_gp, .-st_set_non_gp
     .end st_set_non_gp
+)"");
 
-glabel st_paux_ifd_iaux
-    .ent st_paux_ifd_iaux
-    # 0040BAE0 func_0040BAE0
-    # 0048C0B0 st_psym_idn_offset
-    # 0048C888 st_iaux_copyty
-/* 004898C0 3C1C0FB9 */  .cpload $t9
-/* 004898C4 279C09D0 */  
-/* 004898C8 0399E021 */  
-/* 004898CC 8F8E8CB8 */  lw     $t6, %got(st_pchdr)($gp)
-/* 004898D0 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 004898D4 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 004898D8 8DCE0000 */  lw    $t6, ($t6)
-/* 004898DC AFBC0018 */  sw    $gp, 0x18($sp)
-/* 004898E0 00803825 */  move  $a3, $a0
-/* 004898E4 8DCF0004 */  lw    $t7, 4($t6)
-/* 004898E8 00A03025 */  move  $a2, $a1
-/* 004898EC 15E0000A */  bnez  $t7, .L00489918
-/* 004898F0 00000000 */   nop   
-/* 004898F4 8F9987F0 */  lw    $t9, %call16(st_internal)($gp)
-/* 004898F8 8F848044 */  lw    $a0, %got(D_10011950)($gp)
-/* 004898FC AFA5002C */  sw    $a1, 0x2c($sp)
-/* 00489900 AFA70028 */  sw    $a3, 0x28($sp)
-/* 00489904 0320F809 */  jalr  $t9
-/* 00489908 24841950 */   addiu $a0, %lo(D_10011950) # addiu $a0, $a0, 0x1950
-/* 0048990C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00489910 8FA6002C */  lw    $a2, 0x2c($sp)
-/* 00489914 8FA70028 */  lw    $a3, 0x28($sp)
-.L00489918:
-/* 00489918 04E00011 */  bltz  $a3, .L00489960
-/* 0048991C 00E02825 */   move  $a1, $a3
-/* 00489920 04C0000F */  bltz  $a2, .L00489960
-/* 00489924 00000000 */   nop   
-/* 00489928 8F828CB8 */  lw     $v0, %got(st_pchdr)($gp)
-/* 0048992C 8C420000 */  lw    $v0, ($v0)
-/* 00489930 8C58000C */  lw    $t8, 0xc($v0)
-/* 00489934 00F8082A */  slt   $at, $a3, $t8
-/* 00489938 10200009 */  beqz  $at, .L00489960
-/* 0048993C 00000000 */   nop   
-/* 00489940 8C590004 */  lw    $t9, 4($v0)
-/* 00489944 00074180 */  sll   $t0, $a3, 6
-/* 00489948 03281821 */  addu  $v1, $t9, $t0
-/* 0048994C 8C690000 */  lw    $t1, ($v1)
-/* 00489950 8D2A0030 */  lw    $t2, 0x30($t1)
-/* 00489954 00CA082A */  slt   $at, $a2, $t2
-/* 00489958 54200010 */  bnezl $at, .L0048999C
-/* 0048995C 8FBF001C */   lw    $ra, 0x1c($sp)
-.L00489960:
-/* 00489960 8F9987F0 */  lw    $t9, %call16(st_internal)($gp)
-/* 00489964 8F848044 */  lw    $a0, %got(RO_1000EDA0)($gp)
-/* 00489968 00075980 */  sll   $t3, $a3, 6
-/* 0048996C AFAB0024 */  sw    $t3, 0x24($sp)
-/* 00489970 AFA6002C */  sw    $a2, 0x2c($sp)
-/* 00489974 0320F809 */  jalr  $t9
-/* 00489978 2484EDA0 */   addiu $a0, %lo(RO_1000EDA0) # addiu $a0, $a0, -0x1260
-/* 0048997C 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00489980 8FAE0024 */  lw    $t6, 0x24($sp)
-/* 00489984 8FA6002C */  lw    $a2, 0x2c($sp)
-/* 00489988 8F8C8CB8 */  lw     $t4, %got(st_pchdr)($gp)
-/* 0048998C 8D8C0000 */  lw    $t4, ($t4)
-/* 00489990 8D8D0004 */  lw    $t5, 4($t4)
-/* 00489994 01AE1821 */  addu  $v1, $t5, $t6
-/* 00489998 8FBF001C */  lw    $ra, 0x1c($sp)
-.L0048999C:
-/* 0048999C 8C6F000C */  lw    $t7, 0xc($v1)
-/* 004899A0 0006C080 */  sll   $t8, $a2, 2
-/* 004899A4 27BD0028 */  addiu $sp, $sp, 0x28
-/* 004899A8 03E00008 */  jr    $ra
-/* 004899AC 01F81021 */   addu  $v0, $t7, $t8
-    .type st_paux_ifd_iaux, @function
-    .size st_paux_ifd_iaux, .-st_paux_ifd_iaux
-    .end st_paux_ifd_iaux
+/*
+0040BAE0 func_0040BAE0
+0048C0B0 st_psym_idn_offset
+0048C888 st_iaux_copyty
+*/
+AUXU *st_paux_ifd_iaux(int ifd, int iaux) {
+    if (st_pchdr->pcfd == NULL) {
+        st_internal("routine: you didn't initialize with st_cuinit or st_readst\n");
+    }
+    if (ifd < 0 || iaux < 0 || ifd < st_pchdr->cfd == 0 || iaux < st_pchdr->pcfd[ifd].pfd->caux == 0) {
+        st_internal("st_paux_ifd_iaux: ifd (%d) or iaux (%d) out of range\n", ifd, iaux);
+    }
+
+    return &st_pchdr->pcfd[ifd].paux[iaux];
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel st_pline_ifd_iline
     .ent st_pline_ifd_iline

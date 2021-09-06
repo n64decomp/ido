@@ -46,12 +46,7 @@
 */
 CHDRR *st_pchdr;
 
-void _md_st_error(const char *format, ...);
-void _md_st_internal(const char *format, ...);
-DNR* _md_st_currentifd(void);
-void* _md_st_malloc(void*,void*, int, int);
-
-CHDRR* st_cuinit(void) {
+CHDRR *st_cuinit(void) {
     st_pchdr = calloc(sizeof(CHDRR), 1);
     if (st_pchdr == NULL) {
         _md_st_error("st_cuinit: cannot allocate current chdr\n");
@@ -71,8 +66,8 @@ CHDRR* st_cuinit(void) {
 0048C410 st_pdadd_idn
 0048C494 st_fixiss
 */
-EXTR* st_pext_iext(int index) {
-    if ((index < 0) || (st_pchdr->cext < index)) {
+EXTR *st_pext_iext(int index) {
+    if (index < 0 || st_pchdr->cext < index) {
         _md_st_internal("st_pext_iext: index out of range (%d)\n", index);
     }
 
@@ -84,31 +79,31 @@ EXTR* st_pext_iext(int index) {
 0048B83C st_blockend
 0048BA18 st_procend
 */
-
 int st_idn_index_fext(int index, int fext) {
-    DNR* sp30; //TODO Verify type
-    int oldCdn;
+    DNR dn;
 
     if (st_pchdr == NULL) {
         _md_st_internal("st_idn_index_fext: you didn't initialize with cuinit or readst\n");
     }
+
     if (st_pchdr->cdn >= st_pchdr->cdnMax) {
-        st_pchdr->pdn = _md_st_malloc(st_pchdr->pdn, st_pchdr->pssext, 8, 0x80);
+        st_pchdr->pdn = _md_st_malloc(st_pchdr->pdn, &st_pchdr->cdnMax, sizeof(DNR), 16 * sizeof(DNR));
     }
+
     if (st_pchdr->cdnMax == 0) {
-        bzero(st_pchdr->pdn, sizeof(st_pchdr->pdn));
+        bzero(st_pchdr->pdn, 2 * sizeof(DNR));
     }
-    //sp34 = index; Neither is used?
+
+    dn.index = index;
     if (fext != 0) {
-        sp30 = NULL;
+        dn.rfd = ST_EXTIFD;
     } else {
-        sp30 = _md_st_currentifd();
+        dn.rfd = _md_st_currentifd();
     }
-    st_pchdr->pdn[st_pchdr->cdn].rfd = sp30->rfd;
-    st_pchdr->pdn[st_pchdr->cdn].index = sp30->index;
-    oldCdn = st_pchdr->cdn;
-    st_pchdr->cdn = st_pchdr->cdn + 1;
-    return oldCdn;
+
+    st_pchdr->pdn[st_pchdr->cdn].rfd = dn.rfd;
+    st_pchdr->pdn[st_pchdr->cdn].index = dn.index;
+    return st_pchdr->cdn++;
 }
 
 /*
@@ -134,8 +129,8 @@ DNR* st_pdn_idn(int idn) {
     return &st_pchdr->pdn[idn];
 }
 
-__asm(R""(
-    .macro glabel label
+__asm__(R""(
+.macro glabel label
     .global \label
     .balign 4
     \label:

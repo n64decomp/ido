@@ -71,247 +71,70 @@ glabel st_errname
 .set noreorder # don't insert nops after branches
 
 .text
-glabel st_setchdr
-    .ent st_setchdr
-/* 00488120 3C1C0FB9 */  .cpload $t9
-/* 00488124 279C2170 */  
-/* 00488128 0399E021 */  
-/* 0048812C 8F818CB8 */  lw     $at, %got(st_pchdr)($gp)
-/* 00488130 03E00008 */  jr    $ra
-/* 00488134 AC240000 */   sw    $a0, ($at)
-    .type st_setchdr, @function
-    .size st_setchdr, .-st_setchdr
-    .end st_setchdr
+)"");
 
-glabel st_currentpchdr
-    .ent st_currentpchdr
-    # 0040BCA0 path_blockno
-    # 0048C56C st_file_idn
-/* 00488138 3C1C0FB9 */  .cpload $t9
-/* 0048813C 279C2158 */  
-/* 00488140 0399E021 */  
-/* 00488144 8F828CB8 */  lw     $v0, %got(st_pchdr)($gp)
-/* 00488148 03E00008 */  jr    $ra
-/* 0048814C 8C420000 */   lw    $v0, ($v0)
-    .type st_currentpchdr, @function
-    .size st_currentpchdr, .-st_currentpchdr
-    .end st_currentpchdr
+void st_setchdr(CHDRR *pchdr) {
+    st_pchdr = pchdr;
+}
 
-glabel st_free
-    .ent st_free
-    # 0042EB10 incorp_feedback
-/* 00488150 3C1C0FB9 */  .cpload $t9
-/* 00488154 279C2140 */  
-/* 00488158 0399E021 */  
-/* 0048815C 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 00488160 27BDFFE0 */  addiu $sp, $sp, -0x20
-/* 00488164 AFBF001C */  sw    $ra, 0x1c($sp)
-/* 00488168 8CC60000 */  lw    $a2, ($a2)
-/* 0048816C AFBC0018 */  sw    $gp, 0x18($sp)
-/* 00488170 50C000AD */  beql  $a2, $zero, .L00488428
-/* 00488174 8FBF001C */   lw    $ra, 0x1c($sp)
-/* 00488178 8CC40038 */  lw    $a0, 0x38($a2)
-/* 0048817C 1080000B */  beqz  $a0, .L004881AC
-/* 00488180 2401FFFF */   li    $at, -1
-/* 00488184 10810009 */  beq   $a0, $at, .L004881AC
-/* 00488188 24010001 */   li    $at, 1
-/* 0048818C 50810008 */  beql  $a0, $at, .L004881B0
-/* 00488190 8CC40018 */   lw    $a0, 0x18($a2)
-/* 00488194 8F9980B8 */  lw    $t9, %call16(free)($gp)
-/* 00488198 0320F809 */  jalr  $t9
-/* 0048819C 00000000 */   nop   
-/* 004881A0 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004881A4 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 004881A8 8CC60000 */  lw    $a2, ($a2)
-.L004881AC:
-/* 004881AC 8CC40018 */  lw    $a0, 0x18($a2)
-.L004881B0:
-/* 004881B0 1080000B */  beqz  $a0, .L004881E0
-/* 004881B4 2401FFFF */   li    $at, -1
-/* 004881B8 10810009 */  beq   $a0, $at, .L004881E0
-/* 004881BC 24010001 */   li    $at, 1
-/* 004881C0 50810008 */  beql  $a0, $at, .L004881E4
-/* 004881C4 8CC40024 */   lw    $a0, 0x24($a2)
-/* 004881C8 8F9980B8 */  lw    $t9, %call16(free)($gp)
-/* 004881CC 0320F809 */  jalr  $t9
-/* 004881D0 00000000 */   nop   
-/* 004881D4 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004881D8 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 004881DC 8CC60000 */  lw    $a2, ($a2)
-.L004881E0:
-/* 004881E0 8CC40024 */  lw    $a0, 0x24($a2)
-.L004881E4:
-/* 004881E4 1080000B */  beqz  $a0, .L00488214
-/* 004881E8 2401FFFF */   li    $at, -1
-/* 004881EC 10810009 */  beq   $a0, $at, .L00488214
-/* 004881F0 24010001 */   li    $at, 1
-/* 004881F4 50810008 */  beql  $a0, $at, .L00488218
-/* 004881F8 8CC40008 */   lw    $a0, 8($a2)
-/* 004881FC 8F9980B8 */  lw    $t9, %call16(free)($gp)
-/* 00488200 0320F809 */  jalr  $t9
-/* 00488204 00000000 */   nop   
-/* 00488208 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0048820C 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 00488210 8CC60000 */  lw    $a2, ($a2)
-.L00488214:
-/* 00488214 8CC40008 */  lw    $a0, 8($a2)
-.L00488218:
-/* 00488218 2401FFFF */  li    $at, -1
-/* 0048821C 5080000C */  beql  $a0, $zero, .L00488250
-/* 00488220 8CC40004 */   lw    $a0, 4($a2)
-/* 00488224 10810009 */  beq   $a0, $at, .L0048824C
-/* 00488228 24010001 */   li    $at, 1
-/* 0048822C 50810008 */  beql  $a0, $at, .L00488250
-/* 00488230 8CC40004 */   lw    $a0, 4($a2)
-/* 00488234 8F9980B8 */  lw    $t9, %call16(free)($gp)
-/* 00488238 0320F809 */  jalr  $t9
-/* 0048823C 00000000 */   nop   
-/* 00488240 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00488244 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 00488248 8CC60000 */  lw    $a2, ($a2)
-.L0048824C:
-/* 0048824C 8CC40004 */  lw    $a0, 4($a2)
-.L00488250:
-/* 00488250 2401FFFF */  li    $at, -1
-/* 00488254 5080000C */  beql  $a0, $zero, .L00488288
-/* 00488258 8CC40014 */   lw    $a0, 0x14($a2)
-/* 0048825C 10810009 */  beq   $a0, $at, .L00488284
-/* 00488260 24010001 */   li    $at, 1
-/* 00488264 50810008 */  beql  $a0, $at, .L00488288
-/* 00488268 8CC40014 */   lw    $a0, 0x14($a2)
-/* 0048826C 8F9980B8 */  lw    $t9, %call16(free)($gp)
-/* 00488270 0320F809 */  jalr  $t9
-/* 00488274 00000000 */   nop   
-/* 00488278 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0048827C 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 00488280 8CC60000 */  lw    $a2, ($a2)
-.L00488284:
-/* 00488284 8CC40014 */  lw    $a0, 0x14($a2)
-.L00488288:
-/* 00488288 2401FFFF */  li    $at, -1
-/* 0048828C 5080000C */  beql  $a0, $zero, .L004882C0
-/* 00488290 8CC40030 */   lw    $a0, 0x30($a2)
-/* 00488294 10810009 */  beq   $a0, $at, .L004882BC
-/* 00488298 24010001 */   li    $at, 1
-/* 0048829C 50810008 */  beql  $a0, $at, .L004882C0
-/* 004882A0 8CC40030 */   lw    $a0, 0x30($a2)
-/* 004882A4 8F9980B8 */  lw    $t9, %call16(free)($gp)
-/* 004882A8 0320F809 */  jalr  $t9
-/* 004882AC 00000000 */   nop   
-/* 004882B0 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004882B4 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 004882B8 8CC60000 */  lw    $a2, ($a2)
-.L004882BC:
-/* 004882BC 8CC40030 */  lw    $a0, 0x30($a2)
-.L004882C0:
-/* 004882C0 2401FFFF */  li    $at, -1
-/* 004882C4 5080000C */  beql  $a0, $zero, .L004882F8
-/* 004882C8 8CC40044 */   lw    $a0, 0x44($a2)
-/* 004882CC 10810009 */  beq   $a0, $at, .L004882F4
-/* 004882D0 24010001 */   li    $at, 1
-/* 004882D4 50810008 */  beql  $a0, $at, .L004882F8
-/* 004882D8 8CC40044 */   lw    $a0, 0x44($a2)
-/* 004882DC 8F9980B8 */  lw    $t9, %call16(free)($gp)
-/* 004882E0 0320F809 */  jalr  $t9
-/* 004882E4 00000000 */   nop   
-/* 004882E8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004882EC 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 004882F0 8CC60000 */  lw    $a2, ($a2)
-.L004882F4:
-/* 004882F4 8CC40044 */  lw    $a0, 0x44($a2)
-.L004882F8:
-/* 004882F8 2401FFFF */  li    $at, -1
-/* 004882FC 5080000C */  beql  $a0, $zero, .L00488330
-/* 00488300 8CC40050 */   lw    $a0, 0x50($a2)
-/* 00488304 10810009 */  beq   $a0, $at, .L0048832C
-/* 00488308 24010001 */   li    $at, 1
-/* 0048830C 50810008 */  beql  $a0, $at, .L00488330
-/* 00488310 8CC40050 */   lw    $a0, 0x50($a2)
-/* 00488314 8F9980B8 */  lw    $t9, %call16(free)($gp)
-/* 00488318 0320F809 */  jalr  $t9
-/* 0048831C 00000000 */   nop   
-/* 00488320 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00488324 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 00488328 8CC60000 */  lw    $a2, ($a2)
-.L0048832C:
-/* 0048832C 8CC40050 */  lw    $a0, 0x50($a2)
-.L00488330:
-/* 00488330 2401FFFF */  li    $at, -1
-/* 00488334 5080000C */  beql  $a0, $zero, .L00488368
-/* 00488338 8CC40048 */   lw    $a0, 0x48($a2)
-/* 0048833C 10810009 */  beq   $a0, $at, .L00488364
-/* 00488340 24010001 */   li    $at, 1
-/* 00488344 50810008 */  beql  $a0, $at, .L00488368
-/* 00488348 8CC40048 */   lw    $a0, 0x48($a2)
-/* 0048834C 8F9980B8 */  lw    $t9, %call16(free)($gp)
-/* 00488350 0320F809 */  jalr  $t9
-/* 00488354 00000000 */   nop   
-/* 00488358 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 0048835C 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 00488360 8CC60000 */  lw    $a2, ($a2)
-.L00488364:
-/* 00488364 8CC40048 */  lw    $a0, 0x48($a2)
-.L00488368:
-/* 00488368 2401FFFF */  li    $at, -1
-/* 0048836C 5080000C */  beql  $a0, $zero, .L004883A0
-/* 00488370 8CC40034 */   lw    $a0, 0x34($a2)
-/* 00488374 10810009 */  beq   $a0, $at, .L0048839C
-/* 00488378 24010001 */   li    $at, 1
-/* 0048837C 50810008 */  beql  $a0, $at, .L004883A0
-/* 00488380 8CC40034 */   lw    $a0, 0x34($a2)
-/* 00488384 8F9980B8 */  lw    $t9, %call16(free)($gp)
-/* 00488388 0320F809 */  jalr  $t9
-/* 0048838C 00000000 */   nop   
-/* 00488390 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00488394 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 00488398 8CC60000 */  lw    $a2, ($a2)
-.L0048839C:
-/* 0048839C 8CC40034 */  lw    $a0, 0x34($a2)
-.L004883A0:
-/* 004883A0 2401FFFF */  li    $at, -1
-/* 004883A4 5080000C */  beql  $a0, $zero, .L004883D8
-/* 004883A8 8CC4004C */   lw    $a0, 0x4c($a2)
-/* 004883AC 10810009 */  beq   $a0, $at, .L004883D4
-/* 004883B0 24010001 */   li    $at, 1
-/* 004883B4 50810008 */  beql  $a0, $at, .L004883D8
-/* 004883B8 8CC4004C */   lw    $a0, 0x4c($a2)
-/* 004883BC 8F9980B8 */  lw    $t9, %call16(free)($gp)
-/* 004883C0 0320F809 */  jalr  $t9
-/* 004883C4 00000000 */   nop   
-/* 004883C8 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 004883CC 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 004883D0 8CC60000 */  lw    $a2, ($a2)
-.L004883D4:
-/* 004883D4 8CC4004C */  lw    $a0, 0x4c($a2)
-.L004883D8:
-/* 004883D8 2401FFFF */  li    $at, -1
-/* 004883DC 1080000B */  beqz  $a0, .L0048840C
-/* 004883E0 00000000 */   nop   
-/* 004883E4 10810009 */  beq   $a0, $at, .L0048840C
-/* 004883E8 24010001 */   li    $at, 1
-/* 004883EC 10810007 */  beq   $a0, $at, .L0048840C
-/* 004883F0 00000000 */   nop   
-/* 004883F4 8F9980B8 */  lw    $t9, %call16(free)($gp)
-/* 004883F8 0320F809 */  jalr  $t9
-/* 004883FC 00000000 */   nop   
-/* 00488400 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00488404 8F868CB8 */  lw     $a2, %got(st_pchdr)($gp)
-/* 00488408 8CC60000 */  lw    $a2, ($a2)
-.L0048840C:
-/* 0048840C 8F9980BC */  lw    $t9, %call16(bzero)($gp)
-/* 00488410 00C02025 */  move  $a0, $a2
-/* 00488414 24050060 */  li    $a1, 96
-/* 00488418 0320F809 */  jalr  $t9
-/* 0048841C 00000000 */   nop   
-/* 00488420 8FBC0018 */  lw    $gp, 0x18($sp)
-/* 00488424 8FBF001C */  lw    $ra, 0x1c($sp)
-.L00488428:
-/* 00488428 27BD0020 */  addiu $sp, $sp, 0x20
-/* 0048842C 03E00008 */  jr    $ra
-/* 00488430 00000000 */   nop   
-    .type st_free, @function
-    .size st_free, .-st_free
-    .end st_free
+/*
+0040BCA0 path_blockno
+0048C56C st_file_idn
+*/
+CHDRR *st_currentpchdr(void) {
+    return st_pchdr;
+}
+
+#define NULLp1 ((void*)1)
+#define NULLn1 ((void*)-1)
+/*
+0042EB10 incorp_feedback
+*/
+void st_free(void) {
+    if (st_pchdr != NULL) {
+        if (st_pchdr->pdn != NULL && st_pchdr->pdn != NULLn1 && st_pchdr->pdn != NULLp1) {
+            free(st_pchdr->pdn);
+        }
+        if (st_pchdr->pext != NULL && st_pchdr->pext != NULLn1 && st_pchdr->pext != NULLp1) {
+            free(st_pchdr->pext);
+        }
+        if (st_pchdr->pssext != NULL && st_pchdr->pssext != NULLn1 && st_pchdr->pssext != NULLp1) {
+            free(st_pchdr->pssext);
+        }
+        if (st_pchdr->pfd != NULL && st_pchdr->pfd != NULLn1 && st_pchdr->pfd != NULLp1) {
+            free(st_pchdr->pfd);
+        }
+        if (st_pchdr->pcfd != NULL && st_pchdr->pcfd != NULLn1 && st_pchdr->pcfd != NULLp1) {
+            free(st_pchdr->pcfd);
+        }
+        if (st_pchdr->psym != NULL && st_pchdr->psym != NULLn1 && st_pchdr->psym != NULLp1) {
+            free(st_pchdr->psym);
+        }
+        if (st_pchdr->paux != NULL && st_pchdr->paux != NULLn1 && st_pchdr->paux != NULLp1) {
+            free(st_pchdr->paux);
+        }
+        if (st_pchdr->popt != NULL && st_pchdr->popt != NULLn1 && st_pchdr->popt != NULLp1) {
+            free(st_pchdr->popt);
+        }
+        if (st_pchdr->ppd != NULL && st_pchdr->ppd != NULLn1 && st_pchdr->ppd != NULLp1) {
+            free(st_pchdr->ppd);
+        }
+        if (st_pchdr->pline != NULL && st_pchdr->pline != NULLn1 && st_pchdr->pline != NULLp1) {
+            free(st_pchdr->pline);
+        }
+        if (st_pchdr->pss != NULL && st_pchdr->pss != NULLn1 && st_pchdr->pss != NULLp1) {
+            free(st_pchdr->pss);
+        }
+        if (st_pchdr->prfd != NULL && st_pchdr->prfd != NULLn1 && st_pchdr->prfd != NULLp1) {
+            free(st_pchdr->prfd);
+        }
+        bzero(st_pchdr, 0x60);
+    }
+}
+
+__asm__(R""(
+.set noat
+.set noreorder
 
 glabel st_extstradd
     .ent st_extstradd
@@ -761,22 +584,14 @@ glabel st_pext_dn
     .type st_pext_dn, @function
     .size st_pext_dn, .-st_pext_dn
     .end st_pext_dn
-
-glabel st_iextmax
-    .ent st_iextmax
-    # 0040BCA0 path_blockno
-/* 00488A2C 3C1C0FB9 */  .cpload $t9
-/* 00488A30 279C1864 */  
-/* 00488A34 0399E021 */  
-/* 00488A38 8F8E8CB8 */  lw     $t6, %got(st_pchdr)($gp)
-/* 00488A3C 8DCE0000 */  lw    $t6, ($t6)
-/* 00488A40 03E00008 */  jr    $ra
-/* 00488A44 8DC2001C */   lw    $v0, 0x1c($t6)
-    .type st_iextmax, @function
-    .size st_iextmax, .-st_iextmax
-    .end st_iextmax
-
 )"");
+
+/*
+0040BCA0 path_blockno
+*/
+int st_iextmax(void) {
+    return st_pchdr->cext;
+}
 
 // unused
 void st_setmsgname(const char *name) {
