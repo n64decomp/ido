@@ -256,19 +256,19 @@ int st_readst(int fn, char how, int filebase, CHDRR *pchdr, int flags) {
             swap_pd(st_pchdr->ppd, spC0.ipdMax, gethostsex());
         }
         if (sp68) {
-            swap_sym(st_pchdr->psym, spC0.isymMax, gethostsex());
+            //swap_sym(st_pchdr->psym, spC0.isymMax, gethostsex());
         }
         if (sp58) {
-            swap_opt(st_pchdr->popt, spC0.ioptMax, gethostsex());
+            //swap_opt(st_pchdr->popt, spC0.ioptMax, gethostsex());
         }
         if (sp40) {
-            swap_fd(st_pchdr->pfd, spC0.ifdMax, gethostsex());
+            //swap_fd(st_pchdr->pfd, spC0.ifdMax, gethostsex());
         }
         if (sp54) {
             swap_fi(st_pchdr->prfd, spC0.crfd, gethostsex());
         }
         if (sp4C) {
-            swap_ext(st_pchdr->pext, spC0.iextMax, gethostsex());
+            //swap_ext(st_pchdr->pext, spC0.iextMax, gethostsex());
         }
         if (sp44) {
             swap_dn(st_pchdr->pdn, spC0.idnMax, gethostsex());
@@ -460,7 +460,7 @@ void st_writest(int fn, int flags) {
                 pfd->cbLineOffset = sp120;
                 sp108 = 0;
                 for (sp108 = 0; sp108 < pfd->cpd; sp108++) {
-                    spFC = &cfd->ppd[sp108];// + sp108;
+                    spFC = &cfd->ppd[sp108];
                     if (spFC->iline != ilineNil && spFC->lnLow != ilineNil && spFC->lnHigh != ilineNil) {
                         spFC->cbLineOffset = (sp120 - pfd->cbLineOffset);
                         lineMax = pfd->cline;

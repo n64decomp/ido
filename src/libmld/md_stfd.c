@@ -18,6 +18,7 @@
 
 CFDR* pcfdcur;
 
+#if 0
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -300,6 +301,17 @@ glabel st_ifd_pcfd
     .size st_ifd_pcfd, .-st_ifd_pcfd
     .end st_ifd_pcfd
 )"");
+#endif
+
+int st_ifd_pcfd(CFDR *pcfd1) {
+    if (st_pchdr->pcfd == 0) {
+        _md_st_internal("routine: you didn't initialize with st_cuinit or st_readst\n");
+    }
+    if (pcfdcur == 0) {
+        _md_st_internal("routine: no current routine, see fdadd or setfd\n");
+    }
+    return (pcfd1 - st_pchdr->pcfd) >> 6;
+}
 
 /*
 0040BCA0 path_blockno
@@ -351,6 +363,7 @@ SYMR *st_psym_ifd_isym(int ifd, int isym) {
     return &st_pchdr->pcfd[ifd].psym[isym];
 }
 
+#if 0
 __asm__(R""(
 .set noat
 .set noreorder
@@ -424,6 +437,7 @@ glabel st_paux_iaux
     .size st_paux_iaux, .-st_paux_iaux
     .end st_paux_iaux
 )"");
+#endif
 
 /*
 0040BAE0 func_0040BAE0
@@ -451,6 +465,7 @@ char *st_str_ifd_iss(int ifd, int iss) {
     return NULL;
 }
 
+#if 0
 __asm__(R""(
 .set noat
 .set noreorder
@@ -518,3 +533,4 @@ glabel st_ppd_ifd_isym
     .size st_ppd_ifd_isym, .-st_ppd_ifd_isym
     .end st_ppd_ifd_isym
 )"");
+#endif

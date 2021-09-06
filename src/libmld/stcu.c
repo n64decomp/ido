@@ -3,6 +3,7 @@
 #include <string.h>
 #include "libmld.h"
 
+#if 0
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -72,6 +73,9 @@ glabel st_errname
 
 .text
 )"");
+#endif
+
+char *st_errname = "libmld";
 
 void st_setchdr(CHDRR *pchdr) {
     st_pchdr = pchdr;
@@ -132,6 +136,7 @@ void st_free(void) {
     }
 }
 
+#if 0
 __asm__(R""(
 .set noat
 .set noreorder
@@ -585,6 +590,7 @@ glabel st_pext_dn
     .size st_pext_dn, .-st_pext_dn
     .end st_pext_dn
 )"");
+#endif
 
 /*
 0040BCA0 path_blockno

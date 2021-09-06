@@ -1,4 +1,6 @@
+#include <stdlib.h>
 #include "libmld.h"
+#if 0
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -167,6 +169,7 @@ B_1001C250:
 
 .text
 )"");
+#endif
 
 /*
 0048AE84 st_filebegin
@@ -198,6 +201,7 @@ int st_ifdmax(void) {
     return st_pchdr->cfd;
 }
 
+#if 0
 __asm__(R""(
 .set noat
 .set noreorder
@@ -1115,6 +1119,7 @@ glabel st_set_non_gp
     .size st_set_non_gp, .-st_set_non_gp
     .end st_set_non_gp
 )"");
+#endif
 
 /*
 0040BAE0 func_0040BAE0
@@ -1132,6 +1137,7 @@ AUXU *st_paux_ifd_iaux(int ifd, int iaux) {
     return &st_pchdr->pcfd[ifd].paux[iaux];
 }
 
+#if 0
 __asm__(R""(
 .set noat
 .set noreorder
@@ -1258,111 +1264,47 @@ glabel st_str_iss
     .type st_str_iss, @function
     .size st_str_iss, .-st_str_iss
     .end st_str_iss
-
-glabel st_malloc
-    .ent st_malloc
-    # 00488434 st_extstradd
-    # 00488590 st_idn_dn
-    # 004886A8 st_idn_rndx
-    # 00488C8C st_fdadd
-    # 0048932C st_auxadd
-    # 00489458 st_pdadd
-    # 004895E4 st_lineadd
-    # 0048970C st_stradd
-    # 0048AE84 st_filebegin
-    # 0048B590 _sgi_st_blockbegin
-    # 0048B6E8 st_blockbegin
-    # 0048D0E0 st_readst
-/* 00489B50 3C1C0FB9 */  .cpload $t9
-/* 00489B54 279C0740 */  
-/* 00489B58 0399E021 */  
-/* 00489B5C 27BDFFD8 */  addiu $sp, $sp, -0x28
-/* 00489B60 AFBF0024 */  sw    $ra, 0x24($sp)
-/* 00489B64 AFBC0020 */  sw    $gp, 0x20($sp)
-/* 00489B68 AFB1001C */  sw    $s1, 0x1c($sp)
-/* 00489B6C AFB00018 */  sw    $s0, 0x18($sp)
-/* 00489B70 AFA60030 */  sw    $a2, 0x30($sp)
-/* 00489B74 8CA20000 */  lw    $v0, ($a1)
-/* 00489B78 00A08025 */  move  $s0, $a1
-/* 00489B7C 00808825 */  move  $s1, $a0
-/* 00489B80 10400005 */  beqz  $v0, .L00489B98
-/* 00489B84 00000000 */   nop   
-/* 00489B88 10800003 */  beqz  $a0, .L00489B98
-/* 00489B8C 2401FFFF */   li    $at, -1
-/* 00489B90 14810027 */  bne   $a0, $at, .L00489C30
-/* 00489B94 00024040 */   sll   $t0, $v0, 1
-.L00489B98:
-/* 00489B98 14E0000F */  bnez  $a3, .L00489BD8
-/* 00489B9C AE070000 */   sw    $a3, ($s0)
-/* 00489BA0 8F9980C8 */  lw    $t9, %call16(malloc)($gp)
-/* 00489BA4 24040001 */  li    $a0, 1
-/* 00489BA8 0320F809 */  jalr  $t9
-/* 00489BAC 00000000 */   nop   
-/* 00489BB0 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 00489BB4 14400006 */  bnez  $v0, .L00489BD0
-/* 00489BB8 00408825 */   move  $s1, $v0
-/* 00489BBC 8F998788 */  lw    $t9, %call16(st_error)($gp)
-/* 00489BC0 8F848044 */  lw    $a0, %got(RO_1000EE10)($gp)
-/* 00489BC4 0320F809 */  jalr  $t9
-/* 00489BC8 2484EE10 */   addiu $a0, %lo(RO_1000EE10) # addiu $a0, $a0, -0x11f0
-/* 00489BCC 8FBC0020 */  lw    $gp, 0x20($sp)
-.L00489BD0:
-/* 00489BD0 1000002D */  b     .L00489C88
-/* 00489BD4 02201025 */   move  $v0, $s1
-.L00489BD8:
-/* 00489BD8 8E0E0000 */  lw    $t6, ($s0)
-/* 00489BDC 8FAF0030 */  lw    $t7, 0x30($sp)
-/* 00489BE0 8F9980C8 */  lw    $t9, %call16(malloc)($gp)
-/* 00489BE4 01CF0019 */  multu $t6, $t7
-/* 00489BE8 00002012 */  mflo  $a0
-/* 00489BEC 0320F809 */  jalr  $t9
-/* 00489BF0 00000000 */   nop   
-/* 00489BF4 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 00489BF8 14400022 */  bnez  $v0, .L00489C84
-/* 00489BFC 00408825 */   move  $s1, $v0
-/* 00489C00 8E180000 */  lw    $t8, ($s0)
-/* 00489C04 8FB90030 */  lw    $t9, 0x30($sp)
-/* 00489C08 03190019 */  multu $t8, $t9
-/* 00489C0C 00002812 */  mflo  $a1
-/* 00489C10 50A0001D */  beql  $a1, $zero, .L00489C88
-/* 00489C14 02201025 */   move  $v0, $s1
-/* 00489C18 8F998788 */  lw    $t9, %call16(st_error)($gp)
-/* 00489C1C 8F848044 */  lw    $a0, %got(RO_1000EE4C)($gp)
-/* 00489C20 0320F809 */  jalr  $t9
-/* 00489C24 2484EE4C */   addiu $a0, %lo(RO_1000EE4C) # addiu $a0, $a0, -0x11b4
-/* 00489C28 10000016 */  b     .L00489C84
-/* 00489C2C 8FBC0020 */   lw    $gp, 0x20($sp)
-.L00489C30:
-/* 00489C30 AE080000 */  sw    $t0, ($s0)
-/* 00489C34 8FAA0030 */  lw    $t2, 0x30($sp)
-/* 00489C38 8F9980E8 */  lw    $t9, %call16(realloc)($gp)
-/* 00489C3C 02202025 */  move  $a0, $s1
-/* 00489C40 010A0019 */  multu $t0, $t2
-/* 00489C44 00002812 */  mflo  $a1
-/* 00489C48 0320F809 */  jalr  $t9
-/* 00489C4C 00000000 */   nop   
-/* 00489C50 8FBC0020 */  lw    $gp, 0x20($sp)
-/* 00489C54 1440000B */  bnez  $v0, .L00489C84
-/* 00489C58 00408825 */   move  $s1, $v0
-/* 00489C5C 8E0B0000 */  lw    $t3, ($s0)
-/* 00489C60 8FAC0030 */  lw    $t4, 0x30($sp)
-/* 00489C64 8F998788 */  lw    $t9, %call16(st_error)($gp)
-/* 00489C68 8F848044 */  lw    $a0, %got(RO_1000EE8C)($gp)
-/* 00489C6C 016C0019 */  multu $t3, $t4
-/* 00489C70 2484EE8C */  addiu $a0, %lo(RO_1000EE8C) # addiu $a0, $a0, -0x1174
-/* 00489C74 00002812 */  mflo  $a1
-/* 00489C78 0320F809 */  jalr  $t9
-/* 00489C7C 00000000 */   nop   
-/* 00489C80 8FBC0020 */  lw    $gp, 0x20($sp)
-.L00489C84:
-/* 00489C84 02201025 */  move  $v0, $s1
-.L00489C88:
-/* 00489C88 8FBF0024 */  lw    $ra, 0x24($sp)
-/* 00489C8C 8FB00018 */  lw    $s0, 0x18($sp)
-/* 00489C90 8FB1001C */  lw    $s1, 0x1c($sp)
-/* 00489C94 03E00008 */  jr    $ra
-/* 00489C98 27BD0028 */   addiu $sp, $sp, 0x28
-    .type st_malloc, @function
-    .size st_malloc, .-st_malloc
-    .end st_malloc
 )"");
+#endif
+
+/*
+00488434 st_extstradd
+00488590 st_idn_dn
+004886A8 st_idn_rndx
+00488C8C st_fdadd
+0048932C st_auxadd
+00489458 st_pdadd
+004895E4 st_lineadd
+0048970C st_stradd
+0048AE84 st_filebegin
+0048B590 _sgi_st_blockbegin
+0048B6E8 st_blockbegin
+0048D0E0 st_readst
+*/
+void *st_malloc(void *ptr, int *size, int itemsize, int basesize) {
+    void *result;
+
+    if (*size == 0 || ptr == NULL || ptr == (void *)-1) {
+        *size = basesize;
+        if (basesize == 0) {
+            result = malloc(1);
+            if (result == NULL) {
+                st_error("st_malloc: cannot allocate item of 1 byte with malloc(3)\n");
+            }
+        } else {
+            result = malloc(*size * itemsize);
+            if (result == NULL) {
+                if (*size * itemsize != 0) {
+                    st_error("st_malloc: cannot allocate item of %ld bytes with malloc(3)\n", *size * itemsize);
+                }
+            }
+        }
+    } else {
+        *size *= 2;
+        result = realloc(ptr, *size * itemsize);
+        if (result == 0) {
+            st_error("st_malloc: cannot grow item to %ld bytes with realloc(3)\n", *size * itemsize);
+        }
+    }
+    return result;
+}

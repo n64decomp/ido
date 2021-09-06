@@ -1,4 +1,5 @@
 #include "libmld.h"
+#if 0
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -1401,6 +1402,7 @@ glabel st_fglobal_idn
     .size st_fglobal_idn, .-st_fglobal_idn
     .end st_fglobal_idn
 )"");
+#endif
 
 /*
 0040C0C0 local_in_reg
@@ -1451,6 +1453,7 @@ SYMR *st_psym_idn_offset(int idn, int offset) {
     return NULL;
 }
 
+#if 0
 __asm__(R""(
 .set noat
 .set noreorder
@@ -1763,3 +1766,4 @@ glabel st_file_idn
     .size st_file_idn, .-st_file_idn
     .end st_file_idn
 )"");
+#endif

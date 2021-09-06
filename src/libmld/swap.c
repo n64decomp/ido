@@ -1,4 +1,5 @@
 #include "libmld.h"
+#if 0
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -6,6 +7,7 @@ __asm__(R""(
     \label:
 .endm
 )"");
+#endif
 
 #if 0
 .rdata
@@ -26,6 +28,7 @@ jtbl_1000F464:
 #endif
 
 
+#if 0
 __asm__(R""(
 
 .set noat      # allow manual use of $at
@@ -452,6 +455,7 @@ glabel swap_libscn
     .size swap_libscn, .-swap_libscn
     .end swap_libscn
 )"");
+#endif
 
 /*
 0048D0E0 st_readst
@@ -484,6 +488,7 @@ void swap_hdr(HDRR *phdr, int hostsex) {
     phdr->cbExtOffset   = swap_word(phdr->cbExtOffset);
 }
 
+#if 0
 __asm__(R""(
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
@@ -888,6 +893,7 @@ glabel swap_fd
     .size swap_fd, .-swap_fd
     .end swap_fd
 )"");
+#endif
 
 /*
 0048D0E0 st_readst
@@ -900,6 +906,7 @@ void swap_fi(pFIT pfi, int count, int destsex) {
     }
 }
 
+#if 0
 __asm__(R""(
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
@@ -1076,7 +1083,9 @@ glabel swap_sym
     .size swap_sym, .-swap_sym
     .end swap_sym
 )"");
+#endif
 
+#if 0
 __asm__(R""(
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
@@ -1342,6 +1351,7 @@ glabel swap_ext
     .size swap_ext, .-swap_ext
     .end swap_ext
 )"");
+#endif
 
 /*
 0048D0E0 st_readst
@@ -1379,6 +1389,7 @@ void swap_dn(DNR *dn, int count, int destsex) {
     }
 }
 
+#if 0
 __asm__(R""(
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches
@@ -1679,6 +1690,7 @@ glabel swap_opt
     .size swap_opt, .-swap_opt
     .end swap_opt
 )"");
+#endif
 
 #if 0
 glabel swap_aux

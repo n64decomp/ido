@@ -129,6 +129,7 @@ DNR* st_pdn_idn(int idn) {
     return &st_pchdr->pdn[idn];
 }
 
+#if 0
 __asm__(R""(
 .macro glabel label
     .global \label
@@ -274,6 +275,7 @@ glabel st_extadd
     .type st_extadd, @function
     .size st_extadd, .-st_extadd
     .end st_extadd)"");
+#endif
 
 /* I have no idea whats going on here 
 int st_extadd(int iss, int value, int st, int sc, int index) {
