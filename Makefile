@@ -4,11 +4,19 @@ SRC_DIRS := . src src/libmld src/libp src/libu src/libxmalloc src/uopt
 
 AVOID_UB ?= 1
 
+TARGET ?= x86_64
+
+ifeq ($(TARGET),x86_64)
+CC := gcc
+CFLAGS := -fPIC -funsigned-char -I src -ggdb3 -Wall -O2 -flto
+LDFLAGS := -ggdb3 -O2 -flto
+else
 CC := mips-linux-gnu-gcc
 OPTIMIZATION := -ggdb3 
 ARCH_FLAGS := -mips2 -mfp32
 CFLAGS := -fPIC -I src $(ARCH_FLAGS) $(OPTIMIZATION)
 LDFLAGS := -fPIC $(ARCH_FLAGS) $(OPTIMIZATION) 
+endif
 
 ifeq ($(AVOID_UB),1)
     CFLAGS := $(CFLAGS) -DAVOID_UB

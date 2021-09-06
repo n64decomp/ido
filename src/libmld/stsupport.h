@@ -22,7 +22,7 @@
 #ifndef __CMPLRS_STSUPPORT_H
 #define __CMPLRS_STSUPPORT_H
 
-#if (defined(_LANGUAGE_C) || (defined(_LANGUAGE_C_PLUS_PLUS)))
+#if 1//(defined(_LANGUAGE_C) || (defined(_LANGUAGE_C_PLUS_PLUS)))
 extern AUXU _auxtemp;
 #define AUXINT(c) ((_auxtemp.isym = c), _auxtemp)
 
@@ -85,7 +85,7 @@ typedef struct {
     /* 0x5C */ HDRR    hdr;            /* header from disk */
 } CHDRR, *pCHDRR; // size 0xBC
 
-_Static_assert(sizeof(CHDRR) == 188);
+//_Static_assert(sizeof(CHDRR) == 188);
 #define cbCHDRR sizeof (CHDRR)
 #define chdrNil ((pCHDRR) 0)
 #define ichdrNil -1
@@ -112,7 +112,7 @@ _Static_assert(sizeof(CHDRR) == 188);
 #define ST_ANONINDEX    0xfffff /* rndx.index for anonymous names */
 #endif
 
-#if (defined(_LANGUAGE_C) || (defined(_LANGUAGE_C_PLUS_PLUS)))
+#if 1//(defined(_LANGUAGE_C) || (defined(_LANGUAGE_C_PLUS_PLUS)))
 #define ST_EXTIFD       0x7fffffff      /* ifd for externals */
 #define ST_RFDESCAPE    0xfff   /* rndx.rfd escape says next aux is rfd */
 #define ST_ANONINDEX    0xfffff /* rndx.index for anonymous names */

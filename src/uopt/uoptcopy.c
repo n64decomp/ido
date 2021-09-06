@@ -57,6 +57,8 @@ bool entryav(struct Expression *expr) {
             caseerror(1, 70, "uoptcopy.p", 10);
             available = false; // UB
             break;
+
+        default: break;
     }
 
     return available;
@@ -656,6 +658,7 @@ static void func_00413510(struct Expression *expr, int count) {
             break;
 
         case dumped:
+        default:
             caseerror(1, 455, "uoptcopy.p", 10);
     }
 }
@@ -684,6 +687,7 @@ static void func_004135CC(struct Expression *expr) {
             break;
 
         case dumped:
+        default:
             caseerror(1, 470, "uoptcopy.p", 10);
             break;
     }
@@ -719,8 +723,8 @@ static void func_00413684(struct Expression *expr) {
             }
             break;
 
-        default:
         case dumped:
+        default:
             caseerror(1, 485, "uoptcopy.p", 10);
             break;
     }
@@ -1083,7 +1087,6 @@ next:
 static void func_00414108(struct IChain *ichain, struct Expression *expr, struct VarAccessList *varlist, struct Expression **dest, struct Graphnode *node_sharedD4) {
     struct Expression *sp7C;
     struct Expression *sp78;
-    struct Graphnode *sp34;
     unsigned short hash;
     struct RealstoreData *real;
     int i;
@@ -2918,7 +2921,7 @@ void copypropagate(void) {
                                 bittab[i].ichain->isop.opc != Ustr)) {
                         if (node->stat_tail->opc == Ucia) {
                             if (lang == LANG_ADA ||
-                                    (node->stat_tail->u.cia.flags & 1) && cskilled(curlevel, indirprocs, bittab[i].ichain->isop.stat) ||
+                                    (IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags) && cskilled(curlevel, indirprocs, bittab[i].ichain->isop.stat)) ||
                                     listpskilled(node->stat_tail->u.cia.parameters, bittab[i].ichain->isop.stat, 0) ||
                                     ((bittab[i].ichain->isop.opc == Umov ||
                                       bittab[i].ichain->isop.opc == Umovv) &&

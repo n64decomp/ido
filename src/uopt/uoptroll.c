@@ -1224,7 +1224,7 @@ void oneloopblockstmt(struct Statement *stat) {
     bool sp5A;
     bool sp59;
     int sp54;
-    unsigned int sp50;
+    int sp50;
     struct Expression *temp_a0_4;
     struct Expression *phi_s1;
     struct Statement *s0;
@@ -1731,7 +1731,7 @@ void record_labels(void) {
             if (labelmap_unused->next != 0) {
                 labelmap_unused = labelmap_unused->next;
             } else {
-                labelmap_unused->next = alloc_new(0x10, &perm_heap);
+                labelmap_unused->next = alloc_new(sizeof (struct LabelMap), &perm_heap);
                 labelmap_unused = labelmap_unused->next;
                 labelmap_unused->next = 0;
             }
@@ -1894,6 +1894,9 @@ void pre_loopblock(bool arg0, bool arg1) {
                     case Uirsv:
                         oneloopblockstmt(stat);
                         break;
+
+                    default:
+                        break;
                 }
             }
 
@@ -1905,6 +1908,9 @@ void pre_loopblock(bool arg0, bool arg1) {
                 case Uujp:
                     link_jump_in_loop(stat, arg1);
                     break;
+
+                    default:
+                        break;
             }
         }
         stat = stat->next;
@@ -1972,6 +1978,9 @@ void post_loopblock(bool arg0, bool arg1, bool arg2) {
                     case Uirsv:
                         oneloopblockstmt(phi_s0);
                         break;
+
+                    default:
+                        break;
                 }
             }
 
@@ -1983,6 +1992,9 @@ void post_loopblock(bool arg0, bool arg1, bool arg2) {
                     case Utjp:
                     case Uujp:
                         link_jump_in_loop(phi_s0, arg2);
+                        break;
+
+                    default:
                         break;
                 }
             }
@@ -2784,6 +2796,9 @@ void loopunroll(void) {
                                     case Uirst:
                                     case Uirsv:
                                         decreasecount(stat_s0->u.store.expr);
+                                        break;
+
+                                    default:
                                         break;
                                 }
                                 break;

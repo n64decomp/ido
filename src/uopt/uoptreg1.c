@@ -228,6 +228,9 @@ bool caninsertearly(struct Expression *expr, struct Graphnode *node) {
                                 caninsert = false;
                             }
                             break;
+
+                        default:
+                            break;
                     }
                 }
                 bit++;
@@ -732,6 +735,7 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
             break;
 
         case dumped:
+        default:
             caseerror(1, 335, "uoptreg1.p", 0xA);
             break;
     }
@@ -742,15 +746,13 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
 00461AAC makelivranges
 */
 static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Graphnode *node_shared, struct LiveUnit **livbb_shared) {
-    void *sp54;
+    //void *sp54;
     bool sp53;
     bool sp52; // a3
-    bool sp51; // t0
-    bool sp4F; // t1
+    //bool sp51; // t0
+    //bool sp4F; // t1
     unsigned short hash; //sp48
-    struct Expression *sp44;
     struct IChain *sp40;
-    struct LiveUnit **sp24;
     struct Expression *expr;
     bool phi_t1;
     bool phi_t0;
@@ -777,9 +779,8 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
             if (arg2) {
                 while (!phi_t0 && expr != NULL) {
                     if (expr->type == isvar) {
-                        sp4F = phi_t1;
-                        sp51 = phi_t0;
-                        sp44 = expr;
+                        //sp4F = phi_t1;
+                        //sp51 = phi_t0;
                         if (addreq(expr->data.isvar_issvar.location, ichain->isvar_issvar.location) && expr->graphnode == node_shared) {
                             phi_t0 = !expr->unk2;
                             if (expr->data.isvar_issvar.assignment != NULL) {
@@ -798,8 +799,7 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                         expr = table[hash];
                         while (!phi_t0 && expr != NULL) {
                             if (expr->type == isvar) {
-                                sp51 = phi_t0;
-                                sp44 = expr;
+                                //sp51 = phi_t0;
                                 if (addreq(expr->data.isvar_issvar.location, ichain->isvar_issvar.location) && expr->graphnode == node_shared->predecessors->graphnode) {
                                     phi_t0 = !expr->unk2;
                                 }

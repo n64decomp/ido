@@ -652,6 +652,9 @@ void decreasecount(struct Expression *expr) {
                     case Uirlv:
                         expr->var_access_list->type = 0;
                         break;
+
+                    default:
+                        break;
                 }
 
                 decreasecount(expr->data.isop.op1);
@@ -1977,7 +1980,7 @@ bool is_incr(struct Expression *expr) {
 0047CF0C newbit
 0047DBB4 getoption
 */
-void *alloc_realloc(void *old, int oldsize16, int newsize16, struct AllocBlock **heap) {
+void *alloc_realloc(void *old, ssize_t oldsize16, ssize_t newsize16, struct AllocBlock **heap) {
     // Did they miss that alloc_resize already exist?
 
     void *addr;

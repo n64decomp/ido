@@ -2379,7 +2379,6 @@ static void func_00425618(struct IChain *ichain, struct Graphnode *node, struct 
     int rightVal;
     bool haslda;
     struct IChainList *sp2C;
-    struct IChainList *sp24;
 
     switch (ichain->type) {
         case islda:
@@ -2962,7 +2961,6 @@ static void func_00426DE8(struct IChain *ichain, struct Graphnode *node) {
 */
 static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *baseaddr, int arg3, struct Graphnode *node) {
     int reg;
-    struct TrepImageThing *sp74;
     union Constant constval;
     struct Expression *sp64;
     struct Expression *sp60;
@@ -3341,7 +3339,6 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
 
                     if (trep->unk2C != 1) {
                         constval.intval = trep->unk2C;
-                        sp74 = trep;
                         genloadnum(ichain->expr->datatype, 0, constval, 4, true);
                         OPC = Umpy;
                         DTYPE = ichain->expr->datatype;
@@ -3349,7 +3346,6 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
                     }
 
                     if (trep->unk28->type == islda || trep->unk28->isvar_issvar.location.addr != 0) {
-                        sp74 = trep;
                         uwrite(&trep->u);
                         OPC = Uadd;
                         DTYPE = trep->unk28->dtype;
@@ -3667,7 +3663,9 @@ static bool func_00428DD8(struct IChain *ichain, struct IChain *scm_ichain, stru
 0042AADC func_0042AADC
 */
 static bool func_0042933C(struct IChain *ichain, struct IChain *scm_ichain, struct Graphnode *node) {
+#ifndef AVOID_UB
     bool sp2B;
+#endif
     bool sp2A;
     bool sp29;
 
@@ -4440,8 +4438,8 @@ static void func_0042B890(struct Statement *stat, struct Graphnode *node) {
             DTYPE = dtype;
             MTYPE = Mmt;
             IONE = curblk;
-            if (ichain->type == Jdt) {
-                OFFSET = ichain->isop.temploc->disp;
+            if (ichain->type == issvar) {
+                OFFSET = ichain->isvar_issvar.temploc->disp;
             } else {
                 OFFSET = ichain->isop.temploc->disp;
             }
@@ -5191,7 +5189,7 @@ void reemit() {
                 OPC = Ucia;
                 LENGTH = stat->u.cia.unk1C;
                 LEXLEV = stat->u.cia.flags;
-                DTYPE + stat->u.cia.returntype;
+                DTYPE = stat->u.cia.returntype;
                 OFFSET = stat->u.cia.unk20;
                 CONSTVAL.swpart.Ival = stat->u.cia.unk1C;
 

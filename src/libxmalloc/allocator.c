@@ -87,7 +87,6 @@ void alloc_scb(struct AllocBlock **block, ssize_t size) {
 struct AllocBlock *alloc_mark(struct AllocBlock **heap) {
     struct AllocBlock *block;
     ssize_t temp_a2;
-    struct AllocBlock *temp_v0;
     struct AllocItem *temp_a0;
     struct AllocItem *temp_a1;
     struct AllocBlock *phi_v0;
@@ -172,7 +171,6 @@ void alloc_release(struct AllocBlock **heap, struct AllocBlock *mark) {
 */
 int alloc_next_scb(ssize_t size, struct AllocBlock **heap) {
     struct AllocBlock *sp2C;
-    struct AllocBlock *temp_v0;
     ssize_t phi_a1;
     struct AllocBlock *phi_v0;
     struct AllocBlock *last_block;
@@ -207,7 +205,6 @@ int alloc_next_scb(ssize_t size, struct AllocBlock **heap) {
 00498760 xrealloc
 */
 void *alloc_resize(void *addr, ssize_t size, struct AllocBlock **heap) {
-    ssize_t sp24;
     ssize_t old_size;
     void *new_addr;
 

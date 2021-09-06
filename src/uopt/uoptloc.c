@@ -217,7 +217,7 @@ void binaryfold(Uopcode opc, Datatype dtype, struct Expression *left, struct Exp
             if (dtype == Idt || dtype == Jdt) value = leftval % rightval;
             else value = (unsigned)leftval % (unsigned)rightval;
             
-            if (value ^ rightval < 0) {
+            if ((value ^ rightval) < 0) {
                 value += rightval;
             }
             break;
@@ -1400,7 +1400,6 @@ bool restructure(Uopcode opc, struct Expression **expr) {
     bool leftResult; // op1
     bool rightResult; // op2
     struct Expression *sp4C;
-    struct Expression *left;
     struct Expression *right;
     struct Expression *expr2;
     struct Expression *expr_s0;

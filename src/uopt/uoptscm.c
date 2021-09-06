@@ -351,7 +351,6 @@ static void func_0047558C(struct Loop *loop) {
 00456A2C oneproc
 */
 void getexpsources(void) {
-    struct Graphnode *sp74;
     struct Graphnode *node_s2;
     struct GraphnodeList *succ;
     struct Statement *stat;
@@ -425,7 +424,6 @@ void getexpsources(void) {
         bvectunion(&node_s2->bvs.stage1.u.scm.region, &node_s2->bvs.stage1.u.scm.sink);
         bvectunion(&coloreditems, &node_s2->bvs.stage1.u.scm.region);
 
-        sp74 = node_s2;
         stat = node_s2->stat_head;
         done = false;
         while (!done && stat != NULL) {

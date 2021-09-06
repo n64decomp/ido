@@ -20,6 +20,9 @@ bool next_stmt_is_ret1(struct Statement *stmt, int addr) {
             case Uloc:
             case Unop:
                 continue;
+
+            default:
+                break;
         }
         if (stmt->opc == Uujp) {
             stmt = stmt->graphnode->successors->graphnode->stat_head;
@@ -62,6 +65,9 @@ bool next_stmt_is_ret(struct Statement *stmt) {
             case Uloc:
             case Unop:
                 continue;
+
+            default:
+                break;
         }
         if (stmt->opc == Uujp) {
             stmt = stmt->graphnode->successors->graphnode->stat_head;

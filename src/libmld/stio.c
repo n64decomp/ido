@@ -51,7 +51,6 @@ int st_readst(int fn, char how, int filebase, CHDRR *pchdr, int flags) {
     int sp44;
     int sp40;
     CFDR *cfdr;
-    int line;
     int lineMax;
     int error;
     int append;
@@ -60,7 +59,6 @@ int st_readst(int fn, char how, int filebase, CHDRR *pchdr, int flags) {
     int i; // s2
     int phi_a0_2;
     int phi_ra;
-    int lnHigh;
     off_t seek_offset;
     char a3;
     int iline;

@@ -23,11 +23,11 @@ void incorp_feedback(void) {
     int callee_count;
     int block;
     struct Proc **procs;
-    unsigned char *data;
+    char *data;
     struct f_per_proc *callee;
 
     fh = (struct f_header *)feedback;
-    data = feedback + sizeof (struct f_header);
+    data = (char*)(feedback + sizeof (struct f_header));
     f_argc = fh->argc;
     while (f_argc > 0) {
         data += (((struct padded_string *)data)->length & ~3) + sizeof(int);
@@ -72,7 +72,7 @@ void incorp_feedback(void) {
         callee_count--;
     }
 
-    if (data != feedback_end) {
+    if (data != (char *)feedback_end) {
         write_string(err.c_file, "uopt: Internal error: Feedback file length doesn't match its structure.", 71, 71);
         writeln(err.c_file);
         fflush(err.c_file);

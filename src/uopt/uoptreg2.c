@@ -689,7 +689,7 @@ void localcolor(void) {
                 for (lu = bittab[i].liverange->liveunits; lu != NULL; lu = lu->next) {
                     if (!lu->deadout && (lu->store_count != 0 || lu->firstisstr || bvectin(lu->node->num, &livrantemp))) {
                         if (lu->node->successors == NULL) {
-                            if (ichain->isvar_issvar.location.memtype & 7 == Pmt && ichain->isvar_issvar.location.blockno == curblk &&
+                            if (ichain->isvar_issvar.location.memtype == Pmt && ichain->isvar_issvar.location.blockno == curblk &&
                                     (allcallersave || ichain->isvar_issvar.location.addr < r_s0) &&
                                     passedinreg(ichain, offsetpassedbyint)) {
                                 lu->needregsave = false;

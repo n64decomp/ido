@@ -51,7 +51,7 @@ extern "C" {
 #define langAda		6
 #define langPl1		7
 #define langCobol	8
-#ifdef __sgi
+#if 1//def __sgi
 #define langStdc	langC
 #define langCplusplus   9
 #define langCplusplusV2 10

@@ -1005,6 +1005,9 @@ void oneinstruction(void) {
         case Uistr:
             curproc->unk38 = MAX(OFFSET, curproc->unk38);
             break;
+
+        default:
+            break;
     }
 
     if (OPC == Ufjp || OPC == Utjp || OPC == Uujp) {

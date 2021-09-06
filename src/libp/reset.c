@@ -30,8 +30,6 @@ size_t calc_size(FILE *unused, size_t size) {
 void reset(struct PascalFile *file, const char *path, int pathlen, size_t bufsize) {
     char *used_path;
     int free_used_path;
-    char *buf;
-    int ch;
     int i;
     FILE *c_file;
     int new_pathlen;
