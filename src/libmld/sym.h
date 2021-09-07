@@ -146,7 +146,7 @@ typedef struct fdr {
     /* 0x30 */ long_i  caux;           /* count of file's auxiliary entries */
     /* 0x34 */ long_i  rfdBase;        /* index into the file indirect table */
     /* 0x38 */ long_i  crfd;           /* count file indirect entries */
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     /* 0x3C */ unsigned reserved : 13;
     /* 0x3C */ unsigned cpdMSBits: 4;
     /* 0x3C */ unsigned ipdFirstMSBits: 4;
@@ -272,7 +272,7 @@ typedef struct __sgi_symr_s {
     /* 0x0 */ long_i  iss;            /* index into String Space of name */
     /* 0x4 */ long_i  value;          /* value of symbol */
 
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     /* 0x8 */ unsigned index : 20;    /* index into sym/aux table */
     /* 0x8 */ unsigned reserved : 1;  /* reserved */
     /* 0x8 */ unsigned sc  : 5;       /* storage class - text, data, etc */
@@ -304,7 +304,7 @@ typedef struct __sgi_symr_s {
  *      the index is.
  */
 typedef struct __sgi_extr__ {
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     /* 0x0 */ unsigned reserved:11;   /* reserved for future use */
     /* 0x0 */ unsigned multiext:1;    /* symbol may be defined multiple times */
     /* 0x0 */ unsigned deltacplus:1;  /* symbol is delta C++ symbol */
@@ -332,7 +332,7 @@ typedef struct __sgi_extr__ {
  * Type Information Record
  */
 typedef struct {
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     unsigned tq3 : 4;
     unsigned tq2 : 4;
     unsigned tq1 : 4;       /* 6 type qualifiers - tqPtr, etc. */
@@ -364,7 +364,7 @@ typedef struct {
  * Size Information Record (SIR) for Delta C++ support
  */
 typedef struct {
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     unsigned size:26;
     unsigned anonunion: 2;
     unsigned alignment: 2;
@@ -381,7 +381,7 @@ typedef struct {
 #define cbSIR sizeof(SIR)
 
 typedef struct {
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     unsigned char fldsize;
     unsigned char dclsize;
     unsigned char fldpos;
@@ -401,7 +401,7 @@ typedef struct {
 } FSIR, *pFSIR;
 
 typedef struct {
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     unsigned classIndex : 31;
     unsigned isQualified : 1;
 #else
@@ -411,7 +411,7 @@ typedef struct {
 } RIR, *pRIR;
 
 typedef struct {
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     unsigned pos:26;
     unsigned anonunion: 2;
     unsigned alignment: 2;
@@ -427,7 +427,7 @@ typedef struct {
 } DSIR, *pDSIR;
 
 typedef struct {
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     unsigned char fldsize;
     unsigned char zzz;
     unsigned char fldpos;
@@ -454,7 +454,7 @@ typedef struct {
  */
 
 typedef struct {
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     unsigned        index : 20; /* index int sym/aux/iss tables */
     unsigned        rfd : 12;    /* index into the file indirect table */
 #else
@@ -533,7 +533,7 @@ typedef union __sgi_auxu_u {
  */
 
 typedef struct __sgi_optr_s {
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     /* 0x0 */ unsigned value: 24;     /* address where we are moving it to */
     /* 0x0 */ unsigned ot: 8;         /* optimization type */
 #else

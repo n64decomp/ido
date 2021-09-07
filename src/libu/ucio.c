@@ -119,7 +119,7 @@ void uputint(int value, bool swap) {
         }
         uputpos = 0;
     }
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     if (swap) {
         value = swap_word(value);
     }
@@ -243,7 +243,7 @@ int ugetint(bool swap) {
     }
 
     out = ugetbufp[ugetpos++];
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef LITTLE_ENDIAN
     if (swap) {
         out = swap_word(out);
     }
