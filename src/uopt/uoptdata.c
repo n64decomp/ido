@@ -800,7 +800,7 @@ struct Expression *nocopy;
 0046123C func_0046123C
 00474FC8 func_00474FC8
 */
-void *nota_candof; // TODO: fix type (0x1C bytes allocated)
+struct ExpSourceThing *nota_candof;
 
 /*
 004150E4 func_004150E4

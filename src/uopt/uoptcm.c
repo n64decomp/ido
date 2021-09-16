@@ -91,6 +91,7 @@ bool has_assert(struct Graphnode *node, struct Statement **stat) {
         return false;
     }
     if (pred->next == NULL) {
+        assertion = false;
         if ((pred->graphnode->stat_tail->opc == Ufjp || pred->graphnode->stat_tail->opc == Utjp) &&
                 pred->graphnode->successors->next != NULL) {
             *stat = pred->graphnode->stat_tail;
@@ -100,7 +101,7 @@ bool has_assert(struct Graphnode *node, struct Statement **stat) {
                  pred->graphnode->stat_tail->expr->data.isop.opc == Uleq ||
                  pred->graphnode->stat_tail->expr->data.isop.opc == Ules);
         }
-        return false;
+        return assertion;
     }
 
     assertjump = pred->graphnode->stat_tail;
@@ -211,7 +212,7 @@ void delete_unmoved_recur(struct Statement *stat, struct Graphnode *node) {
     bool inpath;
 
     last_inpath = NULL;
-    recur = stat->u.store.u.str.unk30; // always NULL in oot. what sets this?
+    recur = stat->u.store.u.str.unk30; // always NULL in oot
     while (recur != NULL) {
         if (bvectin(recur->ichain->bitpos, &node->bvs.stage1.u.precm.expoccur)) {
             if (bvectin(recur->ichain->bitpos, &node->bvs.stage1.u.precm.pavout)) {
@@ -595,7 +596,7 @@ void codemotion(void) {
         if (node_s5->predecessors == NULL || node_s5->interprocedural_controlflow) {
             initbv(&node_s5->bvs.stage1.u.cm.ppin, (struct BitVectorBlock) {0});
         } else {
-            initbv(&node_s5->bvs.stage1.u.cm.ppin, (struct BitVectorBlock) {-1, -1, -1, -1});
+            initbv(&node_s5->bvs.stage1.u.cm.ppin, (struct BitVectorBlock) {{-1, -1, -1, -1}});
             bvcopynot(&node_s5->bvs.stage1.u.cm.ppin, &asgnbits);
             bvectminus(&node_s5->bvs.stage1.u.cm.ppin, &varbits);
         }
@@ -604,14 +605,14 @@ void codemotion(void) {
             initbv(&node_s5->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {0});
         } else if (!node_s5->terminal) {
             if (node_s5->successors->next == NULL) {
-                initbv(&node_s5->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {-1, -1, -1, -1});
+                initbv(&node_s5->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {{-1, -1, -1, -1}});
                 bvcopynot(&node_s5->bvs.stage1.u.cm.ppout, &asgnbits);
                 bvectminus(&node_s5->bvs.stage1.u.cm.ppout, &varbits);
             } else {
                 initbv(&node_s5->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {0});
             }
         } else {
-            initbv(&node_s5->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {-1, -1, -1, -1});
+            initbv(&node_s5->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {{-1, -1, -1, -1}});
             bvcopynot(&node_s5->bvs.stage1.u.cm.ppout, &asgnbits);
             bvectminus(&node_s5->bvs.stage1.u.cm.ppout, &varbits);
         }

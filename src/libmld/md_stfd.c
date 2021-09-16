@@ -15,7 +15,6 @@
 0048A6B4 _md_st_currentifd
 0048A86C _md_st_setfd
 */
-
 CFDR* pcfdcur;
 
 #if 0

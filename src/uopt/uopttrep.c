@@ -428,6 +428,8 @@ static int func_00477B0C(struct IChain *mult, struct IChain *op1) {
                         }
                         break;
 
+                    default:
+                        break;
                 }
             }
             break;
@@ -573,7 +575,6 @@ static void func_00477E20(struct Expression *op1, struct Expression *op2, struct
 */
 static void func_0047847C(struct Expression *expr, struct SharedBcode *sb) {
     bool sp43; // shared
-    struct Expression *sp3C;
     struct Expression *phi_t0;
 
     if (expr == NULL) {
@@ -601,7 +602,6 @@ static void func_0047847C(struct Expression *expr, struct SharedBcode *sb) {
 
             expr->unk5 = 3;
             phi_t0 = expr;
-            sp3C = expr;
             if (((expr->data.isop.unk21 == 0 && !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.cand)) ||
                         !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.delete))) {
                 func_0047847C(expr->data.isop.op1, sb);
@@ -715,7 +715,7 @@ static void func_00478820(struct Expression *expr, struct Graphnode *node) {
             expr->unk5 = 4;
             break;
 
-        case 4:
+        case isop:
             if (expr->unk5 == 4) {
                 break;
             }
@@ -1156,6 +1156,7 @@ static bool func_00479B80(struct Expression *expr) {
 
         default:
             caseerror(1, 829, "uopttrep.p", 10);
+            result = false;
             break;
     }
 
@@ -1168,10 +1169,6 @@ static bool func_00479B80(struct Expression *expr) {
 void eliminduct(void) {
     struct Graphnode *node; // s7, spAC
     struct SharedBcode sb; // sp70, no idea why this needs to be shared -_-
-    int sp64;
-    int sp60;
-    int sp5C;
-    int sp58;
     struct GraphnodeList *succ;
     struct IChain *store_ichain;
     bool done; // s1
@@ -1377,7 +1374,7 @@ void eliminduct(void) {
     if (dordstore) {
         checkbvlist(&varfactor_muls);
         node = graphhead;
-        while (node != 0) {
+        while (node != NULL) {
             stat = node->stat_head;
             done = false;
             while (stat != NULL && !done) {

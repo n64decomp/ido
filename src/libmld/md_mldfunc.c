@@ -18,7 +18,7 @@
 0048ABB0 st_idn_index_fext
 0048ACEC st_pdn_idn
 */
-void _Noreturn _md_st_internal(const char *format, ...) {
+void _md_st_internal(const char *format, ...) {
     va_list arglist;
 
     fprintf(stderr, "%s: Internal: ", st_errname);
@@ -33,7 +33,7 @@ void _Noreturn _md_st_internal(const char *format, ...) {
 0048A704 _md_st_malloc
 0048A8E0 st_cuinit
 */
-void _Noreturn _md_st_error(const char *format, ...) {
+void _md_st_error(const char *format, ...) {
     va_list arglist;
 
     fprintf(stderr, "%s: Error: ", st_errname);

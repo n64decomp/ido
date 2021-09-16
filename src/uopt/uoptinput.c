@@ -141,6 +141,9 @@ restart: // TODO: change to tail recursion when O2 works
                 LEXLEV = 0;
             }
             break;
+
+        default:
+            break;
     }
 
     if (optab[op].ends_bb) {
@@ -317,6 +320,8 @@ void copyline(void) {
         case Uksym:
         case Uosym:
             lastcopiedu = u;
+            break;
+        default:
             break;
     }
     if (OPC != Uvreg && OPC != Unop) {
@@ -605,6 +610,9 @@ bool treekilled(struct Expression *expr) {
                         if (!result) {
                             result = expr->unk2;
                         }
+                        break;
+
+                    default:
                         break;
                 }
             }
@@ -1084,7 +1092,6 @@ static void cvt_to_float(struct UstackEntry *ustackHead, struct VariableLocation
     unsigned int value;
     unsigned int exponent;
     bool done;
-    int i;
 
     OPC = Uldc;
     if (DTYPE == Rdt) {
@@ -1159,7 +1166,6 @@ static struct Expression *transform_float_div(int real_significand, bool negativ
     bool done;
     int value;
     int exponent;
-    int i;
 
     real_exponent = -real_exponent;
     sp34 = 1;
@@ -1454,7 +1460,6 @@ void readnxtinst(void) {
     bool found;
     bool endblock_saved;
     struct Graphnode *graphnode;
-    struct GraphnodeList *new_graphnode_list_item;
     struct ParstackEntry *parstack_entry;
 
     if (!optab[OPC].executable) {
@@ -2206,8 +2211,14 @@ void readnxtinst(void) {
                                         }
                                     }
                                     break;
+
+                                default:
+                                    break;
                             }
                         }
+                        break;
+
+                    default:
                         break;
                 }
             }
@@ -2323,6 +2334,9 @@ void readnxtinst(void) {
                     case Uuni:
                         expr->data.isop.datasize = LENGTH;
                         break;
+
+                    default:
+                        break;
                 }
                 if (OPC == Uinn) {
                     expr->data.isop.aux2.v1.unk3C = IONE; // 'check flag'
@@ -2341,6 +2355,9 @@ void readnxtinst(void) {
                     case Uneq:
                         expr->data.isop.aux.unk38_trep = NULL;
                         expr->data.isop.aux2.unk3C_trep = NULL;
+                        break;
+
+                    default:
                         break;
                 }
             } else {
@@ -2956,7 +2973,7 @@ void readnxtinst(void) {
                     } else if (ustack->expr->type == isop && ustack->expr->data.isop.opc == Ucvt &&
                             ustack->expr->data.isop.op1->type == islda &&
                             (curblk == ustack->expr->data.isop.op1->data.islda_isilda.address.blockno ||
-                             f77_static_flag && in_fsym(ustack->expr->data.isop.op1->data.islda_isilda.address.blockno)))
+                             (f77_static_flag && in_fsym(ustack->expr->data.isop.op1->data.islda_isilda.address.blockno))))
                     {
                         use_c_semantics = true;
                     }
@@ -3180,7 +3197,7 @@ void readnxtinst(void) {
                 } else if (ustack->expr->type == isop && ustack->expr->data.isop.opc == Ucvt &&
                         ustack->expr->data.isop.op1->type == islda &&
                         (curblk == ustack->expr->data.isop.op1->data.islda_isilda.address.blockno ||
-                         f77_static_flag && in_fsym(ustack->expr->data.isop.op1->data.islda_isilda.address.blockno)))
+                         (f77_static_flag && in_fsym(ustack->expr->data.isop.op1->data.islda_isilda.address.blockno))))
                 {
                     use_c_semantics = true;
                 }
@@ -3432,7 +3449,7 @@ void readnxtinst(void) {
             }
 
             /*
-             * Frontends are inconcistent about how they emit switch statements.
+             * Frontends are inconsistent about how they emit switch statements.
              *
              * The pascal frontend emits the cases first, then the clab with ujps, and finally the xjp:
              *
@@ -3652,7 +3669,7 @@ void readnxtinst(void) {
             curlocln = 0;
             return;
 
-        // Most likely "indexed jump", for computed gotos in fortan and pl/1
+        // Most likely "indexed jump", for computed gotos in fortran and pl/1
         case Uijp:
             extendstat(Uijp);
             if (outofmem) {
@@ -4331,7 +4348,6 @@ void readnxtinst(void) {
         case Ucubd: // XXX: untested
         case Ustep: // XXX: untested
             extendstat(OPC);
-            stattail = stattail;
             stattail->u.clbd_cubd_step.dtype = DTYPE;
             stattail->u.clbd_cubd_step.unk18 = IONE;
             return;

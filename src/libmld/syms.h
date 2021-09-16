@@ -33,7 +33,7 @@ extern "C" {
 /*	Defines for "special" symbols   */
 
 
-#if (defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS))
+#if 1//(defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS))
 #define _ETEXT	"_etext"
 #define	_EDATA	"_edata"
 #define	_END	"_end"
@@ -63,7 +63,7 @@ extern "C" {
 #define GP_DISP	(32768 - GP_PAD)
 #define GP_SIZE (GP_DISP+32767)
 /* "special" symbols for starts of sections */
-#if (defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS))
+#if 1// (defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS))
 #define	_FTEXT	"_ftext"
 #define	_FDATA	"_fdata"
 #define	_FBSS	"_fbss"
@@ -99,7 +99,7 @@ extern "C" {
 #endif /* _LANGUAGE_PASCAL */
 
 
-#if (defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS))
+#if 1//(defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS))
 #define _START	"__start"
 #endif /* defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS) */
 #ifdef _LANGUAGE_PASCAL
@@ -109,7 +109,7 @@ extern "C" {
 //#if  defined(__mips)
 
 #include "symconst.h"
-#if (defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS))
+#if 1//(defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS))
 #include "sym.h"
 #include "stsupport.h"
 #endif /* defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS) */

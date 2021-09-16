@@ -160,14 +160,14 @@ int path_blockno(char *name, int length) {
     CHDRR *chdr;
     DNR *dn;
 
-    p = name;
+    p = (char *)name;
     s0 = sp68;
     *s0++ = p;
-    while (c = *p++) {
+    while ((c = *p++)) {
     }
     *s0++ = p;
 
-    while (c = *p++) {
+    while ((c = *p++)) {
         if (c == '.') {
             *(p - 1) = '\0';
             if (s0 != (sp68 + 31)) {

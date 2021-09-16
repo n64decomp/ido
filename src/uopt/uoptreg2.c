@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "libp/libp.h"
 #include "libu/libu.h"
 #include "uoptdata.h"
@@ -482,6 +484,8 @@ void localcolor(void) {
 
     formingtab = alloc_new(curstaticno * sizeof(struct Graphnode *), &perm_heap);
     bbtab = alloc_new(curstaticno * sizeof(struct Graphnode *), &perm_heap);
+    memset(formingtab, 0, curstaticno * sizeof(struct Graphnode *));
+    memset(bbtab, 0, curstaticno * sizeof(struct Graphnode *));
 
     for (node = graphhead; node != NULL; node = node->next) {
         bbtab[node->num] = node;
@@ -689,7 +693,7 @@ void localcolor(void) {
                 for (lu = bittab[i].liverange->liveunits; lu != NULL; lu = lu->next) {
                     if (!lu->deadout && (lu->store_count != 0 || lu->firstisstr || bvectin(lu->node->num, &livrantemp))) {
                         if (lu->node->successors == NULL) {
-                            if (ichain->isvar_issvar.location.memtype & 7 == Pmt && ichain->isvar_issvar.location.blockno == curblk &&
+                            if (ichain->isvar_issvar.location.memtype == Pmt && ichain->isvar_issvar.location.blockno == curblk &&
                                     (allcallersave || ichain->isvar_issvar.location.addr < r_s0) &&
                                     passedinreg(ichain, offsetpassedbyint)) {
                                 lu->needregsave = false;
@@ -875,9 +879,9 @@ void spilltemps(void) {
             initbv(&setofspills, (struct BitVectorBlock) {0});
 
             for (node = graphhead; node != NULL; node = node->next) {
-                if (bvectin(bit, &node->bvs.stage2.unk15C)) {
+                if (bvectin(bit, &node->bvs.stage1.u.scm.region)) {
                     for (i = 0; i < bit; i++) {
-                        if (bvectin(i, &node->bvs.stage2.unk15C)) {
+                        if (bvectin(i, &node->bvs.stage1.u.scm.region)) {
                             switch (bittab[i].ichain->type) {
                                 case isilda:
                                     setbit(&setofspills, bittab[i].ichain->islda_isilda.temploc->index);
@@ -1408,7 +1412,7 @@ void compute_save(struct LiveRange *lr) {
             phi_f20 -= movcostused * lu->node->unk2C;
         }
         phi_f22 += phi_f20;
-        lr->unk1C += 1;
+        lr->unk1C++;
     }
 
     lr->unk1C += bvectcard(&lr->unkC);
@@ -1847,7 +1851,7 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
             }
         }
 
-        if (lang == 3 && lu->node->successors == NULL) {
+        if (lang == LANG_ADA && lu->node->successors == NULL) {
             if (SET64_IN(regscantpass, reg) &&
                     liverange->ichain->type == isvar &&
                     liverange->ichain->isvar_issvar.location.memtype == Pmt &&
@@ -1931,7 +1935,7 @@ void globalcolor(void) {
     struct LiveRange *splitlr;   // sp118
     struct LiveRange *liverange; // sp114, s5
     int i;                       // sp110
-    int candidate_bit;           // sp10C
+    int candidate_bit = -1;      // sp10C
     unsigned int chosen_reg;     // spDC
     long long available_regs;    // spD8
     struct Proc *prev_call;      // spC8
@@ -1946,10 +1950,10 @@ void globalcolor(void) {
     struct InterfereList *intf;
     struct GraphnodeList *pred;
     struct GraphnodeList *succ;
-    float phi_f24;
+    float firstUseCost; // first use cost
     float phi_f22;
     float phi_f20;
-    float phi_f2;
+    float registerCost;
     bool chosen;
     bool phi_s1;
     bool pred_is_call;
@@ -1957,15 +1961,15 @@ void globalcolor(void) {
 
     numofsplits = 0;
     if (!usefeedback || !curproc->feedback_data) {
-        phi_f24 = movcostused * curstaticno * 0.25f;
-        if (phi_f24 < 4.0f) {
-            phi_f24 = 4.0f;
+        firstUseCost = movcostused * curstaticno * 0.25f;
+        if (firstUseCost < 4.0f) {
+            firstUseCost = 4.0f;
         }
-        if (phi_f24 > 60.0f) {
-            phi_f24 = 60.0f;
+        if (firstUseCost > 60.0f) {
+            firstUseCost = 60.0f;
         }
     } else {
-        phi_f24 = movcostused * (graphhead->unk2C * 2);
+        firstUseCost = movcostused * (graphhead->unk2C * 2);
     }
 
     //spB8 := regscantpass - [23] + [firstparmreg[1]..firstparmreg[1]+3] + [firstparmreg[2]..firstparmreg[2]+1];
@@ -2054,7 +2058,7 @@ void globalcolor(void) {
                         }
                     }
 
-                    if (phi_f20 < liverange->adjsave && liverange->unk23 == 1) {
+                    if (liverange->adjsave > phi_f20 && liverange->unk23 == 1) {
                         candidate_bit = i;
                         phi_f20 = liverange->adjsave;
                     }
@@ -2076,17 +2080,17 @@ void globalcolor(void) {
             for (reg = firsterreg[regclass - 1]; reg <= lasterreg[regclass - 1]; reg++) {
                 if (!SET_IN(liverange->forbidden, reg)) {
                     if (!o3opt && !SET64_IN(spB8, reg)) {
-                        phi_f2 = phi_f22;
+                        registerCost = phi_f22;
                     } else {
-                        phi_f2 = cupcosts(liverange, reg, 1);
+                        registerCost = cupcosts(liverange, reg, 1);
                     }
 
-                    if (phi_f2 < phi_f20) {
+                    if (registerCost < phi_f20) {
                         chosen_reg = reg;
-                        phi_f20 = phi_f2;
+                        phi_f20 = registerCost;
 
                         SET64_INIT(available_regs, reg);
-                    } else if (phi_f2 == phi_f20) {
+                    } else if (registerCost == phi_f20) {
                         // floating point equality...
                         SET64_ADD(available_regs, reg);
                     }
@@ -2100,27 +2104,29 @@ void globalcolor(void) {
             for (reg = firsteereg[regclass - 1]; reg <= lasteereg[regclass - 1]; reg++) {
                 if (!SET_IN(liverange->forbidden, reg)) {
                     if (!o3opt && !SET64_IN(spB8, reg)) {
-                        phi_f2 = phi_f22;
+                        registerCost = phi_f22;
                     } else {
-                        phi_f2 = cupcosts(liverange, reg, 0);
+                        registerCost = cupcosts(liverange, reg, 0);
                     }
 
                     if (!allcallersave || SET64_IN(regscantpass, reg) || !propagate_ee_saves) {
                         if (!SET64_IN(usedeeregs[regclass - 1], reg)) {
-                            phi_f2 += phi_f24;
+                            // extra cost for saving and restoring the register at the start and end of the function
+                            registerCost += firstUseCost;
                         }
                     }
 
-                    if (phi_f2 < phi_f20) {
+                    if (registerCost < phi_f20) {
                         chosen_reg = reg;
-                        phi_f20 = phi_f2;
+                        phi_f20 = registerCost;
                         SET64_INIT(available_regs, reg);
-                    } else if (phi_f2 == phi_f20) {
+                    } else if (registerCost == phi_f20) {
                         SET64_ADD(available_regs, reg);
                     }
                 }
             }
 
+            //! this comparison makes -mfpmath=sse necessary, because otherwise the compiler uses double comparisons
             if (liverange->adjsave * liverange->unk1C <= phi_f20) {
                 split(&liverange, &splitlr, regclass, true);
                 if (outofmem) {
@@ -2137,7 +2143,7 @@ void globalcolor(void) {
                     contiglr += contiguous(liverange);
                 }
 
-                // more than one register can be assigned?
+                // more than one register can be assigned
                 if (allcallersave && !SET64_EMPTY(SET64_MINUS(available_regs, chosen_reg))) {
                     chosen = false;
                     for (reg = firsterreg[regclass - 1]; !chosen && reg <= lasteereg[regclass - 1]; reg++) {
@@ -2241,15 +2247,15 @@ void globalcolor(void) {
             for (reg = firsterreg[regclass - 1]; reg <= lasterreg[regclass - 1]; reg++) {
                 if (!SET_IN(liverange->forbidden, reg)) {
                     if (!o3opt && !SET64_IN(spB8, reg)) {
-                        phi_f2 = phi_f22;
+                        registerCost = phi_f22;
                     } else {
-                        phi_f2 = cupcosts(liverange, reg, 1);
+                        registerCost = cupcosts(liverange, reg, 1);
                     }
-                    if (phi_f2 < phi_f20) {
+                    if (registerCost < phi_f20) {
                         chosen_reg = reg;
-                        phi_f20 = phi_f2;
+                        phi_f20 = registerCost;
                         SET64_INIT(available_regs, reg);
-                    } else if (phi_f2 == phi_f20) {
+                    } else if (registerCost == phi_f20) {
                         SET64_ADD(available_regs, reg);
                     }
                 }
@@ -2262,28 +2268,28 @@ void globalcolor(void) {
             for (reg = firsteereg[regclass - 1]; reg <= lasteereg[regclass - 1]; reg++) {
                 if (!SET_IN(liverange->forbidden, reg)) {
                     if (!o3opt && !SET64_IN(spB8, reg)) {
-                        phi_f2 = phi_f22;
+                        registerCost = phi_f22;
                     } else {
-                        phi_f2 = cupcosts(liverange, reg, false);
+                        registerCost = cupcosts(liverange, reg, false);
                     }
 
                     if (!allcallersave || SET64_IN(regscantpass, reg) || !propagate_ee_saves) {
                         if (!SET64_IN(usedeeregs[regclass - 1], reg)) {
-                            phi_f2 = phi_f2 + phi_f24;
+                            registerCost = registerCost + firstUseCost;
                         }
                     }
 
-                    if (phi_f2 < phi_f20) {
+                    if (registerCost < phi_f20) {
                         SET64_INIT(available_regs, reg);
-                        phi_f20 = phi_f2;
+                        phi_f20 = registerCost;
                         chosen_reg = reg;
-                    } else if (phi_f2 == phi_f20) {
+                    } else if (registerCost == phi_f20) {
                         SET64_ADD(available_regs, reg);
                     }
                 }
             }
 
-            if (phi_f20 < liverange->adjsave * liverange->unk1C && liverange->unk23 == 1) {
+            if (liverange->adjsave * liverange->unk1C > phi_f20 && liverange->unk23 == 1) {
                 if (dowhyuncolor) {
                     numcoloredlr += 1;
                     inc_allococ(liverange);
@@ -2333,7 +2339,6 @@ void globalcolor(void) {
                 }
 
                 if (dbugno == 6) {
-                    liverange = liverange;
                     write_integer(list.c_file, liverange->ichain->bitpos, 4, 10);
                     write_char(list.c_file, ':', 1);
                     write_integer(list.c_file, liverange->bitpos, 5, 10);

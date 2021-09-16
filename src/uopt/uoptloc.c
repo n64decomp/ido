@@ -217,7 +217,7 @@ void binaryfold(Uopcode opc, Datatype dtype, struct Expression *left, struct Exp
             if (dtype == Idt || dtype == Jdt) value = leftval % rightval;
             else value = (unsigned)leftval % (unsigned)rightval;
             
-            if (value ^ rightval < 0) {
+            if ((value ^ rightval) < 0) {
                 value += rightval;
             }
             break;
@@ -329,7 +329,7 @@ void binaryfold(Uopcode opc, Datatype dtype, struct Expression *left, struct Exp
         dest->type = isconst;
         dest->data.isconst.size = sizeoftyp(dtype);
         dest->var_access_list = NULL;
-        dest->unk4 = false;
+        dest->unk4 = 0;
         dest->data.isconst.number.intval = value;
         dest->datatype = dtype;
     }
@@ -414,7 +414,7 @@ struct Expression *ilodfold(struct Expression *ilod) {
         } else {
             expr->type = isvar;
             expr->datatype = ilod->datatype;
-            expr->unk4 = false;
+            expr->unk4 = 0;
             expr->unk5 = 0;
             expr->data.isvar_issvar.veqv = false;
             expr->data.isvar_issvar.unk22 = false;
@@ -479,7 +479,7 @@ void istrfold(struct Statement *stmt) {
     expr->datatype = stmt->u.store.u.istr.dtype;
     expr->unk2 = !stmt->u.store.unk1F;
     expr->unk3 = false;
-    expr->unk4 = false;
+    expr->unk4 = 0;
     expr->unk5 = 0;
     expr->count = 0;
     expr->graphnode = stmt->graphnode;
@@ -907,7 +907,7 @@ void mergeconst(struct Expression *expr) {
                                 } else if (mpyovfw(expr->datatype, expr->data.isop.op2->data.isconst.number.intval, expr->data.isop.datasize)) {
                                     overflow = true;
                                 } else {
-                                    overflow = addovfw(false, constant->data.isconst.number.intval * left->data.isop.datasize, expr->data.isop.op2->data.isconst.number.intval * expr->data.isop.datasize);
+                                    overflow = addovfw(Adt, constant->data.isconst.number.intval * left->data.isop.datasize, expr->data.isop.op2->data.isconst.number.intval * expr->data.isop.datasize);
                                 }
                                 break;
 
@@ -1400,7 +1400,6 @@ bool restructure(Uopcode opc, struct Expression **expr) {
     bool leftResult; // op1
     bool rightResult; // op2
     struct Expression *sp4C;
-    struct Expression *left;
     struct Expression *right;
     struct Expression *expr2;
     struct Expression *expr_s0;

@@ -80,7 +80,7 @@ static bool func_0042FEA0(struct IChain *ichain, struct Statement *stat, struct 
 0043019C func_0043019C
 */
 static bool func_0043005C(struct IChain *ichain, struct Expression *expr, struct Expression **dest) {
-    bool result;
+    bool result = false;
 
     switch (expr->type) {
         case islda:
@@ -583,10 +583,10 @@ static int func_004313E4(struct IChain *ichain, struct Graphnode *node) {
 */
 static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
     //void *sp44;
-    bool sp43; // ???
-    bool sp42; // t0
-    bool sp41; // a3
-    bool sp40;
+    bool sp43 = false; // ???
+    bool sp42 = false; // t0
+    bool sp41 = false; // a3
+    bool sp40 = false;
 
     //sp44 = MIPS2C_ERROR(Read from unset register $v0);
     switch (ichain->isop.opc) {

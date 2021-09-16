@@ -1130,7 +1130,7 @@ AUXU *st_paux_ifd_iaux(int ifd, int iaux) {
     if (st_pchdr->pcfd == NULL) {
         st_internal("routine: you didn't initialize with st_cuinit or st_readst\n");
     }
-    if (ifd < 0 || iaux < 0 || ifd < st_pchdr->cfd == 0 || iaux < st_pchdr->pcfd[ifd].pfd->caux == 0) {
+    if (ifd < 0 || iaux < 0 || ifd >= st_pchdr->cfd || iaux >= st_pchdr->pcfd[ifd].pfd->caux) {
         st_internal("st_paux_ifd_iaux: ifd (%d) or iaux (%d) out of range\n", ifd, iaux);
     }
 

@@ -108,7 +108,7 @@ extern "C" {
  *	that scales when moving to say 64 bit. (e.g. byte counts, bit lens)
  */
 
-#if (defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS))
+#if 1//(defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS))
 
 /*
  * assumes int is 32 -

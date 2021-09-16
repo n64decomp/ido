@@ -114,6 +114,7 @@ static void one_block(bool *elim_dead_code) { // originally embedded func
             case Uxjp:
                 endblock = true;
                 break;
+
             default:
                 endblock = false;
                 break;
@@ -156,6 +157,9 @@ static void one_block(bool *elim_dead_code) { // originally embedded func
                         copyline();
                         getop();
                     }
+                    break;
+
+                default:
                     break;
             }
         } else {

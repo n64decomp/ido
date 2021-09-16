@@ -393,7 +393,7 @@ void base_in_reg(int reg, struct IChain *ichain, struct Expression *baseaddr) {
 
     if (gpunaltab[reg - 1] == 0) {
         if (base_gp_noalias(baseaddr)) {
-            IONE = 28;
+            IONE = r_gp;
             uwrite(&u);
             gpunaltab[reg - 1] = 2;
         } else {
@@ -403,7 +403,7 @@ void base_in_reg(int reg, struct IChain *ichain, struct Expression *baseaddr) {
 
     if (spunaltab[reg - 1] == 0) {
         if (base_sp_noalias(baseaddr)) {
-            IONE = 29;
+            IONE = r_sp;
             uwrite(&u);
             spunaltab[reg - 1] = 2;
         } else {
@@ -1369,7 +1369,7 @@ static void func_00422AF0(struct Graphnode *node) {
     RegisterColor reg2;
 
     OPC = Uunal;
-    DTYPE = Adt;
+    DTYPE = 0;
     for (reg = 1; reg <= 23; reg++) {
         if (baseregexpr[reg - 1] != NULL && baseregexpr[reg - 1] != node->regdata.unk44[reg - 1]) {
             LEXLEV = coloroffset(reg);
@@ -2285,7 +2285,6 @@ static void func_00424FFC(struct Expression *expr, struct Expression *baseaddr, 
                     break;
 
                 case 2:
-                    expr->data.isop.unk30 = expr->data.isop.unk30;
                     if (expr->data.isop.unk30 == NULL) {
                         expr->data.isop.unk30 = expr->ichain->isop.temploc;
                     }
@@ -2379,20 +2378,19 @@ static void func_00425618(struct IChain *ichain, struct Graphnode *node, struct 
     int rightVal;
     bool haslda;
     struct IChainList *sp2C;
-    struct IChainList *sp24;
 
     switch (ichain->type) {
         case islda:
         case isconst:
         case isrconst:
             if (*listTail == NULL) {
-                newlist = alloc_new(0x30, &perm_heap);
+                newlist = alloc_new(sizeof(struct IChainList), &perm_heap);
                 newlist->prev = NULL;
                 newlist->next = NULL;
                 *listTail = newlist;
             } else {
                 if ((*listTail)->next == NULL) {
-                    newlist = alloc_new(0x30, &perm_heap);
+                    newlist = alloc_new(sizeof(struct IChainList), &perm_heap);
                     (*listTail)->next = newlist;
                     newlist->prev = (*listTail);
                     newlist->next = NULL;
@@ -2437,13 +2435,13 @@ static void func_00425618(struct IChain *ichain, struct Graphnode *node, struct 
             }
 
             if (*listTail == NULL) {
-                newlist = alloc_new(0x30, &perm_heap);
+                newlist = alloc_new(sizeof(struct IChainList), &perm_heap);
                 *listTail = newlist;
                 newlist->prev = 0;
                 newlist->next = 0;
             } else {
                 if ((*listTail)->next == 0) {
-                    newlist = alloc_new(0x30, &perm_heap);
+                    newlist = alloc_new(sizeof(struct IChainList), &perm_heap);
                     (*listTail)->next = newlist;
                     newlist->prev = (*listTail);
                     newlist->next = NULL;
@@ -2962,7 +2960,6 @@ static void func_00426DE8(struct IChain *ichain, struct Graphnode *node) {
 */
 static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *baseaddr, int arg3, struct Graphnode *node) {
     int reg;
-    struct TrepImageThing *sp74;
     union Constant constval;
     struct Expression *sp64;
     struct Expression *sp60;
@@ -3005,7 +3002,7 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
             break;
 
         case isilda:
-            if (!bvectin(ichain->bitpos, &node->bvs.stage2.unk164)) {
+            if (!bvectin(ichain->bitpos, &node->bvs.stage1.u.cm.insert)) {
                 if (arg1) {
                     noop = 0;
                 } else if (inreg(ichain, node, &reg, 1)) {
@@ -3013,7 +3010,7 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
                 } else {
                     spilltemplodstr(Ulod, ichain->dtype, ichain->islda_isilda.temploc);
                 }
-            } else if (!arg1 && bvectin(ichain->bitpos, &node->bvs.stage2.unk154)) {
+            } else if (!arg1 && bvectin(ichain->bitpos, &node->bvs.stage1.u.scm.source)) {
                 if (inreg(ichain, node, &reg, 1)) {
                     genrop(Ulod, reg, ichain->dtype, sizeoftyp(ichain->dtype));
                 } else {
@@ -3033,7 +3030,7 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
             break;
 
         case issvar:
-            if (!bvectin(ichain->bitpos, &node->bvs.stage2.unk164)) {
+            if (!bvectin(ichain->bitpos, &node->bvs.stage1.u.cm.insert)) {
                 if (arg1) {
                     noop = 0;
                 } else if (inreg(ichain, node, &reg, 1)) {
@@ -3041,7 +3038,7 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
                 } else {
                     spilltemplodstr(Ulod, ichain->dtype, ichain->isvar_issvar.temploc);
                 }
-            } else if (!arg1 && bvectin(ichain->bitpos, &node->bvs.stage2.unk154)) {
+            } else if (!arg1 && bvectin(ichain->bitpos, &node->bvs.stage1.u.scm.source)) {
                 if (inreg(ichain, node, &reg, 1)) {
                     genrop(Ulod, reg, ichain->dtype, sizeoftyp(ichain->dtype));
                 } else {
@@ -3186,7 +3183,7 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
                 uwrite(&u);
                 return;
             }
-            if (bvectin(ichain->bitpos, &node->bvs.stage2.unk164) == 0) {
+            if (bvectin(ichain->bitpos, &node->bvs.stage1.u.cm.insert) == 0) {
                 if (arg1) {
                     noop = false;
                     return;
@@ -3201,7 +3198,7 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
                 spilltemplodstr(Ulod, ichain->isop.datatype, ichain->isop.temploc);
                 return;
             }
-            if (!arg1 && bvectin(ichain->bitpos, &node->bvs.stage2.unk154)) {
+            if (!arg1 && bvectin(ichain->bitpos, &node->bvs.stage1.u.scm.source)) {
                 if (bvectin(ichain->bitpos, &node->bvs.stage2.unk16C) == 0) {
                     if (inreg(ichain, node, &reg, 1)) {
                         if (baseaddr != NULL) {
@@ -3341,7 +3338,6 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
 
                     if (trep->unk2C != 1) {
                         constval.intval = trep->unk2C;
-                        sp74 = trep;
                         genloadnum(ichain->expr->datatype, 0, constval, 4, true);
                         OPC = Umpy;
                         DTYPE = ichain->expr->datatype;
@@ -3349,7 +3345,6 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
                     }
 
                     if (trep->unk28->type == islda || trep->unk28->isvar_issvar.location.addr != 0) {
-                        sp74 = trep;
                         uwrite(&trep->u);
                         OPC = Uadd;
                         DTYPE = trep->unk28->dtype;
@@ -3585,14 +3580,14 @@ static bool func_00428DD8(struct IChain *ichain, struct IChain *scm_ichain, stru
                     ((ichain->isop.op1->type == islda ||
                       ichain->isop.op1->type == isconst ||
                       ichain->isop.op1->type == isvar) ||
-                     bvectin(ichain->isop.op1->bitpos, &node->bvs.stage2.unk164)) &&
+                     bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.insert)) &&
                     func_00428DD8(ichain->isop.op2, scm_ichain->isop.op2, node)) {
                 return true;
             } else if (scm_ichain->isop.op2 == ichain->isop.op2 &&
                     ((ichain->isop.op2->type == islda ||
                       ichain->isop.op2->type == isconst ||
                       ichain->isop.op2->type == isvar) ||
-                     bvectin(ichain->isop.op2->bitpos, &node->bvs.stage2.unk164)) &&
+                     bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.insert)) &&
                     func_00428DD8(ichain->isop.op1, scm_ichain->isop.op1, node)) {
                 return true;
             } else {
@@ -3667,7 +3662,9 @@ static bool func_00428DD8(struct IChain *ichain, struct IChain *scm_ichain, stru
 0042AADC func_0042AADC
 */
 static bool func_0042933C(struct IChain *ichain, struct IChain *scm_ichain, struct Graphnode *node) {
+#ifndef AVOID_UB
     bool sp2B;
+#endif
     bool sp2A;
     bool sp29;
 
@@ -4177,14 +4174,14 @@ static void func_0042AADC(struct Graphnode *node) {
     i = 0;
     block = 0;
     while (i < firstconstbit) {
-        if (BVBLOCKEMPTY(node->bvs.stage2.unk164, block)) {
+        if (BVBLOCKEMPTY(node->bvs.stage1.u.cm.insert, block)) {
             i += 0x80;
         } else {
             bit = 0;
             while (i < firstconstbit && bit < 0x80) {
 
-                if (BVINBLOCK(bit, block, node->bvs.stage2.unk164) &&
-                        (bvectin(i, &node->bvs.stage2.unk154) || bvectin(i, &storeop) || bvectin(i, &trapop)) &&
+                if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.insert) &&
+                        (bvectin(i, &node->bvs.stage1.u.scm.source) || bvectin(i, &storeop) || bvectin(i, &trapop)) &&
                         (!found_scm || !check_ix_candidate(bittab[i].ichain, inner_loopno))) {
                     func_00426FA4(bittab[i].ichain, 1, 0, 0, node);
                 }
@@ -4202,14 +4199,14 @@ static void func_0042AADC(struct Graphnode *node) {
     i = 0;
     block = 0;
     while (i < firstconstbit) {
-        if (BVBLOCKEMPTY(node->bvs.stage2.unk164, block)) {
+        if (BVBLOCKEMPTY(node->bvs.stage1.u.cm.insert, block)) {
             i += 0x80;
         } else {
             bit = 0;
             while (i < firstconstbit && bit < 0x80) {
 
-                if (BVINBLOCK(bit, block, node->bvs.stage2.unk164) &&
-                        (bvectin(i, &node->bvs.stage2.unk154) || bvectin(i, &storeop) || bvectin(i, &trapop))) {
+                if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.insert) &&
+                        (bvectin(i, &node->bvs.stage1.u.scm.source) || bvectin(i, &storeop) || bvectin(i, &trapop))) {
                     ichain = bittab[i].ichain;
                     scm_unk11 = check_ix_candidate(ichain, inner_loopno); // not sure if bool
 
@@ -4440,8 +4437,8 @@ static void func_0042B890(struct Statement *stat, struct Graphnode *node) {
             DTYPE = dtype;
             MTYPE = Mmt;
             IONE = curblk;
-            if (ichain->type == Jdt) {
-                OFFSET = ichain->isop.temploc->disp;
+            if (ichain->type == issvar) {
+                OFFSET = ichain->isvar_issvar.temploc->disp;
             } else {
                 OFFSET = ichain->isop.temploc->disp;
             }
@@ -5191,7 +5188,7 @@ void reemit() {
                 OPC = Ucia;
                 LENGTH = stat->u.cia.unk1C;
                 LEXLEV = stat->u.cia.flags;
-                DTYPE + stat->u.cia.returntype;
+                DTYPE = stat->u.cia.returntype;
                 OFFSET = stat->u.cia.unk20;
                 CONSTVAL.swpart.Ival = stat->u.cia.unk1C;
 

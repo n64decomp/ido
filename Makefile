@@ -4,17 +4,31 @@ SRC_DIRS := . src src/libmld src/libp src/libu src/libxmalloc src/uopt
 
 AVOID_UB ?= 1
 
+ARCH ?= x86
+
+ifeq ($(ARCH),x86)
+CC := gcc
+ENDIANNESS := -DLITTLE_ENDIAN
+ARCH_FLAGS := -m32 -mfpmath=sse -msse2 -ffp-contract=off $(ENDIANNESS)
+OPTIMIZATION = -ggdb3
+#OPTIMIZATION = -O2 -march=native -mtune=native -flto
+else ifeq ($(ARCH),mips)
 CC := mips-linux-gnu-gcc
-OPTIMIZATION := -ggdb3 
-ARCH_FLAGS := -mips2 -mfp32
-CFLAGS := -fPIC -I src $(ARCH_FLAGS) $(OPTIMIZATION)
-LDFLAGS := -fPIC $(ARCH_FLAGS) $(OPTIMIZATION) 
+ARCH_FLAGS := -fPIC -mips2 -mfp32
+OPTIMIZATION := -ggdb3
+else
+$(error unsupported arch "$(ARCH)")
+endif
+
+CFLAGS := -I src -Wall $(ARCH_FLAGS) $(OPTIMIZATION)
+LDFLAGS := $(ARCH_FLAGS) $(OPTIMIZATION)
 
 ifeq ($(AVOID_UB),1)
     CFLAGS := $(CFLAGS) -DAVOID_UB
 endif
 
 BUILD_DIR := build
+
 ALL_DIRS := $(addprefix $(BUILD_DIR)/,$(SRC_DIRS))
 
 C_FILES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))

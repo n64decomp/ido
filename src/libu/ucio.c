@@ -3,6 +3,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <stdbool.h>
+
+#include "libmld/sex.h"
 
 /*
 100118F0 D_100118F0
@@ -103,7 +106,7 @@ void uputinitfd(int fd) {
 /*
 00486880 uwrite
 */
-void uputint(int value) {
+void uputint(int value, bool swap) {
     if (uputfd < 0) {
         fprintf(stderr, "uput: output file not initialized\n");
         fflush(stderr);
@@ -116,6 +119,13 @@ void uputint(int value) {
         }
         uputpos = 0;
     }
+
+#ifdef LITTLE_ENDIAN
+    // Convert back to big endian, except strings
+    if (swap) {
+        value = swap_word(value);
+    }
+#endif
     uputbuf[uputpos++] = value;
 }
 
@@ -200,8 +210,9 @@ void ugetbufinit(int *buf, int len_bytes) {
 00487848 ugeteof
 00487B7C readuinstr
 */
-int ugetint(void) {
+int ugetint(bool swap) {
     int nread;
+    int in;
 
     if (ugetfd < 0) {
         fprintf(stderr, "uget: input file not initialized\n");
@@ -232,19 +243,27 @@ int ugetint(void) {
         ugetbuflen = nread / 4;
         ugetpos = 0;
     }
-    return ugetbufp[ugetpos++];
+
+    in = ugetbufp[ugetpos++];
+#ifdef LITTLE_ENDIAN
+    // Most data should be converted to little endian, except for strings
+    if (swap) {
+        in = swap_word(in);
+    }
+#endif
+    return in;
 }
 
 /*
 00487B7C readuinstr
 */
 int ugeteof(void) {
-    ugetint();
+    ugetint(true);
     if (ugetbuflen == 0) {
-        return 1;
+        return true;
     } else {
         ugetpos--;
-        return 0;
+        return false;
     }
 }
 

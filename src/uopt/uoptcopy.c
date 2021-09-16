@@ -54,9 +54,11 @@ bool entryav(struct Expression *expr) {
             break;
 
         case dumped:
+        default:
             caseerror(1, 70, "uoptcopy.p", 10);
             available = false; // UB
             break;
+
     }
 
     return available;
@@ -277,7 +279,7 @@ static bool exprant(struct IChain *ichain, struct Expression *expr) {
             break;
 
         case isilda:
-            if (ichain == expr->ichain) {
+            if (expr->ichain == ichain) {
                 phi_v1 = true;
             } else {
                 phi_v1 = exprant(ichain, expr->data.islda_isilda.outer_stack);
@@ -288,7 +290,7 @@ static bool exprant(struct IChain *ichain, struct Expression *expr) {
         case issvar:
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
                 phi_v1 = exprant(ichain, expr->data.isvar_issvar.copy);
-            } else if (ichain == expr->ichain) {
+            } else if (expr->ichain == ichain) {
                 phi_v1 = expr->unk3;
             } else if (expr->type == issvar) {
                 phi_v1 = exprant(ichain, expr->data.isvar_issvar.outer_stack);
@@ -298,7 +300,7 @@ static bool exprant(struct IChain *ichain, struct Expression *expr) {
             break;
 
         case isop:
-            if (ichain == expr->ichain) {
+            if (expr->ichain == ichain) {
                 phi_v1 = expr->data.isop.unk21;
             } else if (optab[expr->data.isop.opc].is_binary_op) {
                 phi_v1 = exprant(ichain, expr->data.isop.op1) || exprant(ichain, expr->data.isop.op2);
@@ -335,7 +337,7 @@ static bool exprav(struct IChain *ichain, struct Expression *expr) {
             break;
 
         case isilda:
-            if (ichain == expr->ichain) {
+            if (expr->ichain == ichain) {
                 phi_v1 = true;
             } else {
                 phi_v1 = exprav(ichain, expr->data.islda_isilda.outer_stack);
@@ -356,7 +358,7 @@ static bool exprav(struct IChain *ichain, struct Expression *expr) {
             break;
 
         case isop:
-            if (ichain == expr->ichain) {
+            if (expr->ichain == ichain) {
                 phi_v1 = expr->data.isop.unk22;
             } else if (optab[expr->data.isop.opc].is_binary_op) {
                 phi_v1 = exprav(ichain, expr->data.isop.op1) || exprav(ichain, expr->data.isop.op2);
@@ -618,7 +620,7 @@ void checkstatoccur(struct IChain *ichain, struct Graphnode *node) {
     occurred = false;
     for (stat = node->stat_head; !done && !occurred && stat != NULL; stat = stat->next) {
         if (stat->opc == Uisst || stat->opc == Ustr) {
-            occurred = ichain == stat->u.store.ichain;
+            occurred = stat->u.store.ichain == ichain;
         }
 
         if (stat->next != NULL) {
@@ -656,6 +658,7 @@ static void func_00413510(struct Expression *expr, int count) {
             break;
 
         case dumped:
+        default:
             caseerror(1, 455, "uoptcopy.p", 10);
     }
 }
@@ -684,6 +687,7 @@ static void func_004135CC(struct Expression *expr) {
             break;
 
         case dumped:
+        default:
             caseerror(1, 470, "uoptcopy.p", 10);
             break;
     }
@@ -706,7 +710,7 @@ static void func_00413684(struct Expression *expr) {
 
         case isilda:
             if (++expr->count > 1) {
-                func_004135CC(expr->data.isop.unk34);
+                func_004135CC(expr->data.islda_isilda.outer_stack);
             }
             break;
 
@@ -719,8 +723,8 @@ static void func_00413684(struct Expression *expr) {
             }
             break;
 
-        default:
         case dumped:
+        default:
             caseerror(1, 485, "uoptcopy.p", 10);
             break;
     }
@@ -1083,7 +1087,6 @@ next:
 static void func_00414108(struct IChain *ichain, struct Expression *expr, struct VarAccessList *varlist, struct Expression **dest, struct Graphnode *node_sharedD4) {
     struct Expression *sp7C;
     struct Expression *sp78;
-    struct Graphnode *sp34;
     unsigned short hash;
     struct RealstoreData *real;
     int i;
@@ -1557,7 +1560,12 @@ static struct Expression *func_004150E4(struct Expression *expr, int size, Datat
         //! when expr is isconst, unaryfold overwrites this
         // but expr can also be isvar/issvar. this happens in oot
         // is this a bug, or are unk21/unk22 the same for isop/isvar/issvar
-        sp48->data.isop.unk22 = expr->data.isop.unk22;
+        if (expr->type == isop) {
+            sp48->data.isop.unk22 = expr->data.isop.unk22;
+        } else {
+            // unaligned on x86_64
+            sp48->data.isop.unk22 = expr->data.isvar_issvar.unk22;
+        }
     }
     sp48->count++;
 
@@ -1597,7 +1605,7 @@ static bool func_004154AC(struct IChain *ichain, struct VarAccessList *access) {
 
     found = false;
     while (access != NULL && !found) {
-        if (access->type == 1 && access->data.store->opc == Ustr && ichain == access->data.store->expr->ichain) {
+        if (access->type == 1 && access->data.store->opc == Ustr && access->data.store->expr->ichain == ichain) {
             found = true;
         } else {
             access = access->prev;
@@ -1635,7 +1643,7 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
         case isilda:
         case isconst:
         case isrconst:
-            if (constprop == expr->var_access_list) {
+            if (expr->var_access_list == constprop) {
                 *ichain = expr->ichain;
             }
             break;
@@ -2918,7 +2926,7 @@ void copypropagate(void) {
                                 bittab[i].ichain->isop.opc != Ustr)) {
                         if (node->stat_tail->opc == Ucia) {
                             if (lang == LANG_ADA ||
-                                    (node->stat_tail->u.cia.flags & 1) && cskilled(curlevel, indirprocs, bittab[i].ichain->isop.stat) ||
+                                    (IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags) && cskilled(curlevel, indirprocs, bittab[i].ichain->isop.stat)) ||
                                     listpskilled(node->stat_tail->u.cia.parameters, bittab[i].ichain->isop.stat, 0) ||
                                     ((bittab[i].ichain->isop.opc == Umov ||
                                       bittab[i].ichain->isop.opc == Umovv) &&

@@ -1425,7 +1425,7 @@ void analoop() {
         if (curnode->predecessors == NULL || curnode->interprocedural_controlflow) {
             setbitbb(&curnode->bvs.stage1.u.precm.pavin, curnode->num);
         } else {
-            initbv(&curnode->bvs.stage1.u.precm.pavin, (struct BitVectorBlock) {-1, -1, -1, -1});
+            initbv(&curnode->bvs.stage1.u.precm.pavin, (struct BitVectorBlock) {{-1, -1, -1, -1}});
         }
         curnode = curnode->next;
     }
