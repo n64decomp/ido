@@ -22,6 +22,8 @@
 #ifndef __CMPLRS_STSUPPORT_H
 #define __CMPLRS_STSUPPORT_H
 
+#include "libmld/sym.h"
+
 #if 1//(defined(_LANGUAGE_C) || (defined(_LANGUAGE_C_PLUS_PLUS)))
 extern AUXU _auxtemp;
 #define AUXINT(c) ((_auxtemp.isym = c), _auxtemp)
@@ -84,8 +86,6 @@ typedef struct {
     /* 0x58 */ int     fswap;          /* do dubtables need to be swapped */
     /* 0x5C */ HDRR    hdr;            /* header from disk */
 } CHDRR, *pCHDRR; // size 0xBC
-
-//_Static_assert(sizeof(CHDRR) == 188);
 #define cbCHDRR sizeof (CHDRR)
 #define chdrNil ((pCHDRR) 0)
 #define ichdrNil -1

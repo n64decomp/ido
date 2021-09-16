@@ -106,7 +106,6 @@ typedef struct __sgi_hdrr_s  {
     /* 0x5C */ long_i  cbExtOffset;    /* offset to start of external symbol entries*/
     /* If you add machine dependent fields, add them here */
 } HDRR, *pHDRR; // size 0x60
-//_Static_assert(sizeof(HDRR) == 0x60);
 #define cbHDRR sizeof(HDRR)
 #define hdrNil ((pHDRR)0)
 
@@ -177,7 +176,6 @@ typedef struct fdr {
     /* 0x40 */ long_i  cbLineOffset;   /* byte offset from header for this file ln's */
     /* 0x44 */ long_i  cbLine;         /* size of lines for this file */
 } FDR, *pFDR; // size 0x48
-//_Static_assert(sizeof(FDR) == 0x48);
 #define cbFDR sizeof(FDR)
 #define fdNil ((pFDR)0)
 #define ifdNil -1
@@ -218,7 +216,6 @@ typedef struct pdr {
     /* 0x2C */ long_i  lnHigh;         /* highest line in the procedure */
     /* 0x30 */ long_i  cbLineOffset;   /* byte offset for this procedure from the fd base */
 } PDR, *pPDR; // size 0x34
-//_Static_assert(sizeof(PDR) == 0x34);
 #define cbPDR sizeof(PDR)
 #define pdNil ((pPDR) 0)
 #define ipdNil  -1
@@ -240,7 +237,6 @@ typedef struct runtime_pdr {
         /* 0x20 */ long_i  reserved;
         /* 0x24 */ struct exception_info *exception_info;/* pointer to exception array */
 } RPDR, *pRPDR; // size 0x28
-//_Static_assert(sizeof(RPDR) == 0x28);
 #define cbRPDR sizeof(RPDR)
 #define rpdNil ((pRPDR) 0)
 #define rsdNil ((pSYMR) 0)
@@ -284,7 +280,6 @@ typedef struct __sgi_symr_s {
     /* 0x8 */ unsigned index : 20;    /* index into sym/aux table */
 #endif
 } SYMR, *pSYMR; // size 0xC
-//_Static_assert(sizeof (SYMR) == 0xC);
 #define symNil ((pSYMR)0)
 #define cbSYMR sizeof(SYMR)
 #define isymNil -1
@@ -515,7 +510,6 @@ typedef union __sgi_auxu_u {
     long_i  width;          /* width for non-default sized struc fields */
     long_i  count;          /* count of ranges for variant arm */
 } AUXU, *pAUXU; // size 0x4
-//_Static_assert(sizeof(AUXU) == 4);
 #define cbAUXU sizeof(AUXU)
 #define auxNil ((pAUXU)0)
 #define iauxNil -1
