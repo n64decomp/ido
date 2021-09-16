@@ -279,7 +279,7 @@ static bool exprant(struct IChain *ichain, struct Expression *expr) {
             break;
 
         case isilda:
-            if (ichain == expr->ichain) {
+            if (expr->ichain == ichain) {
                 phi_v1 = true;
             } else {
                 phi_v1 = exprant(ichain, expr->data.islda_isilda.outer_stack);
@@ -290,7 +290,7 @@ static bool exprant(struct IChain *ichain, struct Expression *expr) {
         case issvar:
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
                 phi_v1 = exprant(ichain, expr->data.isvar_issvar.copy);
-            } else if (ichain == expr->ichain) {
+            } else if (expr->ichain == ichain) {
                 phi_v1 = expr->unk3;
             } else if (expr->type == issvar) {
                 phi_v1 = exprant(ichain, expr->data.isvar_issvar.outer_stack);
@@ -300,7 +300,7 @@ static bool exprant(struct IChain *ichain, struct Expression *expr) {
             break;
 
         case isop:
-            if (ichain == expr->ichain) {
+            if (expr->ichain == ichain) {
                 phi_v1 = expr->data.isop.unk21;
             } else if (optab[expr->data.isop.opc].is_binary_op) {
                 phi_v1 = exprant(ichain, expr->data.isop.op1) || exprant(ichain, expr->data.isop.op2);
@@ -337,7 +337,7 @@ static bool exprav(struct IChain *ichain, struct Expression *expr) {
             break;
 
         case isilda:
-            if (ichain == expr->ichain) {
+            if (expr->ichain == ichain) {
                 phi_v1 = true;
             } else {
                 phi_v1 = exprav(ichain, expr->data.islda_isilda.outer_stack);
@@ -358,7 +358,7 @@ static bool exprav(struct IChain *ichain, struct Expression *expr) {
             break;
 
         case isop:
-            if (ichain == expr->ichain) {
+            if (expr->ichain == ichain) {
                 phi_v1 = expr->data.isop.unk22;
             } else if (optab[expr->data.isop.opc].is_binary_op) {
                 phi_v1 = exprav(ichain, expr->data.isop.op1) || exprav(ichain, expr->data.isop.op2);
@@ -620,7 +620,7 @@ void checkstatoccur(struct IChain *ichain, struct Graphnode *node) {
     occurred = false;
     for (stat = node->stat_head; !done && !occurred && stat != NULL; stat = stat->next) {
         if (stat->opc == Uisst || stat->opc == Ustr) {
-            occurred = ichain == stat->u.store.ichain;
+            occurred = stat->u.store.ichain == ichain;
         }
 
         if (stat->next != NULL) {
@@ -710,7 +710,7 @@ static void func_00413684(struct Expression *expr) {
 
         case isilda:
             if (++expr->count > 1) {
-                func_004135CC(expr->data.isop.unk34);
+                func_004135CC(expr->data.islda_isilda.outer_stack);
             }
             break;
 
@@ -1605,7 +1605,7 @@ static bool func_004154AC(struct IChain *ichain, struct VarAccessList *access) {
 
     found = false;
     while (access != NULL && !found) {
-        if (access->type == 1 && access->data.store->opc == Ustr && ichain == access->data.store->expr->ichain) {
+        if (access->type == 1 && access->data.store->opc == Ustr && access->data.store->expr->ichain == ichain) {
             found = true;
         } else {
             access = access->prev;
@@ -1643,7 +1643,7 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
         case isilda:
         case isconst:
         case isrconst:
-            if (constprop == expr->var_access_list) {
+            if (expr->var_access_list == constprop) {
                 *ichain = expr->ichain;
             }
             break;

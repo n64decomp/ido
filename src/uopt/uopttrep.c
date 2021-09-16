@@ -1156,6 +1156,7 @@ static bool func_00479B80(struct Expression *expr) {
 
         default:
             caseerror(1, 829, "uopttrep.p", 10);
+            result = false;
             break;
     }
 
@@ -1373,7 +1374,7 @@ void eliminduct(void) {
     if (dordstore) {
         checkbvlist(&varfactor_muls);
         node = graphhead;
-        while (node != 0) {
+        while (node != NULL) {
             stat = node->stat_head;
             done = false;
             while (stat != NULL && !done) {

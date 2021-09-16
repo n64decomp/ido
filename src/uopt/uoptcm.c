@@ -212,7 +212,7 @@ void delete_unmoved_recur(struct Statement *stat, struct Graphnode *node) {
     bool inpath;
 
     last_inpath = NULL;
-    recur = stat->u.store.u.str.unk30; // always NULL in oot. what sets this?
+    recur = stat->u.store.u.str.unk30; // always NULL in oot
     while (recur != NULL) {
         if (bvectin(recur->ichain->bitpos, &node->bvs.stage1.u.precm.expoccur)) {
             if (bvectin(recur->ichain->bitpos, &node->bvs.stage1.u.precm.pavout)) {

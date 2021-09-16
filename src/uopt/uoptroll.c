@@ -1340,13 +1340,13 @@ void oneloopblockstmt(struct Statement *stat) {
             phi_s1->data.isvar_issvar.assignment = stattail;
             if (!stattail->outpar) {
                 stattail->u.store.unk1C = sp5B;
-                if (phi_s1->data.isvar_issvar.unk22 == 0 && sp5B != 0) {
-                    stattail->u.store.unk1C = strlkilled(stattail, curgraphnode->varlisthead) == 0;
+                if (!phi_s1->data.isvar_issvar.unk22 && sp5B != 0) {
+                    stattail->u.store.unk1C = !strlkilled(stattail, curgraphnode->varlisthead);
                 }
 
                 stattail->u.store.unk1E = sp5A;
-                if (phi_s1->data.isvar_issvar.unk22 == 0 && sp5A != 0) {
-                    stattail->u.store.unk1E = strskilled(stattail, curgraphnode->varlisthead) == 0;
+                if (!phi_s1->data.isvar_issvar.unk22 && sp5A != 0) {
+                    stattail->u.store.unk1E = !strskilled(stattail, curgraphnode->varlisthead);
                 }
 
                 stattail->u.store.unk1D = !phi_s1->data.isvar_issvar.veqv;
@@ -1363,13 +1363,13 @@ void oneloopblockstmt(struct Statement *stat) {
             stattail->u.store.u.str.unk2C = 0;
             stattail->u.store.u.str.unk30 = 0;
             stattail->unk2 = 0;
-            if (phi_s1->data.isvar_issvar.unk22 == 0) {
+            if (!phi_s1->data.isvar_issvar.unk22) {
                 strkillprev(stattail);
             }
 
             appendstorelist();
 
-            if (phi_s1->data.isvar_issvar.unk22 != 0) {
+            if (phi_s1->data.isvar_issvar.unk22) {
                 curgraphnode->varlisttail->unk8 = 1;
             }
             break;

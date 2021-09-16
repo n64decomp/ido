@@ -39,7 +39,7 @@ void check_loop_coincidence(struct Graphnode *node, int loopno, struct ScmThing 
                 scm->unk10 = 2;
                 return;
             }
-            if (!bvectin(scm->ichain->bitpos, &pred->graphnode->bvs.stage1.u.scm.unk164)) {
+            if (!bvectin(scm->ichain->bitpos, &pred->graphnode->bvs.stage1.u.cm.insert)) {
                 scm->unk10 = 3;
             }
         }
@@ -102,7 +102,7 @@ bool expr_has_direct_usage(struct Graphnode *node, struct Expression *expr, stru
                 TRAP_IF(scm->unk10 != true);
                 return arg4 != scm->unkC;
             }
-            if ((!expr->data.isop.unk21 && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.scm.unk13C)) ||
+            if ((!expr->data.isop.unk21 && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) ||
                     !bvectin(expr->ichain->bitpos, &node->bvs.stage1.antlocs)) {
                 if (!optab[expr->data.isop.opc].is_binary_op) {
                     arg3 = false;
@@ -216,18 +216,18 @@ bool has_direct_induct_usage(struct Graphnode *node, struct ScmThing *scm) {
         stat = stat->next;
     }
 
-    if (bvectin(scm->ichain->bitpos, &node->bvs.stage1.u.scm.unk164)) {
+    if (bvectin(scm->ichain->bitpos, &node->bvs.stage1.u.cm.insert)) {
         return true;
     }
 
     i = scm->ichain->bitpos + 1;
     while (i < bitposcount) {
-        if (BVBLOCKEMPTY(node->bvs.stage1.u.scm.unk164, i >> 7)) {
+        if (BVBLOCKEMPTY(node->bvs.stage1.u.cm.insert, i >> 7)) {
             i += 0x80;
         } else {
             bit = i & 0x7F;
             while (i < bitposcount && bit < 0x80) {
-                if (BVINBLOCK(bit, i >> 7, node->bvs.stage1.u.scm.unk164) &&
+                if (BVINBLOCK(bit, i >> 7, node->bvs.stage1.u.cm.insert) &&
                         bittab[i].ichain->type == isop &&
                         (bittab[i].ichain->isop.op1 == scm->ichain ||
                          (optab[bittab[i].ichain->isop.opc].is_binary_op &&
@@ -267,12 +267,12 @@ void check_loop_induct_usages(struct Graphnode *node, int loopno, struct ScmThin
         } else {
             i = scm->ichain->bitpos + 1;
             while (i < bitposcount) {
-                if (BVBLOCKEMPTY(node->bvs.stage1.u.scm.unk164, i >> 7)) {
+                if (BVBLOCKEMPTY(node->bvs.stage1.u.cm.insert, i >> 7)) {
                     i += 0x80;
                 } else {
                     bit = i & 0x7F;
                     while (i < bitposcount && bit < 0x80) {
-                        if (BVINBLOCK(bit, i >> 7, node->bvs.stage1.u.scm.unk164) &&
+                        if (BVINBLOCK(bit, i >> 7, node->bvs.stage1.u.cm.insert) &&
                                 bittab[i].ichain->type == isop &&
                                 (bittab[i].ichain->isop.op1 == scm->ichain ||
                                  (optab[bittab[i].ichain->isop.opc].is_binary_op &&

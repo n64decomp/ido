@@ -27,8 +27,8 @@ enum MipsRegister {
     r_f4, r_f5, r_f6, r_f7, r_f8, r_f9, r_f10, r_f11,
     r_f12, r_f13, r_f14, r_f15,
     r_f16, r_f17, r_f18, r_f19,
-    r_f20, r_f21, r_f22, r_f23, r_f24,
-    r_f25, r_f26, r_f27, r_f28, r_f29, r_f30, r_f31,
+    r_f20, r_f21, r_f22, r_f23, r_f24, r_f25,
+    r_f26, r_f27, r_f28, r_f29, r_f30, r_f31,
 }
 #ifdef __GNUC__
 __attribute__((packed))
@@ -438,7 +438,7 @@ struct Proc {
 struct Statement {
     /*  0x0 */ Uopcode opc;
     /*  0x1 */ bool is_increment;
-    /*  0x2 */ bool unk2; // bool or unsigned char?
+    /*  0x2 */ bool unk2; // only 0/1, but always used in direct comparison with 1
     /*  0x3 */ bool outpar; // first store to parameter build area?
     /*  0x4 */ struct Expression *expr;
     /*  0x8 */ struct Statement *next; // towards tail
@@ -743,7 +743,7 @@ struct IChain { // TODO: rename
         } isconst;
         struct {
             /* 0x10 */ unsigned short unk10;
-            /* 0x14 */ int unk14; // is this ever defined?
+            /* 0x14 */ int unk14;
         } isrconst;
     };
 }; // size 0x28
@@ -782,7 +782,7 @@ struct LiveRange {
     /*  0x8 */ struct LiveUnit *liveunits;
     /*  0xC */ struct BitVector unkC;
     /* 0x14 */ struct BitVector unk14; // livebbs?
-    /* 0x1C */ int unk1C; // precolor?
+    /* 0x1C */ int unk1C;
     /* 0x20 */ char assigned_reg; // printregs
     /* 0x21 */ unsigned char unk21; // regsleft
     /* 0x22 */ bool hasstore;
@@ -834,7 +834,7 @@ struct Expression {
     /* 0x02 */ bool unk2; // killed? true if ichain in altered
     /* 0x03 */ bool unk3; // not varkilled
     /* 0x04 */ unsigned char unk4;  // ExpressionType? (definitely an enum)
-    /* 0x05 */ unsigned char unk5;  // ExpressionType?
+    /* 0x05 */ unsigned char unk5;  // visited, set to a different number for each optimization pass
     /* 0x06 */ unsigned short count; // use count, see exprdelete
     // struct {    // see copycoderep
     /* 0x08 */ unsigned short table_index; // identifies the expression

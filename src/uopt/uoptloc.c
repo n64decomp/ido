@@ -329,7 +329,7 @@ void binaryfold(Uopcode opc, Datatype dtype, struct Expression *left, struct Exp
         dest->type = isconst;
         dest->data.isconst.size = sizeoftyp(dtype);
         dest->var_access_list = NULL;
-        dest->unk4 = false;
+        dest->unk4 = 0;
         dest->data.isconst.number.intval = value;
         dest->datatype = dtype;
     }
@@ -414,7 +414,7 @@ struct Expression *ilodfold(struct Expression *ilod) {
         } else {
             expr->type = isvar;
             expr->datatype = ilod->datatype;
-            expr->unk4 = false;
+            expr->unk4 = 0;
             expr->unk5 = 0;
             expr->data.isvar_issvar.veqv = false;
             expr->data.isvar_issvar.unk22 = false;
@@ -479,7 +479,7 @@ void istrfold(struct Statement *stmt) {
     expr->datatype = stmt->u.store.u.istr.dtype;
     expr->unk2 = !stmt->u.store.unk1F;
     expr->unk3 = false;
-    expr->unk4 = false;
+    expr->unk4 = 0;
     expr->unk5 = 0;
     expr->count = 0;
     expr->graphnode = stmt->graphnode;

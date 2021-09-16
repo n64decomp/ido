@@ -3449,7 +3449,7 @@ void readnxtinst(void) {
             }
 
             /*
-             * Frontends are inconcistent about how they emit switch statements.
+             * Frontends are inconsistent about how they emit switch statements.
              *
              * The pascal frontend emits the cases first, then the clab with ujps, and finally the xjp:
              *
@@ -3669,7 +3669,7 @@ void readnxtinst(void) {
             curlocln = 0;
             return;
 
-        // Most likely "indexed jump", for computed gotos in fortan and pl/1
+        // Most likely "indexed jump", for computed gotos in fortran and pl/1
         case Uijp:
             extendstat(Uijp);
             if (outofmem) {
@@ -4348,7 +4348,6 @@ void readnxtinst(void) {
         case Ucubd: // XXX: untested
         case Ustep: // XXX: untested
             extendstat(OPC);
-            stattail = stattail;
             stattail->u.clbd_cubd_step.dtype = DTYPE;
             stattail->u.clbd_cubd_step.unk18 = IONE;
             return;

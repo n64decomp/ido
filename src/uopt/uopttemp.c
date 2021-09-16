@@ -13,7 +13,7 @@ void findbbtemps(struct Graphnode *node) {
     initbv(&setofspills, (struct BitVectorBlock) {0});
 
     for (i = 0; i < firstconstbit; i++) {
-        if (bvectin(i, &node->bvs.stage2.unk15C)) {
+        if (bvectin(i, &node->bvs.stage1.u.scm.region)) {
             if (bvectin(i, &coloreditems)) {
                 ichain = bittab[i].ichain;
                 switch (ichain->type) {

@@ -324,7 +324,7 @@ int assign_mtag(struct Expression *baseaddr) {
                 return mtagno_non_local;
             }
 
-            if (baseaddr->type != isvar || baseaddr->type != issvar) {
+            if (baseaddr->type != isvar && baseaddr->type != issvar) {
                 uu.Ucode.Opc = Umtag;
                 uu.Ucode.Lexlev = mtag_f77_parm;
                 uu.Ucode.I1 = next_mtagno;

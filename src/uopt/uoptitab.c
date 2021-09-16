@@ -436,7 +436,8 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                 break;
 
             case isrconst:
-                ichain->isconst.number = expr->data.isconst.number;
+                ichain->isrconst.unk10 = expr->data.isrconst.value;
+                ichain->isrconst.unk14 = expr->data.isrconst.unk24;
                 break;
 
             case islda:
@@ -636,7 +637,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                              ichain->isop.op1->type == isvar   ||
                              ichain->isop.op1->type == issvar)
                              || // bug from short-circuit eval?
-                                // if op1 is var,svar, op2 can be any type. The only other type it could be lda though, which is impossible...
+                                // if op1 is var,svar, op2 can be any type. The only other type it could be is lda though, which is impossible...
                             (ichain->isop.op2->type == isconst ||
                              ichain->isop.op2->type == isvar   ||
                              ichain->isop.op2->type == issvar)) {
@@ -1107,6 +1108,9 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                 break;
 
             default:
+#ifdef AVOID_UB
+                ichain = NULL;
+#endif
                 caseerror(1, 584, "uoptitab.p", 10);
                 break;
         }
@@ -1208,7 +1212,7 @@ struct IChain *searchstore(unsigned short hash, Uopcode opc /* sp3f */, struct I
                                 case Jdt:
                                 case Kdt:
                                 case Ldt:
-                                    setbit(&trapconstop, (int) ichain->bitpos);
+                                    setbit(&trapconstop, ichain->bitpos);
                                     break;
                                 default:
                                     break;
