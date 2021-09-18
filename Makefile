@@ -21,7 +21,7 @@ $(error unsupported arch "$(ARCH)")
 endif
 
 CFLAGS := -I src -Wall $(ARCH_FLAGS) $(OPTIMIZATION)
-LDFLAGS := $(ARCH_FLAGS) $(OPTIMIZATION)
+LDFLAGS := $(ARCH_FLAGS) $(OPTIMIZATION) -lncurses
 
 ifeq ($(AVOID_UB),1)
     CFLAGS := $(CFLAGS) -DAVOID_UB

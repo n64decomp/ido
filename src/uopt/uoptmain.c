@@ -28,6 +28,8 @@
 #include "uoptemit.h"
 #include "opt_saved_regs.h"
 
+#include "debug.h"
+
 /*
 00456A2C oneproc
 */
@@ -453,6 +455,8 @@ void oneproc(void) {
             lasttime = time1;
 
             globalcolor();
+            ncdebug();
+
             if (outofmem) {
                 goto done;
             }
