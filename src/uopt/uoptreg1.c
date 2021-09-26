@@ -85,10 +85,10 @@ void formlivbb(struct IChain *ichain, struct Graphnode *node, struct LiveUnit **
         bittab[ichain->bitpos].liverange->ichain = ichain;
         bittab[ichain->bitpos].liverange->liveunits = NULL;
         bittab[ichain->bitpos].liverange->bitpos = ichain->bitpos;
-        formbvlivran(&bittab[ichain->bitpos].liverange->unkC);
-        formbvlivran(&bittab[ichain->bitpos].liverange->unk14);
+        formbvlivran(&bittab[ichain->bitpos].liverange->reachingbbs);
+        formbvlivran(&bittab[ichain->bitpos].liverange->livebbs);
         phi_v1_2 = false;
-        if (bittab[ichain->bitpos].liverange->unk14.blocks == NULL) {
+        if (bittab[ichain->bitpos].liverange->livebbs.blocks == NULL) {
             return;
         }
 
@@ -97,9 +97,9 @@ void formlivbb(struct IChain *ichain, struct Graphnode *node, struct LiveUnit **
         bittab[ichain->bitpos].liverange->unk24 = 0;
         bittab[ichain->bitpos].liverange->unk23 = 0;
         bittab[ichain->bitpos].liverange->next = NULL;
-        bittab[ichain->bitpos].liverange->unk38_lu = NULL;
+        bittab[ichain->bitpos].liverange->liveunitsTail = NULL;
     } else {
-        phi_v1_2 = bvectin(node->num, &bittab[ichain->bitpos].liverange->unk14);
+        phi_v1_2 = bvectin(node->num, &bittab[ichain->bitpos].liverange->livebbs);
     }
 
     if (!phi_v1_2) {
@@ -120,18 +120,18 @@ void formlivbb(struct IChain *ichain, struct Graphnode *node, struct LiveUnit **
         (*dest)->reg = uncolored;
         (*dest)->node = node;
 
-        if (bittab[ichain->bitpos].liverange->unk38_lu == NULL) {
+        if (bittab[ichain->bitpos].liverange->liveunitsTail == NULL) {
             bittab[ichain->bitpos].liverange->liveunits = *dest;
         } else {
-            bittab[ichain->bitpos].liverange->unk38_lu->next = *dest;
+            bittab[ichain->bitpos].liverange->liveunitsTail->next = *dest;
         }
 
-        bittab[ichain->bitpos].liverange->unk38_lu = *dest;
+        bittab[ichain->bitpos].liverange->liveunitsTail = *dest;
         (*dest)->next = NULL;
         (*dest)->liverange = bittab[ichain->bitpos].liverange;
         (*dest)->next_in_block = node->liveunit;
         node->liveunit = *dest;
-        setbitbb(&bittab[ichain->bitpos].liverange->unk14, node->num);
+        setbitbb(&bittab[ichain->bitpos].liverange->livebbs, node->num);
         setbit(&node->bvs.stage2.appear, ichain->bitpos);
         (*dest)->needreglod = false;
         (*dest)->needregsave = false;

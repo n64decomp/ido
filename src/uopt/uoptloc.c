@@ -50,6 +50,8 @@ bool binaryovfw(Datatype dtype, Uopcode opc, struct Expression *left, struct Exp
                 overflow = true;
             } else if (dtype == Idt || dtype == Jdt) {
                 overflow = left->data.isconst.number.intval == 0x80000000 && right->data.isconst.number.intval == -1;
+            } else {
+                overflow = false;
             }
             break;
 
@@ -896,7 +898,7 @@ void mergeconst(struct Expression *expr) {
         done = false;
         overflow = false;
         while (!done && !overflow) {
-            if (left->data.isop.opc != Udec || left->data.isop.opc != Uinc) {
+            if (left->data.isop.opc != Udec && left->data.isop.opc != Uinc) {
                 constant = left->data.isop.op2;
                 if (constant != NULL && constant->type == isconst) {
                     if (expr->data.isop.opc == Uixa) {
@@ -2007,7 +2009,8 @@ void constarith(void) {
             case Utjp:
                 if (restructure(Unop, &stmt->expr)) {
                     if (stmt->expr->type == isconst) {
-                        if ((stmt->opc == Ufjp && stmt->expr->data.isconst.number.intval != false) || (stmt->opc == Utjp && stmt->expr->data.isconst.number.intval == false)) {
+                        if ((stmt->opc == Ufjp && stmt->expr->data.isconst.number.intval != false) ||
+                            (stmt->opc == Utjp && stmt->expr->data.isconst.number.intval == false)) {
                             stmt->opc = Unop;
                             curgraphnode->successors->graphnode->predecessors = curgraphnode->successors->graphnode->predecessors->next;
                             curgraphnode->successors = curgraphnode->successors->next;
@@ -2032,7 +2035,7 @@ void constarith(void) {
             case Utplt:
             case Utpne:
                 if (restructure(Unop, &stmt->expr) && restructure(Unop, &stmt->u.trap.expr2)) {
-                    bool outofbounds;
+                    bool outofbounds = false;
 
                     if (stmt->u.trap.dtype == Qdt || stmt->u.trap.dtype == Rdt || stmt->u.trap.dtype == Sdt) {
                         break;

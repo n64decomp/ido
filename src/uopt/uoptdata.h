@@ -780,8 +780,8 @@ struct LiveRange {
     /*  0x0 */ struct IChain *ichain; // active?
     /*  0x4 */ int bitpos;
     /*  0x8 */ struct LiveUnit *liveunits;
-    /*  0xC */ struct BitVector unkC;
-    /* 0x14 */ struct BitVector unk14; // livebbs?
+    /*  0xC */ struct BitVector reachingbbs; // graphnodes inside the liverange where ichain does not appear
+    /* 0x14 */ struct BitVector livebbs; // graphnodes where ichain appears or is defined
     /* 0x1C */ int unk1C;
     /* 0x20 */ char assigned_reg; // printregs
     /* 0x21 */ unsigned char unk21; // regsleft
@@ -793,8 +793,7 @@ struct LiveRange {
     /* 0x34 */ struct LiveRange *next;
     union {
         /* 0x38 */ struct InterfereList *interfere;
-        /* 0x38 */ struct LiveUnit *unk38_lu; // it gets nulled out in localcolor, so why?
-                                              // aliased units?
+        /* 0x38 */ struct LiveUnit *liveunitsTail; // overwritten in localcolor()
     };
 }; // size 0x3C
 

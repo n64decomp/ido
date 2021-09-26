@@ -399,7 +399,7 @@ bool allsucmember(struct GraphnodeList *succ, struct LiveRange *lr) {
     bool member = true;
 
     while (member && succ != NULL) {
-        if (!bvectin(succ->graphnode->num, &lr->unk14)) {
+        if (!bvectin(succ->graphnode->num, &lr->livebbs)) {
             if (func_00464848(succ, lr) ||
                     (bvectin(lr->ichain->bitpos, &succ->graphnode->bvs.stage2.liveout) &&
                     !bvectin(lr->ichain->bitpos, &succ->graphnode->bvs.stage2.locdef))) {
@@ -423,7 +423,7 @@ bool preallmember(struct GraphnodeList *pred, struct LiveRange *lr) {
 
     member = true;
     while (member && pred != NULL) {
-        if (!bvectin(pred->graphnode->num, &lr->unk14)) {
+        if (!bvectin(pred->graphnode->num, &lr->livebbs)) {
             member = false;
         }
 
@@ -499,6 +499,7 @@ void localcolor(void) {
             continue;
         }
 
+        // overwrites liveunitsTail
         bittab[i].liverange->interfere = NULL;
         if (ichain->type != isvar || ichain->isvar_issvar.location.memtype != Rmt) {
             bittab[i].liverange->hasstore = false;
@@ -515,7 +516,7 @@ void localcolor(void) {
 
         for (node = graphhead; node != NULL; node = node->next) {
             if (bvectin(i, &node->bvs.stage2.active) &&
-                    !bvectin(node->num, &bittab[i].liverange->unk14) &&
+                    !bvectin(node->num, &bittab[i].liverange->livebbs) &&
                     !bvectin(i, &node->indiracc)) {
                 numlu++;
                 lu = dft_livbb;
@@ -587,10 +588,10 @@ void localcolor(void) {
                     lu->next_in_block = node->liveunit;
                     node->liveunit = lu;
                 } else {
-                    setbitbb(&bittab[i].liverange->unkC, node->num);
+                    setbitbb(&bittab[i].liverange->reachingbbs, node->num);
                 }
 
-                setbitbb(&bittab[i].liverange->unk14, node->num);
+                setbitbb(&bittab[i].liverange->livebbs, node->num);
             }
         }
 
@@ -613,7 +614,7 @@ void localcolor(void) {
                     }
 
                     if (staticlinkloc != 0 && SET_IN(graphhead->regsused[0], firsterreg[0]) &&
-                            bvectin(graphhead->num, &bittab[i].liverange->unk14) && doprecolor) {
+                            bvectin(graphhead->num, &bittab[i].liverange->livebbs) && doprecolor) {
                         lu = graphhead->liveunit;
                         if (lu->reg != firsterreg[0]) {
                             lu = lu->next_in_block;
@@ -633,7 +634,7 @@ void localcolor(void) {
                 }
 
                 for (bb = 0; bb < curstaticno; bb++) {
-                    if (bvectin(bb, &bittab[i].liverange->unk14)) {
+                    if (bvectin(bb, &bittab[i].liverange->livebbs)) {
                         SET_UNION(bbtab[bb]->regsused[regclass - 1], tempset);
                     }
                 }
@@ -655,9 +656,9 @@ void localcolor(void) {
                 }
             }
 
-            if (!bvectempty(&bittab[i].liverange->unkC)) {
+            if (!bvectempty(&bittab[i].liverange->reachingbbs)) {
                 for (bb = 0; bb < curstaticno; bb++) {
-                    if (bvectin(bb, &bittab[i].liverange->unkC)) {
+                    if (bvectin(bb, &bittab[i].liverange->reachingbbs)) {
                         if (bbtab[bb]->predecessors == NULL || bbtab[bb]->interprocedural_controlflow) {
                             needreglod = true;
                         } else if (ichain->type == isvar) {
@@ -683,7 +684,7 @@ void localcolor(void) {
                             lu->next_in_block = bbtab[bb]->liveunit;
                             bbtab[bb]->liveunit = lu;
                             lu->needreglod = true;
-                            resetbit(&bittab[i].liverange->unkC, bb);
+                            resetbit(&bittab[i].liverange->reachingbbs, bb);
                         }
                     }
                 }
@@ -714,9 +715,9 @@ void localcolor(void) {
                     }
                 }
 
-                if (!bvectempty(&bittab[i].liverange->unkC)) {
+                if (!bvectempty(&bittab[i].liverange->reachingbbs)) {
                     for (bb = 0; bb < curstaticno; bb++) {
-                        if (bvectin(bb, &bittab[i].liverange->unkC) &&
+                        if (bvectin(bb, &bittab[i].liverange->reachingbbs) &&
                                 bvectin(i, &bbtab[bb]->bvs.stage2.liveout) &&
                                 bvectin(bbtab[bb]->num, &livrantemp)) {
                             if (bbtab[bb]->successors == NULL) {
@@ -755,7 +756,7 @@ void localcolor(void) {
                                 lu->next_in_block = bbtab[bb]->liveunit;
                                 bbtab[bb]->liveunit = lu;
                                 lu->needregsave = true;
-                                resetbit(&bittab[i].liverange->unkC, bb);
+                                resetbit(&bittab[i].liverange->reachingbbs, bb);
                             }
                         }
                     }
@@ -790,8 +791,8 @@ void insintf(struct InterfereList **interfere, struct LiveRange *lr) {
 00467F04 split
 */
 bool intfering(struct LiveRange *lr1, struct LiveRange *lr2) {
-    bvectcopy(&livrantemp, &lr1->unk14);
-    bvectintsect(&livrantemp, &lr2->unk14);
+    bvectcopy(&livrantemp, &lr1->livebbs);
+    bvectintsect(&livrantemp, &lr2->livebbs);
     return !bvectempty(&livrantemp);
 }
 
@@ -1065,7 +1066,7 @@ int findsharedintf(struct InterfereList *intf, int nodenum) {
         if (intf->liverange != NULL) {
             if (intf->liverange->assigned_reg == -1) {
                 intf->liverange = NULL;
-            } else if (bvectin(nodenum, &intf->liverange->unk14)) {
+            } else if (bvectin(nodenum, &intf->liverange->livebbs)) {
                 intf->unk8 = true;
                 count++;
             }
@@ -1083,7 +1084,7 @@ int marksharedintf(struct InterfereList *intf, int nodenum) {
 
     while (intf != NULL) {
         if (!intf->unk8) {
-            if (intf->liverange != NULL && bvectin(nodenum, &intf->liverange->unk14)) {
+            if (intf->liverange != NULL && bvectin(nodenum, &intf->liverange->livebbs)) {
                 intf->shared = true;
                 count++;
             }
@@ -1106,7 +1107,7 @@ void addadjacents(struct LiveRange *lr1, struct LiveRange *lr2, struct LiveUnit 
     struct InterfereList *intf;
 
     for (succ = formingtab[forminginx]->successors; succ != NULL; succ = succ->next) {
-        if (!bvectin(succ->graphnode->num, &lr2->unk14) && bvectin(succ->graphnode->num, &lr1->unk14)) {
+        if (!bvectin(succ->graphnode->num, &lr2->livebbs) && bvectin(succ->graphnode->num, &lr1->livebbs)) {
             lu = gettolivbb(lr1->ichain, succ->graphnode);
             oldforbidden[0] = lr2->forbidden[0];
             oldforbidden[1] = lr2->forbidden[1];
@@ -1119,18 +1120,18 @@ void addadjacents(struct LiveRange *lr1, struct LiveRange *lr2, struct LiveUnit 
                 formingmax++;
                 formingtab[formingmax] = succ->graphnode;
 
-                resetbit(&lr1->unk14, succ->graphnode->num);
+                resetbit(&lr1->livebbs, succ->graphnode->num);
                 if (lu != dft_livbb) {
                     dellivbb(&lr1->liveunits, lu);
                     (*list)->next = lu;
                     lu->next = NULL;
                     *list = lu;
                 } else {
-                    resetbit(&lr1->unkC, succ->graphnode->num);
-                    setbitbb(&lr2->unkC, succ->graphnode->num);
+                    resetbit(&lr1->reachingbbs, succ->graphnode->num);
+                    setbitbb(&lr2->reachingbbs, succ->graphnode->num);
                 }
 
-                setbitbb(&lr2->unk14, succ->graphnode->num);
+                setbitbb(&lr2->livebbs, succ->graphnode->num);
                 lr2->unk24 += shared;
 
                 for (intf = lr1->interfere; intf != NULL; intf = intf->next) {
@@ -1176,7 +1177,7 @@ bool somepostmember(struct GraphnodeList *succ, int reg, struct IChain *ichain, 
     while (!member && succ != NULL) {
         if (succ->graphnode->regdata.unk44[reg - 1] == ichain &&
                 !BITARR_GET(succ->graphnode->unkD0, reg - 1) &&
-                (!BITARR_GET(succ->graphnode->unkDA, reg - 1) || bvectin(succ->graphnode->num, &lr->unk14))) {
+                (!BITARR_GET(succ->graphnode->unkDA, reg - 1) || bvectin(succ->graphnode->num, &lr->livebbs))) {
             member = true;
         }
         succ = succ->next;
@@ -1223,7 +1224,7 @@ bool allsucppin(struct GraphnodeList *succ, int reg, struct IChain *ichain, stru
     while (ppin && succ != NULL) {
         if (succ->graphnode->regdata.unk44[reg - 1] == ichain &&
                  !BITARR_GET(succ->graphnode->unkD0, reg - 1) &&
-                (!BITARR_GET(succ->graphnode->unkDA, reg - 1) || bvectin(succ->graphnode->num, &lr->unk14))) {
+                (!BITARR_GET(succ->graphnode->unkDA, reg - 1) || bvectin(succ->graphnode->num, &lr->livebbs))) {
             succ = succ->next;
         } else if (succ->graphnode->predecessors->next == NULL && !succ->graphnode->interprocedural_controlflow) {
             succ = succ->next;
@@ -1268,9 +1269,9 @@ void updatelivran(struct LiveRange *lr) {
         }
     }
 
-    if (!bvectempty(&lr->unkC)) {
+    if (!bvectempty(&lr->reachingbbs)) {
         for (bb = 0; bb < curstaticno; bb++) {
-            if (bvectin(bb, &lr->unkC) && !preallmember(bbtab[bb]->predecessors, lr)) {
+            if (bvectin(bb, &lr->reachingbbs) && !preallmember(bbtab[bb]->predecessors, lr)) {
                 new_lu = alloc_livbb();
                 if (new_lu == NULL) {
                     return;
@@ -1283,7 +1284,7 @@ void updatelivran(struct LiveRange *lr) {
                 new_lu->next_in_block = bbtab[bb]->liveunit;
                 bbtab[bb]->liveunit = new_lu;
                 new_lu->needreglod = true;
-                resetbit(&lr->unkC, bb);
+                resetbit(&lr->reachingbbs, bb);
             }
         }
     }
@@ -1295,9 +1296,9 @@ void updatelivran(struct LiveRange *lr) {
             }
         }
 
-        if (!bvectempty(&lr->unkC)) {
+        if (!bvectempty(&lr->reachingbbs)) {
             for (bb = 0; bb < curstaticno; bb++) {
-                if (bvectin(bb, &lr->unkC) && !allsucmember(bbtab[bb]->successors, lr)) {
+                if (bvectin(bb, &lr->reachingbbs) && !allsucmember(bbtab[bb]->successors, lr)) {
                     new_lu = alloc_livbb();
                     if (new_lu == NULL) {
                         return;
@@ -1310,7 +1311,7 @@ void updatelivran(struct LiveRange *lr) {
                     new_lu->next_in_block = bbtab[bb]->liveunit;
                     bbtab[bb]->liveunit = new_lu;
                     new_lu->needregsave = true;
-                    resetbit(&lr->unkC, bb);
+                    resetbit(&lr->reachingbbs, bb);
                 }
             }
         }
@@ -1338,14 +1339,14 @@ static void func_004673B0(struct Graphnode *node, struct LiveRange *lr) {
     struct GraphnodeList *succ;
 
     for (pred = node->predecessors; pred != NULL; pred = pred->next) {
-        if (bvectin(pred->graphnode->num, &livrantemp) && bvectin(pred->graphnode->num, &lr->unk14)) {
+        if (bvectin(pred->graphnode->num, &livrantemp) && bvectin(pred->graphnode->num, &lr->livebbs)) {
             resetbit(&livrantemp, pred->graphnode->num);
             func_004673B0(pred->graphnode, lr);
         }
     }
 
     for (succ = node->successors; succ != NULL; succ = succ->next) {
-        if (bvectin(succ->graphnode->num, &livrantemp) && bvectin(succ->graphnode->num, &lr->unk14)) {
+        if (bvectin(succ->graphnode->num, &livrantemp) && bvectin(succ->graphnode->num, &lr->livebbs)) {
             resetbit(&livrantemp, succ->graphnode->num);
             func_004673B0(succ->graphnode, lr);
         }
@@ -1359,10 +1360,10 @@ static void func_004673B0(struct Graphnode *node, struct LiveRange *lr) {
 00469280 globalcolor
 */
 bool contiguous(struct LiveRange *lr) {
-    if (bvectcard(&lr->unk14) < 2 || lr->liveunits == NULL) {
+    if (bvectcard(&lr->livebbs) < 2 || lr->liveunits == NULL) {
         return true;
     } else {
-        bvectcopy(&livrantemp, &lr->unk14);
+        bvectcopy(&livrantemp, &lr->livebbs);
         resetbit(&livrantemp, lr->liveunits->node->num);
         func_004673B0(lr->liveunits->node, lr);
         return bvectempty(&livrantemp);
@@ -1381,7 +1382,7 @@ bool canmoverlod(struct Graphnode *node, struct LiveRange *lr) {
     bool phi_s2 = true;
 
     for (pred = node->predecessors; pred != NULL; pred = pred->next) {
-        if (bvectin(pred->graphnode->num, &lr->unk14)) {
+        if (bvectin(pred->graphnode->num, &lr->livebbs)) {
             phi_s1 = true;
         } else if (pred->graphnode->stat_tail->opc == Uijp || pred->graphnode->stat_tail->opc == Uxjp) {
             phi_s2 = false;
@@ -1397,30 +1398,30 @@ bool canmoverlod(struct Graphnode *node, struct LiveRange *lr) {
 */
 void compute_save(struct LiveRange *lr) {
     struct LiveUnit *lu;
-    float phi_f22 = 0.0f;
-    float phi_f20;
+    float totalsave = 0.0f;
+    float netsave;
 
     lr->unk1C = 0;
     for (lu = lr->liveunits; lu != NULL; lu = lu->next) {
-        phi_f20 = (lu->load_count + lu->store_count) * lu->node->unk2C;
+        netsave = (lu->load_count + lu->store_count) * lu->node->unk2C;
 
         if (lu->needreglod && (lu->node->unk5 == notloopfirstbb || !canmoverlod(lu->node, lu->liverange))) {
-            phi_f20 -= movcostused * lu->node->unk2C;
+            netsave -= movcostused * lu->node->unk2C;
         }
 
         if (lr->hasstore && !lu->deadout && lu->needregsave && (lu->store_count != 0 || !lu->needreglod)) {
-            phi_f20 -= movcostused * lu->node->unk2C;
+            netsave -= movcostused * lu->node->unk2C;
         }
-        phi_f22 += phi_f20;
+        totalsave += netsave;
         lr->unk1C++;
     }
 
-    lr->unk1C += bvectcard(&lr->unkC);
+    lr->unk1C += bvectcard(&lr->reachingbbs);
     if (lr->unk1C > 2) {
         lr->unk1C = ((lr->unk1C - 2) >> 2) + 2;
     }
 
-    lr->adjsave = phi_f22 / lr->unk1C;
+    lr->adjsave = totalsave / lr->unk1C;
     if (lr->ichain->dtype == Qdt) {
         lr->adjsave *= 2.0f;
     }
@@ -1460,7 +1461,7 @@ void whyuncolored(struct LiveRange *lr) {
     }
 
     for (i = 0; i < curstaticno; i++) {
-        if (bvectin(i, &lr->unkC)) {
+        if (bvectin(i, &lr->reachingbbs)) {
             phi_s2 += bbtab[i]->unk2C;
         }
     }
@@ -1595,8 +1596,8 @@ void split(struct LiveRange **src, struct LiveRange **dest, int regclass, bool a
     (*dest)->unk21 = (*src)->unk21;
     (*dest)->bitpos = newbit((*src)->ichain, *dest);
     (*dest)->unk1C = -1;
-    (*dest)->unk14 = (*src)->unk14;
-    (*dest)->unkC = (*src)->unkC;
+    (*dest)->livebbs = (*src)->livebbs;
+    (*dest)->reachingbbs = (*src)->reachingbbs;
     (*dest)->liveunits = (*src)->liveunits;
     (*dest)->forbidden[0] = (*src)->forbidden[0];
     (*dest)->forbidden[1] = (*src)->forbidden[1];
@@ -1636,16 +1637,16 @@ void split(struct LiveRange **src, struct LiveRange **dest, int regclass, bool a
         goto block_37; // weird
     } else {
         dellivbb(&(*dest)->liveunits, lu);
-        resetbit(&(*dest)->unk14, lu->node->num);
+        resetbit(&(*dest)->livebbs, lu->node->num);
         lu->next = NULL;
         (*src)->liveunits = lu;
-        formbvlivran(&(*src)->unkC);
-        formbvlivran(&(*src)->unk14);
-        if ((*src)->unk14.blocks == NULL) {
+        formbvlivran(&(*src)->reachingbbs);
+        formbvlivran(&(*src)->livebbs);
+        if ((*src)->livebbs.blocks == NULL) {
             return;
         }
         (*src)->unk1C = -1;
-        setbitbb(&(*src)->unk14, lu->node->num);
+        setbitbb(&(*src)->livebbs, lu->node->num);
         (*src)->forbidden[1] = 0;
         (*src)->forbidden[0] = 0;
         updateforbidden(lu->node, lu->reg, *src, regclass);
@@ -1669,7 +1670,7 @@ void split(struct LiveRange **src, struct LiveRange **dest, int regclass, bool a
         numsplitlu += forminginx;
     }
 
-    if ((*dest)->liveunits == NULL && bvectcard(&(*dest)->unkC) == 0) {
+    if ((*dest)->liveunits == NULL && bvectcard(&(*dest)->reachingbbs) == 0) {
         if (dowhyuncolor) {
             numcalloverheadlr += 1;
             contiglr += 1;
@@ -1763,9 +1764,9 @@ block_37: // TODO: weird control flow
         updateforbidden(lu->node, lu->reg, *dest, regclass);
     }
 
-    if (!bvectempty(&(*dest)->unkC)) {
+    if (!bvectempty(&(*dest)->reachingbbs)) {
         for (i = 0; i < curstaticno; i++) {
-            if (bvectin(i, &(*dest)->unkC)) {
+            if (bvectin(i, &(*dest)->reachingbbs)) {
                 updateforbidden(bbtab[i], 0, *dest, regclass);
             }
         }
@@ -1803,7 +1804,7 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
         if (!lu->needreglod) {
             if (lu->node->predecessors != NULL &&
                     is_cup_affecting_regs(lu->node->predecessors->graphnode) &&
-                    bvectin(lu->node->predecessors->graphnode->num, &liverange->unk14)) {
+                    bvectin(lu->node->predecessors->graphnode->num, &liverange->livebbs)) {
                 stat = lu->node->predecessors->graphnode->stat_tail;
                 if (stat->opc == Ucia) {
                     if (flag && in_reg_masks(reg, stat->u.cia.unk20, stat->u.cia.len)) {
@@ -1821,7 +1822,7 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
 
         if ((!liverange->hasstore || lu->deadout || !lu->needregsave || (lu->store_count == 0 && lu->needreglod)) &&
                 is_cup_affecting_regs(lu->node)) {
-            if (lu->node->successors != NULL && bvectin(lu->node->successors->graphnode->num, &liverange->unk14)) {
+            if (lu->node->successors != NULL && bvectin(lu->node->successors->graphnode->num, &liverange->livebbs)) {
                 stat = lu->node->stat_tail;
                 if (stat->opc == Ucia) {
                     if (flag && in_reg_masks(reg, stat->u.cia.unk20, stat->u.cia.len)) {
@@ -1866,14 +1867,14 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
         }
     }
 
-    if (!bvectempty(&liverange->unkC)) {
+    if (!bvectempty(&liverange->reachingbbs)) {
         for (bb = 0; bb < curstaticno; bb++) {
-            if (bvectin(bb, &liverange->unkC)) {
+            if (bvectin(bb, &liverange->reachingbbs)) {
                 node = bbtab[bb];
                 if (node->predecessors != NULL) {
                     stat = node->predecessors->graphnode->stat_tail;
                     if ((stat->opc == Ucia || stat->opc == Ucup || stat->opc == Uicuf) &&
-                            bvectin(node->predecessors->graphnode->num, &liverange->unk14)) {
+                            bvectin(node->predecessors->graphnode->num, &liverange->livebbs)) {
                         if (stat->opc == Ucia) {
                             if (flag && in_reg_masks(reg, stat->u.cia.unk20, stat->u.cia.len)) {
                                 cost += movcostused * node->unk2C;
@@ -1990,9 +1991,9 @@ void globalcolor(void) {
                 updateforbidden(lu->node, lu->reg, liverange, regclass);
             }
 
-            if (!bvectempty(&liverange->unkC)) {
+            if (!bvectempty(&liverange->reachingbbs)) {
                 for (bb = 0; bb < curstaticno; bb++) {
-                    if (bvectin(bb, &liverange->unkC)) {
+                    if (bvectin(bb, &liverange->reachingbbs)) {
                         updateforbidden(bbtab[bb], 0, liverange, regclass);
                     }
                 }
@@ -2187,7 +2188,7 @@ void globalcolor(void) {
                 }
 
                 for (bb = 0; bb < curstaticno; bb++) {
-                    if (bvectin(bb, &bittab[candidate_bit].liverange->unk14)) {
+                    if (bvectin(bb, &bittab[candidate_bit].liverange->livebbs)) {
                         if (bbtab[bb]->regdata.unk44[chosen_reg - 1] != NULL) {
                             dbgerror(0x2CE);
                         }
@@ -2355,7 +2356,7 @@ void globalcolor(void) {
                 }
 
                 for (bb = 0; bb < curstaticno; bb++) {
-                    if (bvectin(bb, &liverange->unk14)) {
+                    if (bvectin(bb, &liverange->livebbs)) {
                         if (bbtab[bb]->regdata.unk44[chosen_reg - 1] != NULL) {
                             dbgerror(0x1C0E);
                         }
@@ -2412,7 +2413,7 @@ void globalcolor(void) {
                 lu = gettolivbb(node->regdata.unk44[reg - 1], node);
                 if (lu == dft_livbb) {
                     liverange = bittab[node->regdata.unk44[reg - 1]->bitpos].liverange;
-                    while (!bvectin(node->num, &liverange->unkC)) {
+                    while (!bvectin(node->num, &liverange->reachingbbs)) {
                         liverange = liverange->next;
                     }
                 } else {
@@ -2498,7 +2499,7 @@ void globalcolor(void) {
             for (reg = 1; reg <= 35; reg++) {
                 if (node->regdata.unk44[reg - 1] != NULL) {
                     liverange = bittab[node->regdata.unk44[reg - 1]->bitpos].liverange;
-                    while (!bvectin(node->num, &liverange->unk14)) {
+                    while (!bvectin(node->num, &liverange->livebbs)) {
                         liverange = liverange->next;
                     }
 
@@ -2517,7 +2518,7 @@ void globalcolor(void) {
 
                             for (succ = node->successors; succ != NULL; succ = succ->next) {
                                 if ((succ->graphnode->regdata.unk44[reg - 1] != node->regdata.unk44[reg - 1] || BITARR_GET(succ->graphnode->unkD0, reg - 1)) ||
-                                        (BITARR_GET(succ->graphnode->unkDA, reg - 1) && !bvectin(succ->graphnode->num, &liverange->unk14))) {
+                                        (BITARR_GET(succ->graphnode->unkDA, reg - 1) && !bvectin(succ->graphnode->num, &liverange->livebbs))) {
                                     TRAP_IF(node->stat_tail->opc != Ufjp && node->stat_tail->opc != Utjp);
                                     if (succ->graphnode->blockno == 0 || node->stat_tail->u.jp.target_blockno != succ->graphnode->blockno) {
                                         if (docreatebb) {

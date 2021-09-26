@@ -1366,8 +1366,7 @@ void codeimage(void) {
                     stat_tail = curgraphnode->stat_tail;
                     if (stat_tail->opc == Ucia) {
                         setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
-                    }
-                    else if (stat_tail->opc == Ucup || stat_tail->opc == Uicuf) {
+                    } else if (stat_tail->opc == Ucup || stat_tail->opc == Uicuf) {
                         if (cskilled(stat_tail->u.call.level, stat_tail->u.call.proc, stat) ||
                                 listpskilled(curgraphnode->stat_tail->u.call.parameters, stat, stat->expr->data.isvar_issvar.unk22)) {
                             setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
@@ -1507,8 +1506,8 @@ void codeimage(void) {
                 opihash = isopihash(stat->opc, ichain, NULL);
             } else {
                 opihash = isopihash(stat->opc, ichain, store_ichain);
-
             }
+
             switch (stat->opc) {
                 case Uistr:
                 case Uistv:

@@ -958,9 +958,9 @@ void printregs(void) {
                         writeln(list.c_file);
                     }
 
-                    if (!bvectempty(&lr->unkC)) {
+                    if (!bvectempty(&lr->reachingbbs)) {
                         write_string(list.c_file, "- live bb (default) ", 20, 20);
-                        printbv(&lr->unkC);
+                        printbv(&lr->reachingbbs);
                     }
                 }
             }

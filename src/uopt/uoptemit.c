@@ -2148,7 +2148,6 @@ block_275:
                         uwrite(&u);
                     }
 
-
                     if (inreg(bittab[expr->ichain->isop.unk24_cand->unk18].ichain, node, &reg, 0)) {
                         genrop(Ustr, reg, expr->data.isop.datatype, sizeoftyp(expr->data.isop.datatype));
                     } else {
@@ -4179,7 +4178,6 @@ static void func_0042AADC(struct Graphnode *node) {
         } else {
             bit = 0;
             while (i < firstconstbit && bit < 0x80) {
-
                 if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.insert) &&
                         (bvectin(i, &node->bvs.stage1.u.scm.source) || bvectin(i, &storeop) || bvectin(i, &trapop)) &&
                         (!found_scm || !check_ix_candidate(bittab[i].ichain, inner_loopno))) {
