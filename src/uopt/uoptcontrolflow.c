@@ -139,7 +139,7 @@ struct Graphnode *func_0042F044(struct Graphnode *node) {
 
     if (stat->graphnode->predecessors != NULL && stat->graphnode->predecessors->next == NULL &&
             stat->graphnode->predecessors->graphnode == node && node->successors->next == NULL) {
-        stat->graphnode->unk2C = node->unk2C;
+        stat->graphnode->frequency = node->frequency;
         return func_0042F044(stat->graphnode);
     }
     return stat->graphnode;
@@ -163,30 +163,30 @@ void bb_frequencies(void) {
     count = curproc->feedback_data->bb_count;
     while (count > 0 && node != NULL) {
         if (node->bvs.init.line == 0) {
-            node->unk2C = bb->bb_freq;
+            node->frequency = bb->bb_freq;
             node = func_0042F044(node);
         } else if (empty_bb(node) && node != graphhead) {
-            node->unk2C = MIN(bb->bb_freq, freq);
+            node->frequency = MIN(bb->bb_freq, freq);
             node = func_0042F044(node);
         } else if (bb->relative_line + curproc->feedback_data->start_line < node->bvs.init.line) {
             func_0042EF10(bb);
             bb++;
             count--;
         } else if (node->bvs.init.line < bb->relative_line + curproc->feedback_data->start_line) {
-            node->unk2C = freq;
+            node->frequency = freq;
             node = func_0042F044(node);
         } else {
             func_0042EF10(bb);
             freq = bb->bb_freq;
             bb++;
             count--;
-            node->unk2C = freq;
+            node->frequency = freq;
             node = func_0042F044(node);
         }
     }
 
     while (node != NULL) {
-        node->unk2C = freq;
+        node->frequency = freq;
         node = func_0042F044(node);
     }
 }
@@ -553,6 +553,7 @@ void controlflow() {
         }
 
         if (curnode->terminal == false) {
+            // in functions with infinite loops, no nodes will be marked terminal
             if (curnode->successors == NULL) {
                 visit_predecessors(curnode);
             }

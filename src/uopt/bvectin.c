@@ -19,7 +19,7 @@
 00430FF4 func_00430FF4
 004310EC func_004310EC
 00431268 func_00431268
-00431508 func_00431508
+00431508 candidate
 004324F4 findinduct
 00447F90 check_loop_coincidence
 0044821C expr_has_direct_usage

@@ -1362,7 +1362,7 @@ void oneloopblockstmt(struct Statement *stat) {
 
             stattail->u.store.u.str.unk2C = 0;
             stattail->u.store.u.str.unk30 = 0;
-            stattail->unk2 = 0;
+            stattail->suppressed_iv = 0;
             if (!phi_s1->data.isvar_issvar.unk22) {
                 strkillprev(stattail);
             }
@@ -1693,7 +1693,7 @@ void new_header_node(bool arg0) {
 
     curgraphnode->loopdepth = loopheader->loopdepth;
     curgraphnode->unkBb8 = loopheader->unkBb8;
-    curgraphnode->unk2C = loopheader->unk2C;
+    curgraphnode->frequency = loopheader->frequency;
     curgraphnode->bvs.init.line = loopheader->bvs.init.line;
 
     curgraphnode->next = loopbody;
@@ -2440,7 +2440,7 @@ struct Expression *str_to_temporary(int addr, struct Expression *store) {
     stattail->is_increment = false;
     stattail->u.store.u.str.unk2C = 0;
     stattail->u.store.u.str.unk30 = 0;
-    stattail->unk2 = 0;
+    stattail->suppressed_iv = 0;
     ret->data.isvar_issvar.assignment = stattail;
     appendstorelist();
     curgraphnode->varlisttail->unk8 = true;
@@ -2523,7 +2523,7 @@ void loopunroll(void) {
     unsigned int limit_s0;
     unsigned int loopEstimate;
     int i;
-    int phi_s2_8;
+    int tempAddr;
     int phi_s0_9;
     struct GraphnodeList *nodelist;
     int rem;
@@ -2954,7 +2954,7 @@ void loopunroll(void) {
                     curgraphnode->unk7 = 2;
                     curgraphnode->num = curstaticno++;
                     curgraphnode->loopdepth = node_s1->loopdepth;
-                    curgraphnode->unk2C = node_s1->unk2C;
+                    curgraphnode->frequency = node_s1->frequency;
                     curgraphnode->bvs.init.line = node_s1->bvs.init.line; // ?
                     curgraphnode->loop = node_s1->loop;
                     curgraphnode->next = node_s1;
@@ -2992,10 +2992,10 @@ void loopunroll(void) {
 
                     if (stack_reversed == 0) {
                         tempdisp += i_var_size;
-                        phi_s2_8 = -(tempdisp + i_var_size);
+                        tempAddr = -tempdisp;
                     } else {
+                        tempAddr = tempdisp;
                         tempdisp += i_var_size;
-                        phi_s2_8 = tempdisp;
                     }
 
                     new_header_node(true);
@@ -3004,9 +3004,9 @@ void loopunroll(void) {
                     expr_s0 = oneloopblockexpr(spAC, &spCC);
                     temp_expr = oneloopblockexpr(spA8, &spC8);
                     if (stat_s3->u.jp.incre > 0) {
-                        expr_s0 = str_to_temporary(phi_s2_8, form_rem(unroll_resetincr(form_bop(Usub, expr_s0, temp_expr), spCC - spC8), unroll_times_local * stat_s3->u.jp.incre));
+                        expr_s0 = str_to_temporary(tempAddr, form_rem(unroll_resetincr(form_bop(Usub, expr_s0, temp_expr), spCC - spC8), unroll_times_local * stat_s3->u.jp.incre));
                     } else {
-                        expr_s0 = str_to_temporary(phi_s2_8, form_neg(form_rem(unroll_resetincr(form_bop(Usub, temp_expr, expr_s0), spC8 - spCC), unroll_times_local * -stat_s3->u.jp.incre)));
+                        expr_s0 = str_to_temporary(tempAddr, form_neg(form_rem(unroll_resetincr(form_bop(Usub, temp_expr, expr_s0), spC8 - spCC), unroll_times_local * -stat_s3->u.jp.incre)));
                     }
 
                     extendstat(Ufjp);
@@ -3021,14 +3021,14 @@ void loopunroll(void) {
                     new_header_node(true);
                     curgraphnode->loop = loopbody->loop->outer;
                     expr_s0 = oneloopblockexpr(expr_s0, &spCC);
-                    expr_s0 = str_to_temporary(phi_s2_8, form_bop(Uadd, expr_s0, oneloopblockexpr(spA8, &spC8)));
+                    expr_s0 = str_to_temporary(tempAddr, form_bop(Uadd, expr_s0, oneloopblockexpr(spA8, &spC8)));
                     curgraphnode->stat_tail = stattail;
                     codeimage();
                     new_header_node(true);
                     curgraphnode->loop = loopbody->loop->outer;
                     sp88 = curgraphnode;
                     curgraphnode->loopdepth = loopbody->loopdepth;
-                    curgraphnode->unk2C = loopbody->unk2C;
+                    curgraphnode->frequency = loopbody->frequency;
                     curgraphnode->unk5 = 1;
                     curgraphnode->unkBb8 = 1;
                     curgraphnode->bvs.init.line = loopbody->bvs.init.line;
@@ -3060,7 +3060,7 @@ void loopunroll(void) {
                     new_header_node(true);
                     curgraphnode->loop = loopbody->loop->outer;
                     curgraphnode->unkBb8 = 0;
-                    curgraphnode->unk2C = node_s1->unk2C;
+                    curgraphnode->frequency = node_s1->frequency;
                     if (stat_s3->opc == Ufjp) {
                         extendstat(Utjp);
                     } else {
@@ -3077,7 +3077,7 @@ void loopunroll(void) {
                     new_header_node(true);
                     curgraphnode->blockno = spB4;
                     curgraphnode->loop = loopbody->loop->outer;
-                    curgraphnode->unk2C = node_s1->unk2C;
+                    curgraphnode->frequency = node_s1->frequency;
                     extendstat(Ulab);
                     stattail->u.label.flags = 0;
                     stattail->u.label.length = 0;
@@ -3092,7 +3092,7 @@ void loopunroll(void) {
                 curgraphnode->loop = loopbody->loop;
                 sp88 = curgraphnode;
                 curgraphnode->loopdepth = loopbody->loopdepth;
-                curgraphnode->unk2C = loopbody->unk2C;
+                curgraphnode->frequency = loopbody->frequency;
                 curgraphnode->unk5 = 2;
                 curgraphnode->bvs.init.line = loopbody->bvs.init.line;
                 extendstat(Ulab);
@@ -3515,7 +3515,7 @@ void par_to_str(struct Statement *par, bool arg1, int disp) {
     stattail->u.store.unk1D = !sp5C->data.isvar_issvar.veqv;
     stattail->u.store.unk1F = !sp5C->data.isvar_issvar.veqv;
     stattail->u.store.u.str.unk30 = 0;
-    stattail->unk2 = false;
+    stattail->suppressed_iv = false;
     sp5C->data.isvar_issvar.assignment = stattail;
     if (sp5C->data.isvar_issvar.unk22 == 0) {
         strkillprev(stattail);

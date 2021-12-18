@@ -612,6 +612,7 @@ void insertlda(struct VariableLocation loc, int size) {
         return;
     }
 
+    // insert into the chain in descending order
     cmp = compareloc(loc, entry->var, size, entry->size);
     switch (cmp) {
         case 2:
@@ -1296,12 +1297,16 @@ void checkforvreg(struct Variable *var) {
             if (hash < 0) {
                 hash += 3113; // dead code
             }
+
+            // each chain is sorted in descending order
+            // search until the first lda location that is <= var->location
+            // if no ldas overlap, then unk2 = true
             entry = ldatab[hash];
             stop = false;
             while (!stop && entry != NULL) {
                 cmp = compareloc(var->location, entry->var, var->size, entry->size);
                 if (cmp != 1) {
-                    stop = true;
+                    stop = true; // all lda locations after this one either overlap or are ordered after var
                 } else {
                     entry = entry->next;
                 }

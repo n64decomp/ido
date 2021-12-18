@@ -156,11 +156,11 @@ bool has_direct_induct_usage(struct Graphnode *node, struct ScmThing *scm) {
     while (!done && stat != NULL) {
         if (stat->opc == Ustr) {
             TRAP_IF(stat->outpar != 0);
-            if (stat->unk2 != 1 && expr_has_direct_usage(node, stat->expr->data.isvar_issvar.assigned_value, scm, 0, 0)) {
+            if (stat->suppressed_iv != 1 && expr_has_direct_usage(node, stat->expr->data.isvar_issvar.assigned_value, scm, 0, 0)) {
                 return true;
             }
         } else if (stat->opc == Uisst) {
-            if (stat->unk2 != 1 &&
+            if (stat->suppressed_iv != 1 &&
                     (expr_has_direct_usage(node, stat->u.store.expr, scm, 0, 0) ||
                      expr_has_direct_usage(node, stat->expr->data.isvar_issvar.assigned_value, scm, 0, 0))) {
                 return true;

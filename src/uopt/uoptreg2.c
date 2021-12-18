@@ -256,24 +256,20 @@ void regdataflow(void) {
 
         if (node->successors == NULL && (!is_cup(node) || (lang != LANG_PL1 && lang != LANG_COBOL))) {
             bvectunion(&node->bvs.stage2.liveout, &colored_vars);
-        } else {
-            if (node->successors == NULL) {
-                bvectunion(&node->bvs.stage2.liveout, &node->bvs.stage2.ppin);
-            } else {
-                if (node->stat_tail->opc == Ucia || node->stat_tail->opc == Ucup || node->stat_tail->opc == Uicuf) {
-                    bvectunion(&node->bvs.stage2.liveout, &node->bvs.stage2.ppin);
-                    for (succ = node->successors; succ != NULL; succ = succ->next) {
-                        bvectunion(&node->bvs.stage2.liveout, &succ->graphnode->bvs.stage2.loclive);
-                    }
+        } else if (node->successors == NULL) {
+            bvectunion(&node->bvs.stage2.liveout, &node->bvs.stage2.ppin);
+        } else if (node->stat_tail->opc == Ucia || node->stat_tail->opc == Ucup || node->stat_tail->opc == Uicuf) {
+            bvectunion(&node->bvs.stage2.liveout, &node->bvs.stage2.ppin);
+            for (succ = node->successors; succ != NULL; succ = succ->next) {
+                bvectunion(&node->bvs.stage2.liveout, &succ->graphnode->bvs.stage2.loclive);
+            }
 
-                    if (!node->terminal && has_exc_handler) {
-                        unionintsect(&node->bvs.stage2.liveout, &iscolored12, &varbits);
-                    }
-                } else {
-                    for (succ = node->successors; succ != NULL; succ = succ->next) {
-                        bvectunion(&node->bvs.stage2.liveout, &succ->graphnode->bvs.stage2.loclive);
-                    }
-                }
+            if (!node->terminal && has_exc_handler) {
+                unionintsect(&node->bvs.stage2.liveout, &iscolored12, &varbits);
+            }
+        } else {
+            for (succ = node->successors; succ != NULL; succ = succ->next) {
+                bvectunion(&node->bvs.stage2.liveout, &succ->graphnode->bvs.stage2.loclive);
             }
         }
     }
@@ -284,7 +280,6 @@ void regdataflow(void) {
 
     do {
         dataflowiter++;
-
         changed = false;
         for (node = graphtail; node != NULL; node = node->prev) {
             if (node->successors != NULL) {
@@ -1403,14 +1398,14 @@ void compute_save(struct LiveRange *lr) {
 
     lr->unk1C = 0;
     for (lu = lr->liveunits; lu != NULL; lu = lu->next) {
-        netsave = (lu->load_count + lu->store_count) * lu->node->unk2C;
+        netsave = (lu->load_count + lu->store_count) * lu->node->frequency;
 
         if (lu->needreglod && (lu->node->unk5 == notloopfirstbb || !canmoverlod(lu->node, lu->liverange))) {
-            netsave -= movcostused * lu->node->unk2C;
+            netsave -= movcostused * lu->node->frequency;
         }
 
         if (lr->hasstore && !lu->deadout && lu->needregsave && (lu->store_count != 0 || !lu->needreglod)) {
-            netsave -= movcostused * lu->node->unk2C;
+            netsave -= movcostused * lu->node->frequency;
         }
         totalsave += netsave;
         lr->unk1C++;
@@ -1449,20 +1444,20 @@ void whyuncolored(struct LiveRange *lr) {
     phi_s2 = 0;
     phi_f20 = 0.0f;
     for (lu = lr->liveunits; lu != NULL; lu = lu->next) {
-        phi_s5 += (lu->load_count + lu->store_count) * lu->node->unk2C;
+        phi_s5 += (lu->load_count + lu->store_count) * lu->node->frequency;
         if (lu->needreglod && (lu->node->unk5 == notloopfirstbb || !canmoverlod(lu->node, lu->liverange))) {
-            phi_f20 = phi_f20 + lu->node->unk2C;
+            phi_f20 = phi_f20 + lu->node->frequency;
         }
 
         if (lr->hasstore && !lu->deadout && lu->needregsave && (lu->store_count != 0 || !lu->needreglod)) {
-            phi_f20 += lu->node->unk2C;
+            phi_f20 += lu->node->frequency;
         }
-        phi_s2 += lu->node->unk2C;
+        phi_s2 += lu->node->frequency;
     }
 
     for (i = 0; i < curstaticno; i++) {
         if (bvectin(i, &lr->reachingbbs)) {
-            phi_s2 += bbtab[i]->unk2C;
+            phi_s2 += bbtab[i]->frequency;
         }
     }
 
@@ -1808,14 +1803,14 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
                 stat = lu->node->predecessors->graphnode->stat_tail;
                 if (stat->opc == Ucia) {
                     if (flag && in_reg_masks(reg, stat->u.cia.unk20, stat->u.cia.len)) {
-                        cost += movcostused * lu->node->unk2C;
+                        cost += movcostused * lu->node->frequency;
                     }
                 } else if ((flag || stat->u.call.proc->o3opt) &&
                         (!IS_TEMP_REGISTERS_INTACT_ATTR(stat->u.call.extrnal_flags) ||
                             stat->opc != Ucup || reg == 13) &&
                         (!stat->u.call.proc->o3opt ||
                           stat->u.call.proc->regstaken_parregs->regstaken[reg - 1])) {
-                    cost += movcostused * lu->node->unk2C;
+                    cost += movcostused * lu->node->frequency;
                 }
             }
         }
@@ -1826,13 +1821,13 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
                 stat = lu->node->stat_tail;
                 if (stat->opc == Ucia) {
                     if (flag && in_reg_masks(reg, stat->u.cia.unk20, stat->u.cia.len)) {
-                        cost += movcostused * lu->node->unk2C;
+                        cost += movcostused * lu->node->frequency;
                     }
                 } else if ((flag || stat->u.call.proc->o3opt) &&
                         (!IS_TEMP_REGISTERS_INTACT_ATTR(stat->u.call.extrnal_flags) || stat->opc != Ucup || reg == 13) &&
                         (!stat->u.call.proc->o3opt ||
                          stat->u.call.proc->regstaken_parregs->regstaken[reg - 1])) {
-                    cost += movcostused * lu->node->unk2C;
+                    cost += movcostused * lu->node->frequency;
                 }
             }
         }
@@ -1863,7 +1858,7 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
         }
 
         if (lu->reg != 0 && lu->reg != reg) {
-            cost += (movcostused * lu->node->unk2C) / 10.0f;
+            cost += (movcostused * lu->node->frequency) / 10.0f;
         }
     }
 
@@ -1877,12 +1872,12 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
                             bvectin(node->predecessors->graphnode->num, &liverange->livebbs)) {
                         if (stat->opc == Ucia) {
                             if (flag && in_reg_masks(reg, stat->u.cia.unk20, stat->u.cia.len)) {
-                                cost += movcostused * node->unk2C;
+                                cost += movcostused * node->frequency;
                             }
                         } else if ((flag || stat->u.call.proc->o3opt) &&
                                 (!IS_TEMP_REGISTERS_INTACT_ATTR(stat->u.call.extrnal_flags) || stat->opc != Ucup || reg == 13) &&
                                 (!stat->u.call.proc->o3opt || stat->u.call.proc->regstaken_parregs->regstaken[reg - 1])) {
-                            cost += movcostused * node->unk2C;
+                            cost += movcostused * node->frequency;
                         }
                     }
                 }
@@ -1970,7 +1965,7 @@ void globalcolor(void) {
             firstUseCost = 60.0f;
         }
     } else {
-        firstUseCost = movcostused * (graphhead->unk2C * 2);
+        firstUseCost = movcostused * (graphhead->frequency * 2);
     }
 
     //spB8 := regscantpass - [23] + [firstparmreg[1]..firstparmreg[1]+3] + [firstparmreg[2]..firstparmreg[2]+1];

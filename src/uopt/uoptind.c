@@ -255,7 +255,7 @@ static void func_00430548(struct RecurThing *recur, struct Statement *stat, bool
 }
 
 /*
-00431508 func_00431508
+00431508 candidate
 */
 static bool func_00430680(struct IChain *ichain, struct Graphnode *node) {
     //void *sp84;
@@ -384,7 +384,7 @@ static bool func_00430680(struct IChain *ichain, struct Graphnode *node) {
 /*
 00430BF4 func_00430BF4
 00430D74 func_00430D74
-00431508 func_00431508
+00431508 candidate
 */
 static bool func_00430BF4(struct IChain *ichain, struct Graphnode *node) {
     bool result;
@@ -416,7 +416,7 @@ static bool func_00430BF4(struct IChain *ichain, struct Graphnode *node) {
 
 /*
 00430D74 func_00430D74
-00431508 func_00431508
+00431508 candidate
 */
 static bool func_00430D74(struct IChain *ichain, struct Graphnode *node) {
     bool result;
@@ -454,6 +454,7 @@ static bool func_00430D74(struct IChain *ichain, struct Graphnode *node) {
 
         default:
             caseerror(1, 333, "uoptind.p", 9);
+            result = false;
             break;
     }
 
@@ -462,7 +463,7 @@ static bool func_00430D74(struct IChain *ichain, struct Graphnode *node) {
 
 /*
 00430FF4 func_00430FF4
-00431508 func_00431508
+00431508 candidate
 */
 static void func_00430FF4(struct IChain *ichain, struct Graphnode *node) {
     if (ichain->type == isop) {
@@ -478,7 +479,7 @@ static void func_00430FF4(struct IChain *ichain, struct Graphnode *node) {
 }
 
 /*
-00431508 func_00431508
+00431508 candidate
 */
 static bool func_004310EC(struct IChain *ichain, bool *sp43, struct Graphnode *node) {
     bool result = false;
@@ -515,7 +516,7 @@ static bool func_004310EC(struct IChain *ichain, bool *sp43, struct Graphnode *n
 }
 
 /*
-# 00431508 func_00431508
+# 00431508 candidate
 */
 static bool func_00431268(struct IChain *ichain, struct VarAccessList *list, struct Graphnode *node) {
     struct VarAccessList *access;
@@ -550,7 +551,7 @@ static bool func_00431268(struct IChain *ichain, struct VarAccessList *list, str
 }
 
 /*
-00431508 func_00431508
+00431508 candidate
 */
 static int func_004313E4(struct IChain *ichain, struct Graphnode *node) {
     struct VarAccessList *access;
@@ -580,82 +581,81 @@ static int func_004313E4(struct IChain *ichain, struct Graphnode *node) {
 
 /*
 004324F4 findinduct
+    determine if the expression is a candidate for operator strength reduction
 */
-static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
-    //void *sp44;
+static bool candidate(struct IChain *ichain, struct Graphnode *node) {
     bool sp43 = false; // ???
-    bool sp42 = false; // t0
+    bool iscand = false; // t0
     bool sp41 = false; // a3
-    bool sp40 = false;
+    bool rhs_const = false; // sp40
 
-    //sp44 = MIPS2C_ERROR(Read from unset register $v0);
     switch (ichain->isop.opc) {
         case Umpy:
-            sp42 = true;
+            iscand = true;
             if (ichain->isop.op2->type == isconst) {
-                sp40 = true;
+                rhs_const = true;
                 if (ichain->isop.op1->type == isconst) {
-                    sp42 = false;
+                    iscand = false;
                 }
             } else if (ichain->isop.op1->type == isconst) {
-                sp40 = false;
+                rhs_const = false;
             } else {
-                sp42 = false;
+                iscand = false;
             }
 
-            if (sp42) {
-                if (sp40) {
+            if (iscand) {
+                if (rhs_const) {
                     if (!bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.alters)) {
-                        sp42 = false;
+                        iscand = false;
                     } else if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand)) {
                         if (ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld) {
-                            sp42 = true;
+                            iscand = true;
                         } else {
-                            sp42 = false;
+                            iscand = false;
                         }
                     } else {
-                        sp42 = func_00430D74(ichain->isop.op1, node);
-                        if (sp42) {
+                        iscand = func_00430D74(ichain->isop.op1, node);
+                        if (iscand) {
                             func_00430FF4(ichain->isop.op1, node);
                         }
                     }
                 } else {
                     if (!bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.alters)) {
-                        sp42 = false;
+                        iscand = false;
                     } else if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.cand)) {
                         if (ichain->isop.op2->isop.opc != Uilod && ichain->isop.op2->isop.opc != Uirld) {
-                            sp42 = true;
+                            iscand = true;
                         } else {
-                            sp42 = false;
+                            iscand = false;
                         }
                     } else {
-                        sp42 = func_00430D74(ichain->isop.op2, node);
-                        if (sp42) {
+                        iscand = func_00430D74(ichain->isop.op2, node);
+                        if (iscand) {
                             func_00430FF4(ichain->isop.op2, node);
                         }
                     }
                 }
             } else if (func_00430D74(ichain->isop.op1, node) && func_00430D74(ichain->isop.op2, node)) {
                 if (ichain->isop.op2->type == isvar) {
-                    sp42 = func_00430BF4(ichain->isop.op1, node);
-                    if (sp42) {
-                        sp42 = !iexproccurred(ichain->isop.op2, ichain->isop.op1);
+                    iscand = func_00430BF4(ichain->isop.op1, node);
+                    if (iscand) {
+                        iscand = !iexproccurred(ichain->isop.op2, ichain->isop.op1);
                     }
-                    if (sp42) {
+                    if (iscand) {
                         func_00430FF4(ichain->isop.op1, node);
                     }
                     setbit(&varfactor_muls, ichain->bitpos);
                 } else if (ichain->isop.op1->type == isvar) {
-                    sp42 = func_00430BF4(ichain->isop.op2, node);
-                    if (sp42) {
-                        sp42 = !iexproccurred(ichain->isop.op1, ichain->isop.op2);
+                    iscand = func_00430BF4(ichain->isop.op2, node);
+                    if (iscand) {
+                        iscand = !iexproccurred(ichain->isop.op1, ichain->isop.op2);
                     }
-                    if (sp42) {
+                    if (iscand) {
                         func_00430FF4(ichain->isop.op2, node);
                     }
                     setbit(&varfactor_muls, ichain->bitpos);
                 } else {
-                    sp42 = false;
+                    iscand = false;
                 }
             }
             break;
@@ -664,26 +664,26 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
             switch (ichain->isop.op2->type) {
                 case isconst:
                     if (ichain->isop.op1->type != isop) {
-                        sp42 = false;
+                        iscand = false;
                     } else {
-                        sp42 = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand);
-                        if (sp42) {
-                            sp42 = (ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld);
+                        iscand = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand);
+                        if (iscand) {
+                            iscand = (ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld);
                         }
                     }
                     break;
 
                 case isvar:
                 case issvar:
-                    sp42 = false;
+                    iscand = false;
                     if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.iv)) {
-                        sp42 = func_004310EC(ichain->isop.op1, &sp43, node);
+                        iscand = func_004310EC(ichain->isop.op1, &sp43, node);
                     }
                     if (!bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.alters)) {
                         if (ichain->isop.op1->type == isop) {
                             if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand)) {
                                 if (ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld) {
-                                    sp42 = true;
+                                    iscand = true;
                                 }
                             }
                         }
@@ -691,12 +691,12 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                     break;
 
                 case isop:
-                    sp42 = false;
+                    iscand = false;
                     if (!bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.alters)) {
                         if (ichain->isop.op1->type == isop) {
                             if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand)) {
                                 if (ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld) {
-                                    sp42 = true;
+                                    iscand = true;
                                 }
                             }
                         }
@@ -704,11 +704,11 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                         if (func_004310EC(ichain->isop.op1, &sp43, node)) {
                             if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.cand)) {
                                 if (ichain->isop.op2->isop.opc != Uilod && ichain->isop.op2->isop.opc != Uirld) {
-                                    sp42 = true;
+                                    iscand = true;
                                 }
                             } else {
-                                sp42 = func_00430D74(ichain->isop.op2, node);
-                                if (sp42) {
+                                iscand = func_00430D74(ichain->isop.op2, node);
+                                if (iscand) {
                                     func_00430FF4(ichain->isop.op2, node);
                                 }
                             }
@@ -717,7 +717,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                     break;
 
                 case isrconst:
-                    sp42 = false;
+                    iscand = false;
                     break;
 
                 default:
@@ -725,8 +725,8 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                     break;
             }
 
-            if (sp42) {
-                sp42 = func_00430BF4(ichain->isop.op1, node) || func_00430BF4(ichain->isop.op2, node);
+            if (iscand) {
+                iscand = func_00430BF4(ichain->isop.op1, node) || func_00430BF4(ichain->isop.op2, node);
             }
             break;
 
@@ -734,30 +734,30 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
         case Uinc:
         case Udec:
             if (ichain->isop.op1->type != isop) {
-                sp42 = false;
+                iscand = false;
             } else {
-                sp42 = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand);
-                if (sp42) {
-                    sp42 = ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld;
+                iscand = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand);
+                if (iscand) {
+                    iscand = ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld;
                 }
             }
             break;
 
         case Usub:
         case Uadd:
-            sp42 = false;
+            iscand = false;
             if (ichain->isop.op1->type == isop) {
                 if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand)) {
                     if (ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld) {
-                        sp42 = func_004310EC(ichain->isop.op2, &sp43, node);
+                        iscand = func_004310EC(ichain->isop.op2, &sp43, node);
                     }
                 }
 
-                if (!sp42) {
+                if (!iscand) {
                     if (ichain->isop.op2->type == isop) {
                         if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.cand)) {
                             if (ichain->isop.op2->isop.opc != Uilod && ichain->isop.op2->isop.opc != Uirld) {
-                                sp42 = func_004310EC(ichain->isop.op1, &sp43, node);
+                                iscand = func_004310EC(ichain->isop.op1, &sp43, node);
                             }
                         }
                     }
@@ -766,28 +766,28 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                 if (ichain->isop.op2->type == isop) {
                     if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.cand)) {
                         if (ichain->isop.op2->isop.opc != Uilod && ichain->isop.op2->isop.opc != Uirld) {
-                            sp42 = func_004310EC(ichain->isop.op1, &sp43, node);
+                            iscand = func_004310EC(ichain->isop.op1, &sp43, node);
                         }
                     }
                 }
             }
 
-            if (sp42) {
-                sp42 = func_00430BF4(ichain->isop.op1, node) || func_00430BF4(ichain->isop.op2, node);
+            if (iscand) {
+                iscand = func_00430BF4(ichain->isop.op1, node) || func_00430BF4(ichain->isop.op2, node);
             }
 
-            if (!sp42) {
+            if (!iscand) {
                 if (ichain->isop.op1->type == isvar) {
                     if (ichain->isop.op2->type == isvar || ichain->isop.op2->type == isop) {
-                        sp42 = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.iv) && func_004310EC(ichain->isop.op2, &sp43, node);
+                        iscand = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.iv) && func_004310EC(ichain->isop.op2, &sp43, node);
                     }
                 }
             }
 
-            if (!sp42) {
+            if (!iscand) {
                 if (ichain->isop.op2->type == isvar) {
                     if (ichain->isop.op1->type == isvar || ichain->isop.op1->type == isop) {
-                        sp42 = bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.iv) && func_004310EC(ichain->isop.op1, &sp43, node);
+                        iscand = bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.iv) && func_004310EC(ichain->isop.op1, &sp43, node);
                     }
                 }
             }
@@ -796,15 +796,15 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
         case Uilod:
         case Uirld:
             if (ichain->isop.op1->type != isop) {
-                sp42 = false;
+                iscand = false;
             } else {
-                sp42 = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand);
-                if (sp42) {
-                    sp42 = ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld;
+                iscand = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand);
+                if (iscand) {
+                    iscand = ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld;
                 }
             }
 
-            if (sp42) {
+            if (iscand) {
                 sp41 = func_00431268(ichain, node->varlisthead, node);
                 if (!sp41) {
                     if (node->stat_tail->opc == Ucia) {
@@ -820,18 +820,18 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                         }
                     }
                 }
-                sp42 = !sp41;
+                iscand = !sp41;
             }
 
-            if (sp42) {
-                sp42 = dorecur && func_00430680(ichain, node);
+            if (iscand) {
+                iscand = dorecur && func_00430680(ichain, node);
             }
             break;
 
         case Utpeq:
         case Utpne:
         case Uchkt:
-            sp42 = false;
+            iscand = false;
             break;
 
         case Utpge:
@@ -844,12 +844,12 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                 switch (ichain->isop.opc) {
                     case Utpge:
                     case Utpgt:
-                        sp42 = func_004313E4(ichain->isop.op1, node) < 0;
+                        iscand = func_004313E4(ichain->isop.op1, node) < 0;
                         break;
 
                     case Utple:
                     case Utplt:
-                        sp42 = func_004313E4(ichain->isop.op1, node) > 0;
+                        iscand = func_004313E4(ichain->isop.op1, node) > 0;
                         break;
 
                     default:
@@ -857,7 +857,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
                         break;
                 }
             } else {
-                sp42 = false;
+                iscand = false;
             }
             break;
 
@@ -866,7 +866,7 @@ static bool func_00431508(struct IChain *ichain, struct Graphnode *node) {
             break;
     }
 
-    return sp42;
+    return iscand;
 }
 
 /*
@@ -980,6 +980,7 @@ void findinduct(void) {
             access = access->next;
         }
 
+        // find strength reduction candidates
         node->bvs.stage1.u.cm.cand.num_blocks = 0;
         node->bvs.stage1.u.cm.cand.blocks = NULL;
         checkbvlist(&node->bvs.stage1.u.cm.cand);
@@ -995,7 +996,7 @@ void findinduct(void) {
                 bit = 0;
                 while (i < bitposcount && bit < 0x80) {
                     if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.cand) &&
-                            !func_00431508(bittab[i].ichain, node)) {
+                            !candidate(bittab[i].ichain, node)) {
                         BVBLOCK_RESETBIT(node->bvs.stage1.u.cm.cand, bit, block);
                     }
                     i++;
