@@ -1,6 +1,9 @@
 #pragma once
 #include "uopt/uoptdata.h"
 
+#include "uopt/debug/dlprint.h"
+#include "uopt/debug/buffer.h"
+
 #define C_RED "\e[91m"
 #define C_GREEN "\e[92m"
 #define C_YELLOW "\e[93m"
@@ -30,11 +33,62 @@
 #define BLUEPRINT(fmt, ...) printf(C_BLUE fmt C_RESET __VA_OPT__(,) __VA_ARGS__)
 #define PURPLEPRINT(fmt, ...) printf(C_PURPLE fmt C_RESET __VA_OPT__(,) __VA_ARGS__)
 #define EXPRTYPENAME(type) \
-    (type) < 9 ? (const char *[]){"empty", "islda", "isconst", "isvar", "isop", "isilda", "issvar", "dumped", "isrconst"}[(type)] : "unknown"
+    (unsigned)(type) < 9u ? (const char *[]){"empty", "islda", "isconst", "isvar", "isop", "isilda", "issvar", "dumped", "isrconst"}[(type)] : "unknown"
 #endif
 
 #define ENTNAM_FMT() "%.*s "
 #define ENTNAM() entnam0len, entnam0 
+
+//#define COLOR_BLACK	0
+//#define COLOR_RED	1
+//#define COLOR_GREEN	2
+//#define COLOR_YELLOW	3
+//#define COLOR_BLUE	4
+//#define COLOR_MAGENTA	5
+//#define COLOR_CYAN	6
+//#define COLOR_WHITE	7
+
+#define COLOR_BRIGHTGRAY	8
+#define COLOR_BRIGHTRED	        9
+#define COLOR_BRIGHTGREEN	10
+#define COLOR_BRIGHTYELLOW	11
+#define COLOR_BRIGHTBLUE	12
+#define COLOR_BRIGHTMAGENTA	13
+#define COLOR_BRIGHTCYAN	14
+#define COLOR_BRIGHTWHITE	15
+
+#define COLOR_CUBE(r, g, b) /* TODO? (c < 0x5f ? 0 : 1 + ((c - 0x5f) / 40)) */
+
+#define COLOR_GRAY1   232
+#define COLOR_GRAY2   233
+#define COLOR_GRAY3   234
+#define COLOR_GRAY4   235
+#define COLOR_GRAY5   236
+#define COLOR_GRAY6   237
+#define COLOR_GRAY7   238
+#define COLOR_GRAY8   239
+#define COLOR_GRAY9   240
+#define COLOR_GRAY10  241
+#define COLOR_GRAY11  242
+#define COLOR_GRAY12  243
+#define COLOR_GRAY13  244
+#define COLOR_GRAY14  245
+#define COLOR_GRAY15  246
+#define COLOR_GRAY16  247
+#define COLOR_GRAY17  248
+#define COLOR_GRAY18  249
+#define COLOR_GRAY19  250
+#define COLOR_GRAY20  251
+#define COLOR_GRAY21  252
+#define COLOR_GRAY22  253
+#define COLOR_GRAY23  254
+#define COLOR_GRAY24  255
+
+#define BG(i) (COLORS + i)
+
+// input
+#define CTRL(x) ((x) & 0x1f)
+
 
 void print_regset64(const char *name, long long set);
 void print_function_statements(const char *desc);

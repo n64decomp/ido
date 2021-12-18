@@ -1,6 +1,6 @@
 default: all
 
-SRC_DIRS := . src src/libmld src/libp src/libu src/libxmalloc src/uopt
+SRC_DIRS := . src src/libmld src/libp src/libu src/libxmalloc src/uopt src/uopt/debug
 
 AVOID_UB ?= 1
 
@@ -9,9 +9,9 @@ ARCH ?= x86
 ifeq ($(ARCH),x86)
 CC := gcc
 ENDIANNESS := -DLITTLE_ENDIAN
-ARCH_FLAGS := -m32 -mfpmath=sse -msse2 -ffp-contract=off $(ENDIANNESS)
-OPTIMIZATION = -ggdb3
-#OPTIMIZATION = -O2 -march=native -mtune=native -flto
+ARCH_FLAGS := -m32 -mfpmath=sse -msse2 -ffp-contract=off $(ENDIANNESS) -lncurses
+OPTIMIZATION = -Og -flto=auto -ggdb3
+#OPTIMIZATION = -O2 -march=native -mtune=native -flto=auto
 else ifeq ($(ARCH),mips)
 CC := mips-linux-gnu-gcc
 ARCH_FLAGS := -fPIC -mips2 -mfp32
@@ -20,14 +20,18 @@ else
 $(error unsupported arch "$(ARCH)")
 endif
 
-CFLAGS := -I src -Wall $(ARCH_FLAGS) $(OPTIMIZATION)
-LDFLAGS := $(ARCH_FLAGS) $(OPTIMIZATION) -lncurses
+CFLAGS := -I src -I src/uopt -I src/uopt/debug -Wall $(ARCH_FLAGS) $(OPTIMIZATION)
+LDFLAGS := $(ARCH_FLAGS) $(OPTIMIZATION)
 
 ifeq ($(AVOID_UB),1)
-    CFLAGS := $(CFLAGS) -DAVOID_UB
+    CFLAGS += -DAVOID_UB
 endif
 
+ifeq ($(ARCH),mips)
+BUILD_DIR := build_mips
+else
 BUILD_DIR := build
+endif
 
 ALL_DIRS := $(addprefix $(BUILD_DIR)/,$(SRC_DIRS))
 
