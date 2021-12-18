@@ -36,7 +36,7 @@ void initbv(struct BitVector *bv, struct BitVectorBlock repeated_data) {
 0041550C func_0041550C
 004175BC copypropagate
 00430FF4 func_00430FF4
-00431508 func_00431508
+00431508 candidate
 004324F4 findinduct
 00444A84 isearchloop
 00445AEC trep_image

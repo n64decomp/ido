@@ -408,7 +408,7 @@ struct Temploc *temploctail;
 004175BC copypropagate
 0042020C gen_static_link
 0042BF08 reemit
-00431508 func_00431508
+00431508 candidate
 004324F4 findinduct
 0043771C optinit
 0043A0CC copyline
@@ -1055,7 +1055,7 @@ struct BitVector outmodebits;
 struct BitVector notinmodebits;
 
 /*
-00431508 func_00431508
+00431508 candidate
 00439188 procinit
 00479DC4 eliminduct
 */
@@ -1599,7 +1599,7 @@ bool o0o1specified;
 0041F5E4 base_sp_noalias
 00420A3C prolog
 0042BF08 reemit
-00431508 func_00431508
+00431508 candidate
 004324F4 findinduct
 00434720 processargs
 0043771C optinit
@@ -1871,7 +1871,7 @@ bool do_const_in_reg;
 bool docodehoist;
 
 /*
-00431508 func_00431508
+00431508 candidate
 00434720 processargs
 0043771C optinit
 */
@@ -2388,7 +2388,7 @@ struct Proc *curproc;
 
 /*
 004175BC copypropagate
-00431508 func_00431508
+00431508 candidate
 004324F4 findinduct
 0043CFCC readnxtinst
 004471AC codeimage

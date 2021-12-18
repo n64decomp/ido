@@ -273,7 +273,7 @@ struct Graphnode {
     /* 0x00 */ int blockno;
     /* 0x04 */ bool interprocedural_controlflow;
     /* 0x05 */ unsigned char unk5; // enum: notloopfirstbb, loopfirstbb, canunroll (see printregs)
-    /* 0x06 */ bool terminal;
+    /* 0x06 */ bool terminal; // false in functions that contain infinite loops
     /* 0x07 */ unsigned char unk7;     // 0 = unseen, 1 = graphhead, 2 = graphtail?
     /* 0x08 */ unsigned short num;
     /* 0x0A */ unsigned char loopdepth;
@@ -287,7 +287,7 @@ struct Graphnode {
     /* 0x20 */ struct Statement *stat_tail;
     /* 0x24 */ struct VarAccessList *varlisthead;
     /* 0x28 */ struct VarAccessList *varlisttail;
-    /* 0x2C */ unsigned int unk2C;      // checked in func_00453E7C analoop.c
+    /* 0x2C */ unsigned int frequency;      // checked in func_00453E7C analoop.c
     /* 0x30 */ struct LiveUnit *liveunit;
     ///* 0x34 */ long long regsused[2];
     /* 0x34 */ int regsused[2][2]; // should be two 64-bit values, but then alignment fails
@@ -438,7 +438,7 @@ struct Proc {
 struct Statement {
     /*  0x0 */ Uopcode opc;
     /*  0x1 */ bool is_increment;
-    /*  0x2 */ bool unk2; // only 0/1, but always used in direct comparison with 1
+    /*  0x2 */ bool suppressed_iv; // set to 1 in eliminduct, only 0/1, but always used in direct comparison with 1
     /*  0x3 */ bool outpar; // first store to parameter build area?
     /*  0x4 */ struct Expression *expr;
     /*  0x8 */ struct Statement *next; // towards tail
@@ -728,7 +728,8 @@ struct IChain { // TODO: rename
                 /* 0x24 */ unsigned short unk24_u16;
                 struct ExpSourceThing *unk24_cand;
                 union {
-                    /* 0x24 */ int word; // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
+                    // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
+                    /* 0x24 */ int word; // offset for istr/irst
                     struct {
                         /* 0x24 */ unsigned short pad;
                         /* 0x26 */ unsigned short mtagno;
@@ -805,9 +806,9 @@ struct BittabItem {
 struct PdefEntry {
     /* 0x0 */ Uopcode opc;
     /* 0x1 */ Datatype dtype;
-    /* 0x2 */ bool outmode; // lexlev & 2
-    /* 0x3 */ bool unk3;
-    /* 0x4 */ bool inmode; // lexlev & 1
+    /* 0x2 */ bool outmode;
+    /* 0x3 */ bool unk3; // register?
+    /* 0x4 */ bool inmode;
     /* 0x8 */ int offset;
     /* 0xC */ int size;
 }; // size 0x10
@@ -888,9 +889,6 @@ struct Expression {
                     /* 0x3E */ bool overflow_attr;
                     /* 0x3F */ unsigned char align; // see Uildv and Uilod in readnxtinst
                 } v1;
-                struct {
-                    /* 0x3C */ unsigned int unk3C_int; // unused?
-                } v2;
                 /* 0x3C */ struct TrepImageThing *unk3C_trep;
             } aux2;
         } isop;

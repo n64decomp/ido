@@ -602,7 +602,7 @@ static void func_0047847C(struct Expression *expr, struct SharedBcode *sb) {
 
             expr->unk5 = 3;
             phi_t0 = expr;
-            if (((expr->data.isop.unk21 == 0 && !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.cand)) ||
+            if (((!expr->data.isop.unk21 && !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.cand)) ||
                         !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.delete))) {
                 func_0047847C(expr->data.isop.op1, sb);
                 if (optab[expr->data.isop.opc].is_binary_op) {
@@ -1342,7 +1342,7 @@ void eliminduct(void) {
                     func_00478C14(bittab[i].ichain, node);
                     func_00478B8C(bittab[i].ichain, node);
                 }
-                i++; // skip assignment
+                i++; // skip assignment bit
             } else {
                 if (bvectin(i, &node->bvs.stage1.u.cm.insert)) {
                     store_ichain = bittab[i].ichain;
@@ -1536,7 +1536,7 @@ void eliminduct(void) {
                 }
                 node = node->prev;
             }
-        } while (changed != 0);
+        } while (changed);
         dataflowtime = (dataflowtime + getclock()) - lastdftime;
     }
 
@@ -1565,7 +1565,7 @@ void eliminduct(void) {
                                 stat->expr = stat->expr->data.isvar_issvar.assigned_value;
                                 func_00479778(stat->expr, node);
                             } else {
-                                stat->unk2 = 1;
+                                stat->suppressed_iv = 1;
                                 if (stat->opc == Uisst) {
                                     deccount(stat->u.store.expr, node);
                                 }

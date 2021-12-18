@@ -335,7 +335,7 @@ static void find_loop_relations(struct Interval *intv, int depth) {
 
         // some kind of weight?
         if (!usefeedback || curproc->feedback_data == NULL) {
-            node->unk2C = power_10(intv->loopdepth - 1);
+            node->frequency = power_10(intv->loopdepth - 1);
         }
     } else if (depth == 0) {
         region = intv->region;
@@ -409,7 +409,7 @@ static bool node_has_higher_weight(struct Graphnode *node) {
 
     pred = node->predecessors;
     while (pred != NULL) {
-        if (pred->graphnode->unk2C != 0 && (pred->graphnode->unk2C << 3) < node->unk2C) {
+        if (pred->graphnode->frequency != 0 && (pred->graphnode->frequency << 3) < node->frequency) {
             return true;
         }
         pred = pred->next;

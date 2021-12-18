@@ -1020,7 +1020,7 @@ bool exproccurred(struct IChain *ichain, struct Expression *expr) {
 }
 
 /*
-00431508 func_00431508
+00431508 candidate
 0047D188 iexproccurred
 */
 bool iexproccurred(struct IChain *target, struct IChain *ichain2) {
@@ -1290,18 +1290,16 @@ void deccount(struct Expression *expr, struct Graphnode *node) {
             break;
 
         case isilda:
-            node = node;
             if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete)) {
                 expr->count--;
                 if (expr->count == 0) {
-                    deccount(expr->data.isop.unk34, node);
+                    deccount(expr->data.islda_isilda.outer_stack, node);
                     delentry(expr);
                 }
             }
             break;
 
         case isop:
-            node = node;
             if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) ||
                     (!expr->data.isop.unk21 && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
                 expr->count--;

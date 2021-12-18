@@ -1014,6 +1014,7 @@ void ciakillprev(void) {
         }
     }
 }
+
 /*
 0044CD14 listplkilled
 */
@@ -1129,7 +1130,7 @@ static bool plkilled(struct Expression *baseaddr, struct Expression *expr) {
 }
 
 /*
-00431508 func_00431508
+00431508 candidate
 004324F4 findinduct
 0044D6EC parkillprev
 00454D08 func_00454D08

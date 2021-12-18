@@ -248,7 +248,7 @@ void codemotion(void) {
     struct Statement *sp1E4;
     union Constant sp1C0;
     Uopcode trapopc; // sp1BB
-    struct Graphnode *node_s5;
+    struct Graphnode *node;
     struct GraphnodeList *pred;
     struct GraphnodeList *succ;
     struct Statement *stat;
@@ -271,29 +271,38 @@ void codemotion(void) {
     bvectminus(&varbits, &slvarbits);
     bvectminus(&asgnbits, &slasgnbits);
 
-    node_s5 = graphhead;
-    while (node_s5 != 0) {
-        checkbvlist(&node_s5->bvs.stage1.u.precm.expoccur);
-        if (curproc->has_trap) {
-            minusminus(&node_s5->bvs.stage1.alters, &node_s5->bvs.stage1.u.cm.cand, &trapconstop);
-            uintsectminus(&node_s5->bvs.stage1.antlocs, &node_s5->bvs.stage1.u.precm.expoccur, &node_s5->bvs.stage1.u.cm.cand, &trapconstop);
-            uintsectminus(&node_s5->bvs.stage1.avlocs, &node_s5->bvs.stage1.u.precm.expoccur, &node_s5->bvs.stage1.u.cm.cand, &trapconstop);
-        } else {
-            bvectminus(&node_s5->bvs.stage1.alters, &node_s5->bvs.stage1.u.cm.cand);
-            unionintsect(&node_s5->bvs.stage1.antlocs, &node_s5->bvs.stage1.u.precm.expoccur, &node_s5->bvs.stage1.u.cm.cand);
-            unionintsect(&node_s5->bvs.stage1.avlocs, &node_s5->bvs.stage1.u.precm.expoccur, &node_s5->bvs.stage1.u.cm.cand);
-        }
-        bvectunion(&node_s5->bvs.stage1.u.precm.pavlocs, &node_s5->bvs.stage1.avlocs);
-        unionminus(&node_s5->bvs.stage1.absalters, &node_s5->bvs.stage1.alters, &storeop);
-        if (curproc->has_trap) {
-            unionintsect(&node_s5->bvs.stage1.u.precm.pavlocs, &node_s5->bvs.stage1.u.precm.expoccur, &node_s5->bvs.stage1.u.cm.cand);
-            bvectminus(&node_s5->bvs.stage1.absalters, &node_s5->bvs.stage1.u.cm.cand);
-            initbv(&node_s5->bvs.stage1.u.precm.expoccur, (struct BitVectorBlock) {0});
+    node = graphhead;
+    while (node != 0) {
+        checkbvlist(&node->bvs.stage1.u.precm.expoccur);
 
-            if (has_assert(node_s5, &sp1E4)) {
-                if (node_s5->blockno == 0) {
+        // update data flow attributes with strength reduction candidate information:
+        //
+        // ALTERS  -= CAND
+        // ANTLOCS |= EXPOCCUR & CAND
+        // AVLOCS  |= EXPOCCUR & CAND
+        //
+        // this allows candidate expressions to be moved across blocks
+        if (curproc->has_trap) {
+            minusminus(&node->bvs.stage1.alters, &node->bvs.stage1.u.cm.cand, &trapconstop);
+            uintsectminus(&node->bvs.stage1.antlocs, &node->bvs.stage1.u.precm.expoccur, &node->bvs.stage1.u.cm.cand, &trapconstop);
+            uintsectminus(&node->bvs.stage1.avlocs, &node->bvs.stage1.u.precm.expoccur, &node->bvs.stage1.u.cm.cand, &trapconstop);
+        } else {
+            bvectminus(&node->bvs.stage1.alters, &node->bvs.stage1.u.cm.cand);
+            unionintsect(&node->bvs.stage1.antlocs, &node->bvs.stage1.u.precm.expoccur, &node->bvs.stage1.u.cm.cand);
+            unionintsect(&node->bvs.stage1.avlocs, &node->bvs.stage1.u.precm.expoccur, &node->bvs.stage1.u.cm.cand);
+        }
+
+        bvectunion(&node->bvs.stage1.u.precm.pavlocs, &node->bvs.stage1.avlocs);
+        unionminus(&node->bvs.stage1.absalters, &node->bvs.stage1.alters, &storeop);
+        if (curproc->has_trap) {
+            unionintsect(&node->bvs.stage1.u.precm.pavlocs, &node->bvs.stage1.u.precm.expoccur, &node->bvs.stage1.u.cm.cand);
+            bvectminus(&node->bvs.stage1.absalters, &node->bvs.stage1.u.cm.cand);
+            initbv(&node->bvs.stage1.u.precm.expoccur, (struct BitVectorBlock) {0});
+
+            if (has_assert(node, &sp1E4)) {
+                if (node->blockno == 0) {
                     phi_v1 = sp1E4->opc == Ufjp;
-                } else if (sp1E4->u.jp.target_blockno == node_s5->blockno) {
+                } else if (sp1E4->u.jp.target_blockno == node->blockno) {
                     phi_v1 = sp1E4->opc == Utjp;
                 } else {
                     phi_v1 = sp1E4->opc == Ufjp;
@@ -375,11 +384,11 @@ void codemotion(void) {
                     if (trap_ichain->dtype == sp1E4->expr->datatype) {
                         if (const_trap) {
                             if (trap_implying(trapopc, sp1E4->expr->ichain->isop.op1, &sp1C0, trap_ichain)) {
-                                setbit(&node_s5->bvs.stage1.u.precm.expoccur, trap_ichain->bitpos);
+                                setbit(&node->bvs.stage1.u.precm.expoccur, trap_ichain->bitpos);
                             }
                         } else {
                             if (trap_implying_v(trapopc, sp1E4->expr->ichain->isop.op1, sp1E4->expr->ichain->isop.op2, trap_ichain)) {
-                                setbit(&node_s5->bvs.stage1.u.precm.expoccur, trap_ichain->bitpos);
+                                setbit(&node->bvs.stage1.u.precm.expoccur, trap_ichain->bitpos);
                             }
                         }
                     }
@@ -388,72 +397,72 @@ void codemotion(void) {
             }
         }
 
-        checkbvlist(&node_s5->bvs.stage1.u.precm.avin);
-        checkbvlist(&node_s5->bvs.stage1.u.precm.avout);
+        checkbvlist(&node->bvs.stage1.u.precm.avin);
+        checkbvlist(&node->bvs.stage1.u.precm.avout);
 
-        if (node_s5->predecessors == NULL || node_s5->interprocedural_controlflow) {
-            initbv(&node_s5->bvs.stage1.u.precm.avin, (struct BitVectorBlock) {0});
+        if (node->predecessors == NULL || node->interprocedural_controlflow) {
+            initbv(&node->bvs.stage1.u.precm.avin, (struct BitVectorBlock) {0});
         } else {
-            bvcopynot(&node_s5->bvs.stage1.u.precm.avin, &asgnbits);
-            bvectminus(&node_s5->bvs.stage1.u.precm.avin, &varbits);
+            bvcopynot(&node->bvs.stage1.u.precm.avin, &asgnbits);
+            bvectminus(&node->bvs.stage1.u.precm.avin, &varbits);
         }
 
-        bvcopynot(&node_s5->bvs.stage1.u.precm.avout, &asgnbits);
-        bvectminus(&node_s5->bvs.stage1.u.precm.avout, &varbits);
+        bvcopynot(&node->bvs.stage1.u.precm.avout, &asgnbits);
+        bvectminus(&node->bvs.stage1.u.precm.avout, &varbits);
 
-        bvcopynot(&node_s5->bvs.stage1.u.precm.antin, &asgnbits);
-        bvectminus(&node_s5->bvs.stage1.u.precm.antin, &varbits);
+        bvcopynot(&node->bvs.stage1.u.precm.antin, &asgnbits);
+        bvectminus(&node->bvs.stage1.u.precm.antin, &varbits);
 
-        if (node_s5->successors == NULL) {
-            initbv(&node_s5->bvs.stage1.u.precm.antout, (struct BitVectorBlock) {0});
-        } else if (!node_s5->terminal) {
-            if (node_s5->successors->next == NULL) {
-                bvcopynot(&node_s5->bvs.stage1.u.precm.antout, &asgnbits);
-                bvectminus(&node_s5->bvs.stage1.u.precm.antout, &varbits);
+        if (node->successors == NULL) {
+            initbv(&node->bvs.stage1.u.precm.antout, (struct BitVectorBlock) {0});
+        } else if (!node->terminal) {
+            if (node->successors->next == NULL) {
+                bvcopynot(&node->bvs.stage1.u.precm.antout, &asgnbits);
+                bvectminus(&node->bvs.stage1.u.precm.antout, &varbits);
             } else {
-                initbv(&node_s5->bvs.stage1.u.precm.antout, (struct BitVectorBlock) {0});
+                initbv(&node->bvs.stage1.u.precm.antout, (struct BitVectorBlock) {0});
             }
         } else {
-            bvcopynot(&node_s5->bvs.stage1.u.precm.antout, &asgnbits);
-            bvectminus(&node_s5->bvs.stage1.u.precm.antout, &varbits);
+            bvcopynot(&node->bvs.stage1.u.precm.antout, &asgnbits);
+            bvectminus(&node->bvs.stage1.u.precm.antout, &varbits);
         }
 
-        bvectcopy(&node_s5->bvs.stage1.u.precm.pavin, &asgnbits);
-        bvectunion(&node_s5->bvs.stage1.u.precm.pavin, &varbits);
+        bvectcopy(&node->bvs.stage1.u.precm.pavin, &asgnbits);
+        bvectunion(&node->bvs.stage1.u.precm.pavin, &varbits);
         if (curproc->has_trap) {
-            bvectunion(&node_s5->bvs.stage1.u.precm.pavin, &node_s5->bvs.stage1.u.precm.expoccur);
+            bvectunion(&node->bvs.stage1.u.precm.pavin, &node->bvs.stage1.u.precm.expoccur);
         }
 
-        bvectcopy(&node_s5->bvs.stage1.u.precm.pavout, &node_s5->bvs.stage1.u.precm.pavlocs);
+        bvectcopy(&node->bvs.stage1.u.precm.pavout, &node->bvs.stage1.u.precm.pavlocs);
         if (docodehoist != 0) {
-            bvectunion(&node_s5->bvs.stage1.u.precm.pavout, &node_s5->hoistedexp);
+            bvectunion(&node->bvs.stage1.u.precm.pavout, &node->hoistedexp);
         }
 
-        bvectunion(&node_s5->bvs.stage1.u.precm.pavout, &asgnbits);
-        bvectunion(&node_s5->bvs.stage1.u.precm.pavout, &varbits);
+        bvectunion(&node->bvs.stage1.u.precm.pavout, &asgnbits);
+        bvectunion(&node->bvs.stage1.u.precm.pavout, &varbits);
         if (outofmem) {
             return;
         }
 
-        node_s5 = node_s5->next;
+        node = node->next;
     }
 
     savedexp.num_blocks = 0;
     savedexp.blocks = NULL;
     checkbvlist(&savedexp);
     if (!docm) {
-        node_s5 = graphhead;
-        while (node_s5 != NULL) {
-            initbv(&node_s5->bvs.stage1.u.precm.pavlocs, (struct BitVectorBlock) {0});
-            initbv(&node_s5->bvs.stage1.u.precm.avin, (struct BitVectorBlock)  {0});
-            initbv(&node_s5->bvs.stage1.u.precm.pavin, (struct BitVectorBlock) {0});
-            initbv(&node_s5->bvs.stage1.u.precm.avout, (struct BitVectorBlock) {0});
-            initbv(&node_s5->bvs.stage1.u.precm.antin, (struct BitVectorBlock) {0});
-            initbv(&node_s5->bvs.stage1.u.precm.antout, (struct BitVectorBlock) {0});
-            initbv(&node_s5->bvs.stage1.u.precm.expoccur, (struct BitVectorBlock) {0});
-            initbv(&node_s5->bvs.stage1.u.precm.pavout, (struct BitVectorBlock) {0});
-            checkbvlist(&node_s5->bvs.stage1.u.precm.pavin);
-            node_s5 = node_s5->next;
+        node = graphhead;
+        while (node != NULL) {
+            initbv(&node->bvs.stage1.u.precm.pavlocs, (struct BitVectorBlock) {0});
+            initbv(&node->bvs.stage1.u.precm.avin, (struct BitVectorBlock)  {0});
+            initbv(&node->bvs.stage1.u.precm.pavin, (struct BitVectorBlock) {0});
+            initbv(&node->bvs.stage1.u.precm.avout, (struct BitVectorBlock) {0});
+            initbv(&node->bvs.stage1.u.precm.antin, (struct BitVectorBlock) {0});
+            initbv(&node->bvs.stage1.u.precm.antout, (struct BitVectorBlock) {0});
+            initbv(&node->bvs.stage1.u.precm.expoccur, (struct BitVectorBlock) {0});
+            initbv(&node->bvs.stage1.u.precm.pavout, (struct BitVectorBlock) {0});
+            checkbvlist(&node->bvs.stage1.u.precm.pavin);
+            node = node->next;
         }
         return;
     }
@@ -461,109 +470,109 @@ void codemotion(void) {
     do {
         dataflowiter += 1;
         changed = false;
-        node_s5 = graphhead;
-        while (node_s5 != NULL) {
-            if (node_s5->predecessors != 0) {
+        node = graphhead;
+        while (node != NULL) {
+            if (node->predecessors != 0) {
                 if (!changed) {
-                    bvectcopy(&old, &node_s5->bvs.stage1.u.precm.avin);
+                    bvectcopy(&old, &node->bvs.stage1.u.precm.avin);
                 }
 
-                pred = node_s5->predecessors;
+                pred = node->predecessors;
                 while (pred != NULL) {
-                    bvectintsect(&node_s5->bvs.stage1.u.precm.avin, &pred->graphnode->bvs.stage1.u.precm.avout);
+                    bvectintsect(&node->bvs.stage1.u.precm.avin, &pred->graphnode->bvs.stage1.u.precm.avout);
                     pred = pred->next;
                 }
 
                 if (curproc->has_trap) {
-                    bvectunion(&node_s5->bvs.stage1.u.precm.avin, &node_s5->bvs.stage1.u.precm.expoccur);
+                    bvectunion(&node->bvs.stage1.u.precm.avin, &node->bvs.stage1.u.precm.expoccur);
                 }
 
-                if (!changed && !bvecteq(&old, &node_s5->bvs.stage1.u.precm.avin)) {
+                if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.avin)) {
                     changed = true;
                 }
             }
             if (!changed) {
-                bvectcopy(&old, &node_s5->bvs.stage1.u.precm.avout);
+                bvectcopy(&old, &node->bvs.stage1.u.precm.avout);
             }
-            bvectglop(&node_s5->bvs.stage1.u.precm.avout, &node_s5->bvs.stage1.u.precm.pavlocs, &node_s5->bvs.stage1.u.precm.avin, &node_s5->bvs.stage1.absalters);
+            bvectglop(&node->bvs.stage1.u.precm.avout, &node->bvs.stage1.u.precm.pavlocs, &node->bvs.stage1.u.precm.avin, &node->bvs.stage1.absalters);
             if (docodehoist != 0) {
-                bvectunion(&node_s5->bvs.stage1.u.precm.avout, &node_s5->hoistedexp);
+                bvectunion(&node->bvs.stage1.u.precm.avout, &node->hoistedexp);
             }
 
-            if (!changed && !bvecteq(&old, &node_s5->bvs.stage1.u.precm.avout)) {
+            if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.avout)) {
                 changed = true;
             }
-            node_s5 = node_s5->next;
+            node = node->next;
         }
     } while (changed);
 
     do {
         dataflowiter += 1;
         changed = false;
-        node_s5 = graphtail;
-        while (node_s5 != NULL) {
-            if (node_s5->successors != NULL) {
+        node = graphtail;
+        while (node != NULL) {
+            if (node->successors != NULL) {
                 if (!changed) {
-                    bvectcopy(&old, &node_s5->bvs.stage1.u.precm.antout);
+                    bvectcopy(&old, &node->bvs.stage1.u.precm.antout);
                 }
 
-                succ = node_s5->successors;
+                succ = node->successors;
                 while (succ != NULL) {
-                    bvectintsect(&node_s5->bvs.stage1.u.precm.antout, &succ->graphnode->bvs.stage1.u.precm.antin);
+                    bvectintsect(&node->bvs.stage1.u.precm.antout, &succ->graphnode->bvs.stage1.u.precm.antin);
                     succ = succ->next;
                 }
 
-                if (!changed && !bvecteq(&old, &node_s5->bvs.stage1.u.precm.antout)) {
+                if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.antout)) {
                     changed = true;
                 }
             }
 
             if (!changed) {
-                bvectcopy(&old, &node_s5->bvs.stage1.u.precm.antin);
+                bvectcopy(&old, &node->bvs.stage1.u.precm.antin);
             }
 
-            bvectglop(&node_s5->bvs.stage1.u.precm.antin, &node_s5->bvs.stage1.antlocs, &node_s5->bvs.stage1.u.precm.antout, &node_s5->bvs.stage1.alters);
+            bvectglop(&node->bvs.stage1.u.precm.antin, &node->bvs.stage1.antlocs, &node->bvs.stage1.u.precm.antout, &node->bvs.stage1.alters);
 
-            if (!changed && !bvecteq(&old, &node_s5->bvs.stage1.u.precm.antin)) {
+            if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.antin)) {
                 changed = true;
             }
             
-            node_s5 = node_s5->prev;
+            node = node->prev;
         }
     } while (changed);
 
     do {
         dataflowiter += 1;
         changed = false;
-        node_s5 = graphhead;
-        while (node_s5 != NULL) {
-            if (node_s5->predecessors != NULL) {
+        node = graphhead;
+        while (node != NULL) {
+            if (node->predecessors != NULL) {
                 if (!changed) {
-                    bvectcopy(&old, &node_s5->bvs.stage1.u.precm.pavin);
+                    bvectcopy(&old, &node->bvs.stage1.u.precm.pavin);
                 }
 
-                pred = node_s5->predecessors;
+                pred = node->predecessors;
                 while (pred != NULL) {
-                    bvectunion(&node_s5->bvs.stage1.u.precm.pavin, &pred->graphnode->bvs.stage1.u.precm.pavout);
+                    bvectunion(&node->bvs.stage1.u.precm.pavin, &pred->graphnode->bvs.stage1.u.precm.pavout);
                     pred = pred->next;
                 }
 
-                if (!changed && !bvecteq(&old, &node_s5->bvs.stage1.u.precm.pavin)) {
+                if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.pavin)) {
                     changed = true;
                 }
             }
 
             if (!changed) {
-                bvectcopy(&old, &node_s5->bvs.stage1.u.precm.pavout);
+                bvectcopy(&old, &node->bvs.stage1.u.precm.pavout);
             }
 
-            unionminus(&node_s5->bvs.stage1.u.precm.pavout, &node_s5->bvs.stage1.u.precm.pavin, &node_s5->bvs.stage1.absalters);
+            unionminus(&node->bvs.stage1.u.precm.pavout, &node->bvs.stage1.u.precm.pavin, &node->bvs.stage1.absalters);
 
-            if (!changed && !bvecteq(&old, &node_s5->bvs.stage1.u.precm.pavout)) {
+            if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.pavout)) {
                 changed = true;
             }
             
-            node_s5 = node_s5->next;
+            node = node->next;
         }
     } while (changed);
 
@@ -573,119 +582,119 @@ void codemotion(void) {
 
     // End of precm
 
-    node_s5 = graphhead;
-    while (node_s5 != NULL) {
+    node = graphhead;
+    while (node != NULL) {
         if (!moremotion) {
-            bvectintsect(&node_s5->bvs.stage1.u.precm.pavin, &node_s5->bvs.stage1.u.precm.antin);
+            bvectintsect(&node->bvs.stage1.u.precm.pavin, &node->bvs.stage1.u.precm.antin);
         } else {
-            bvectcopy(&node_s5->bvs.stage1.u.precm.pavin, &node_s5->bvs.stage1.u.precm.antin);
+            bvectcopy(&node->bvs.stage1.u.precm.pavin, &node->bvs.stage1.u.precm.antin);
         }
-        bvectminus(&node_s5->bvs.stage1.u.precm.pavin, &boolexp);
+        bvectminus(&node->bvs.stage1.u.precm.pavin, &boolexp);
 
-        if (lang == LANG_ADA && node_s5->blockno != 0) {
-            stat = node_s5->stat_head;
+        if (lang == LANG_ADA && node->blockno != 0) {
+            stat = node->stat_head;
 
             while (stat->opc != Ulab) {
                 stat = stat->next;
             }
             if (stat->u.label.flags & 0xB2) {
-                initbv(&node_s5->bvs.stage1.u.precm.pavin, (struct BitVectorBlock) {0});
+                initbv(&node->bvs.stage1.u.precm.pavin, (struct BitVectorBlock) {0});
             }
         }
 
-        if (node_s5->predecessors == NULL || node_s5->interprocedural_controlflow) {
-            initbv(&node_s5->bvs.stage1.u.cm.ppin, (struct BitVectorBlock) {0});
+        if (node->predecessors == NULL || node->interprocedural_controlflow) {
+            initbv(&node->bvs.stage1.u.cm.ppin, (struct BitVectorBlock) {0});
         } else {
-            initbv(&node_s5->bvs.stage1.u.cm.ppin, (struct BitVectorBlock) {{-1, -1, -1, -1}});
-            bvcopynot(&node_s5->bvs.stage1.u.cm.ppin, &asgnbits);
-            bvectminus(&node_s5->bvs.stage1.u.cm.ppin, &varbits);
+            initbv(&node->bvs.stage1.u.cm.ppin, (struct BitVectorBlock) {{-1, -1, -1, -1}});
+            bvcopynot(&node->bvs.stage1.u.cm.ppin, &asgnbits);
+            bvectminus(&node->bvs.stage1.u.cm.ppin, &varbits);
         }
 
-        if (node_s5->successors == NULL) {
-            initbv(&node_s5->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {0});
-        } else if (!node_s5->terminal) {
-            if (node_s5->successors->next == NULL) {
-                initbv(&node_s5->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {{-1, -1, -1, -1}});
-                bvcopynot(&node_s5->bvs.stage1.u.cm.ppout, &asgnbits);
-                bvectminus(&node_s5->bvs.stage1.u.cm.ppout, &varbits);
+        if (node->successors == NULL) {
+            initbv(&node->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {0});
+        } else if (!node->terminal) {
+            if (node->successors->next == NULL) {
+                initbv(&node->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {{-1, -1, -1, -1}});
+                bvcopynot(&node->bvs.stage1.u.cm.ppout, &asgnbits);
+                bvectminus(&node->bvs.stage1.u.cm.ppout, &varbits);
             } else {
-                initbv(&node_s5->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {0});
+                initbv(&node->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {0});
             }
         } else {
-            initbv(&node_s5->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {{-1, -1, -1, -1}});
-            bvcopynot(&node_s5->bvs.stage1.u.cm.ppout, &asgnbits);
-            bvectminus(&node_s5->bvs.stage1.u.cm.ppout, &varbits);
+            initbv(&node->bvs.stage1.u.cm.ppout, (struct BitVectorBlock) {{-1, -1, -1, -1}});
+            bvcopynot(&node->bvs.stage1.u.cm.ppout, &asgnbits);
+            bvectminus(&node->bvs.stage1.u.cm.ppout, &varbits);
         }
 
-        node_s5 = node_s5->next;
+        node = node->next;
     }
 
     do {
         dataflowiter += 1;
-        node_s5 = graphtail;
+        node = graphtail;
         changed = false;
-        while (node_s5 != NULL) {
-            if (node_s5->successors != NULL) {
+        while (node != NULL) {
+            if (node->successors != NULL) {
                 if (!changed) {
-                    bvectcopy(&old, &node_s5->bvs.stage1.u.cm.ppout);
+                    bvectcopy(&old, &node->bvs.stage1.u.cm.ppout);
                 }
 
-                succ = node_s5->successors;
+                succ = node->successors;
                 while (succ != NULL) {
-                    bvectintsect(&node_s5->bvs.stage1.u.cm.ppout, &succ->graphnode->bvs.stage1.u.cm.ppin);
+                    bvectintsect(&node->bvs.stage1.u.cm.ppout, &succ->graphnode->bvs.stage1.u.cm.ppin);
                     succ = succ->next;
                 }
 
-                if (!changed && !bvecteq(&old, &node_s5->bvs.stage1.u.cm.ppout)) {
+                if (!changed && !bvecteq(&old, &node->bvs.stage1.u.cm.ppout)) {
                     changed = true;
                 }
             }
 
-            if (node_s5->predecessors != NULL) {
-                pred = node_s5->predecessors;
-                if (!node_s5->interprocedural_controlflow) {
+            if (node->predecessors != NULL) {
+                pred = node->predecessors;
+                if (!node->interprocedural_controlflow) {
                     if (!changed) {
-                        bvectcopy(&old, &node_s5->bvs.stage1.u.cm.ppin);
+                        bvectcopy(&old, &node->bvs.stage1.u.cm.ppin);
                     }
-                    bvectpp1(&node_s5->bvs.stage1.u.cm.ppin, &node_s5->bvs.stage1.u.precm.pavin, &node_s5->bvs.stage1.antlocs, &node_s5->bvs.stage1.alters, &node_s5->bvs.stage1.u.cm.ppout);
+                    bvectpp1(&node->bvs.stage1.u.cm.ppin, &node->bvs.stage1.u.precm.pavin, &node->bvs.stage1.antlocs, &node->bvs.stage1.alters, &node->bvs.stage1.u.cm.ppout);
                     while (pred != NULL) {
-                        bvectpp2(&node_s5->bvs.stage1.u.cm.ppin, &pred->graphnode->bvs.stage1.u.cm.ppout, &pred->graphnode->bvs.stage1.u.precm.avout);
+                        bvectpp2(&node->bvs.stage1.u.cm.ppin, &pred->graphnode->bvs.stage1.u.cm.ppout, &pred->graphnode->bvs.stage1.u.precm.avout);
                         pred = pred->next;
                     }
 
-                    if (!changed && !bvecteq(&old, &node_s5->bvs.stage1.u.cm.ppin)) {
+                    if (!changed && !bvecteq(&old, &node->bvs.stage1.u.cm.ppin)) {
                         changed = true;
                     }
                 }
             }
-            node_s5 = node_s5->prev;
+            node = node->prev;
         }
     } while (changed);
 
     dataflowtime = (dataflowtime + getclock()) - lastdftime;
-    node_s5 = graphhead;
-    while (node_s5 != NULL) {
-        bvectinsert(&node_s5->bvs.stage1.u.cm.insert, &node_s5->bvs.stage1.u.cm.ppout, &node_s5->bvs.stage1.u.precm.avout, &node_s5->bvs.stage1.u.cm.ppin, &node_s5->bvs.stage1.alters);
+    node = graphhead;
+    while (node != NULL) {
+        bvectinsert(&node->bvs.stage1.u.cm.insert, &node->bvs.stage1.u.cm.ppout, &node->bvs.stage1.u.precm.avout, &node->bvs.stage1.u.cm.ppin, &node->bvs.stage1.alters);
         if (docodehoist) {
-            bvectunion(&node_s5->bvs.stage1.u.cm.insert, &node_s5->hoistedexp);
+            bvectunion(&node->bvs.stage1.u.cm.insert, &node->hoistedexp);
         }
 
         if (curproc->has_trap) {
             block = 0;
             i = 0;
             while (i < bitposcount) {
-                if (BVBLOCKEMPTY(node_s5->bvs.stage1.u.cm.insert, block)) {
+                if (BVBLOCKEMPTY(node->bvs.stage1.u.cm.insert, block)) {
                     i += 0x80;
                 } else {
                     bit = 0;
                     while (i < bitposcount && bit < 0x80) {
-                        if (BVINBLOCK(bit, block, node_s5->bvs.stage1.u.cm.insert) && bvectin(i, &trapconstop)) {
+                        if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.insert) && bvectin(i, &trapconstop)) {
                             trap_ichain = bittab[i].ichain;
                             ichain = itable[trap_ichain->table_index];
 
                             while (ichain != NULL) {
                                 if (trap_imply(trap_ichain, ichain)) {
-                                    resetbit(&node_s5->bvs.stage1.u.cm.insert, ichain->bitpos);
+                                    resetbit(&node->bvs.stage1.u.cm.insert, ichain->bitpos);
                                 }
                                 ichain = ichain->next;
                             }
@@ -698,31 +707,31 @@ void codemotion(void) {
             }
         }
 
-        bvectunion(&node_s5->bvs.stage1.u.cm.ppout, &node_s5->bvs.stage1.u.precm.avout);
+        bvectunion(&node->bvs.stage1.u.cm.ppout, &node->bvs.stage1.u.precm.avout);
 
-        initbv(&node_s5->bvs.stage1.u.cm.subinsert, (struct BitVectorBlock) {0});
+        initbv(&node->bvs.stage1.u.cm.subinsert, (struct BitVectorBlock) {0});
         block = 0;
         i = 0;
         while (i < bitposcount) {
-            if (BVBLOCKEMPTY(node_s5->bvs.stage1.u.cm.insert, block)) {
+            if (BVBLOCKEMPTY(node->bvs.stage1.u.cm.insert, block)) {
                 i += 0x80;
             } else {
                 bit = 0;
                 while (i < bitposcount && bit < 0x80) {
-                    if (BVINBLOCK(bit, block, node_s5->bvs.stage1.u.cm.insert)) {
+                    if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.insert)) {
                         insertichain = bittab[i].ichain;
                         if (insertichain->type == isilda) {
-                            setsubinsert(insertichain->islda_isilda.outer_stack_ichain, node_s5);
+                            setsubinsert(insertichain->islda_isilda.outer_stack_ichain, node);
                         } else if (insertichain->type == issvar) {
-                            setsubinsert(insertichain->isvar_issvar.outer_stack_ichain, node_s5);
+                            setsubinsert(insertichain->isvar_issvar.outer_stack_ichain, node);
                         } else if (insertichain->type != isop) {
                             dbgerror(0x2BE);
                         } else if (insertichain->isop.opc == Ustr) {
-                            setsubinsert(insertichain->isop.op2, node_s5);
+                            setsubinsert(insertichain->isop.op2, node);
                         }
                         else if (insertichain->isop.opc == Uisst) {
-                            setsubinsert(insertichain->isop.op1->isvar_issvar.outer_stack_ichain, node_s5);
-                            setsubinsert(insertichain->isop.op2, node_s5);
+                            setsubinsert(insertichain->isop.op1->isvar_issvar.outer_stack_ichain, node);
+                            setsubinsert(insertichain->isop.op2, node);
                         } else if (insertichain->isop.opc == Uistr ||
                                 insertichain->isop.opc == Uistv ||
                                 insertichain->isop.opc == Umov  ||
@@ -735,13 +744,13 @@ void codemotion(void) {
                                 insertichain->isop.opc == Utpne ||
                                 insertichain->isop.opc == Uirst ||
                                 insertichain->isop.opc == Uirsv) {
-                            setsubinsert(insertichain->isop.op1, node_s5);
-                            setsubinsert(insertichain->isop.op2, node_s5);
+                            setsubinsert(insertichain->isop.op1, node);
+                            setsubinsert(insertichain->isop.op2, node);
                         } else if (optab[insertichain->isop.opc].is_binary_op) {
-                            setsubinsert(insertichain->isop.op1, node_s5);
-                            setsubinsert(insertichain->isop.op2, node_s5);
+                            setsubinsert(insertichain->isop.op1, node);
+                            setsubinsert(insertichain->isop.op2, node);
                         } else if (insertichain->isop.opc != Ucg1) {
-                            setsubinsert(insertichain->isop.op1, node_s5);
+                            setsubinsert(insertichain->isop.op1, node);
                         }
                         numinsert += 1;
                     }
@@ -752,43 +761,43 @@ void codemotion(void) {
 
             block++;
         }
-        bvectunion(&savedexp, &node_s5->bvs.stage1.u.cm.subinsert);
-        node_s5 = node_s5->next;
+        bvectunion(&savedexp, &node->bvs.stage1.u.cm.subinsert);
+        node = node->next;
     }
 
     if (outofmem) {
         return;
     }
 
-    node_s5 = graphhead;
-    while (node_s5 != NULL) {
-        bvectunion(&node_s5->bvs.stage1.u.cm.ppin, &node_s5->bvs.stage1.u.cm.subdelete);
-        bvectcopy(&node_s5->bvs.stage1.u.cm.delete, &node_s5->bvs.stage1.u.cm.ppin);
-        bvectminus(&node_s5->bvs.stage1.u.cm.delete, &boolexp);
-        bvectintsect(&node_s5->bvs.stage1.u.cm.delete, &node_s5->bvs.stage1.antlocs);
+    node = graphhead;
+    while (node != NULL) {
+        bvectunion(&node->bvs.stage1.u.cm.ppin, &node->bvs.stage1.u.cm.subdelete);
+        bvectcopy(&node->bvs.stage1.u.cm.delete, &node->bvs.stage1.u.cm.ppin);
+        bvectminus(&node->bvs.stage1.u.cm.delete, &boolexp);
+        bvectintsect(&node->bvs.stage1.u.cm.delete, &node->bvs.stage1.antlocs);
 
-        initbv(&node_s5->bvs.stage1.u.cm.subdelete, (struct BitVectorBlock) {0});
-        bvectcopy(&node_s5->bvs.stage1.u.cm.subdelete, &node_s5->bvs.stage1.u.cm.delete);
-        bvectminus(&node_s5->bvs.stage1.u.cm.subdelete, &storeop);
-        bvectminus(&node_s5->bvs.stage1.u.cm.subdelete, &trapop);
+        initbv(&node->bvs.stage1.u.cm.subdelete, (struct BitVectorBlock) {0});
+        bvectcopy(&node->bvs.stage1.u.cm.subdelete, &node->bvs.stage1.u.cm.delete);
+        bvectminus(&node->bvs.stage1.u.cm.subdelete, &storeop);
+        bvectminus(&node->bvs.stage1.u.cm.subdelete, &trapop);
 
-        stat = node_s5->stat_head;
+        stat = node->stat_head;
         done = 0;
         while (!done && stat != NULL) {
             if (stat->opc == Uisst || stat->opc == Ustr) {
                 if (!stat->outpar) {
                     if (stat->u.store.ichain == NULL) {
-                        resetsubdelete(stat->expr->data.isvar_issvar.assigned_value, node_s5);
-                    } else if (!bvectin(stat->u.store.ichain->bitpos, &node_s5->bvs.stage1.u.cm.delete) || !stat->u.store.unk1E) {
-                        resetsubdelete(stat->expr->data.isvar_issvar.assigned_value, node_s5);
+                        resetsubdelete(stat->expr->data.isvar_issvar.assigned_value, node);
+                    } else if (!bvectin(stat->u.store.ichain->bitpos, &node->bvs.stage1.u.cm.delete) || !stat->u.store.unk1E) {
+                        resetsubdelete(stat->expr->data.isvar_issvar.assigned_value, node);
                     }
 
                     if (stat->opc == Uisst) {
-                        resetsubdelete(stat->expr->data.isvar_issvar.outer_stack, node_s5);
+                        resetsubdelete(stat->expr->data.isvar_issvar.outer_stack, node);
                     }
 
                     if (stat->is_increment) {
-                        delete_unmoved_recur(stat, node_s5);
+                        delete_unmoved_recur(stat, node);
                     }
                 }
             } else if (stat->opc == Uistr ||
@@ -798,11 +807,11 @@ void codemotion(void) {
                        stat->opc == Uirst ||
                        stat->opc == Uirsv) {
                 if (stat->u.store.ichain == NULL) {
-                    resetsubdelete(stat->expr, node_s5);
-                    resetsubdelete(stat->u.store.expr, node_s5);
-                } else if (!bvectin(stat->u.store.ichain->bitpos, &node_s5->bvs.stage1.u.cm.delete) || !stat->u.store.unk1E) {
-                    resetsubdelete(stat->expr, node_s5);
-                    resetsubdelete(stat->u.store.expr, node_s5);
+                    resetsubdelete(stat->expr, node);
+                    resetsubdelete(stat->u.store.expr, node);
+                } else if (!bvectin(stat->u.store.ichain->bitpos, &node->bvs.stage1.u.cm.delete) || !stat->u.store.unk1E) {
+                    resetsubdelete(stat->expr, node);
+                    resetsubdelete(stat->u.store.expr, node);
                 }
             } else if (stat->opc == Uchkt ||
                        stat->opc == Utpeq ||
@@ -811,10 +820,10 @@ void codemotion(void) {
                        stat->opc == Utple ||
                        stat->opc == Utplt ||
                        stat->opc == Utpne) {
-                if (bvectin(stat->u.store.ichain->bitpos, &node_s5->bvs.stage1.u.cm.delete) == 0) {
-                    resetsubdelete(stat->expr, node_s5);
+                if (bvectin(stat->u.store.ichain->bitpos, &node->bvs.stage1.u.cm.delete) == 0) {
+                    resetsubdelete(stat->expr, node);
                     if (stat->opc != Uchkt) {
-                        resetsubdelete(stat->u.trap.expr2, node_s5);
+                        resetsubdelete(stat->u.trap.expr2, node);
                     }
                 }
             } else if (stat->opc != Uaent &&
@@ -841,7 +850,7 @@ void codemotion(void) {
                        stat->opc != Ustep &&
                        stat->opc != Uujp &&
                        stat->opc != Uxpar) {
-                resetsubdelete(stat->expr, node_s5);
+                resetsubdelete(stat->expr, node);
             }
 
             if (stat->next != NULL) {
@@ -849,7 +858,7 @@ void codemotion(void) {
             }
             stat = stat->next;
         }
-        unionminus(&savedexp, &node_s5->bvs.stage1.u.cm.delete, &node_s5->bvs.stage1.u.cm.subdelete);
-        node_s5 = node_s5->next;
+        unionminus(&savedexp, &node->bvs.stage1.u.cm.delete, &node->bvs.stage1.u.cm.subdelete);
+        node = node->next;
     }
 }

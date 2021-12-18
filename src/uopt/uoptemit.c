@@ -4744,7 +4744,7 @@ void reemit() {
                         stat->expr->data.isvar_issvar.assigned_value->ichain->dtype = stat->expr->data.isvar_issvar.assigned_value->datatype;
                     }
 
-                    if (stat->unk2 != 1) {
+                    if (stat->suppressed_iv != 1) {
                         if (stat->opc == Uisst) {
                             func_00424FFC(stat->u.store.expr, NULL, node);
                         }
@@ -4927,15 +4927,15 @@ void reemit() {
                 if (usefeedback) {
                     if (stat->next->graphnode->num == node->successors->graphnode->num) {
                         // likely vs unlikely?
-                        if (stat->next->graphnode->unk2C < node->successors->next->graphnode->unk2C) {
+                        if (stat->next->graphnode->frequency < node->successors->next->graphnode->frequency) {
                             LEXLEV = 1;
-                        } else if (node->successors->next->graphnode->unk2C < stat->next->graphnode->unk2C) {
+                        } else if (node->successors->next->graphnode->frequency < stat->next->graphnode->frequency) {
                             LEXLEV = 2;
                         }
                     } else {
-                        if (stat->next->graphnode->unk2C < node->successors->graphnode->unk2C) {
+                        if (stat->next->graphnode->frequency < node->successors->graphnode->frequency) {
                             LEXLEV = 1;
-                        } else if (node->successors->graphnode->unk2C < stat->next->graphnode->unk2C) {
+                        } else if (node->successors->graphnode->frequency < stat->next->graphnode->frequency) {
                             LEXLEV = 2;
                         }
                     }
@@ -5354,7 +5354,7 @@ void reemit() {
                 ustrptr[7] = (node->num % 100)  / 10  + '0';
                 ustrptr[8] = (node->num % 10) + '0';
                 ustrptr[9] = ' ';
-                func_0042BD94(node->unk2C);
+                func_0042BD94(node->frequency);
                 CONSTVAL.swpart.Chars = ustrptr;
                 uwrite(&u);
             }

@@ -107,7 +107,7 @@ bool expinalter(struct IChain *ichain, struct Graphnode *node) {
 }
 
 /* 
-00431508 func_00431508
+00431508 candidate
 004324F4 findinduct
 00455060 func_00455060
 0045CBDC cupaltered

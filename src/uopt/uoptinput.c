@@ -1496,7 +1496,7 @@ void readnxtinst(void) {
         ustack = ustack->down;
         stattail->expr = expr;
         stattail->is_increment = false;
-        stattail->unk2 = false;
+        stattail->suppressed_iv = false;
         stattail->u.store.unk1C = false;
         stattail->u.store.unk1E = false;
         stattail->u.store.unk1D = false;
@@ -3264,7 +3264,7 @@ void readnxtinst(void) {
             }
             stattail->u.store.u.str.unk2C = 0;
             stattail->u.store.u.str.unk30 = 0;
-            stattail->unk2 = false;
+            stattail->suppressed_iv = false;
             if (!expr->data.isvar_issvar.unk22) {
                 strkillprev(stattail);
             }

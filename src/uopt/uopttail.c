@@ -308,7 +308,7 @@ void tail_recursion(void) {
             init_graphnode(curgraphnode);
             curgraphnode->num = node->num;
             curgraphnode->bvs.init.line = node->bvs.init.line;
-            curgraphnode->unk2C = node->unk2C;
+            curgraphnode->frequency = node->frequency;
             curgraphnode->blockno = node->blockno;
             prev->next = curgraphnode;
             curgraphnode->next = node->next;
@@ -427,7 +427,7 @@ void tail_recursion(void) {
         node->num = curstaticno++;
         node->next = graphhead;
         node->bvs.init.line = graphhead->bvs.init.line;
-        node->unk2C = graphhead->unk2C;
+        node->frequency = graphhead->frequency;
         stmt = alloc_new(sizeof(struct Statement), &perm_heap);
         stmt->next = stathead;
         stathead->prev = stmt;
