@@ -1,10 +1,8 @@
 # IDO uopt debugger
 
-![Screenshot](/screenshots/screenshot1.png)
+![Screenshot](/screenshots/screenshot2.png)
 
 An interactive ncurses debugger for the global optimization pass of the IDO mips compiler.
-
-Useful for visually figuring out how optimization passes work.
 
 See functions named `*_tile_input` in [ncdebug.c](/src/uopt/ncdebug.c) for controls.
 

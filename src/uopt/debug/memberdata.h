@@ -1,17 +1,37 @@
-#ifndef MEMBERDATA_H
-#define MEMBERDATA_H
+#pragma once
 #include <stdlib.h>
 #include <stddef.h>
 
+#include "uopt/debug/dlprint.h"
+
 struct Member {
+    enum TypeID type;
     const char *name;
     const char *typeName;
     size_t offset;
     size_t size;
     int numElements; // > 1 if member is an array, 1 otherwise
+
+    bool isUnion;
+    int numUnionMembers;
+    struct Member *unionMembers;
+    bool (*unionCond)(void *);
 };
+
+#define MEMBER_GET(pointer, member) ((void*)((char*)(pointer) + (member)->offset))
+
+struct StructData {
+    enum TypeID type;
+    const char *structName;
+    int numMembers;
+    struct Member *members;
+};
+
+extern struct StructData gStructData[TYPE_ID_MAX];
+
 
 extern struct Member liveRangeMembers[];
 extern struct Member liveUnitMembers[];
+extern struct Member expressionMembers[];
 
-#endif
+//offsetof(struct LiveRange, livebbs);

@@ -21,7 +21,7 @@ $(error unsupported arch "$(ARCH)")
 endif
 
 CFLAGS := -I src -I src/uopt -I src/uopt/debug -Wall $(ARCH_FLAGS) $(OPTIMIZATION)
-LDFLAGS := $(ARCH_FLAGS) $(OPTIMIZATION)
+LDFLAGS := $(ARCH_FLAGS) $(OPTIMIZATION) -lm
 
 ifeq ($(AVOID_UB),1)
     CFLAGS += -DAVOID_UB

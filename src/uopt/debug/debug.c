@@ -122,6 +122,22 @@ const char *dtype_name(enum Datatype type) {
     }
 }
 
+const char *exprtype_name(ExpressionType type)
+{
+    switch (type) {
+        case empty:    return "empty";
+        case islda:    return "islda";
+        case isconst:  return "isconst";
+        case isvar:    return "isvar";
+        case isop:     return "isop";
+        case isilda:   return "isilda";
+        case issvar:   return "issvar";
+        case dumped:   return "dumped";
+        case isrconst: return "isrconst";
+        default:       return "unknown";
+    }
+}
+
 void print_small_dtype(enum Datatype type, int length) {
     char dtypeSign;
     switch (type) {
@@ -196,27 +212,35 @@ void print_regset64(const char *name, long long set) {
     printf("%s", C_RESET);
 }
 
-int higher_precedence_expr(int cur_precedence, struct Expression *op) {
+int higher_precedence_expr(Uopcode opc, struct Expression *op) {
     if (op == NULL) return false;
     switch (op->type) {
         default:
             return false;
         case islda:
-            return opc_precedence[Ulda] >= cur_precedence;
+            return opc_precedence[Ulda] >= opc_precedence[opc];
         case isop:
-            return opc_precedence[op->data.isop.opc] != 0 && opc_precedence[op->data.isop.opc] >= cur_precedence;
+            if ((opc == Ucvt || opc == Ucvtl) && (op->data.isop.opc == Ucvt || op->data.isop.opc == Ucvtl)) {
+                return false;
+            } else {
+                return opc_precedence[op->data.isop.opc] != 0 && opc_precedence[op->data.isop.opc] >= opc_precedence[opc];
+            }
     }
 }
 
-int higher_precedence_image(int cur_precedence, struct IChain *op) {
+int higher_precedence_image(Uopcode opc, struct IChain *op) {
     if (op == NULL) return false;
     switch (op->type) {
         default:
             return false;
         case islda:
-            return opc_precedence[Ulda] >= cur_precedence;
+            return opc_precedence[Ulda] >= opc_precedence[opc];
         case isop:
-            return opc_precedence[op->isop.opc] != 0 && opc_precedence[op->isop.opc] >= cur_precedence;
+            if ((opc == Ucvt || opc == Ucvtl) && (op->isop.opc == Ucvt || op->isop.opc == Ucvtl)) {
+                return false;
+            } else {
+                return opc_precedence[op->isop.opc] != 0 && opc_precedence[op->isop.opc] >= opc_precedence[opc];
+            }
     }
 }
 

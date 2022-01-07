@@ -263,6 +263,7 @@ void oneproc(void) {
             if (ustackbot != ustack) {
                 stackerror();
             }
+            //ncdebug();
 
             u_copy = u;
             lastcopiedu.Ucode.Opc = Uend;
@@ -346,6 +347,7 @@ void oneproc(void) {
             lasttime = time1;
 
             copypropagate();
+            //ncdebug();
             if (outofmem) {
                 goto done;
             }
@@ -375,6 +377,7 @@ void oneproc(void) {
             }
 
             codemotion();
+            //ncdebug();
             if (outofmem) {
                 goto done;
             }
@@ -395,6 +398,7 @@ void oneproc(void) {
             lasttime = time1;
 
             eliminduct();
+            //ncdebug();
 
             time1 = getclock();
             if (listwritten) {
@@ -455,7 +459,6 @@ void oneproc(void) {
             lasttime = time1;
 
             globalcolor();
-            ncdebug();
 
             if (outofmem) {
                 goto done;
@@ -478,6 +481,8 @@ void oneproc(void) {
 
             opt_saved_regs();
             reemit();
+            ncdebug();
+            ucode_output_clear();
             if (dbugno == 2) {
                 printtab();
             }

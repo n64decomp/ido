@@ -17,101 +17,126 @@
  * Each line stores the string representation of an entire statement/graphnode/thing
  * as well as a tree of StringRep nodes which correspond to ranges inside the string:
  *
- *          STR 100 + -0x4($sp), -0x8($sp)   The DisplayLine itself
- *          ^----------------------------^   StringRep for entire Statement ("top")
- *              ^-------------^              top->children[0]
- *              ^-^                          top->children[0]->children[0]
- *                    ^-------^              top->children[0]->chlidren[1]
- *                               ^-------^   top->chilrden[1]
+ *          str local08 = 100 + local04   The DisplayLine itself
+ *          ^-------------------------^   StringRep for entire Statement ("top")
+ *              ^-----^                   top->chilrden[0]
+ *                        ^-----------^   top->children[1]
+ *                        ^-^             top->children[1]->children[0]
+ *                              ^-----^   top->children[1]->chlidren[1]
  *      
- * This allows us to just inorder traverse, checking the corresponding uopt structs, using mvwchgat() to update highlights.
- * 
- * TODO: it's probably fine to just reprint the highlighted part?
- *  - maybe a tmp file would work better
+ * Highlighting is done by a preorder traversal that stops and calls mvwchgat when a condition is met. 
+ * ncurses maintains the character attributes, even when scrolled off screen.
+ *
+ * TODO: DisplayLine isn't exactly necessary right now, but will be used for searching
  */
 struct LineBuffer build_proc_buffer()
 {
-    struct DisplayLine **dlines;
-    struct Statement *stat = graphhead->stat_head;
-    int numStatements = 0;
-    int numNodes = 1; // 1 for graphhead
+    struct LineBuffer buf = {0};
+    buf.lines = vec_new();
 
-    while (stat != NULL) {
-        numStatements++;
-        if (stat->next != NULL && stat->graphnode != stat->next->graphnode) {
-            numNodes++;
-        }
-        stat = stat->next;
-    }
-
-    int numLines = numNodes + numStatements;
-
-    dlines = calloc(numLines, sizeof (struct DisplayLine *));
-
-    int i = 0;
-
-    stat = graphhead->stat_head;
     bool changedNode = true;
-    while (stat != NULL) {
+    for (struct Statement *stat = graphhead->stat_head; stat != NULL; stat = stat->next) {
         if (changedNode) {
-            dlines[i] = dl_from_graphnode(i, stat->graphnode, true);
-            i++;
+            vec_add(buf.lines, dl_from_graphnode(stat->graphnode, true));
             changedNode = false;
         }
 
-        dlines[i] = dl_from_statement(i, stat);
-        i++;
+        vec_add(buf.lines, dl_from_statement(stat));
         if (stat->next != NULL && stat->graphnode != stat->next->graphnode) {
             changedNode = true;
         }
-        stat = stat->next;
     }
 
-    return (struct LineBuffer) {.numLines = numLines, .lines = dlines};
+    buf.numLines = buf.lines->length;
+    return buf;
+}
+
+static bool inorder_print_vartree(struct Variable *tree, void *lines, enum Memtype mtype, bool reverse, bool found, char *section)
+{
+    if (tree == NULL) return found;
+    struct Variable *left = reverse ? tree->right : tree->left;
+    struct Variable *right = reverse ? tree->left : tree->right;
+
+    found = inorder_print_vartree(left, lines, mtype, reverse, found, section);
+
+    if (tree->location.memtype == mtype) {
+        if (!found) {
+            vec_add(lines, dl_placeholder(section));
+            found = true;
+        }
+        vec_add(lines, dl_from_variable(tree));
+    }
+
+    return inorder_print_vartree(right, lines, mtype, reverse, found, section);
+}
+
+struct LineBuffer build_stack_buffer()
+{
+    struct LineBuffer buf = {0};
+    buf.lines = vec_new();
+
+    inorder_print_vartree(curproc->vartree, buf.lines, Pmt, true, false, "Arguments");
+    inorder_print_vartree(curproc->vartree, buf.lines, Mmt, true, false, "Local Variables");
+
+    if (templochead != NULL) {
+        vec_add(buf.lines, dl_placeholder("Templocs"));
+
+        for (struct Temploc *temp = templochead; temp != NULL; temp = temp->next) {
+            vec_add(buf.lines, dl_from_temploc(temp));
+        }
+    }
+
+    vec_add(buf.lines, dl_new_printf("highestmdef %d", highestmdef));
+    vec_add(buf.lines, dl_new_printf("tempdisp %d", tempdisp));
+
+
+    if (buf.lines->length == 0) {
+        vec_add(buf.lines, dl_placeholder("No local variables"));
+    }
+    buf.numLines = buf.lines->length;
+    return buf;
+}
+
+struct LineBuffer build_reg_assignment_buffer()
+{
+    struct LineBuffer buf = {0};
+    buf.lines = vec_new();
+
+    bool changedNode = true;
+    for (struct Statement *stat = graphhead->stat_head; stat != NULL; stat = stat->next) {
+        if (changedNode) {
+            vec_add(buf.lines, dl_from_graphnode(stat->graphnode, false));
+
+            for (int reg = 1; reg <= 35; reg++) {
+                if (stat->graphnode->regdata.unk44[reg - 1] != NULL) {
+                    vec_add(buf.lines, dl_from_reg_assignment(reg, stat->graphnode->regdata.unk44[reg - 1]));
+                }
+            }
+
+            changedNode = false;
+        }
+
+        if (stat->next != NULL && stat->graphnode != stat->next->graphnode) {
+            changedNode = true;
+        }
+    }
+
+    buf.numLines = buf.lines->length;
+    return buf;
 }
 
 struct LineBuffer build_var_access_buffer()
 {
-    struct DisplayLine **dlines;
-    struct Statement *stat;
-    int numAccesses = 0;
-    int numNodes = 1; // 1 for graphhead
+    struct LineBuffer buf = {0};
+    buf.lines = vec_new();
+
     bool changedNode = true;
-
-    stat = graphhead->stat_head;
-    while (stat != NULL) {
+    for (struct Statement *stat = graphhead->stat_head; stat != NULL; stat = stat->next) {
         if (changedNode) {
+            vec_add(buf.lines, dl_from_graphnode(stat->graphnode, false));
             for (struct VarAccessList *access = stat->graphnode->varlisthead; access != NULL; access = access->next) {
                 if (access->type != 0) {
-                    numAccesses++;
-                }
-            }
-            changedNode = false;
-        }
-
-        if (stat->next != NULL && stat->graphnode != stat->next->graphnode) {
-            numNodes++;
-            changedNode = true;
-        }
-        stat = stat->next;
-    }
-
-    int numLines = numNodes + numAccesses;
-
-    dlines = calloc(numLines, sizeof (struct DisplayLine *));
-
-    int i = 0;
-
-    stat = graphhead->stat_head;
-    changedNode = true;
-    while (stat != NULL) {
-        if (changedNode) {
-            dlines[i] = dl_from_graphnode(i, stat->graphnode, false);
-            i++;
-            for (struct VarAccessList *access = stat->graphnode->varlisthead; access != NULL; access = access->next) {
-                if (access->type != 0) {
-                    dlines[i] = dl_from_var_access(i, access);
-                    i++;
+                    vec_add(buf.lines, dl_from_var_access(access));
                 }
             }
             changedNode = false;
@@ -120,65 +145,154 @@ struct LineBuffer build_var_access_buffer()
         if (stat->next != NULL && stat->graphnode != stat->next->graphnode) {
             changedNode = true;
         }
-        stat = stat->next;
     }
 
-    return (struct LineBuffer) {.numLines = numLines, .lines = dlines};
+    buf.numLines = buf.lines->length;
+    return buf;
 }
 
 struct LineBuffer build_ichain_buffer()
 {
-    int numLines = bitposcount;
-    struct DisplayLine **lines = calloc(numLines, sizeof (struct DisplayLine));
+    struct LineBuffer buf = {0};
+    buf.lines = vec_new();
 
-    if (numLines == 0) {
-        numLines = 1;
-        lines[0] = dl_placeholder(0, "No IChains created");
+    if (bitposcount == 0) {
+        vec_add(buf.lines, dl_placeholder("No IChains created"));
     } else {
         for (int i = 0; i < bitposcount; i++) {
-            lines[i] = dl_from_bittab_ichain(i, bittab[i].ichain);
+            if (i == firstconstbit && i > 0) {
+                vec_add(buf.lines, dl_new_printf("Constants"));
+            }
+            vec_add(buf.lines, dl_from_bittab_ichain(i, bittab[i].ichain));
         }
     }
 
-    return (struct LineBuffer) {.numLines = numLines, .lines = lines};
+    buf.numLines = buf.lines->length;
+    return buf;
 }
 
-struct LineBuffer build_liverange_buffer()
+struct LineBuffer build_bitvect_buffer()
 {
-    int numLines = 0;
-    for (int i = 0; i < bitposcount; i++) {
-        if (bittab[i].liverange != NULL) {
-            numLines++;
-        }
-    }
+    struct LineBuffer buf = {0};
+    buf.lines = vec_new();
 
-    struct DisplayLine **lines;
-    if (numLines == 0) {
-        numLines = 1;
-        lines = calloc(numLines, sizeof (struct DisplayLine));
-        lines[0] = dl_placeholder(0, "No liveranges created");
+    vec_add(buf.lines, dl_from_bitvector(&varbits, "varbits"));
+    vec_add(buf.lines, dl_from_bitvector(&mvarbits, "mvarbits"));
+    vec_add(buf.lines, dl_from_bitvector(&fsymbits, "fsymbits"));
+    vec_add(buf.lines, dl_from_bitvector(&asgnbits, "asgnbits"));
+    vec_add(buf.lines, dl_from_bitvector(&slvarbits, "slvarbits"));
+    vec_add(buf.lines, dl_from_bitvector(&slasgnbits, "slasgnbits"));
+    vec_add(buf.lines, dl_from_bitvector(&storeop, "storeop"));
+    vec_add(buf.lines, dl_from_bitvector(&trapop, "trapop"));
+    vec_add(buf.lines, dl_from_bitvector(&trapconstop, "trapconstop"));
+    vec_add(buf.lines, dl_from_bitvector(&indmults, "indmults"));
+    vec_add(buf.lines, dl_from_bitvector(&boolexp, "boolexp"));
+    vec_add(buf.lines, dl_from_bitvector(&savedexp, "savedexp"));
+    vec_add(buf.lines, dl_from_bitvector(&trepexp, "trepexp"));
+    vec_add(buf.lines, dl_from_bitvector(&used_trepexp, "used_trepexp"));
+    vec_add(buf.lines, dl_from_bitvector(&outmodebits, "outmodebits"));
+    vec_add(buf.lines, dl_from_bitvector(&notinmodebits, "notinmodebits"));
+    vec_add(buf.lines, dl_from_bitvector(&varfactor_muls, "varfactor_muls"));
+    vec_add(buf.lines, dl_from_bitvector(&coloreditems, "coloreditems"));
+    vec_add(buf.lines, dl_from_bitvector(&vareqv, "vareqv"));
+    vec_add(buf.lines, dl_from_bitvector(&asgneqv, "asgneqv"));
+    vec_add(buf.lines, dl_from_bitvector(&coloredparms, "coloredparms"));
+    vec_add(buf.lines, dl_from_bitvector(&iscolored12, "iscolored12"));
+    vec_add(buf.lines, dl_from_bitvector(&iscolored[0], "iscolored[0]"));
+    vec_add(buf.lines, dl_from_bitvector(&iscolored[1], "iscolored[1]"));
+    vec_add(buf.lines, dl_from_bitvector(&old, "old"));
+    vec_add(buf.lines, dl_from_bitvector(&workbvect, "workbvect"));
+
+    buf.numLines = buf.lines->length;
+    return buf;
+}
+
+struct LineBuffer build_ucode_output_buffer()
+{
+    struct LineBuffer buf = {0};
+    buf.lines = vec_new();
+
+    if (gOutput == NULL) {
+        vec_add(buf.lines, dl_placeholder("No output emitted"));
     } else {
-        lines = calloc(numLines, sizeof (struct DisplayLine));
-        int curLine = 0;
-        for (int i = 0; i < bitposcount; i++) {
-            if (bittab[i].liverange != NULL) {
-                lines[curLine] = dl_from_bittab_liverange(curLine, bittab[i].liverange);
-                curLine++;
+        for (struct StatOutput *o = gOutput; o != NULL; o = o->next)
+        {
+            if (o->type == STATEMENT)
+            vec_add(buf.lines, dl_from_statement(o->data));
+            else if (o->type == GRAPHNODE)
+            vec_add(buf.lines, dl_from_graphnode(o->data, false));
+
+            for (int i = 0; i < o->out->length; i++)
+            {
+                switch (o->out->items[i]->type)
+                {
+                    case 0:
+                        {
+                        vec_add(buf.lines, dl_new_printf("%*c%s", o->out->items[i]->indent, ' ', o->out->items[i]->message));
+                        buf.lines->items[buf.lines->length - 1]->top->message = o->out->items[i]->message;
+                        }
+                        break;
+
+                    case 1:
+                        vec_add(buf.lines, dl_from_ucode(&o->out->items[i]->bcode));
+                        break;
+                }
             }
         }
     }
 
-    return (struct LineBuffer) {.numLines = numLines, .lines = lines};
+    buf.numLines = buf.lines->length;
+    return buf;
+}
+
+int liverange_cmp(const void *_a, const void *_b)
+{
+    const struct LiveRange *a = *(void **)_a;
+    const struct LiveRange *b = *(void **)_b;
+    
+    if (a->assigned_reg > 0  && b->assigned_reg == 0) return -1;
+    if (a->assigned_reg == 0 && b->assigned_reg > 0) return 1;
+
+    if (a->adjsave > b->adjsave) return -1;
+    else if (a->adjsave < b->adjsave) return 1;
+    else return a->bitpos - b->bitpos;
+}
+
+struct LineBuffer build_liverange_buffer()
+{
+    struct LineBuffer buf = {0};
+    Vec(struct LiveRange *) *liveranges = vec_new();
+    buf.lines = vec_new();
+
+    for (int i = 0; i < bitposcount; i++)
+    {
+        if (bittab[i].liverange != NULL) {
+            vec_add(liveranges, bittab[i].liverange);
+        }
+    }
+
+    qsort(liveranges->items, liveranges->length, sizeof(struct LiveRange *), liverange_cmp);
+
+    for (int i = 0; i < liveranges->length; i++) {
+        vec_add(buf.lines, dl_from_bittab_liverange(liveranges->items[i]->bitpos, liveranges->items[i]));
+    }
+
+    vec_free(liveranges);
+
+    if (buf.lines->length == 0) {
+        vec_add(buf.lines, dl_placeholder("No liveranges created"));
+    }
+
+    buf.numLines = buf.lines->length;
+    return buf;
 }
 
 void linebuffer_free(struct LineBuffer dbg)
 {
     for (int i = 0; i < dbg.numLines; i++) {
-        dl_free(dbg.lines[i]);
+        dl_free(dbg.lines->items[i]);
     }
 
-    free(dbg.lines);
+    vec_free(dbg.lines);
 }
-
-
 #endif

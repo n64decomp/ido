@@ -10,36 +10,49 @@
 #include <stdarg.h>
 #include <stddef.h>
 
+#include <math.h>
+
 #include "debug.h"
 
+int bittabdigits;
+
 /* StringRep */
-struct StringRep *sr_new(int line)
+struct StringRep *sr_new()
 {
     struct StringRep *sr = calloc(1, sizeof(struct StringRep));
-    sr->line = line;
+    sr->children = vec_new();
     return sr;
 }
 
 void sr_free(struct StringRep *sr)
 {
     if (sr == NULL) return;
-    for (int i = 0; i < sr->numChildren; i++) {
-        sr_free(sr->children[i]);
+    
+    for (int i = 0; i < sr->children->length; i++) {
+        sr_free(sr->children->items[i]);
     }
 
+    vec_free(sr->children);
     free(sr);
 }
 
-struct StringRep *sr_newchild(struct StringRep *parent)
+struct StringRep *sr_newchild(struct DisplayLine *dl, struct StringRep *parent)
 {
-    parent->children[parent->numChildren] = sr_new(parent->line);
-    return parent->children[parent->numChildren++];
+    if (parent == NULL) { 
+        dl->top = sr_new();
+        return dl->top;
+    }
+    struct StringRep *child = sr_new();
+    vec_add(parent->children, child);
+    return child;
+    //parent->children[parent->numChildren] = sr_new();
+    //return parent->children[parent->numChildren++];
 }
 
 struct StringRep *sr_get_child_at_pos(struct StringRep *sr, int pos)
 {
-    for (int c = 0; c < sr->numChildren; c++) {
-        struct StringRep *child = sr->children[c];
+    for (int c = 0; c < sr->children->length; c++) {
+        struct StringRep *child = sr->children->items[c];
         if (pos >= child->start && pos < child->start + child->len) {
             return sr_get_child_at_pos(child, pos);
         }
@@ -77,10 +90,33 @@ void dl_realloc(struct DisplayLine *restrict dl)
     dl->maxLen += 128;
 }
 
-// TODO: use temp files instead strings?
+// TODO: use temp files instead of strings?
+static int dl_vprintf(struct DisplayLine *restrict dl, char *restrict fmt, va_list args)
+{
+    int printed;
+    int maxLen;
+    do {
+        printed = vsnprintf(dl->s + dl->pos, dl->maxLen - dl->pos, fmt, args);
+
+        maxLen = dl->maxLen;
+        if (dl->pos + printed >= maxLen) {
+            dl_realloc(dl);
+        }
+    } while (dl->pos + printed >= maxLen);
+    dl->pos += printed;
+    return printed;
+
+}
+
 int dl_printf(struct DisplayLine *restrict dl, char *restrict fmt, ...)
 {
     va_list args;
+    va_start(args, fmt);
+    int printed = dl_vprintf(dl, fmt, args);
+    va_end(args);
+    return printed;
+
+    /* 
     int printed;
     int maxLen;
     do {
@@ -95,39 +131,40 @@ int dl_printf(struct DisplayLine *restrict dl, char *restrict fmt, ...)
     } while (dl->pos + printed >= maxLen);
     dl->pos += printed;
     return printed;
+     */
 }
 
-int dl_print_opcode(struct DisplayLine *dl, Uopcode opc)
+void dl_print_opcode(struct DisplayLine *dl, Uopcode opc)
 {
-    return dl_printf(dl, "%.4s ", utab[opc].opcname);
+    dl_printf(dl, "%.4s ", utab[opc].opcname);
 }
 
-int dl_print_variable(struct DisplayLine *dl, struct VariableLocation loc)
+void dl_print_variable(struct DisplayLine *dl, struct VariableLocation loc)
 {
     switch (loc.memtype) {
         case Mmt:
-            return dl_printf(dl, "local%02X", -loc.addr);
+            dl_printf(dl, "local%02X", -loc.addr); break;
 
         case Rmt:
-            return dl_printf(dl, "%s", regnames[loc.addr]);
+            dl_printf(dl, "%s", regnames[loc.addr]); break;
 
         case Pmt:
-            return dl_printf(dl, "arg%d", loc.addr / 4);
+            dl_printf(dl, "arg%d", loc.addr / 4); break;
 
         case Smt:
-            return dl_printf(dl, "global%d", loc.blockno);
+            dl_printf(dl, "global%d", loc.blockno); break;
 
         default:
-            return dl_printf(dl, "var(%cmt, %d, %d)", getmtyname(loc.memtype), loc.addr, loc.blockno);
+            dl_printf(dl, "var(%cmt, %d, %d)", getmtyname(loc.memtype), loc.addr, loc.blockno); break;
     }
 }
 
-int dl_print_constant(struct DisplayLine *dl, Datatype dtype, union Constant constval)
+void dl_print_constant(struct DisplayLine *dl, Datatype dtype, union Constant constval)
 {
     struct RealstoreData *real;
     switch (dtype) {
         case Fdt:
-            return dl_printf(dl, "proc%d", constval.intval);
+            dl_printf(dl, "proc%d", constval.intval); break;
 
         case Adt:
         case Gdt:
@@ -135,22 +172,22 @@ int dl_print_constant(struct DisplayLine *dl, Datatype dtype, union Constant con
         case Jdt:
         case Ldt:
         case Ndt:
-            return dl_printf(dl, "%d", constval.intval);
+            dl_printf(dl, "%d", constval.intval); break;
 
         case Idt:
         case Kdt:
-            return dl_printf(dl, "%lld", constval.longval);
+            dl_printf(dl, "%lld", constval.longval); break;
 
         default:
             real = realstore;
             for (int i = 0; i < (constval.real.disp >> 8); i++) {
                 real = real->next;
             }
-            return dl_printf(dl, "%.*s%s", constval.real.len, &real->c[constval.real.disp & 0xff], dtype == Rdt ? "f" : "");
+            dl_printf(dl, "%.*s%s", constval.real.len, &real->c[constval.real.disp & 0xff], dtype == Rdt ? "f" : ""); break;
     }
 }
 
-int dl_print_small_dtype(struct DisplayLine *dl, enum Datatype type, int length)
+void dl_print_small_dtype(struct DisplayLine *dl, enum Datatype type, int length)
 {
     char dtypeSign;
     switch (type) {
@@ -159,64 +196,124 @@ int dl_print_small_dtype(struct DisplayLine *dl, enum Datatype type, int length)
         case Kdt:
         case Ldt: dtypeSign = 'u'; break;
 
-        default: return dl_printf(dl, "%s", dtype_name(type));
+        default: dl_printf(dl, "%s", dtype_name(type)); return;
     }
 
-    return dl_printf(dl, "%c%d", dtypeSign, length);
+    dl_printf(dl, "%c%d", dtypeSign, length);
 }
 
-int dl_print_register(struct DisplayLine *dl, struct StringRep *parent, int regColor)
+void dl_print_register(struct DisplayLine *dl, struct StringRep *parent, int regColor)
 {
-    int printed = 0;
-    if (regColor <= 0) return 0;
+    //if (regColor <= 0) return 0;
 
-    struct StringRep *sr = sr_newchild(parent);
+    struct StringRep *sr = sr_newchild(dl, parent);
     sr->start = dl->pos;
     sr->type = REGISTER;
-    sr->reg = coloroffset(regColor);
+    if (regColor >= 1 && regColor <= 35) {
+        sr->reg = coloroffset(regColor);
+        dl_printf(dl, "%s", regnames[sr->reg]);
+    } else {
+        sr->reg = regColor;
+        dl_printf(dl, "%d", sr->reg);
 
-    printed += dl_printf(dl, "%s", regnames[sr->reg]);
+    }
 
     sr->len = dl->pos - sr->start;
-    return printed;
+}
+
+void dl_print_regset64(struct DisplayLine *dl, struct StringRep *parent, int set[static 2])
+{
+    struct StringRep *sr = sr_newchild(dl, parent);
+    sr->start = dl->pos;
+    sr->type = REGSET64;
+    sr->regset[0] = set[0];
+    sr->regset[1] = set[1];
+    bool firstPrint = true;
+    dl_printf(dl, "[");
+    for (int reg = 1; reg <= 35; reg++) {
+        if (SET_IN(set, reg)) {
+            int color = coloroffset(reg);
+            if (firstPrint) {
+                dl_printf(dl, "%s", regname(color));
+                firstPrint = false;
+            } else {
+                dl_printf(dl, " %s", regname(color));
+            }
+        }
+    }
+    dl_printf(dl, "]");
+    sr->len = dl->pos - sr->start;
+}
+
+void dl_print_reg_boolarray(struct DisplayLine *dl, struct StringRep *parent, char regs[static 5])
+{
+    struct StringRep *sr = sr_newchild(dl, parent);
+    sr->start = dl->pos;
+    sr->type = REGBOOLARRAY;
+    for (int i = 0; i < 5; i++) {
+        sr->regboolarray[i] = regs[i];
+    }
+    bool firstPrint = true;
+    
+    dl_printf(dl, "[");
+    for (int reg = 1; reg <= 35; reg++) {
+        if (BITARR_GET(regs, reg - 1)) {
+            int color = coloroffset(reg);
+            if (firstPrint) {
+                dl_printf(dl, "%s", regname(color));
+                firstPrint = false;
+            } else {
+                dl_printf(dl, " %s", regname(color));
+            }
+        }
+    }
+    dl_printf(dl, "]");
+    sr->len = dl->pos - sr->start;
 }
 
 // TODO: it's weird that this and dl_print_ichain create a child, while dl_print_statement does not
-int dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expression *expr)
+void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expression *expr)
 {
-    int printed = 0;
     bool leftParens = false;
     bool rightParens = false;
-    if (expr == NULL) return 0;
+    if (expr == NULL) return;
 
-    struct StringRep *sr = sr_newchild(parent);
+    struct StringRep *sr = sr_newchild(dl, parent);
 
     sr->start = dl->pos;
     sr->type = EXPRESSION;
-    sr->expr = expr;
+
+copy:
 
     switch (expr->type) {
         case isconst:
-            printed += dl_print_constant(dl, expr->datatype, expr->data.isconst.number);
+            dl_print_constant(dl, expr->datatype, expr->data.isconst.number);
             break;
 
         case isvar:
         case issvar:
-            printed += dl_print_variable(dl, expr->data.isvar_issvar.location);
+            // TODO: make this optional
+            if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
+                expr = expr->data.isvar_issvar.copy;
+                goto copy;
+            }
+
+            dl_print_variable(dl, expr->data.isvar_issvar.location);
             break;
 
-        case islda:
         case isilda:
-            printed += dl_printf(dl, "&");
-            printed += dl_print_variable(dl, expr->data.islda_isilda.address);
+            dl_printf(dl, "ILDA");
+        case islda:
+            dl_printf(dl, "&");
+            dl_print_variable(dl, expr->data.islda_isilda.address);
             break;
 
         case isop:
             if (optab[expr->data.isop.opc].is_binary_op) {
-                leftParens = higher_precedence_expr(opc_precedence[expr->data.isop.opc], expr->data.isop.op1);
-                rightParens = higher_precedence_expr(opc_precedence[expr->data.isop.opc], expr->data.isop.op2);
+                leftParens = higher_precedence_expr(expr->data.isop.opc, expr->data.isop.op1);
+                rightParens = higher_precedence_expr(expr->data.isop.opc, expr->data.isop.op2);
             } else {
-                leftParens = higher_precedence_expr(opc_precedence[expr->data.isop.opc], expr->data.isop.op1);
+                leftParens = higher_precedence_expr(expr->data.isop.opc, expr->data.isop.op1);
                 rightParens = false;
             }
             switch (expr->data.isop.opc) {
@@ -238,21 +335,21 @@ int dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expre
                 case Ushr:
                 case Ushl:
                     if (leftParens) {
-                        printed += dl_printf(dl,  "(");
+                        dl_printf(dl,  "(");
                     }
-                    printed += dl_print_expr(dl, sr, expr->data.isop.op1);
+                    dl_print_expr(dl, sr, expr->data.isop.op1);
                     if (leftParens) {
-                        printed += dl_printf(dl,  ")");
+                        dl_printf(dl,  ")");
                     }
 
-                    printed += dl_printf(dl, " %s ", opc_operator(expr->data.isop.opc));
+                    dl_printf(dl, " %s ", opc_operator(expr->data.isop.opc));
 
                     if (rightParens) {
-                        printed += dl_printf(dl,  "(");
+                        dl_printf(dl,  "(");
                     }
-                    printed += dl_print_expr(dl, sr, expr->data.isop.op2);
+                    dl_print_expr(dl, sr, expr->data.isop.op2);
                     if (rightParens) {
-                        printed += dl_printf(dl,  ")");
+                        dl_printf(dl,  ")");
                     }
                     break;
 
@@ -260,13 +357,13 @@ int dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expre
                 case Unot:
                 case Ulnot:
                 case Uneg:
-                    printed += dl_printf(dl, "%s", opc_operator(expr->data.isop.opc));
+                    dl_printf(dl, "%s", opc_operator(expr->data.isop.opc));
                     if (leftParens) {
-                        printed += dl_printf(dl,  "(");
+                        dl_printf(dl,  "(");
                     }
-                    printed += dl_print_expr(dl, sr, expr->data.isop.op1);
+                    dl_print_expr(dl, sr, expr->data.isop.op1);
                     if (leftParens) {
-                        printed += dl_printf(dl,  ")");
+                        dl_printf(dl,  ")");
                     }
                     break;
 
@@ -277,104 +374,101 @@ int dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expre
                         bool hasOffset = expr->data.isop.datasize != 0;
 
                         // output: *((e1 + e2) + offset)
-                        printed += dl_printf(dl, "%s", opc_operator(expr->data.isop.opc));
-                        if (hasOffset || higher_precedence_expr(opc_precedence[expr->data.isop.opc], expr->data.isop.op1)) {
+                        dl_printf(dl, "%s", opc_operator(expr->data.isop.opc));
+                        if (hasOffset || higher_precedence_expr(expr->data.isop.opc, expr->data.isop.op1)) {
                             closeParens = true;
-                            printed += dl_printf(dl,  "(");
+                            dl_printf(dl,  "(");
                         }
-                        if (hasOffset && higher_precedence_expr(opc_precedence[Uadd], expr->data.isop.op1)) {
+                        if (hasOffset && higher_precedence_expr(Uadd, expr->data.isop.op1)) {
                             closeInnerParens = true;
-                            printed += dl_printf(dl,  "(");
+                            dl_printf(dl,  "(");
                         }
                         
-                        printed += dl_print_expr(dl, sr, expr->data.isop.op1);
+                        dl_print_expr(dl, sr, expr->data.isop.op1);
 
                         if (closeInnerParens) {
-                            printed += dl_printf(dl,  ")");
+                            dl_printf(dl,  ")");
                         }
                         if (hasOffset) {
-                            printed += dl_printf(dl, " + %d", expr->data.isop.datasize);
+                            dl_printf(dl, " + %d", expr->data.isop.datasize);
                         }
                         if (closeParens) {
-                            printed += dl_printf(dl,  ")");
+                            dl_printf(dl,  ")");
                         }
                     }
                     break;
 
 
                 case Uixa:
-                    printed += dl_print_expr(dl, sr, expr->data.isop.op1);
-                    printed += dl_printf(dl,  "[");
-                    printed += dl_print_expr(dl, sr, expr->data.isop.op2);
-                    printed += dl_printf(dl,  "]");
+                    dl_print_expr(dl, sr, expr->data.isop.op1);
+                    dl_printf(dl,  "[");
+                    dl_print_expr(dl, sr, expr->data.isop.op2);
+                    dl_printf(dl,  "]");
                     break;
 
                 case Ucvtl:
-                    printed += dl_printf(dl,  "(");
-                    printed += dl_print_small_dtype(dl, expr->datatype, expr->data.isop.datasize);
-                    printed += dl_printf(dl,  ")");
+                    dl_printf(dl,  "(");
+                    dl_print_small_dtype(dl, expr->datatype, expr->data.isop.datasize);
+                    dl_printf(dl,  ")");
 
                     if (leftParens) {
-                        printed += dl_printf(dl,  "(");
+                        dl_printf(dl,  "(");
                     }
-                    printed += dl_print_expr(dl, sr, expr->data.isop.op1);
+                    dl_print_expr(dl, sr, expr->data.isop.op1);
                     if (leftParens) {
-                        printed += dl_printf(dl,  ")");
+                        dl_printf(dl,  ")");
                     }
                     break;
 
                 case Ucvt:
-                    printed += dl_printf(dl,  "(%s)", dtype_name(expr->data.isop.datatype));
+                    dl_printf(dl,  "(%s)", dtype_name(expr->data.isop.datatype));
                     if (leftParens) {
-                        printed += dl_printf(dl,  "(");
+                        dl_printf(dl,  "(");
                     }
-                    printed += dl_print_expr(dl, sr, expr->data.isop.op1);
+                    dl_print_expr(dl, sr, expr->data.isop.op1);
                     if (leftParens) {
-                        printed += dl_printf(dl,  ")");
+                        dl_printf(dl,  ")");
                     }
                     break;
 
                 default:
-                    printed += dl_print_opcode(dl, expr->data.isop.opc);
-                    printed += dl_printf(dl, "(");
-                    printed += dl_print_expr(dl, sr, expr->data.isop.op1);
+                    dl_print_opcode(dl, expr->data.isop.opc);
+                    dl_printf(dl, "(");
+                    dl_print_expr(dl, sr, expr->data.isop.op1);
                     if (optab[expr->data.isop.opc].is_binary_op) {
-                        printed += dl_printf(dl,  ", ");
-                        printed += dl_print_expr(dl, sr, expr->data.isop.op2);
+                        dl_printf(dl,  ", ");
+                        dl_print_expr(dl, sr, expr->data.isop.op2);
                     }
-                    printed += dl_printf(dl, ")");
+                    dl_printf(dl, ")");
                     break;
             }
             break;
 
         case dumped:
-            printed += dl_printf(dl, "dumped");
+            dl_printf(dl, "dumped");
             break;
 
         case empty:
-            printed += dl_printf(dl, "empty");
+            dl_printf(dl, "empty");
             break;
 
         default:
-            fprintf(stderr, "unhandled expr type");
+            fprintf(stderr, "unhandled expr type %p %d", expr, expr->type);
             break;
     }
-
+    sr->expr = expr;
     sr->len = dl->pos - sr->start;
-
-    return printed;
 }
 
 // duplicate code because IChains are ridiculously similar to Expressions. 
 // it was the 80's or something, so uopt didn't just reuse Expression
-int dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IChain *ichain)
+void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IChain *ichain)
 {
-    int printed = 0;
     bool leftParens = false;
     bool rightParens = false;
-    if (ichain == NULL) return 0;
+    if (ichain == NULL) return;
 
-    struct StringRep *sr = sr_newchild(parent);
+    struct StringRep *sr = sr_newchild(dl, parent);
 
     sr->start = dl->pos;
     sr->type = ICHAIN;
@@ -382,26 +476,32 @@ int dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct ICh
 
     switch (ichain->type) {
         case isconst:
-            printed += dl_print_constant(dl, ichain->dtype, ichain->isconst.number);
+            dl_print_constant(dl, ichain->dtype, ichain->isconst.number);
             break;
 
         case isvar:
         case issvar:
-            printed += dl_print_variable(dl, ichain->isvar_issvar.location);
+            dl_print_variable(dl, ichain->isvar_issvar.location);
             break;
 
         case islda:
         case isilda:
-            printed += dl_printf(dl, "&");
-            printed += dl_print_variable(dl, ichain->islda_isilda.address);
+            if (ichain->islda_isilda.offset != 0) {
+                dl_printf(dl, "(");
+            }
+            dl_printf(dl, "&");
+            dl_print_variable(dl, ichain->islda_isilda.address);
+            if (ichain->islda_isilda.offset != 0) {
+                dl_printf(dl, " + %d)", ichain->islda_isilda.offset);
+            }
             break;
 
         case isop:
             if (optab[ichain->isop.opc].is_binary_op) {
-                leftParens = higher_precedence_image(opc_precedence[ichain->isop.opc], ichain->isop.op1);
-                rightParens = higher_precedence_image(opc_precedence[ichain->isop.opc], ichain->isop.op2);
+                leftParens = higher_precedence_image(ichain->isop.opc, ichain->isop.op1);
+                rightParens = higher_precedence_image(ichain->isop.opc, ichain->isop.op2);
             } else {
-                leftParens = higher_precedence_image(opc_precedence[ichain->isop.opc], ichain->isop.op1);
+                leftParens = higher_precedence_image(ichain->isop.opc, ichain->isop.op1);
                 rightParens = false;
             }
 
@@ -424,21 +524,21 @@ int dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct ICh
                 case Ushr:
                 case Ushl:
                     if (leftParens) {
-                        printed += dl_printf(dl,  "(");
+                        dl_printf(dl,  "(");
                     }
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op1);
+                    dl_print_ichain(dl, sr, ichain->isop.op1);
                     if (leftParens) {
-                        printed += dl_printf(dl,  ")");
+                        dl_printf(dl,  ")");
                     }
 
-                    printed += dl_printf(dl, " %s ", opc_operator(ichain->isop.opc));
+                    dl_printf(dl, " %s ", opc_operator(ichain->isop.opc));
 
                     if (rightParens) {
-                        printed += dl_printf(dl,  "(");
+                        dl_printf(dl,  "(");
                     }
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op2);
+                    dl_print_ichain(dl, sr, ichain->isop.op2);
                     if (rightParens) {
-                        printed += dl_printf(dl,  ")");
+                        dl_printf(dl,  ")");
                     }
                     break;
 
@@ -446,13 +546,13 @@ int dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct ICh
                 case Unot:
                 case Ulnot:
                 case Uneg:
-                    printed += dl_printf(dl, "%s", opc_operator(ichain->isop.opc));
+                    dl_printf(dl, "%s", opc_operator(ichain->isop.opc));
                     if (leftParens) {
-                        printed += dl_printf(dl,  "(");
+                        dl_printf(dl,  "(");
                     }
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op1);
+                    dl_print_ichain(dl, sr, ichain->isop.op1);
                     if (leftParens) {
-                        printed += dl_printf(dl,  ")");
+                        dl_printf(dl,  ")");
                     }
                     break;
 
@@ -463,60 +563,60 @@ int dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct ICh
                         bool hasOffset = ichain->isop.size != 0;
 
                         // output: *((e1 + e2) + offset)
-                        printed += dl_printf(dl, "%s", opc_operator(ichain->isop.opc));
-                        if (hasOffset || higher_precedence_image(opc_precedence[ichain->isop.opc], ichain->isop.op1)) {
+                        dl_printf(dl, "%s", opc_operator(ichain->isop.opc));
+                        if (hasOffset || higher_precedence_image(ichain->isop.opc, ichain->isop.op1)) {
                             closeParens = true;
-                            printed += dl_printf(dl,  "(");
+                            dl_printf(dl,  "(");
                         }
-                        if (hasOffset && higher_precedence_image(opc_precedence[Uadd], ichain->isop.op1)) {
+                        if (hasOffset && higher_precedence_image(Uadd, ichain->isop.op1)) {
                             closeInnerParens = true;
-                            printed += dl_printf(dl,  "(");
+                            dl_printf(dl,  "(");
                         }
                         
-                        printed += dl_print_ichain(dl, sr, ichain->isop.op1);
+                        dl_print_ichain(dl, sr, ichain->isop.op1);
 
                         if (closeInnerParens) {
-                            printed += dl_printf(dl,  ")");
+                            dl_printf(dl,  ")");
                         }
                         if (hasOffset) {
-                            printed += dl_printf(dl, " + %d", ichain->isop.size);
+                            dl_printf(dl, " + %d", ichain->isop.size);
                         }
                         if (closeParens) {
-                            printed += dl_printf(dl,  ")");
+                            dl_printf(dl,  ")");
                         }
                     }
                     break;
 
 
                 case Uixa:
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op1);
-                    printed += dl_printf(dl,  "[");
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op2);
-                    printed += dl_printf(dl,  "]");
+                    dl_print_ichain(dl, sr, ichain->isop.op1);
+                    dl_printf(dl,  "[");
+                    dl_print_ichain(dl, sr, ichain->isop.op2);
+                    dl_printf(dl,  "]");
                     break;
 
                 case Ucvtl:
-                    printed += dl_printf(dl,  "(");
-                    printed += dl_print_small_dtype(dl, ichain->dtype, ichain->isop.size);
-                    printed += dl_printf(dl,  ")");
+                    dl_printf(dl,  "(");
+                    dl_print_small_dtype(dl, ichain->dtype, ichain->isop.size);
+                    dl_printf(dl,  ")");
 
                     if (leftParens) {
-                        printed += dl_printf(dl,  "(");
+                        dl_printf(dl,  "(");
                     }
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op1);
+                    dl_print_ichain(dl, sr, ichain->isop.op1);
                     if (leftParens) {
-                        printed += dl_printf(dl,  ")");
+                        dl_printf(dl,  ")");
                     }
                     break;
 
                 case Ucvt:
-                    printed += dl_printf(dl,  "(%s)", dtype_name(ichain->isop.datatype));
+                    dl_printf(dl,  "(%s)", dtype_name(ichain->isop.datatype));
                     if (leftParens) {
-                        printed += dl_printf(dl,  "(");
+                        dl_printf(dl,  "(");
                     }
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op1);
+                    dl_print_ichain(dl, sr, ichain->isop.op1);
                     if (leftParens) {
-                        printed += dl_printf(dl,  ")");
+                        dl_printf(dl,  ")");
                     }
                     break;
 
@@ -524,10 +624,10 @@ int dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct ICh
                 // these aren't marked as binary operators, even though they have two operands
                 case Uisst:
                 case Ustr:
-                    printed += dl_print_opcode(dl, ichain->isop.opc);
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op1);
-                    printed += dl_printf(dl, " = ");
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op2);
+                    dl_print_opcode(dl, ichain->isop.opc);
+                    dl_print_ichain(dl, sr, ichain->isop.op1);
+                    dl_printf(dl, " = ");
+                    dl_print_ichain(dl, sr, ichain->isop.op2);
                     break;
 
                 case Uistr:
@@ -537,48 +637,48 @@ int dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct ICh
                         bool closeParens = false;
                         bool hasOffset = ichain->isop.s.word != 0;
 
-                        printed += dl_print_opcode(dl, ichain->isop.opc);
+                        dl_print_opcode(dl, ichain->isop.opc);
                         // *((e1 + e2) + offset) = op2
-                        printed += dl_printf(dl, "%s", opc_operator(ichain->isop.opc));
-                        if (hasOffset || higher_precedence_image(opc_precedence[ichain->isop.opc], ichain->isop.op1)) {
+                        dl_printf(dl, "%s", opc_operator(ichain->isop.opc));
+                        if (hasOffset || higher_precedence_image(ichain->isop.opc, ichain->isop.op1)) {
                             closeParens = true;
-                            printed += dl_printf(dl,  "(");
+                            dl_printf(dl,  "(");
                         }
-                        if (hasOffset && higher_precedence_image(opc_precedence[Uadd], ichain->isop.op1)) {
+                        if (hasOffset && higher_precedence_image(Uadd, ichain->isop.op1)) {
                             closeInnerParens = true;
-                            printed += dl_printf(dl,  "(");
+                            dl_printf(dl,  "(");
                         }
-                        printed += dl_print_ichain(dl, sr, ichain->isop.op1);
+                        dl_print_ichain(dl, sr, ichain->isop.op1);
                         if (closeInnerParens) {
-                            printed += dl_printf(dl,  ")");
+                            dl_printf(dl,  ")");
                         }
                         if (hasOffset) {
-                            printed += dl_printf(dl, " + %d", ichain->isop.s.word);
+                            dl_printf(dl, " + %d", ichain->isop.s.word);
                         }
                         if (closeParens) {
-                            printed += dl_printf(dl,  ")");
+                            dl_printf(dl,  ")");
                         }
 
-                        printed += dl_printf(dl, " = ");
-                        printed += dl_print_ichain(dl, sr, ichain->isop.op2);
+                        dl_printf(dl, " = ");
+                        dl_print_ichain(dl, sr, ichain->isop.op2);
                     }
                     break;
 
                 case Umov:
                 case Umovv:
-                    printed += dl_print_opcode(dl, ichain->isop.opc);
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op1);
-                    printed += dl_printf(dl, " <- ");
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op2);
+                    dl_print_opcode(dl, ichain->isop.opc);
+                    dl_print_ichain(dl, sr, ichain->isop.op1);
+                    dl_printf(dl, " <- ");
+                    dl_print_ichain(dl, sr, ichain->isop.op2);
                     break;
 
                 case Uirsv:
                 case Uirst:
-                    printed += dl_print_opcode(dl, ichain->isop.opc);
+                    dl_print_opcode(dl, ichain->isop.opc);
                     // print rhs first
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op2);
-                    printed += dl_printf(dl, ", ");
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op1);
+                    dl_print_ichain(dl, sr, ichain->isop.op2);
+                    dl_printf(dl, ", ");
+                    dl_print_ichain(dl, sr, ichain->isop.op1);
                     break;
 
                 case Utpeq:
@@ -587,33 +687,45 @@ int dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct ICh
                 case Utple:
                 case Utplt:
                 case Utpne:
-                    printed += dl_print_opcode(dl, ichain->isop.opc);
+                    dl_print_opcode(dl, ichain->isop.opc);
                     // lhs first
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op1);
-                    printed += dl_printf(dl, ", ");
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op2);
+                    dl_print_ichain(dl, sr, ichain->isop.op1);
+                    dl_printf(dl, ", ");
+                    dl_print_ichain(dl, sr, ichain->isop.op2);
+                    break;
+
+                case Ucg1:
+                    dl_print_opcode(dl, ichain->isop.opc);
+                    dl_printf(dl, "(");
+                    dl_print_ichain(dl, sr, ichain->isop.op1);
+                    if (optab[ichain->isop.opc].is_binary_op) {
+                        dl_printf(dl,  ", ");
+                        dl_print_ichain(dl, sr, ichain->isop.op2);
+                    }
+                    dl_printf(dl, ")");
+                    dl_printf(dl, " node %d", ichain->isop.size);
                     break;
 
                 case Uchkt:
                 default:
-                    printed += dl_print_opcode(dl, ichain->isop.opc);
-                    printed += dl_printf(dl, "(");
-                    printed += dl_print_ichain(dl, sr, ichain->isop.op1);
+                    dl_print_opcode(dl, ichain->isop.opc);
+                    dl_printf(dl, "(");
+                    dl_print_ichain(dl, sr, ichain->isop.op1);
                     if (optab[ichain->isop.opc].is_binary_op) {
-                        printed += dl_printf(dl,  ", ");
-                        printed += dl_print_ichain(dl, sr, ichain->isop.op2);
+                        dl_printf(dl,  ", ");
+                        dl_print_ichain(dl, sr, ichain->isop.op2);
                     }
-                    printed += dl_printf(dl, ")");
+                    dl_printf(dl, ")");
                     break;
             }
             break;
 
         case dumped:
-            printed += dl_printf(dl, "dumped");
+            dl_printf(dl, "dumped");
             break;
 
         case empty:
-            printed += dl_printf(dl, "empty");
+            dl_printf(dl, "empty");
             break;
 
         default:
@@ -622,48 +734,83 @@ int dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct ICh
     }
 
     sr->len = dl->pos - sr->start;
-
-    return printed;
 }
 
-int dl_print_liverange(struct DisplayLine *dl, struct StringRep *parent, struct LiveRange *liverange)
+void dl_print_trepimage(struct DisplayLine *dl, struct StringRep *parent, struct TrepImageThing *trep)
 {
-    int printed = 0;
-    if (liverange == NULL) return 0;
+    if (trep->ichain != NULL)
+    {
+        dl_print_ichain(dl, parent, trep->ichain);
+    }
+    if (trep->ichain2 != NULL)
+    {
+        dl_printf(dl, ", 2: ");
+        dl_print_ichain(dl, parent, trep->ichain2);
+    }
+    if (trep->OPC != 0)
+    {
+        dl_printf(dl, " opc: %.4s", utab[trep->OPC].opcname);
+    }
+    if (trep->unk28 != NULL)
+    {
+        dl_printf(dl, ", 3: ");
+        dl_print_ichain(dl, parent, trep->unk28);
+    }
+}
 
-    struct StringRep *sr = sr_newchild(parent);
+void dl_print_liveunit(struct DisplayLine *dl, struct StringRep *parent, struct LiveUnit *liveunit)
+{
+    if (liveunit == NULL) return;
+
+    struct StringRep *sr = sr_newchild(dl, parent);
+
+    sr->start = dl->pos;
+    sr->type = LIVEUNIT;
+    sr->liveunit = liveunit;
+
+    dl_printf(dl, "lu: ");
+    if (liveunit->node != NULL) {
+        dl_print_graphnode(dl, sr, liveunit->node, false);
+    }
+    sr->len = dl->pos - sr->start;
+}
+
+void dl_print_liverange(struct DisplayLine *dl, struct StringRep *parent, struct LiveRange *liverange)
+{
+    if (liverange == NULL) return;
+
+    struct StringRep *sr = sr_newchild(dl, parent);
 
     sr->start = dl->pos;
     sr->type = LIVERANGE;
     sr->liverange = liverange;
 
+    dl_printf(dl, "%*d: % .2f ", bittabdigits, liverange->bitpos, liverange->adjsave);
     if (liverange->ichain != NULL) {
         if (liverange->assigned_reg > 0) {
-            printed += dl_print_register(dl, sr, liverange->assigned_reg);
-            printed += dl_printf(dl, " -> ");
+            dl_print_register(dl, sr, liverange->assigned_reg);
+            dl_printf(dl, " -> ");
         }
 
-        printed += dl_print_ichain(dl, sr, liverange->ichain);
+        dl_print_ichain(dl, sr, liverange->ichain);
     } else {
-        printed += dl_printf(dl, "ichain NULL?!");
+        dl_printf(dl, "ichain NULL?!");
     }
 
     sr->len = dl->pos - sr->start;
-    return printed;
 }
 
-int dl_print_assignment(struct DisplayLine *dl, struct StringRep *sr, struct Statement *stat)
+void dl_print_assignment(struct DisplayLine *dl, struct StringRep *sr, struct Statement *stat)
 {
-    int printed = 0;
     // this should always be true, but who knows
     assert(stat->expr->type == isvar || stat->expr->type == issvar);
-    printed += dl_print_expr(dl, sr, stat->expr);
+    dl_print_expr(dl, sr, stat->expr);
     if (stat->expr->data.isvar_issvar.assigned_value != NULL) {
-        printed += dl_printf(dl, " = ");
-        printed += dl_print_expr(dl, sr, stat->expr->data.isvar_issvar.assigned_value);
+        dl_printf(dl, " = ");
+        dl_print_expr(dl, sr, stat->expr->data.isvar_issvar.assigned_value);
     }
 
-    return printed;
+    return;
 }
 
 void dl_print_istr(struct DisplayLine *dl, struct StringRep *sr, struct Statement *stat)
@@ -673,7 +820,7 @@ void dl_print_istr(struct DisplayLine *dl, struct StringRep *sr, struct Statemen
     dl_print_expr(dl, sr, stat->expr);
 
     // TODO: hacky. printing needs a refactor
-    struct StringRep *dest = sr->children[sr->numChildren-1];
+    struct StringRep *dest = sr->children->items[sr->children->length-1];
 
     dest->start -= 2;
     dest->len += 2;
@@ -689,60 +836,57 @@ void dl_print_istr(struct DisplayLine *dl, struct StringRep *sr, struct Statemen
     }
 }
 
-int dl_print_mov(struct DisplayLine *dl, struct StringRep *sr, struct Statement *stat)
+void dl_print_mov(struct DisplayLine *dl, struct StringRep *sr, struct Statement *stat)
 {
-    int printed = 0;
-
-    printed += dl_print_expr(dl, sr, stat->expr);
+    dl_print_expr(dl, sr, stat->expr);
     if (stat->u.store.expr != NULL) {
-        printed += dl_printf(dl, " <- ");
-        printed += dl_print_expr(dl, sr, stat->u.store.expr);
+        dl_printf(dl, " <- ");
+        dl_print_expr(dl, sr, stat->u.store.expr);
     }
-
-    return printed;
 }
 
-int dl_print_other_store(struct DisplayLine *dl, struct StringRep *sr, struct Statement *stat)
+void dl_print_other_store(struct DisplayLine *dl, struct StringRep *sr, struct Statement *stat)
 {
-    int printed = 0;
     if (stat->u.store.expr != NULL) {
-        printed += dl_print_expr(dl, sr, stat->u.store.expr);
-        printed += dl_printf(dl, ", ");
+        dl_print_expr(dl, sr, stat->u.store.expr);
+        dl_printf(dl, ", ");
     }
-    printed += dl_print_expr(dl, sr, stat->expr);
-    return printed;
+    dl_print_expr(dl, sr, stat->expr);
 }
 
-int dl_print_trap(struct DisplayLine *dl, struct StringRep *sr, struct Statement *stat)
+void dl_print_trap(struct DisplayLine *dl, struct StringRep *sr, struct Statement *stat)
 {
     bool leftParens, rightParens;
-    int printed = 0;
 
-    leftParens = higher_precedence_expr(opc_precedence[stat->opc], stat->expr);
-    rightParens = higher_precedence_expr(opc_precedence[stat->opc], stat->u.store.expr);
+    leftParens = higher_precedence_expr(stat->opc, stat->expr);
+    rightParens = higher_precedence_expr(stat->opc, stat->u.store.expr);
 
     if (leftParens) {
-        printed += dl_printf(dl,  "(");
+        dl_printf(dl,  "(");
     }
-    printed += dl_print_expr(dl, sr, stat->expr);
+    dl_print_expr(dl, sr, stat->expr);
     if (leftParens) {
-        printed += dl_printf(dl,  ")");
+        dl_printf(dl,  ")");
     }
 
-    printed += dl_printf(dl, " %s ", opc_operator(stat->opc));
+    dl_printf(dl, " %s ", opc_operator(stat->opc));
 
     if (rightParens) {
-        printed += dl_printf(dl,  "(");
+        dl_printf(dl,  "(");
     }
-    printed += dl_print_expr(dl, sr, stat->u.store.expr);
+    dl_print_expr(dl, sr, stat->u.store.expr);
     if (rightParens) {
-        printed += dl_printf(dl,  ")");
+        dl_printf(dl,  ")");
     }
-    return printed;
 }
 
-void dl_print_statement(struct DisplayLine *dl, struct StringRep *sr, struct Statement *stat)
+void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct Statement *stat)
 {
+    if (stat == NULL) return;
+    struct StringRep *sr = sr_newchild(dl, parent);
+    sr->type = STATEMENT;
+    sr->stat = stat;
+    sr->start = dl->pos;
     dl_print_opcode(dl, stat->opc);
     
     switch (stat->opc) {
@@ -854,40 +998,127 @@ void dl_print_statement(struct DisplayLine *dl, struct StringRep *sr, struct Sta
             dl_print_expr(dl, sr, stat->expr);
             break;
     }
+    sr->len = dl->pos - sr->start;
+}
+
+
+// TODO: special cases where bitvectors are sets of registers/graphnodes
+void dl_print_bitvectorbb(struct DisplayLine *dl, struct StringRep *parent, struct BitVector *bv)
+{
+    struct StringRep *sr = sr_newchild(dl, parent);
+    sr->type = BITVECTORBB;
+    sr->bitvector = *bv;
+    sr->start = dl->pos;
+    int blockpos;
+    int word = 0;
+    int i;
+    bool at_first = true;
+
+    if (bv->blocks == NULL) {
+        dl_printf(dl, "(0) []");
+        return;
+    }
+
+    dl_printf(dl, "(%d) [", bv->num_blocks);
+
+
+    for (blockpos = 0; blockpos < bv->num_blocks && blockpos <= (bitposcount - 1) >> 7; blockpos++) {
+        for (i = word; i < word + 128; i++) {
+            if (bv->blocks[blockpos].words[(i & 0x7f) >> 5] & (1U << (31 - (i & 0x1f)))) {
+                    if (at_first) {
+                        dl_printf(dl, "%d", i);
+                        at_first = false;
+                    } else {
+                        dl_printf(dl, ", %d", i);
+                    }
+            }
+        }
+        word += 128;
+    }
+    dl_printf(dl, "]");
+    sr->len = dl->pos - sr->start;
+    //dl->top = sr;
+    //dl->len = sr->len;
+}
+
+// TODO: special cases where bitvectors are sets of registers/graphnodes
+void dl_print_bitvector(struct DisplayLine *dl, struct StringRep *parent, struct BitVector *bv)
+{
+    struct StringRep *sr = sr_newchild(dl, parent);
+    sr->type = BITVECTOR;
+    sr->bitvector = *bv;
+    sr->start = dl->pos;
+    int blockpos;
+    int word = 0;
+    int i;
+    bool at_first = true;
+
+    if (bv->blocks == NULL) {
+        dl_printf(dl, "(0) []");
+        return;
+    }
+
+    dl_printf(dl, "(%d) [", bv->num_blocks);
+
+
+    for (blockpos = 0; blockpos < bv->num_blocks && blockpos <= (bitposcount - 1) >> 7; blockpos++) {
+        for (i = word; i < word + 128; i++) {
+            if (bv->blocks[blockpos].words[(i & 0x7f) >> 5] & (1U << (31 - (i & 0x1f)))) {
+                    if (at_first) {
+                        dl_printf(dl, "%d", i);
+                        at_first = false;
+                    } else {
+                        dl_printf(dl, ", %d", i);
+                    }
+            }
+        }
+        word += 128;
+    }
+    dl_printf(dl, "]");
+    sr->len = dl->pos - sr->start;
+    //dl->top = sr;
+    //dl->len = sr->len;
 }
 
 /* top-level */
 
-struct DisplayLine *dl_from_statement(int line, struct Statement *stat)
+struct DisplayLine *dl_from_statement(struct Statement *stat)
 {
     if (stat == NULL) return NULL;
 
     struct DisplayLine *dl = dl_new();
-    struct StringRep *sr = sr_new(line);
+    /* 
+    struct StringRep *sr = sr_new();
     sr->type = STATEMENT;
     sr->stat = stat;
     sr->start = dl->pos;
+     */
 
-    dl_print_statement(dl, sr, stat);
+    dl_print_statement(dl, NULL, stat);
 
+    /* 
     sr->len = dl->pos - sr->start;
     dl->top = sr;
     dl->len = sr->len;
+     */
+    dl->len = dl->top->len;
     return dl;
 }
 
-struct DisplayLine *dl_from_graphnode(int line, struct Graphnode *node, bool print_pred_succ)
+void dl_print_graphnode(struct DisplayLine *dl, struct StringRep *parent, struct Graphnode *node, bool printPredSucc)
 {
-    if (node == NULL) return NULL;
-    struct DisplayLine *dl = dl_new();
-    struct StringRep *sr = sr_new(line);
+    if (node == NULL) return;
+    struct StringRep *sr = sr_newchild(dl, parent);
     sr->type = GRAPHNODE;
     sr->node = node;
     sr->start = dl->pos;
-
+    if (node == NULL) {
+        dl_printf(dl, "NULL");
+        return;
+    }
     dl_printf(dl, "node %d ", node->num);
 
-    if (print_pred_succ) {
+    if (printPredSucc) {
         if (node->prev != NULL) {
             dl_printf(dl, "p%d ", node->prev->num);
         }
@@ -909,22 +1140,36 @@ struct DisplayLine *dl_from_graphnode(int line, struct Graphnode *node, bool pri
             dl_printf(dl, ")");
         }
     }
-    
+    sr->len = dl->pos - sr->start;
+}
 
+struct DisplayLine *dl_from_graphnode(struct Graphnode *node, bool printPredSucc)
+{
+    if (node == NULL) return NULL;
+    struct DisplayLine *dl = dl_new();
+    /* 
+    struct StringRep *sr = sr_new();
+    sr->type = GRAPHNODE;
+    sr->node = node;
+    sr->start = dl->pos;
+     */
+
+    dl_print_graphnode(dl, NULL, node, printPredSucc);
+
+    /* 
     sr->len = dl->pos - sr->start;
     dl->top = sr;
-    dl->len = sr->len;
+     */
+    dl->len = dl->top->len;
     return dl;
 }
 
-struct DisplayLine *dl_from_var_access(int line, struct VarAccessList *access)
+void dl_print_var_access(struct DisplayLine *dl, struct StringRep *parent, struct VarAccessList *access)
 {
-    struct DisplayLine *dl = dl_new();
-    struct StringRep *sr = sr_new(line);
+    struct StringRep *sr = sr_newchild(dl, parent);
     sr->type = VAR_ACCESS;
     sr->varAccess = access;
     sr->start = dl->pos;
-
     switch (access->type) {
         case 1: // store
             dl_printf(dl, "store: ");
@@ -941,6 +1186,20 @@ struct DisplayLine *dl_from_var_access(int line, struct VarAccessList *access)
             dl_print_statement(dl, sr, access->data.move);
             break;
     }
+    sr->len = dl->pos - sr->start;
+}
+
+struct DisplayLine *dl_from_var_access(struct VarAccessList *access)
+{
+    struct DisplayLine *dl = dl_new();
+    /* 
+    struct StringRep *sr = sr_new();
+    sr->type = VAR_ACCESS;
+    sr->varAccess = access;
+    sr->start = dl->pos;
+     */
+
+    dl_print_var_access(dl, NULL, access);
 
     //dl_printf(dl, "node %d ", node->num);
     //if (node->prev != NULL) {
@@ -964,9 +1223,11 @@ struct DisplayLine *dl_from_var_access(int line, struct VarAccessList *access)
     //    dl_printf(dl, ")");
     //}
 
+    /* 
     sr->len = dl->pos - sr->start;
     dl->top = sr;
-    dl->len = sr->len;
+     */
+    dl->len = dl->top->len;
     return dl;
 }
 
@@ -974,15 +1235,15 @@ struct DisplayLine *dl_from_bittab_ichain(int bitpos, struct IChain *ichain)
 {
     if (ichain == NULL) return NULL;
     struct DisplayLine *dl = dl_new();
-    struct StringRep *sr = sr_new(bitpos);
+    struct StringRep *sr = sr_new();
     sr->type = MISC;
     sr->start = dl->pos;
 
-    dl_printf(dl, "%d: ", bitpos);
+    dl_printf(dl, "%*d: ", bittabdigits, bitpos);
     dl_print_ichain(dl, sr, ichain);
 
     if ((ichain->type == isvar || ichain->type == issvar) && ichain->isvar_issvar.assignbit == bitpos) {
-        dl_printf(dl, " (assign)", bitpos);
+        dl_printf(dl, " (assign)");
     }
 
     sr->len = dl->pos - sr->start;
@@ -991,19 +1252,59 @@ struct DisplayLine *dl_from_bittab_ichain(int bitpos, struct IChain *ichain)
     return dl;
 }
 
-struct DisplayLine *dl_from_bittab_liverange(int line, struct LiveRange *liverange)
+struct DisplayLine *dl_from_bittab_liverange(int bit, struct LiveRange *liverange)
 {
     struct DisplayLine *dl = dl_new();
-    struct StringRep *sr = sr_new(line);
-    sr->type = LIVERANGE;
-    sr->liverange = liverange;
-    sr->start = dl->pos;
+    //struct StringRep *sr = sr_new();
+    //sr->type = LIVERANGE;
+    //sr->liverange = liverange;
+    //sr->start = dl->pos;
 
     if (liverange != NULL) {
-        dl_printf(dl, "%d: ", liverange->bitpos);
-        dl_print_liverange(dl, sr, liverange);
+        dl_print_liverange(dl, NULL, liverange);
     } else {
-        dl_printf(dl, "%d: NULL", line);
+        dl_printf(dl, "%d: NULL", bit);
+    }
+
+    //sr->len = dl->pos - sr->start;
+    //dl->top = sr;
+    dl->len = dl->top->len;
+    return dl;
+}
+
+struct DisplayLine *dl_from_bitvector(struct BitVector *bv, const char *name)
+{
+    struct DisplayLine *dl = dl_new();
+
+    struct StringRep *n = sr_newchild(dl, dl->top);
+    n->type = INFO;
+    n->start = dl->pos;
+
+    dl_printf(dl, "%s: ", name);
+    n->len = dl->pos - n->start;
+
+    dl_print_bitvector(dl, dl->top, bv);
+
+    dl->len = dl->pos;
+    return dl;
+}
+
+struct DisplayLine *dl_from_reg_assignment(int reg, struct IChain *ichain)
+{
+    struct DisplayLine *dl = dl_new();
+    struct StringRep *sr = sr_new();
+    sr->type = MISC;
+    sr->start = dl->pos;
+
+    if (ichain != NULL) {
+        dl_print_register(dl, sr, reg);
+        dl_printf(dl, " -> ");
+        dl_printf(dl, "%d: ", ichain->bitpos);
+        dl_print_ichain(dl, sr, ichain);
+    } else {
+        dl_print_register(dl, sr, reg);
+        dl_printf(dl, " -> ");
+        dl_printf(dl, "NULL");
     }
 
     sr->len = dl->pos - sr->start;
@@ -1012,12 +1313,74 @@ struct DisplayLine *dl_from_bittab_liverange(int line, struct LiveRange *liveran
     return dl;
 }
 
-struct DisplayLine *dl_placeholder(int line, char *message)
+struct DisplayLine *dl_from_variable(struct Variable *var)
 {
     struct DisplayLine *dl = dl_new();
-    struct StringRep *sr = sr_new(line);
-    sr->type = MISC;
-    sr->data = message;
+    struct StringRep *sr = sr_new();
+    sr->type = VARIABLE;
+    sr->variable = var;
+    sr->start = dl->pos;
+
+    sr->start += dl_printf(dl, "  off % 4d: ", var->location.addr);
+    dl_print_variable(dl, var->location);
+    //dl_printf(dl, "temp %d: offset %d, %s", temp->index, temp->disp, temp->not_spilled ? "not spilled" : "spilled");
+
+    sr->len = dl->pos - sr->start;
+    dl->top = sr;
+    dl->len = dl->pos;
+    return dl;
+}
+
+void dl_print_temploc(struct DisplayLine *dl, struct Temploc *temp)
+{
+    dl_printf(dl, "off % 4d: temp %d, %s", temp->disp, temp->index, temp->not_spilled ? "not spilled" : "spilled");
+}
+
+struct DisplayLine *dl_from_temploc(struct Temploc *temp)
+{
+    struct DisplayLine *dl = dl_new();
+    struct StringRep *sr = sr_new();
+    sr->type = TEMPLOC;
+    sr->temploc = temp;
+    sr->start = dl->pos;
+
+    sr->start += dl_printf(dl, "  off % 4d: ", temp->disp);
+    dl_printf(dl, "temp %d, %s", temp->index, temp->not_spilled ? "not spilled" : "spilled");
+
+    sr->len = dl->pos - sr->start;
+    dl->top = sr;
+    dl->len = dl->pos;//sr->len;
+    return dl;
+}
+
+
+struct DisplayLine *dl_new_printf(char *fmt, ...)
+{
+    struct DisplayLine *dl = dl_new();
+    struct StringRep *sr = sr_new();
+    sr->type = INFO;
+    sr->data = NULL;
+    //sr->data = message;
+    sr->start = dl->pos;
+
+    va_list args;
+    va_start(args, fmt);
+    dl_vprintf(dl, fmt, args);
+    va_end(args);
+
+    sr->len = dl->pos - sr->start;
+    dl->top = sr;
+    dl->len = sr->len;
+    return dl;
+}
+
+
+struct DisplayLine *dl_placeholder(const char *message)
+{
+    struct DisplayLine *dl = dl_new();
+    struct StringRep *sr = sr_new();
+    sr->type = INFO;
+    sr->message = message;
     sr->start = dl->pos;
 
     dl_printf(dl, "%s", message);
@@ -1028,4 +1391,8 @@ struct DisplayLine *dl_placeholder(int line, char *message)
     return dl;
 }
 
+void dlprint_init()
+{
+    bittabdigits = (int)log10(bitposcount) + 1;
+}
 #endif

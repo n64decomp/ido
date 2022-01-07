@@ -3,6 +3,12 @@
 
 #include "uopt/debug/dlprint.h"
 #include "uopt/debug/buffer.h"
+#include "uopt/debug/tile.h"
+#include "uopt/debug/input.h"
+#include "uopt/debug/highlight.h"
+#include "uopt/debug/hlcond.h"
+#include "uopt/debug/memberdata.h"
+#include "uopt/debug/examine.h"
 
 #define C_RED "\e[91m"
 #define C_GREEN "\e[92m"
@@ -89,6 +95,19 @@
 // input
 #define CTRL(x) ((x) & 0x1f)
 
+#define ARRAYLEN(arr) (sizeof((arr)) / sizeof((arr)[0]))
+
+void ucode_output_clear();
+void push_output(union Bcode *b);
+void push_trace(const char *message);
+#define _STRINGIFY(msg) #msg
+#define STRINGIFY(msg) _STRINGIFY(msg)
+#define TRACE_LINE() push_trace(__FILE__ " " STRINGIFY(__LINE__))
+void output_new_stat(struct Statement *s);
+void output_new_graphnode(struct Graphnode *node);
+
+void trace_indent();
+void trace_dedent();
 
 void print_regset64(const char *name, long long set);
 void print_function_statements(const char *desc);
@@ -110,8 +129,9 @@ const char *opcode_name(Uopcode opc);
 const char *regname(int reg);
 const char *regname_color(int reg);
 const char *dtype_name(enum Datatype type);
+const char *exprtype_name(ExpressionType type);
 const char *opc_operator(Uopcode opc);
 
 extern int opc_precedence[Uirsv + 1];
-int higher_precedence_expr(int cur_precedence, struct Expression *op);
-int higher_precedence_image(int cur_precedence, struct IChain *op);
+int higher_precedence_expr(Uopcode opc, struct Expression *op);
+int higher_precedence_image(Uopcode opc, struct IChain *op);
