@@ -465,7 +465,7 @@ static void func_00477E20(struct Expression *op1, struct Expression *op2, struct
     switch (op2->type) {
         case isvar:
         case issvar:
-            if (ichain1->expr != NULL || !op2->unk3 || !bvectin(ichain1->bitpos, &node->bvs.stage1.u.cm.delete)) {
+            if (ichain1->expr != NULL || !op2->initialVal || !bvectin(ichain1->bitpos, &node->bvs.stage1.u.cm.delete)) {
                 return;
             }
             break;
@@ -596,11 +596,11 @@ static void func_0047847C(struct Expression *expr, struct SharedBcode *sb) {
             break;
 
         case isop:
-            if (expr->unk5 == 3) {
+            if (expr->visited == 3) {
                 break;
             }
 
-            expr->unk5 = 3;
+            expr->visited = 3;
             phi_t0 = expr;
             if (((!expr->data.isop.unk21 && !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.cand)) ||
                         !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.delete))) {
@@ -674,7 +674,7 @@ static void func_00478820(struct Expression *expr, struct Graphnode *node) {
             break;
 
         case isilda:
-            if (expr->unk5 == 4) {
+            if (expr->visited == 4) {
                 break;
             }
 
@@ -685,7 +685,7 @@ static void func_00478820(struct Expression *expr, struct Graphnode *node) {
             }
 
             func_00478820(expr->data.islda_isilda.outer_stack, node);
-            expr->unk5 = 4;
+            expr->visited = 4;
             break;
 
         case isvar:
@@ -699,12 +699,12 @@ static void func_00478820(struct Expression *expr, struct Graphnode *node) {
                 func_00478820(expr->data.isvar_issvar.copy, node);
             }
 
-            if (expr->unk5 == 4) {
+            if (expr->visited == 4) {
                 break;
             }
 
             if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) &&
-                    (expr->unk3 != 0 ||
+                    (expr->initialVal != 0 ||
                      bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
                 if (expr->data.isvar_issvar.outer_stack->type == isvar || expr->data.isvar_issvar.outer_stack->type == issvar) {
                     func_004787B0(expr->data.isvar_issvar.outer_stack);
@@ -712,11 +712,11 @@ static void func_00478820(struct Expression *expr, struct Graphnode *node) {
             }
 
             func_00478820(expr->data.isvar_issvar.outer_stack, node);
-            expr->unk5 = 4;
+            expr->visited = 4;
             break;
 
         case isop:
-            if (expr->unk5 == 4) {
+            if (expr->visited == 4) {
                 break;
             }
             if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) &&
@@ -737,7 +737,7 @@ static void func_00478820(struct Expression *expr, struct Graphnode *node) {
             if (optab[expr->data.isop.opc].is_binary_op != 0) {
                 func_00478820(expr->data.isop.op2, node);
             }
-            expr->unk5 = 4;
+            expr->visited = 4;
             break;
 
         default:
@@ -914,8 +914,8 @@ static void func_004793C4(struct Expression *expr, struct Graphnode *node) {
 
     switch (expr->type) {
         case isilda:
-            if (expr->unk5 != 5) {
-                expr->unk5 = 5;
+            if (expr->visited != 5) {
+                expr->visited = 5;
                 func_004793C4(expr->data.islda_isilda.outer_stack, node);
             }
             break;
@@ -936,7 +936,7 @@ static void func_004793C4(struct Expression *expr, struct Graphnode *node) {
         case issvar:
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
                 func_004793C4(expr->data.isvar_issvar.copy, node);
-            } else if ((!expr->unk3 && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) ||
+            } else if ((!expr->initialVal && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) ||
                     !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete)) {
                 resetbit(&node->bvs.stage1.u.cm.iv, expr->ichain->isvar_issvar.assignbit);
                 func_004793C4(expr->data.isvar_issvar.outer_stack, node);
@@ -944,10 +944,10 @@ static void func_004793C4(struct Expression *expr, struct Graphnode *node) {
             break;
 
         case isop:
-            if (expr->unk5 == 5) {
+            if (expr->visited == 5) {
                 break;
             }
-            expr->unk5 = 5;
+            expr->visited = 5;
 
             if ((!expr->data.isop.unk21 && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) ||
                         !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete)) {
@@ -1033,11 +1033,11 @@ static void func_00479778(struct Expression *expr, struct Graphnode *node) {
             break;
 
         case isop:
-            if (expr->unk5 == 6) {
+            if (expr->visited == 6) {
                 break;
             }
 
-            expr->unk5 = 6;
+            expr->visited = 6;
             if ((!expr->data.isop.unk21 && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) ||
                     !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete)) {
                 func_00479778(expr->data.isop.op1, node);

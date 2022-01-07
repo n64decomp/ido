@@ -28,17 +28,17 @@ void resetsubdelete(struct Expression *expr, struct Graphnode *node) {
             case isilda:
                 if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) &&
                         (expr->data.islda_isilda.outer_stack->type != issvar ||
-                         expr->data.islda_isilda.outer_stack->unk3 ||
+                         expr->data.islda_isilda.outer_stack->initialVal ||
                          bvectin(expr->data.islda_isilda.outer_stack->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
-                    resetbit(&node->bvs.stage1.u.precm.avin, expr->ichain->bitpos);
+                    resetbit(&node->bvs.stage1.u.cm.subdelete, expr->ichain->bitpos);
                 } else {
                     resetsubdelete(expr->data.islda_isilda.outer_stack, node);
                 }
                 break;
 
             case issvar:
-                if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) && (expr->unk3 || bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
-                    resetbit(&node->bvs.stage1.u.precm.avin, expr->ichain->bitpos);
+                if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) && (expr->initialVal || bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
+                    resetbit(&node->bvs.stage1.u.cm.subdelete, expr->ichain->bitpos);
                 } else {
                     resetsubdelete(expr->data.isvar_issvar.outer_stack, node);
                 }
@@ -46,7 +46,7 @@ void resetsubdelete(struct Expression *expr, struct Graphnode *node) {
 
             case isop:
                 if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) && (expr->data.isop.unk21 || bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
-                    resetbit(&node->bvs.stage1.u.precm.avin, expr->ichain->bitpos);
+                    resetbit(&node->bvs.stage1.u.cm.subdelete, expr->ichain->bitpos);
                     phi_s1 = false;
                 } else {
                     phi_s1 = true;
@@ -472,7 +472,7 @@ void codemotion(void) {
         changed = false;
         node = graphhead;
         while (node != NULL) {
-            if (node->predecessors != 0) {
+            if (node->predecessors != NULL) {
                 if (!changed) {
                     bvectcopy(&old, &node->bvs.stage1.u.precm.avin);
                 }
@@ -771,7 +771,7 @@ void codemotion(void) {
 
     node = graphhead;
     while (node != NULL) {
-        bvectunion(&node->bvs.stage1.u.cm.ppin, &node->bvs.stage1.u.cm.subdelete);
+        bvectunion(&node->bvs.stage1.u.cm.ppin, &node->bvs.stage1.u.cm.subdelete); // avin?
         bvectcopy(&node->bvs.stage1.u.cm.delete, &node->bvs.stage1.u.cm.ppin);
         bvectminus(&node->bvs.stage1.u.cm.delete, &boolexp);
         bvectintsect(&node->bvs.stage1.u.cm.delete, &node->bvs.stage1.antlocs);

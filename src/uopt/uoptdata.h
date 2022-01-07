@@ -297,9 +297,9 @@ struct Graphnode {
     // packed array of bools, great
     /* 0xD0 */ unsigned char unkD0[5]; // rlods
     /* 0xD5 */ unsigned char unkD5[5]; // rstrs
-    /* 0xDA */ unsigned char unkDA[5];
-    /* 0xE0 */ struct RegisterNode *unkE0;
-    /* 0xE4 */ struct RegisterNode *unkE4;
+    /* 0xDA */ unsigned char unkDA[5]; // some temporary array
+    /* 0xE0 */ struct RegisterNode *unkE0; // rstrs
+    /* 0xE4 */ struct RegisterNode *unkE4; // rlods
     /* 0xE8 */ struct Loop *loop;
     /* 0xEC */ struct JumpFallthroughBB *fallthrough_bbs;
     /* 0xF0 */ struct JumpFallthroughBB *jump_bbs;
@@ -449,10 +449,10 @@ struct Statement {
         struct {
             struct Expression *expr; // 0x14
             struct VarAccessList *var_access_list_item; // 0x18
-            bool unk1C; // not strlkilled
-            bool unk1D;
-            bool unk1E; // not strskilled
-            bool unk1F;
+            bool unk1C; //not strlkilled, true -> assignbit anticipated
+            bool unk1D; // av
+            bool unk1E; // not strskilled, ant
+            bool unk1F; // av
             int size; // 0x20
             struct Expression *baseaddr; // 0x24
             struct IChain *ichain; //0x28
@@ -708,7 +708,7 @@ struct IChain { // TODO: rename
             /* 0x20 */ struct Temploc *temploc;
             union {
                 /* 0x24 */ unsigned short assignbit;
-                /* 0x24 */ int unk24;
+                /* 0x24 */ int unk24; // unused?
             };
         } isvar_issvar;
         struct {
@@ -828,13 +828,19 @@ struct RecurThing {
     /* 0x08 */ struct RecurThing *next;
 }; // size 0xC
 
+/**
+ * Expression Trees: variables (isvar, issvar), constants (isconst, isrconst), addresses (islda, isilda), and operators (isop).
+ * issvar and isilda are used in Pascal for inner functions. isrconst is possibly something from Fortran.
+ *
+ * Uopt builds expression trees from ucode in readnxtinst().
+ */
 struct Expression {
     /* 0x00 */ ExpressionType type;
     /* 0x01 */ Datatype datatype;
-    /* 0x02 */ bool unk2; // killed? true if ichain in altered
-    /* 0x03 */ bool unk3; // not varkilled
+    /* 0x02 */ bool killed; // true if var is modified in a block after its use
+    /* 0x03 */ bool initialVal; // true if expr was not modified before this use in the block
     /* 0x04 */ unsigned char unk4;  // ExpressionType? (definitely an enum)
-    /* 0x05 */ unsigned char unk5;  // visited, set to a different number for each optimization pass
+    /* 0x05 */ unsigned char visited;  // set to a different number for each optimization pass
     /* 0x06 */ unsigned short count; // use count, see exprdelete
     // struct {    // see copycoderep
     /* 0x08 */ unsigned short table_index; // identifies the expression
@@ -852,7 +858,7 @@ struct Expression {
             /* 0x28 */ int level;
             /* 0x2C */ struct VariableLocation address; // absolute address
             /* 0x34 */ struct Expression *outer_stack;
-            /* 0x38 */ struct Temploc *unk38;
+            /* 0x38 */ struct Temploc *temploc;
         } islda_isilda;
         struct {
             /* 0x20 */ unsigned char size; // in bytes
@@ -864,7 +870,7 @@ struct Expression {
             /* 0x30 */ struct Expression *copy;   // copypropagate, points to the expression that this one is a copy of
             /* 0x34 */ struct Expression *assigned_value;
             /* 0x38 */ struct Statement *assignment;
-            /* 0x3C */ struct Temploc *unk3C;
+            /* 0x3C */ struct Temploc *temploc;
         } isvar_issvar;
         struct {
             /* 0x20 */ Uopcode opc;
@@ -875,7 +881,7 @@ struct Expression {
             /* 0x28 */ struct Expression *op2;
             /* 0x2C */ int datasize; // calculated result? seems to also sometimes be size in bits of the datatype.
                                      // Also used as offset in bytes for ilod
-            /* 0x30 */ struct Temploc *unk30;
+            /* 0x30 */ struct Temploc *temploc;
             /* 0x34 */ struct Expression *unk34; // return value from findbaseaddr
             union {
                 /* 0x38 */ Datatype cvtfrom; // if opc == Ucvt, seems to be a union here
@@ -907,10 +913,10 @@ struct Expression {
 
 // Linear Function Test Replacement
 struct TrepImageThing {
-    /* 0x00 */ struct IChain *ichain;
+    /* 0x00 */ struct IChain *ichain; // points to a Ucg1 ichain
     /* 0x04 */ struct IChain *ichain2;
     /* 0x08 */ union Bcode u;
-    /* 0x28 */ struct IChain *unk28;
+    /* 0x28 */ struct IChain *unk28; // constant value or address
     /* 0x2C */ int unk2C;
 }; // size 0x30
 

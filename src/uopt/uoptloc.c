@@ -391,12 +391,12 @@ struct Expression *ilodfold(struct Expression *ilod) {
     while (!found && expr != 0) {
         if (expr->type == isvar && addreq(expr->data.isvar_issvar.location, loc)) {
             found = ilod->graphnode == expr->graphnode &&
-                ilod->unk2 == expr->unk2 &&
-                ilod->unk3 == expr->unk3 &&
+                ilod->killed == expr->killed &&
+                ilod->initialVal == expr->initialVal &&
                 (expr->data.isvar_issvar.copy == NULL || expr->data.isvar_issvar.copy == nocopy);
 
             prev = expr;
-            if (found && expr->unk2 && !expr->unk3) {
+            if (found && expr->killed && !expr->initialVal) {
                 found = false;
             }
         }
@@ -417,14 +417,14 @@ struct Expression *ilodfold(struct Expression *ilod) {
             expr->type = isvar;
             expr->datatype = ilod->datatype;
             expr->unk4 = 0;
-            expr->unk5 = 0;
+            expr->visited = 0;
             expr->data.isvar_issvar.veqv = false;
             expr->data.isvar_issvar.unk22 = false;
             expr->data.isvar_issvar.location = loc;
             expr->data.isvar_issvar.outer_stack = NULL;
             expr->data.isvar_issvar.size = ilod->data.isop.aux2.v1.unk3C;
             expr->data.isvar_issvar.location.level = blktolev(loc.blockno);
-            expr->data.isvar_issvar.unk3C = 0;
+            expr->data.isvar_issvar.temploc = 0;
             expr->data.isvar_issvar.is_volatile = false;
         }
         expr->count = 1;
@@ -432,8 +432,8 @@ struct Expression *ilodfold(struct Expression *ilod) {
         expr->data.isvar_issvar.assignment = NULL;
         expr->data.isvar_issvar.assigned_value = NULL;
         expr->graphnode = ilod->graphnode;
-        expr->unk3 = ilod->unk3;
-        expr->unk2 = ilod->unk2;
+        expr->initialVal = ilod->initialVal;
+        expr->killed = ilod->killed;
     } else {
         increasecount(expr);
     }
@@ -479,10 +479,10 @@ void istrfold(struct Statement *stmt) {
     }
     expr->type = isvar;
     expr->datatype = stmt->u.store.u.istr.dtype;
-    expr->unk2 = !stmt->u.store.unk1F;
-    expr->unk3 = false;
+    expr->killed = !stmt->u.store.unk1F;
+    expr->initialVal = false;
     expr->unk4 = 0;
-    expr->unk5 = 0;
+    expr->visited = 0;
     expr->count = 0;
     expr->graphnode = stmt->graphnode;
     expr->var_access_list = NULL;
@@ -497,7 +497,7 @@ void istrfold(struct Statement *stmt) {
     expr->data.isvar_issvar.copy = NULL;
     expr->data.isvar_issvar.assigned_value = stmt->u.store.expr;
     expr->data.isvar_issvar.assignment = stmt;
-    expr->data.isvar_issvar.unk3C = 0;
+    expr->data.isvar_issvar.temploc = 0;
 
     stmt->opc = Ustr;
     stmt->is_increment = false;
@@ -691,7 +691,7 @@ void linearize(struct Expression *expr) {
     right->data.isop.op2 = right->data.isop.op1;
     right->data.isop.op1 = expr->data.isop.op1;
     expr->data.isop.op1 = right;
-    right->unk5 = 0;
+    right->visited = 0;
 
     switch (expr->data.isop.opc) {
         case Usub:
@@ -1436,7 +1436,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
 
         case isop:
             result = false;
-            if (expr_s0->unk5 == 1) {
+            if (expr_s0->visited == 1) {
                 return false;
             }
 
@@ -1926,7 +1926,7 @@ bool restructure(Uopcode opc, struct Expression **expr) {
             }
 
             if (expr_s0->type == isop) {
-                expr_s0->unk5 = 1;
+                expr_s0->visited = 1;
             }
             break;
 

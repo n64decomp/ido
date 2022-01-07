@@ -17,7 +17,7 @@
 00421C00 epilog
 00422AF0 func_00422AF0
 00422D04 func_00422D04
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042933C func_0042933C
 0042A1C8 func_0042A1C8
@@ -239,7 +239,7 @@ struct AllocBlock *heapptr;
 00414108 func_00414108
 0041550C func_0041550C
 00422D04 func_00422D04
-004230F0 func_004230F0
+004230F0 emit_expr
 00424FFC func_00424FFC
 00425618 func_00425618
 00426FA4 func_00426FA4
@@ -440,7 +440,7 @@ int curlevel;
 004205F8 genrlodrstr
 00420A3C prolog
 00421C00 epilog
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042A1C8 func_0042A1C8
 0042A4CC func_0042A4CC
@@ -768,7 +768,7 @@ int staticlinkloc;
 0041550C func_0041550C
 0041AC2C printtab
 0042305C func_0042305C
-004230F0 func_004230F0
+004230F0 emit_expr
 00424FFC func_00424FFC
 0043771C optinit
 00445AEC trep_image
@@ -791,7 +791,7 @@ int staticlinkloc;
 struct Expression *nocopy;
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042B2C0 func_0042B2C0
 0043771C optinit
@@ -1146,7 +1146,7 @@ struct BitVector workbvect;
 004175BC copypropagate
 0041A410 printitab
 0041C914 printregs
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042AADC func_0042AADC
 0042B2C0 func_0042B2C0
@@ -1207,7 +1207,7 @@ int pdeftabsize;
 0041FC80 genloadaddr
 0042020C gen_static_link
 004205F8 genrlodrstr
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042A1C8 func_0042A1C8
 0042A4CC func_0042A4CC
@@ -2258,7 +2258,7 @@ bool use_c_semantics;
 0041FB20 spilltemplodstr
 0042020C gen_static_link
 004205F8 genrlodrstr
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042A1C8 func_0042A1C8
 0042A4CC func_0042A4CC
