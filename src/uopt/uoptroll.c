@@ -76,8 +76,8 @@ struct Expression *change_to_const_eq(bool loopIfTrue, struct Expression *loopCo
         constEq->data.isop.op2 = condOp2;
         constEq->data.isop.op1 = loopCond->data.isop.op1;
         constEq->count = 1;
-        constEq->data.isop.unk30 = 0;
-        constEq->unk5 = 0;
+        constEq->data.isop.temploc = 0;
+        constEq->visited = 0;
         constEq->unk4 = 0;
         constEq->graphnode = node;
 
@@ -189,12 +189,12 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
             phi_s1->data.isop.op2 = sp78;
             phi_s1->count = 1;
             phi_s1->data.isop.aux2.v1.overflow_attr = 0;
-            phi_s1->data.isop.unk30 = 0;
-            phi_s1->unk5 = 0;
+            phi_s1->data.isop.temploc = 0;
+            phi_s1->visited = 0;
             phi_s1->unk4 = 0;
             phi_s1->graphnode = body;
-            phi_s1->data.isop.unk21 = phi_s3->unk3;
-            phi_s1->data.isop.unk22 = phi_s3->unk2 == 0;
+            phi_s1->data.isop.unk21 = phi_s3->initialVal;
+            phi_s1->data.isop.unk22 = phi_s3->killed == 0;
         } else {
             increasecount(phi_s1);
         }
@@ -255,8 +255,8 @@ struct Expression *change_to_var_eq(bool loop_if_true, bool inc_var_op1, struct 
 
         sp48->data.isop.aux2.v1.overflow_attr = 0;
         sp48->count = 1;
-        sp48->data.isop.unk30 = 0;
-        sp48->unk5 = 0;
+        sp48->data.isop.temploc = 0;
+        sp48->visited = 0;
         sp48->unk4 = 0;
         sp48->data.isop.aux.unk38_trep = NULL;
         sp48->data.isop.aux2.unk3C_trep = NULL;
@@ -391,7 +391,7 @@ struct Expression *unroll_searchloop(unsigned short tableIdx, struct Expression 
                         break;
                     }
 
-                    sp33 = curgraphnode == phi_s0->graphnode && !phi_s0->unk2;
+                    sp33 = curgraphnode == phi_s0->graphnode && !phi_s0->killed;
                     if (phi_s0->data.isvar_issvar.unk22) {
                         sp31 = true;
                     }
@@ -554,7 +554,7 @@ struct Expression *unroll_searchloop(unsigned short tableIdx, struct Expression 
                                 && arg3 == phi_s0->data.isop.op1
                                 && expr->data.isop.datasize == phi_s0->data.isop.datasize
                                 && expr->data.isop.aux2.v1.unk3C == phi_s0->data.isop.aux2.v1.unk3C) {
-                            sp33 = !phi_s0->unk2;
+                            sp33 = !phi_s0->killed;
                             if (sp33 == 0) {
                                 sp32 = true;
                             }
@@ -573,7 +573,7 @@ struct Expression *unroll_searchloop(unsigned short tableIdx, struct Expression 
                         if ((arg3 == phi_s0->data.isop.op1 && arg4 == phi_s0->data.isop.op2) ||
                             (arg4 == phi_s0->data.isop.op1 && arg3 == phi_s0->data.isop.op2)) {
                             if (expr->data.isop.datasize == phi_s0->data.isop.datasize) {
-                                sp33 = !phi_s0->unk2;
+                                sp33 = !phi_s0->killed;
                                 if (!sp33) {
                                     sp32 = true;
                                 }
@@ -588,7 +588,7 @@ struct Expression *unroll_searchloop(unsigned short tableIdx, struct Expression 
                         if (arg3 == phi_s0->data.isop.op1
                                 && arg4 == phi_s0->data.isop.op2
                                 && expr->data.isop.datasize == phi_s0->data.isop.datasize) {
-                            sp33 = !phi_s0->unk2;
+                            sp33 = !phi_s0->killed;
                             if (!sp33) {
                                 sp32 = true;
                             }
@@ -621,7 +621,7 @@ next:
         }
 
         if (sp32) {
-            phi_s0->unk3 = false;
+            phi_s0->initialVal = false;
         } else if (expr->type == isvar || expr->type == issvar ||
                 (expr->type == isop &&
                  (expr->data.isop.opc == Uiequ ||
@@ -634,7 +634,7 @@ next:
                   expr->data.isop.opc == Uildv ||
                   expr->data.isop.opc == Uirld ||
                   expr->data.isop.opc == Uirlv))) {
-            phi_s0->unk3 = true;
+            phi_s0->initialVal = true;
         }
     }
     return phi_s0;
@@ -760,22 +760,22 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                 sp60->count = 0;
                 sp60->data.isvar_issvar.copy = NULL;
                 if (expr->type == issvar) {
-                    sp60->data.isvar_issvar.unk3C = 0;
+                    sp60->data.isvar_issvar.temploc = 0;
                     sp60->unk4 = 0;
-                    sp60->unk5 = 0;
+                    sp60->visited = 0;
                     sp60->data.isvar_issvar.outer_stack = sp5C;
                 } else {
                     sp60->data.isvar_issvar.outer_stack = NULL;
                 }
 
                 if (sp60->data.isvar_issvar.veqv == 0) {
-                    sp60->unk2 = 0;
-                    if (sp60->unk3 && !sp60->data.isvar_issvar.unk22) {
-                        sp60->unk3 = !varkilled(sp60, curgraphnode->varlisthead);
+                    sp60->killed = 0;
+                    if (sp60->initialVal && !sp60->data.isvar_issvar.unk22) {
+                        sp60->initialVal = !varkilled(sp60, curgraphnode->varlisthead);
                     }
                 } else {
-                    sp60->unk2 = 1;
-                    sp60->unk3 = 0;
+                    sp60->killed = 1;
+                    sp60->initialVal = 0;
                 }
                 sp60->data.isvar_issvar.is_volatile = expr->data.isvar_issvar.is_volatile;
             }
@@ -820,7 +820,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
             if (sp60->type == empty) {
                 sp60->type = isilda;
                 sp60->unk4 = 0;
-                sp60->unk5 = 0;
+                sp60->visited = 0;
                 sp60->count = 1;
                 sp60->datatype = Adt;
                 sp60->data.islda_isilda.address = expr->data.islda_isilda.address;
@@ -828,7 +828,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                 sp60->data.islda_isilda.size = expr->data.islda_isilda.size;
                 sp60->var_access_list = NULL;
                 sp60->data.islda_isilda.outer_stack = sp5C;
-                sp60->data.islda_isilda.unk38 = 0;
+                sp60->data.islda_isilda.temploc = NULL;
             } else {
                 increasecount(sp60);
             }
@@ -941,9 +941,9 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         if (expr->data.isop.opc == Uinn) {
                             sp60->data.isop.aux2.v1.unk3C = expr->data.isop.aux2.v1.unk3C;
                         }
-                        sp60->data.isop.unk30 = 0;
+                        sp60->data.isop.temploc = 0;
                         sp60->unk4 = 0;
-                        sp60->unk5 = 0;
+                        sp60->visited = 0;
                         sp60->count = 1;
                         sp60->data.isop.aux2.v1.overflow_attr = expr->data.isop.aux2.v1.overflow_attr;
                         if (expr->data.isop.opc == Uequ ||
@@ -973,9 +973,9 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         sp60->data.isop.op1 = sp5C;
                         sp60->data.isop.aux2.v1.overflow_attr = 0;
                         sp60->data.isop.op2 = sp58;
-                        sp60->data.isop.unk30 = 0;
+                        sp60->data.isop.temploc = 0;
                         sp60->unk4 = 0;
-                        sp60->unk5 = 0;
+                        sp60->visited = 0;
                         sp60->count = 1;
                         sp60->data.isop.datasize = expr->data.isop.datasize;
                     } else {
@@ -1033,8 +1033,8 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                                 expr->data.isop.opc == Usgs) {
                             sp60->data.isop.datasize = expr->data.isop.datasize;
                         }
-                        sp60->data.isop.unk30 = 0;
-                        sp60->unk5 = 0;
+                        sp60->data.isop.temploc = 0;
+                        sp60->visited = 0;
                         sp60->unk4 = 0;
                         sp60->data.isop.aux2.v1.overflow_attr = expr->data.isop.aux2.v1.overflow_attr;
                     } else {
@@ -1056,8 +1056,8 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         sp60->data.isop.datasize = expr->data.isop.datasize;
                         sp60->count = 1;
                         sp60->data.isop.aux2.v1.overflow_attr = 0;
-                        sp60->data.isop.unk30 = 0;
-                        sp60->unk5 = 0;
+                        sp60->data.isop.temploc = 0;
+                        sp60->visited = 0;
                         sp60->unk4 = 0;
                         sp60->data.isop.aux2.v1.unk3C = expr->data.isop.aux2.v1.unk3C;
                     } else {
@@ -1088,20 +1088,20 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                             sp60->data.isop.datasize = sp54;
                             sp60->data.isop.aux2.v1.unk3C = expr->data.isop.aux2.v1.unk3C;
                             sp60->data.isop.aux2.v1.align = expr->data.isop.aux2.v1.align;
-                            sp60->data.isop.unk30 = 0;
-                            sp60->unk5 = 0;
+                            sp60->data.isop.temploc = 0;
+                            sp60->visited = 0;
                             sp60->unk4 = 0;
                             sp60->data.isop.aux.cvtfrom = expr->data.isop.aux.cvtfrom;
 
                             sp60->data.isop.unk34 = findbaseaddr(sp5C);
                             if (sp60->datatype != Sdt && sp60->data.isop.opc != Uildv) {
-                                sp60->unk2 = false;
-                                if (sp60->unk3) {
-                                    sp60->unk3 = !varkilled(sp60, curgraphnode->varlisthead);
+                                sp60->killed = false;
+                                if (sp60->initialVal) {
+                                    sp60->initialVal = !varkilled(sp60, curgraphnode->varlisthead);
                                 }
                             } else {
-                                sp60->unk2 = true;
-                                sp60->unk3 = false;
+                                sp60->killed = true;
+                                sp60->initialVal = false;
                             }
                             appendbbvarlst(sp60);
                             lodkillprev(sp60);
@@ -1127,21 +1127,21 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         sp60->data.isop.datasize = expr->data.isop.datasize;
                         sp60->data.isop.aux2.v1.unk3C = expr->data.isop.aux2.v1.unk3C;
                         sp60->data.isop.aux2.v1.align = expr->data.isop.aux2.v1.align;
-                        sp60->data.isop.unk30 = 0;
+                        sp60->data.isop.temploc = 0;
                         sp60->unk4 = 0;
-                        sp60->unk5 = 0;
+                        sp60->visited = 0;
                         sp60->count = 1;
                         sp60->data.isop.aux.cvtfrom = expr->data.isop.aux.cvtfrom;
 
                         sp60->data.isop.unk34 = findbaseaddr(sp5C);
                         if (sp60->datatype != Sdt && sp60->data.isop.opc != Uildv) {
-                            sp60->unk2 = false;
-                            if (sp60->unk3) {
-                                sp60->unk3 = !varkilled(sp60, curgraphnode->varlisthead);
+                            sp60->killed = false;
+                            if (sp60->initialVal) {
+                                sp60->initialVal = !varkilled(sp60, curgraphnode->varlisthead);
                             }
                         } else {
-                            sp60->unk2 = true;
-                            sp60->unk3 = false;
+                            sp60->killed = true;
+                            sp60->initialVal = false;
                         }
                         appendbbvarlst(sp60);
                         lodkillprev(sp60);
@@ -1166,7 +1166,7 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         sp60->type = isop;
                         sp60->datatype = Mdt;
                         sp60->unk4 = 0;
-                        sp60->unk5 = 0;
+                        sp60->visited = 0;
                         sp60->count = 1;
                         sp60->data.isop.datatype = Jdt;
                         sp60->data.isop.opc = expr->data.isop.opc;
@@ -1174,14 +1174,14 @@ struct Expression *oneloopblockexpr(struct Expression *expr, int *arg1) {
                         sp60->data.isop.aux2.v1.overflow_attr = 0;
                         sp60->data.isop.op2 = sp58;
                         sp60->data.isop.datasize = expr->data.isop.datasize;
-                        sp60->unk2 = false;
-                        sp60->data.isop.unk30 = 0;
+                        sp60->killed = false;
+                        sp60->data.isop.temploc = 0;
                         sp60->data.isop.aux2.v1.unk3C = expr->data.isop.aux2.v1.unk3C;
 
                         sp60->data.isop.unk34 = findbaseaddr(sp5C);
                         sp60->data.isop.aux.unk38 = findbaseaddr(sp58);
-                        if (sp60->unk3) {
-                            sp60->unk3 = !varkilled(sp60, curgraphnode->varlisthead);
+                        if (sp60->initialVal) {
+                            sp60->initialVal = !varkilled(sp60, curgraphnode->varlisthead);
                         }
                         appendbbvarlst(sp60);
                         lodkillprev(sp60);
@@ -1251,11 +1251,11 @@ void oneloopblockstmt(struct Statement *stat) {
             sp60 = unroll_searchloop(stat->expr->table_index, stat->expr, 0, 0);
             if (sp60->type != empty) {
                 if (sp60->data.isvar_issvar.assignment == NULL) {
-                    sp60->unk2 = true;
+                    sp60->killed = true;
                     phi_s1 = appendchain(sp60->table_index);
                     phi_s1->graphnode = curgraphnode;
                     phi_s1->data.isvar_issvar.unk22 = sp60->data.isvar_issvar.unk22;
-                    phi_s1->unk3 = false;
+                    phi_s1->initialVal = false;
                     phi_s1->data.isvar_issvar.veqv = sp60->data.isvar_issvar.veqv;
                     sp5B = false;
                     sp5A = true;
@@ -1281,12 +1281,12 @@ void oneloopblockstmt(struct Statement *stat) {
                         break;
                     }
 
-                    sp60->unk2 = 1;
+                    sp60->killed = 1;
                     sp60->data.isvar_issvar.assignment->u.store.unk1F = false;
                     phi_s1 = appendchain(sp60->table_index);
                     phi_s1->graphnode = curgraphnode;
                     phi_s1->data.isvar_issvar.unk22 = sp60->data.isvar_issvar.unk22;
-                    phi_s1->unk3 = false;
+                    phi_s1->initialVal = false;
                     phi_s1->data.isvar_issvar.veqv = sp60->data.isvar_issvar.veqv;
                     sp5B = false;
                     sp5A = false;
@@ -1302,22 +1302,22 @@ void oneloopblockstmt(struct Statement *stat) {
                 phi_s1->data.isvar_issvar.location = stat->expr->data.isvar_issvar.location;
                 phi_s1->datatype = stat->expr->datatype;
                 phi_s1->data.isvar_issvar.size = stat->expr->data.isvar_issvar.size;
-                phi_s1->unk3 = false;
+                phi_s1->initialVal = false;
                 phi_s1->count = 0;
                 phi_s1->data.isvar_issvar.copy = NULL;
                 if (stat->expr->type == issvar) {
                     phi_s1->data.isvar_issvar.outer_stack = oneloopblockexpr(stat->u.store.expr, &sp54);
-                    phi_s1->data.isvar_issvar.unk3C = 0;
+                    phi_s1->data.isvar_issvar.temploc = 0;
                     phi_s1->unk4 = 0;
-                    phi_s1->unk5 = 0;
+                    phi_s1->visited = 0;
                 } else {
                     phi_s1->data.isvar_issvar.outer_stack = NULL;
                 }
 
                 if (!phi_s1->data.isvar_issvar.veqv) {
-                    phi_s1->unk2 = false;
+                    phi_s1->killed = false;
                 } else {
-                    phi_s1->unk2 = true;
+                    phi_s1->killed = true;
                 }
 
                 phi_s1->data.isvar_issvar.is_volatile = stat->expr->data.isvar_issvar.is_volatile;
@@ -2193,9 +2193,9 @@ struct Expression *form_bop(Uopcode opc, struct Expression *left, struct Express
         binop->data.isop.op1 = left;
         binop->data.isop.op2 = right;
         binop->data.isop.aux2.v1.overflow_attr = 0;
-        binop->data.isop.unk30 = 0;
+        binop->data.isop.temploc = 0;
         binop->unk4 = 0;
-        binop->unk5 = 0;
+        binop->visited = 0;
         binop->count = 1;
         binop->graphnode = curgraphnode;
 
@@ -2258,8 +2258,8 @@ struct Expression *form_rem(struct Expression *expr, int arg1) {
         sp34->data.isop.op2 = sp30;
         sp34->count = 1;
         sp34->data.isop.aux2.v1.overflow_attr = 0;
-        sp34->data.isop.unk30 = 0;
-        sp34->unk5 = 0;
+        sp34->data.isop.temploc = 0;
+        sp34->visited = 0;
         sp34->unk4 = 0;
         sp34->graphnode = curgraphnode;
     } else {
@@ -2291,8 +2291,8 @@ struct Expression *form_rem(struct Expression *expr, int arg1) {
             sp30->data.isop.aux.cvtfrom = sp34->datatype;
             sp30->count = 1;
             sp30->data.isop.aux2.v1.overflow_attr = 0;
-            sp30->data.isop.unk30 = 0;
-            sp30->unk5 = 0;
+            sp30->data.isop.temploc = 0;
+            sp30->visited = 0;
             sp30->unk4 = 0;
             sp30->graphnode = curgraphnode;
         } else {
@@ -2342,8 +2342,8 @@ struct Expression *form_neq0(struct Expression *expr) {
         neq0->data.isop.op2 = zero;
         neq0->data.isop.aux2.v1.overflow_attr = false;
         neq0->count = 1;
-        neq0->data.isop.unk30 = 0;
-        neq0->unk5 = 0;
+        neq0->data.isop.temploc = 0;
+        neq0->visited = 0;
         neq0->unk4 = 0;
         neq0->data.isop.aux.unk38_trep = NULL;
         neq0->data.isop.aux2.unk3C_trep = NULL;
@@ -2386,8 +2386,8 @@ struct Expression *form_neg(struct Expression *expr) {
         neg->data.isop.op2 = NULL;
         neg->count = 1;
         neg->data.isop.aux2.v1.overflow_attr = 0;
-        neg->data.isop.unk30 = 0;
-        neg->unk5 = 0;
+        neg->data.isop.temploc = 0;
+        neg->visited = 0;
         neg->unk4 = 0;
         neg->graphnode = curgraphnode;
     } else {
@@ -2411,7 +2411,7 @@ struct Expression *str_to_temporary(int addr, struct Expression *store) {
 
     ret->data.isvar_issvar.veqv = false;
     ret->data.isvar_issvar.unk22 = true;
-    ret->unk3 = false;
+    ret->initialVal = false;
     ret->type = isvar;
     ret->graphnode = curgraphnode;
     ret->data.isvar_issvar.location = loc;
@@ -2424,7 +2424,7 @@ struct Expression *str_to_temporary(int addr, struct Expression *store) {
     ret->count = 0;
     ret->data.isvar_issvar.copy = NULL;
     ret->data.isvar_issvar.outer_stack = NULL;
-    ret->unk2 = 0;
+    ret->killed = 0;
     ret->data.isvar_issvar.is_volatile = false;
     ret->data.isvar_issvar.location.level = curlevel;
 
@@ -3316,7 +3316,7 @@ static struct Expression *func_00473504(struct Statement *par, unsigned short va
             if (var->data.isvar_issvar.veqv) {
                 veqv = true;
             } else {
-                found = curgraphnode == var->graphnode && !var->unk2;
+                found = curgraphnode == var->graphnode && !var->killed;
 
                 if (var->data.isvar_issvar.unk22) {
                     unk22 = true;
@@ -3339,7 +3339,7 @@ static struct Expression *func_00473504(struct Statement *par, unsigned short va
         if (!veqv) {
             var->data.isvar_issvar.unk22 = unk22;
         }
-        var->unk3 = !unk3;
+        var->initialVal = !unk3;
     }
     return var;
 }
@@ -3428,11 +3428,11 @@ void par_to_str(struct Statement *par, bool arg1, int disp) {
     sp5C = sp58;
     if (sp58->type != empty) {
         if (sp58->data.isvar_issvar.assignment == NULL) {
-            sp58->unk2 = true;
+            sp58->killed = true;
             sp5C = appendchain(sp58->table_index);
             sp5C->graphnode = curgraphnode;
             sp5C->data.isvar_issvar.unk22 = sp58->data.isvar_issvar.unk22;
-            sp5C->unk3 = false;
+            sp5C->initialVal = false;
             sp5C->data.isvar_issvar.veqv = sp58->data.isvar_issvar.veqv;
             unk1E = true;
             unk1C = false;
@@ -3455,12 +3455,12 @@ void par_to_str(struct Statement *par, bool arg1, int disp) {
                 decreasecount(sp54);
                 return;
             }
-            sp58->unk2 = true;
+            sp58->killed = true;
             sp58->data.isvar_issvar.assignment->u.store.unk1F = false;
             sp5C = appendchain(sp58->table_index);
             sp5C->graphnode = curgraphnode;
             sp5C->data.isvar_issvar.unk22 = sp58->data.isvar_issvar.unk22;
-            sp5C->unk3 = false;
+            sp5C->initialVal = false;
             sp5C->data.isvar_issvar.veqv = sp58->data.isvar_issvar.veqv;
             unk1E = false;
             unk1C = false;
@@ -3479,16 +3479,16 @@ void par_to_str(struct Statement *par, bool arg1, int disp) {
             sp5C->data.isvar_issvar.size = parsize;
         }
 
-        sp5C->unk3 = false;
+        sp5C->initialVal = false;
         sp5C->count = 0;
         sp5C->data.isvar_issvar.copy = NULL;
         sp5C->data.isvar_issvar.outer_stack = NULL;
         sp5C->data.isvar_issvar.location.level = curlevel;
 
         if (!sp5C->data.isvar_issvar.veqv) {
-            sp5C->unk2 = false;
+            sp5C->killed = false;
         } else {
-            sp5C->unk2 = true;
+            sp5C->killed = true;
         }
         sp5C->data.isvar_issvar.is_volatile = false;
     }

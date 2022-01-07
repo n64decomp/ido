@@ -37,7 +37,7 @@ bool entryav(struct Expression *expr) {
             if (expr->data.islda_isilda.outer_stack->type != issvar) {
                 available = true;
             } else {
-                available = !expr->data.islda_isilda.outer_stack->unk2;
+                available = !expr->data.islda_isilda.outer_stack->killed;
             }
             break;
 
@@ -46,7 +46,7 @@ bool entryav(struct Expression *expr) {
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
                 return entryav(expr->data.isvar_issvar.copy);
             }
-            available = !expr->unk2;
+            available = !expr->killed;
             break;
 
         case isop:
@@ -86,7 +86,7 @@ bool entryant(struct Expression *expr) {
             if (expr->data.islda_isilda.outer_stack->type != issvar) {
                 anticipated = true;
             } else {
-                anticipated = expr->data.islda_isilda.outer_stack->unk3;
+                anticipated = expr->data.islda_isilda.outer_stack->initialVal;
             }
             break;
 
@@ -95,7 +95,7 @@ bool entryant(struct Expression *expr) {
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
                 return entryant(expr->data.isvar_issvar.copy);
             } else {
-                anticipated = expr->unk3;
+                anticipated = expr->initialVal;
             }
             break;
 
@@ -291,7 +291,7 @@ static bool exprant(struct IChain *ichain, struct Expression *expr) {
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
                 phi_v1 = exprant(ichain, expr->data.isvar_issvar.copy);
             } else if (expr->ichain == ichain) {
-                phi_v1 = expr->unk3;
+                phi_v1 = expr->initialVal;
             } else if (expr->type == issvar) {
                 phi_v1 = exprant(ichain, expr->data.isvar_issvar.outer_stack);
             } else {
@@ -349,7 +349,7 @@ static bool exprav(struct IChain *ichain, struct Expression *expr) {
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
                 phi_v1 = exprav(ichain, expr->data.isvar_issvar.copy);
             } else if (expr->ichain == ichain) {
-                phi_v1 = expr->unk3;
+                phi_v1 = expr->initialVal;
             } else if (expr->type == issvar) {
                 phi_v1 = exprav(ichain, expr->data.isvar_issvar.outer_stack);
             } else {
@@ -546,11 +546,11 @@ void exprdelete(struct Expression *expr, struct Graphnode *node) {
                     exprdelete(expr->data.isvar_issvar.outer_stack, node);
                 }
 
-                if (expr->unk3) {
+                if (expr->initialVal) {
                     resetbit(&node->bvs.stage1.antlocs, expr->ichain->bitpos);
                 }
 
-                if (!expr->unk2) {
+                if (!expr->killed) {
                     resetbit(&node->bvs.stage1.avlocs, expr->ichain->bitpos);
                 }
 
@@ -825,13 +825,13 @@ static struct Expression *func_004137DC(unsigned short hash, struct IChain *icha
 
             case isvar:
                 if (expr->type == isvar && addreq(expr->data.isvar_issvar.location, ichain->isvar_issvar.location)) {
-                    found = expr->unk3;
+                    found = expr->initialVal;
                 }
                 break;
 
             case issvar:
                 if (expr->type == issvar && addreq(expr->data.isvar_issvar.location, ichain->isvar_issvar.location)) {
-                    found = expr->unk3;
+                    found = expr->initialVal;
                 }
                 break;
 
@@ -1020,7 +1020,7 @@ static struct Expression *func_004137DC(unsigned short hash, struct IChain *icha
                         if (ichain->isop.unk24_u16 != expr->data.isop.aux2.v1.unk3C) {
                             break;
                         }
-                        found = expr->unk3;
+                        found = expr->initialVal;
                         break;
 
                     case Uildv:
@@ -1035,7 +1035,7 @@ static struct Expression *func_004137DC(unsigned short hash, struct IChain *icha
                         if ((left == expr->data.isop.op1 && right == expr->data.isop.op2) ||
                                 (right == expr->data.isop.op1 && left == expr->data.isop.op2)) {
                             if (ichain->isop.size == expr->data.isop.datasize) {
-                                found = expr->unk3;
+                                found = expr->initialVal;
                             }
                         }
                         break;
@@ -1046,7 +1046,7 @@ static struct Expression *func_004137DC(unsigned short hash, struct IChain *icha
                     case Uiles:
                         if (expr->data.isop.op1 == left && expr->data.isop.op2 == right) {
                             if (ichain->isop.size == expr->data.isop.datasize) {
-                                found = expr->unk3;
+                                found = expr->initialVal;
                             }
                         }
                         break;
@@ -1121,10 +1121,10 @@ static void func_00414108(struct IChain *ichain, struct Expression *expr, struct
 
                 if (ichain->type == isilda) {
                     (*dest)->unk4 = 0;
-                    (*dest)->unk5 = 0;
+                    (*dest)->visited = 0;
                     (*dest)->count = 0;
                     (*dest)->data.islda_isilda.outer_stack = sp7C;
-                    (*dest)->data.islda_isilda.unk38 = 0;
+                    (*dest)->data.islda_isilda.temploc = 0;
 
                     setbit(&node_sharedD4->bvs.stage1.antlocs, ichain->bitpos);
                     setbit(&node_sharedD4->bvs.stage1.avlocs, ichain->bitpos);
@@ -1220,7 +1220,7 @@ static void func_00414108(struct IChain *ichain, struct Expression *expr, struct
 
             if ((*dest)->type == empty) {
                 copycoderep((*dest), ichain->expr);
-                (*dest)->unk3 = true;
+                (*dest)->initialVal = true;
                 (*dest)->count = 0;
                 (*dest)->graphnode = node_sharedD4;
                 (*dest)->data.isvar_issvar.copy = NULL;
@@ -1250,8 +1250,8 @@ static void func_00414108(struct IChain *ichain, struct Expression *expr, struct
                 (*dest)->var_access_list->data.var = *dest;
                 varinsert(*dest, node_sharedD4);
 
-                (*dest)->unk2 = bvectin(ichain->bitpos, &node_sharedD4->bvs.stage1.alters);
-                if (!(*dest)->unk2) {
+                (*dest)->killed = bvectin(ichain->bitpos, &node_sharedD4->bvs.stage1.alters);
+                if (!(*dest)->killed) {
                     setbit(&node_sharedD4->bvs.stage1.avlocs, ichain->bitpos);
                 }
 
@@ -1305,7 +1305,7 @@ static void func_00414108(struct IChain *ichain, struct Expression *expr, struct
                 (*dest)->type = isop;
                 (*dest)->datatype = ichain->dtype;
                 (*dest)->unk4 = 0;
-                (*dest)->unk5 = 2;
+                (*dest)->visited = 2;
                 (*dest)->count = 0;
                 (*dest)->data.isop.opc = ichain->isop.opc;
                 (*dest)->data.isop.datatype = ichain->isop.datatype;
@@ -1323,7 +1323,7 @@ static void func_00414108(struct IChain *ichain, struct Expression *expr, struct
 
                 (*dest)->graphnode = node_sharedD4;
                 (*dest)->ichain = ichain;
-                (*dest)->data.isop.unk30 = 0;
+                (*dest)->data.isop.temploc = 0;
 
                 switch ((*dest)->data.isop.opc) {
                     case Uequ:
@@ -1333,8 +1333,14 @@ static void func_00414108(struct IChain *ichain, struct Expression *expr, struct
                     case Ules:
                     case Uneq:
                         (*dest)->data.isop.aux.unk38_trep = alloc_new(sizeof(struct TrepImageThing), &perm_heap);
+#ifdef AVOID_UB
+                        *(*dest)->data.isop.aux.unk38_trep = (struct TrepImageThing){0};
+#endif
                         (*dest)->data.isop.aux.unk38_trep->ichain = NULL;
                         (*dest)->data.isop.aux2.unk3C_trep = alloc_new(sizeof(struct TrepImageThing), &perm_heap);
+#ifdef AVOID_UB
+                        *(*dest)->data.isop.aux2.unk3C_trep = (struct TrepImageThing){0};
+#endif
                         (*dest)->data.isop.aux2.unk3C_trep->ichain = NULL;
                         break;
 
@@ -1472,9 +1478,9 @@ static void func_00414108(struct IChain *ichain, struct Expression *expr, struct
                     (*dest)->var_access_list->type = 2;
                     (*dest)->var_access_list->data.var = *dest;
                     varinsert(*dest, node_sharedD4);
-                    (*dest)->unk3 = true;
-                    (*dest)->unk2 = bvectin0(ichain->bitpos, &node_sharedD4->bvs.stage1.alters);
-                    (*dest)->data.isop.unk22 = (*dest)->data.isop.unk22 && !(*dest)->unk2;
+                    (*dest)->initialVal = true;
+                    (*dest)->killed = bvectin0(ichain->bitpos, &node_sharedD4->bvs.stage1.alters);
+                    (*dest)->data.isop.unk22 = (*dest)->data.isop.unk22 && !(*dest)->killed;
                 }
 
                 if ((*dest)->data.isop.unk22) {
@@ -1545,7 +1551,7 @@ static struct Expression *func_004150E4(struct Expression *expr, int size, Datat
         sp48->type = isop;
         sp48->datatype = dtype;
         sp48->unk4 = 0;
-        sp48->unk5 = 2;
+        sp48->visited = 2;
         sp48->count = 0;
         sp48->graphnode = node_sharedD4;
         sp48->data.isop.opc = Ucvtl;
@@ -1553,7 +1559,7 @@ static struct Expression *func_004150E4(struct Expression *expr, int size, Datat
         sp48->data.isop.op1 = expr;
         sp48->data.isop.op2 = NULL;
         sp48->data.isop.aux2.v1.overflow_attr = false;
-        sp48->data.isop.unk30 = 0;
+        sp48->data.isop.temploc = 0;
         sp48->data.isop.datasize = size;
         sp48->data.isop.unk21 = true;
 
@@ -1652,7 +1658,7 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
         case issvar:
             if (expr->data.isvar_issvar.copy == NULL) {
                 expr->data.isvar_issvar.copy = nocopy;
-                if (!expr->unk3) {
+                if (!expr->initialVal) {
                     break;
                 }
 
@@ -1701,7 +1707,7 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                             }
 
                             resetbit(&node_sharedD4->bvs.stage1.antlocs, expr->ichain->bitpos);
-                            if (!expr->unk2) {
+                            if (!expr->killed) {
                                 resetbit(&node_sharedD4->bvs.stage1.avlocs, expr->ichain->bitpos);
                             }
 
@@ -1998,7 +2004,7 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                          expr->data.isop.opc == Uigrt ||
                          expr->data.isop.opc == Uileq ||
                          expr->data.isop.opc == Uiles)) {
-                    expr->data.isop.unk22 = !expr->unk2;
+                    expr->data.isop.unk22 = !expr->killed;
                 }
 
                 if (expr->data.isop.unk22) {
@@ -2186,15 +2192,15 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                     }
 
                     expr->ichain = *ichain;
-                    if (sp94->unk3) {
+                    if (sp94->initialVal) {
                         setbit(&node_sharedD4->bvs.stage1.antlocs, (*ichain)->bitpos);
                     }
 
-                    if (!sp94->unk2) {
+                    if (!sp94->killed) {
                         setbit(&node_sharedD4->bvs.stage1.avlocs, (*ichain)->bitpos);
                     }
 
-                    if (!sp94->unk3 || sp94->unk2) {
+                    if (!sp94->initialVal || sp94->killed) {
                         setbit(&node_sharedD4->bvs.stage1.alters, (*ichain)->bitpos);
                     }
                     setbit(&node_sharedD4->bvs.stage1.alters, (*ichain)->isvar_issvar.assignbit);
@@ -2233,7 +2239,7 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                             expr->data.isop.opc == Uirld ||
                             expr->data.isop.opc == Uirlv) {
                         if (expr->data.isop.unk22) {
-                            expr->data.isop.unk22 = !expr->unk2;
+                            expr->data.isop.unk22 = !expr->killed;
                         }
                     }
 

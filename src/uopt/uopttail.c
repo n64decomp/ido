@@ -276,6 +276,9 @@ void tail_recursion(void) {
                 maxlabnam += 1;
                 graphhead->blockno = maxlabnam;
                 stmt = alloc_new(sizeof(struct Statement), &perm_heap);
+#ifdef AVOID_UB
+                *stmt = (struct Statement){0};
+#endif
                 stmt->next =  graphhead->stat_head;
                 graphhead->stat_head->prev = stmt;
                 graphhead->stat_head = stmt;
@@ -429,6 +432,9 @@ void tail_recursion(void) {
         node->bvs.init.line = graphhead->bvs.init.line;
         node->frequency = graphhead->frequency;
         stmt = alloc_new(sizeof(struct Statement), &perm_heap);
+#ifdef AVOID_UB
+        *stmt = (struct Statement){0};
+#endif
         stmt->next = stathead;
         stathead->prev = stmt;
         stmt->prev = NULL;

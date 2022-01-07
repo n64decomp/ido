@@ -14,20 +14,20 @@
 #include "uoptitab.h"
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
 0042BF08 reemit
 */
 bool use_ix;
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
 0042B890 func_0042B890
 0042BF08 reemit
 */
 static bool has_ix;
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
 0042B890 func_0042B890
 0042BF08 reemit
 */
@@ -77,7 +77,7 @@ static unsigned char unaltab[23][23];
 
 /*
 00422D04 func_00422D04
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042BF08 reemit
 */
@@ -163,7 +163,7 @@ void gen_cvtl(unsigned char size, Datatype dtype) {
 }
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
 */
 void gen_cvt(Datatype to, Datatype from) {
     OPC = Ucvt;
@@ -180,7 +180,7 @@ void gen_cvt(Datatype to, Datatype from) {
 00421C00 epilog
 0042269C gen_outparcode
 00422D04 func_00422D04
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042AADC func_0042AADC
 0042B2C0 func_0042B2C0
@@ -207,7 +207,7 @@ void genrop(Uopcode opc, int reg, Datatype dtype, unsigned char size) {
 0041FA68 varlodstr
 0042269C gen_outparcode
 00422D04 func_00422D04
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042AADC func_0042AADC
 0042B2C0 func_0042B2C0
@@ -340,7 +340,7 @@ bool base_sp_noalias(struct Expression *baseaddr) {
 
 /*
 0041FA68 varlodstr
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 */
 void base_in_reg(int reg, struct IChain *ichain, struct Expression *baseaddr) {
@@ -415,7 +415,7 @@ void base_in_reg(int reg, struct IChain *ichain, struct Expression *baseaddr) {
 
 /*
 0042269C gen_outparcode
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042BF08 reemit
 */
@@ -436,7 +436,7 @@ bool varlodstr(Uopcode opc, struct IChain *ichain, struct Graphnode *node, struc
 }
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042AADC func_0042AADC
 0042BF08 reemit
@@ -472,7 +472,7 @@ void spilltemplodstr(Uopcode opc, Datatype dtype, struct Temploc *temploc) {
 
 /*
 00422D04 func_00422D04
-004230F0 func_004230F0
+004230F0 emit_expr
 00426DE8 func_00426DE8
 00426FA4 func_00426FA4
 */
@@ -493,7 +493,7 @@ void genloadaddr(Uopcode opc, Memtype memtype, int block, int offset, int addr, 
 /*
 004205F8 genrlodrstr
 00422D04 func_00422D04
-004230F0 func_004230F0
+004230F0 emit_expr
 00426DE8 func_00426DE8
 00426FA4 func_00426FA4
 0042B2C0 func_0042B2C0
@@ -584,7 +584,7 @@ void genloadnum(Datatype dtype, int arg1, union Constant constval, int size, boo
 }
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 */
 void genloadrnum(Datatype dtype, unsigned short value, int length, bool emit) {
@@ -1164,7 +1164,7 @@ void epilog(struct Graphnode *node) {
             }
         }
 
-        for (reg = 1; i <= 35; i++) {
+        for (reg = 1; reg <= 35; reg++) {
             if (sp65[reg - 1] == 2) {
                 genrlodrstr(Urlod, reg, graphhead->regdata.unk44[reg - 1]);
             }
@@ -1172,6 +1172,7 @@ void epilog(struct Graphnode *node) {
     } else {
         memset(sp65, 0, sizeof(sp65));
 
+        par = 0;
         while (par <= MIN(pdefmax, 3)) {
             if (pdeftab[par].opc != Updef || !pdeftab[par].outmode) {
                 par++;
@@ -1408,7 +1409,7 @@ static void func_00422AF0(struct Graphnode *node) {
 
 /*
 00422D04 func_00422D04
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042B2C0 func_0042B2C0
 */
@@ -1494,7 +1495,7 @@ static void func_00422D04(struct IChain *ichain, struct Graphnode *node) {
 }
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
    change variable datatype
 */
 static void func_0042305C(struct Expression *expr, Datatype dtype) {
@@ -1511,13 +1512,13 @@ static void func_0042305C(struct Expression *expr, Datatype dtype) {
 }
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
 00424FFC func_00424FFC
 0042BB4C func_0042BB4C
 0042BF08 reemit
    emits expr with a postorder traversal
 */
-static void func_004230F0(struct Expression *expr, int arg1, struct Expression *baseaddr, int arg3, struct Graphnode *node) {
+static void emit_expr(struct Expression *expr, int arg1, struct Expression *baseaddr, int arg3, struct Graphnode *node) {
     bool need_swap;
     int reg;
     struct Expression *sp70;
@@ -1558,7 +1559,7 @@ static void func_004230F0(struct Expression *expr, int arg1, struct Expression *
         case isvar:
         case issvar:
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
-                func_004230F0(expr->data.isvar_issvar.copy, arg1, baseaddr, 0, node);
+                emit_expr(expr->data.isvar_issvar.copy, arg1, baseaddr, 0, node);
                 break;
             }
 
@@ -1568,54 +1569,53 @@ static void func_004230F0(struct Expression *expr, int arg1, struct Expression *
                 if (varlodstr(Ulod, expr->ichain, node, baseaddr)) {
                     igen3(Ulod, expr->ichain, expr->data.isvar_issvar.is_volatile);
                 }
-                break;
-            }
-
-            switch (expr->unk4) {
-                case 1:
-                case 3:
-                case 4:
-                case 5:
-                    break;
-
-                case 2:
-                    if (expr->data.isvar_issvar.unk3C == NULL) {
-                        expr->data.isvar_issvar.unk3C = expr->ichain->isvar_issvar.temploc;
-                    }
-                    break;
-
-                default:
-                    caseerror(1, 1373, "uoptemit.p", 10);
-                    break;
-            }
-
-            if (expr->data.isvar_issvar.unk3C != NULL) {
-                if (inreg(expr->ichain, node, &reg, 1)) {
-                    genrop(Ulod, reg, expr->datatype, sizeoftyp(expr->datatype));
-                } else {
-                    spilltemplodstr(Ulod, expr->datatype, expr->data.isvar_issvar.unk3C);
-                }
-
-                expr->count--;
-                if (expr->count == 0 && expr->unk4 == 1) {
-                    expr->data.isvar_issvar.unk3C->not_spilled = true;
-                }
             } else {
-                func_004230F0(expr->data.isvar_issvar.outer_stack, 0, NULL, 0, node);
-                expr->ichain->dtype = expr->datatype;
-                expr->ichain->isvar_issvar.size = expr->data.isvar_issvar.size;
-                igen3(Uisld, expr->ichain, expr->data.isvar_issvar.is_volatile);
-                if ((expr->count > 1 && expr->unk4 != 2) || ((expr->unk4 == 3 || expr->unk4 == 5) && expr->data.isvar_issvar.unk3C == NULL)) {
-                    if (expr->unk4 == 3 || expr->unk4 == 4 || expr->unk4 == 5) {
-                        expr->data.isvar_issvar.unk3C = expr->ichain->isvar_issvar.temploc;
+                switch (expr->unk4) {
+                    case 1:
+                    case 3:
+                    case 4:
+                    case 5:
+                        break;
+
+                    case 2:
+                        if (expr->data.isvar_issvar.temploc == NULL) {
+                            expr->data.isvar_issvar.temploc = expr->ichain->isvar_issvar.temploc;
+                        }
+                        break;
+
+                    default:
+                        caseerror(1, 1373, "uoptemit.p", 10);
+                        break;
+                }
+
+                if (expr->data.isvar_issvar.temploc != NULL) {
+                    if (inreg(expr->ichain, node, &reg, 1)) {
+                        genrop(Ulod, reg, expr->datatype, sizeoftyp(expr->datatype));
                     } else {
-                        gettemp(&expr->data.isvar_issvar.unk3C, 4);
+                        spilltemplodstr(Ulod, expr->datatype, expr->data.isvar_issvar.temploc);
                     }
 
-                    if (inreg(expr->ichain, node, &reg, 0)) {
-                        genrop(Ustr, reg, expr->datatype, sizeoftyp(expr->datatype));
-                    } else {
-                        spilltemplodstr(Ustr, expr->datatype, expr->data.isvar_issvar.unk3C);
+                    expr->count--;
+                    if (expr->count == 0 && expr->unk4 == 1) {
+                        expr->data.isvar_issvar.temploc->not_spilled = true;
+                    }
+                } else {
+                    emit_expr(expr->data.isvar_issvar.outer_stack, 0, NULL, 0, node);
+                    expr->ichain->dtype = expr->datatype;
+                    expr->ichain->isvar_issvar.size = expr->data.isvar_issvar.size;
+                    igen3(Uisld, expr->ichain, expr->data.isvar_issvar.is_volatile);
+                    if ((expr->count > 1 && expr->unk4 != 2) || ((expr->unk4 == 3 || expr->unk4 == 5) && expr->data.isvar_issvar.temploc == NULL)) {
+                        if (expr->unk4 == 3 || expr->unk4 == 4 || expr->unk4 == 5) {
+                            expr->data.isvar_issvar.temploc = expr->ichain->isvar_issvar.temploc;
+                        } else {
+                            gettemp(&expr->data.isvar_issvar.temploc, 4);
+                        }
+
+                        if (inreg(expr->ichain, node, &reg, 0)) {
+                            genrop(Ustr, reg, expr->datatype, sizeoftyp(expr->datatype));
+                        } else {
+                            spilltemplodstr(Ustr, expr->datatype, expr->data.isvar_issvar.temploc);
+                        }
                     }
                 }
             }
@@ -1630,8 +1630,8 @@ static void func_004230F0(struct Expression *expr, int arg1, struct Expression *
                     break;
 
                 case 2:
-                    if (expr->data.islda_isilda.unk38 == NULL) {
-                        expr->data.islda_isilda.unk38 = expr->ichain->islda_isilda.temploc;
+                    if (expr->data.islda_isilda.temploc == NULL) {
+                        expr->data.islda_isilda.temploc = expr->ichain->islda_isilda.temploc;
                     }
                     break;
 
@@ -1644,33 +1644,33 @@ static void func_004230F0(struct Expression *expr, int arg1, struct Expression *
                     break;
             }
 
-            if (expr->data.islda_isilda.unk38 != NULL) {
+            if (expr->data.islda_isilda.temploc != NULL) {
                 if (inreg(expr->ichain, node, &reg, 1)) {
                     genrop(Ulod, reg, expr->datatype, sizeoftyp(expr->datatype));
                 } else {
-                    spilltemplodstr(Ulod, expr->datatype, expr->data.islda_isilda.unk38);
+                    spilltemplodstr(Ulod, expr->datatype, expr->data.islda_isilda.temploc);
                 }
 
                 expr->count--;
                 if (expr->count == 0 && expr->unk4 == 1) {
-                    expr->data.islda_isilda.unk38->not_spilled = true;
+                    expr->data.islda_isilda.temploc->not_spilled = true;
                 }
             } else {
-                func_004230F0(expr->data.islda_isilda.outer_stack, 0, NULL, 0, node);
+                emit_expr(expr->data.islda_isilda.outer_stack, 0, NULL, 0, node);
                 genloadaddr(Uilda, expr->data.islda_isilda.address.memtype, expr->data.islda_isilda.address.blockno, expr->data.islda_isilda.offset, expr->data.islda_isilda.address.addr, expr->data.islda_isilda.size);
 
                 if ((expr->count > 1 && expr->unk4 != 2) ||
-                        ((expr->unk4 == 3 || expr->unk4 == 5) && expr->data.islda_isilda.unk38 == NULL)) {
+                        ((expr->unk4 == 3 || expr->unk4 == 5) && expr->data.islda_isilda.temploc == NULL)) {
                     if (expr->unk4 == 3 || expr->unk4 == 4 || expr->unk4 == 5) {
-                        expr->data.islda_isilda.unk38 = expr->ichain->isvar_issvar.temploc;
+                        expr->data.islda_isilda.temploc = expr->ichain->isvar_issvar.temploc;
                     } else {
-                        gettemp(&expr->data.islda_isilda.unk38, 4);
+                        gettemp(&expr->data.islda_isilda.temploc, 4);
                     }
 
                     if (inreg(expr->ichain, node, &reg, 0)) {
                         genrop(Ustr, reg, expr->datatype, sizeoftyp(expr->datatype));
                     } else {
-                        spilltemplodstr(Ustr, expr->datatype, expr->data.islda_isilda.unk38);
+                        spilltemplodstr(Ustr, expr->datatype, expr->data.islda_isilda.temploc);
                     }
                 }
             }
@@ -1685,8 +1685,8 @@ static void func_004230F0(struct Expression *expr, int arg1, struct Expression *
                     break;
 
                 case 2:
-                    if (expr->data.isop.unk30 == NULL) {
-                        expr->data.isop.unk30 = expr->ichain->isop.temploc;
+                    if (expr->data.isop.temploc == NULL) {
+                        expr->data.isop.temploc = expr->ichain->isop.temploc;
                     }
                     break;
 
@@ -1699,7 +1699,7 @@ static void func_004230F0(struct Expression *expr, int arg1, struct Expression *
                     break;
             }
 
-            if (expr->data.isop.unk30 != NULL) {
+            if (expr->data.isop.temploc != NULL) {
                 if (arg3) {
                     sp58 = loopno;
                     check_loop_nest_ix_cand(expr->ichain, &sp58, &sp54);
@@ -1721,12 +1721,12 @@ static void func_004230F0(struct Expression *expr, int arg1, struct Expression *
                     }
                     genrop(Ulod, reg, expr->data.isop.datatype, sizeoftyp(expr->data.isop.datatype));
                 } else {
-                    spilltemplodstr(Ulod, expr->data.isop.datatype, expr->data.isop.unk30);
+                    spilltemplodstr(Ulod, expr->data.isop.datatype, expr->data.isop.temploc);
                 }
 
                 expr->count--;
                 if (expr->count == 0 && expr->unk4 == 1) {
-                    expr->data.isop.unk30->not_spilled = true;
+                    expr->data.isop.temploc->not_spilled = true;
                 }
                 return;
             }
@@ -1883,9 +1883,9 @@ static void func_004230F0(struct Expression *expr, int arg1, struct Expression *
 
 
                     if (expr->data.isop.opc == Usub) {
-                        func_004230F0(expr->data.isop.op1, 3, sp70, 0, node);
+                        emit_expr(expr->data.isop.op1, 3, sp70, 0, node);
                     } else {
-                        func_004230F0(expr->data.isop.op1, arg1, sp70, 0, node);
+                        emit_expr(expr->data.isop.op1, arg1, sp70, 0, node);
                     }
 
                     if (expr->data.isop.opc != Uiequ &&
@@ -1904,7 +1904,7 @@ static void func_004230F0(struct Expression *expr, int arg1, struct Expression *
                         }
                     }
 
-                    func_004230F0(expr->data.isop.op2, arg1, sp6C, 0, node);
+                    emit_expr(expr->data.isop.op2, arg1, sp6C, 0, node);
 
                     if (expr->data.isop.opc != Uiequ &&
                             expr->data.isop.opc != Uigeq &&
@@ -1986,9 +1986,9 @@ static void func_004230F0(struct Expression *expr, int arg1, struct Expression *
                             expr->data.isop.opc == Uirld ||
                             expr->data.isop.opc == Uildv ||
                             expr->data.isop.opc == Uirlv) {
-                        func_004230F0(expr->data.isop.op1, 3, expr->data.isop.unk34, has_ix && (expr->datatype == Qdt || expr->datatype == Rdt), node);
+                        emit_expr(expr->data.isop.op1, 3, expr->data.isop.unk34, has_ix && (expr->datatype == Qdt || expr->datatype == Rdt), node);
                     } else {
-                        func_004230F0(expr->data.isop.op1, 0, baseaddr, 0, node);
+                        emit_expr(expr->data.isop.op1, 0, baseaddr, 0, node);
                     }
                 }
             }
@@ -2093,16 +2093,16 @@ static void func_004230F0(struct Expression *expr, int arg1, struct Expression *
 
 block_275:
             if ((expr->count > 1 && expr->unk4 != 2) ||
-                    ((expr->unk4 == 3 || expr->unk4 == 5) && expr->data.isop.unk30 == NULL)) {
+                    ((expr->unk4 == 3 || expr->unk4 == 5) && expr->data.isop.temploc == NULL)) {
                 if (expr->unk4 == 3 || expr->unk4 == 4 || expr->unk4 == 5) {
-                    expr->data.isop.unk30 = expr->ichain->isop.temploc;
+                    expr->data.isop.temploc = expr->ichain->isop.temploc;
                 } else {
                     if (expr->data.isop.datatype != Sdt) {
-                        gettemp(&expr->data.isop.unk30, sizeoftyp(expr->data.isop.datatype));
+                        gettemp(&expr->data.isop.temploc, sizeoftyp(expr->data.isop.datatype));
                     } else if (expr->data.isop.opc == Uadj) {
-                        gettemp(&expr->data.isop.unk30, expr->data.isop.aux2.v1.unk3C);
+                        gettemp(&expr->data.isop.temploc, expr->data.isop.aux2.v1.unk3C);
                     } else {
-                        gettemp(&expr->data.isop.unk30, expr->data.isop.datasize);
+                        gettemp(&expr->data.isop.temploc, expr->data.isop.datasize);
                     }
                 }
 
@@ -2112,7 +2112,7 @@ block_275:
                     }
                     genrop(Ustr, reg, expr->data.isop.datatype, sizeoftyp(expr->data.isop.datatype));
                 } else {
-                    spilltemplodstr(Ustr, expr->data.isop.datatype, expr->data.isop.unk30);
+                    spilltemplodstr(Ustr, expr->data.isop.datatype, expr->data.isop.temploc);
                 }
 
                 if ((expr->data.isop.opc != Uadj &&
@@ -2218,8 +2218,8 @@ static void func_00424FFC(struct Expression *expr, struct Expression *baseaddr, 
                     break;
 
                 case 2:
-                    if (expr->data.isvar_issvar.unk3C == NULL) {
-                        expr->data.isvar_issvar.unk3C = expr->ichain->isvar_issvar.temploc;
+                    if (expr->data.isvar_issvar.temploc == NULL) {
+                        expr->data.isvar_issvar.temploc = expr->ichain->isvar_issvar.temploc;
                     }
                     break;
 
@@ -2232,13 +2232,13 @@ static void func_00424FFC(struct Expression *expr, struct Expression *baseaddr, 
                     break;
             }
 
-            if (expr->data.isvar_issvar.unk3C != NULL) {
+            if (expr->data.isvar_issvar.temploc != NULL) {
                 break;
             }
 
             func_00424FFC(expr->data.isvar_issvar.outer_stack, NULL, node);
-            if ((expr->count > 1 && expr->unk4 != 2) || ((expr->unk4 == 3 || expr->unk4 == 5) && expr->data.isvar_issvar.unk3C == NULL)) {
-                func_004230F0(expr, 3, baseaddr, 0, node);
+            if ((expr->count > 1 && expr->unk4 != 2) || ((expr->unk4 == 3 || expr->unk4 == 5) && expr->data.isvar_issvar.temploc == NULL)) {
+                emit_expr(expr, 3, baseaddr, 0, node);
             }
             break;
 
@@ -2251,8 +2251,8 @@ static void func_00424FFC(struct Expression *expr, struct Expression *baseaddr, 
                     break;
 
                 case 2:
-                    if (expr->data.islda_isilda.unk38 == NULL) {
-                        expr->data.islda_isilda.unk38 = expr->ichain->islda_isilda.temploc;
+                    if (expr->data.islda_isilda.temploc == NULL) {
+                        expr->data.islda_isilda.temploc = expr->ichain->islda_isilda.temploc;
                     }
                     break;
 
@@ -2265,13 +2265,13 @@ static void func_00424FFC(struct Expression *expr, struct Expression *baseaddr, 
                     break;
             }
 
-            if (expr->data.islda_isilda.unk38 != NULL) {
+            if (expr->data.islda_isilda.temploc != NULL) {
                 break;
             }
 
             func_00424FFC(expr->data.islda_isilda.outer_stack, NULL, node);
-            if ((expr->count > 1 && expr->unk4 != 2) || ((expr->unk4 == 3 || expr->unk4 == 5) && expr->data.islda_isilda.unk38 == NULL)) {
-                func_004230F0(expr, 3, NULL, 0, node);
+            if ((expr->count > 1 && expr->unk4 != 2) || ((expr->unk4 == 3 || expr->unk4 == 5) && expr->data.islda_isilda.temploc == NULL)) {
+                emit_expr(expr, 3, NULL, 0, node);
             }
             break;
 
@@ -2284,8 +2284,8 @@ static void func_00424FFC(struct Expression *expr, struct Expression *baseaddr, 
                     break;
 
                 case 2:
-                    if (expr->data.isop.unk30 == NULL) {
-                        expr->data.isop.unk30 = expr->ichain->isop.temploc;
+                    if (expr->data.isop.temploc == NULL) {
+                        expr->data.isop.temploc = expr->ichain->isop.temploc;
                     }
                     break;
 
@@ -2294,7 +2294,7 @@ static void func_00424FFC(struct Expression *expr, struct Expression *baseaddr, 
                     break;
             }
 
-            if (expr->data.isop.unk30 != NULL) {
+            if (expr->data.isop.temploc != NULL) {
                 break;
             }
 
@@ -2331,8 +2331,8 @@ static void func_00424FFC(struct Expression *expr, struct Expression *baseaddr, 
                 }
             }
 
-            if ((expr->count > 1 && expr->unk4 != 2) || ((expr->unk4 == 3 || expr->unk4 == 5) && expr->data.isop.unk30 == NULL)) {
-                func_004230F0(expr, 3, baseaddr, 0, node);
+            if ((expr->count > 1 && expr->unk4 != 2) || ((expr->unk4 == 3 || expr->unk4 == 5) && expr->data.isop.temploc == NULL)) {
+                emit_expr(expr, 3, baseaddr, 0, node);
             }
             break;
 
@@ -2408,7 +2408,7 @@ static void func_00425618(struct IChain *ichain, struct Graphnode *node, struct 
             while (!sp5F && var != NULL) {
                 if (var->type == isvar) {
                     if (addreq(var->data.isvar_issvar.location, ichain->isvar_issvar.location)) {
-                        sp5F = var->graphnode == node && !var->unk2;
+                        sp5F = var->graphnode == node && !var->killed;
                     }
                 }
 
@@ -2423,7 +2423,7 @@ static void func_00425618(struct IChain *ichain, struct Graphnode *node, struct 
                 while (!sp5F) {
                     if (var->type == isvar) {
                         if (addreq(var->data.isvar_issvar.location, ichain->isvar_issvar.location)) {
-                            sp5F = var->graphnode == node->predecessors->graphnode && !var->unk2;
+                            sp5F = var->graphnode == node->predecessors->graphnode && !var->killed;
                         }
                     }
 
@@ -3182,7 +3182,7 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
                 uwrite(&u);
                 return;
             }
-            if (bvectin(ichain->bitpos, &node->bvs.stage1.u.cm.insert) == 0) {
+            if (!bvectin(ichain->bitpos, &node->bvs.stage1.u.cm.insert)) {
                 if (arg1) {
                     noop = false;
                     return;
@@ -3198,7 +3198,7 @@ static void func_00426FA4(struct IChain *ichain, int arg1, struct Expression *ba
                 return;
             }
             if (!arg1 && bvectin(ichain->bitpos, &node->bvs.stage1.u.scm.source)) {
-                if (bvectin(ichain->bitpos, &node->bvs.stage2.unk16C) == 0) {
+                if (!bvectin(ichain->bitpos, &node->bvs.stage2.unk16C)) {
                     if (inreg(ichain, node, &reg, 1)) {
                         if (baseaddr != NULL) {
                             base_in_reg(reg, ichain, baseaddr);
@@ -4473,7 +4473,7 @@ static void func_0042BB4C(struct Statement *stat, struct Graphnode *node) {
         usingReg = inreg(recur->ichain, node, &reg, 0);
         if (usingReg || recur->ichain->isvar_issvar.temploc != NULL) {
             func_00424FFC(recur->expr, NULL, node);
-            func_004230F0(recur->expr, 3, NULL, 0, node);
+            emit_expr(recur->expr, 3, NULL, 0, node);
             if (usingReg) {
                 genrop(Ustr, reg, recur->ichain->dtype, sizeoftyp(recur->ichain->dtype));
             } else {
@@ -4611,9 +4611,9 @@ void reemit() {
                 }
                 func_00424FFC(stat->expr, stat->u.store.baseaddr, node);
                 func_00424FFC(stat->u.store.expr, NULL, node);
-                func_004230F0(stat->expr, 3, stat->u.store.baseaddr, has_ix && (stat->u.store.u.istr.dtype == Qdt || stat->u.store.u.istr.dtype == Rdt), node);
+                emit_expr(stat->expr, 3, stat->u.store.baseaddr, has_ix && (stat->u.store.u.istr.dtype == Qdt || stat->u.store.u.istr.dtype == Rdt), node);
                 use_ix = false;
-                func_004230F0(stat->u.store.expr, 3, NULL, false, node);
+                emit_expr(stat->u.store.expr, 3, NULL, false, node);
                 OPC = Uirst;
                 DTYPE = stat->u.store.u.istr.dtype;
                 IONE = stat->u.store.u.istr.offset;
@@ -4642,7 +4642,7 @@ void reemit() {
 
                 if (lda) {
                     func_00424FFC(stat->u.store.expr, NULL, node);
-                    func_004230F0(stat->u.store.expr, 3, NULL, false, node);
+                    emit_expr(stat->u.store.expr, 3, NULL, false, node);
                     OPC = Ustr;
                     DTYPE = stat->u.store.u.istr.dtype;
                     MTYPE = stat->expr->data.islda_isilda.address.memtype;
@@ -4654,10 +4654,10 @@ void reemit() {
                 } else {
                     func_00424FFC(stat->expr, stat->u.store.baseaddr, node);
                     func_00424FFC(stat->u.store.expr, NULL, node);
-                    func_004230F0(stat->expr, 3, stat->u.store.baseaddr, has_ix && (stat->u.store.u.istr.dtype == Qdt || stat->u.store.u.istr.dtype == Rdt), node);
+                    emit_expr(stat->expr, 3, stat->u.store.baseaddr, has_ix && (stat->u.store.u.istr.dtype == Qdt || stat->u.store.u.istr.dtype == Rdt), node);
                     old_useix = use_ix;
                     use_ix = false;
-                    func_004230F0(stat->u.store.expr, 3, NULL, false, node);
+                    emit_expr(stat->u.store.expr, 3, NULL, false, node);
 
                     if (old_useix) {
                         OPC = Uisti;
@@ -4693,8 +4693,8 @@ void reemit() {
 
                 func_00424FFC(stat->expr, stat->u.store.baseaddr, node);
                 func_00424FFC(stat->u.store.expr, stat->u.store.u.mov.baseaddr, node);
-                func_004230F0(stat->expr, 3, stat->u.store.baseaddr, false, node);
-                func_004230F0(stat->u.store.expr, 3, stat->u.store.u.mov.baseaddr, false, node);
+                emit_expr(stat->expr, 3, stat->u.store.baseaddr, false, node);
+                emit_expr(stat->u.store.expr, 3, stat->u.store.u.mov.baseaddr, false, node);
                 OPC = Umov;
                 DTYPE = Mdt;
                 LENGTH = stat->u.store.size;
@@ -4722,8 +4722,8 @@ void reemit() {
 
                 func_00424FFC(stat->expr, NULL, node);
                 func_00424FFC(stat->u.trap.expr2, NULL, node);
-                func_004230F0(stat->expr, 3, NULL, false, node);
-                func_004230F0(stat->u.trap.expr2, 3, NULL, false, node);
+                emit_expr(stat->expr, 3, NULL, false, node);
+                emit_expr(stat->u.trap.expr2, 3, NULL, false, node);
                 OPC = stat->opc;
                 DTYPE = stat->u.trap.dtype;
                 IONE = stat->u.trap.num;
@@ -4732,7 +4732,7 @@ void reemit() {
 
             case Ustsp:
                 func_00424FFC(stat->expr, NULL, node);
-                func_004230F0(stat->expr, 0, NULL, false, node);
+                emit_expr(stat->expr, 0, NULL, false, node);
                 OPC = Ustsp;
                 uwrite(&u);
                 break;
@@ -4750,9 +4750,9 @@ void reemit() {
                         }
                         func_00424FFC(stat->expr->data.isvar_issvar.assigned_value, NULL, node);
                         if (stat->opc == Uisst) {
-                            func_004230F0(stat->u.store.expr, 0, NULL, false, node);
+                            emit_expr(stat->u.store.expr, 0, NULL, false, node);
                         }
-                        func_004230F0(stat->expr->data.isvar_issvar.assigned_value, 3, NULL, false, node);
+                        emit_expr(stat->expr->data.isvar_issvar.assigned_value, 3, NULL, false, node);
 
                         stat->expr->ichain->dtype = stat->expr->datatype;
                         stat->expr->ichain->isvar_issvar.size = stat->expr->data.isvar_issvar.size;
@@ -4794,7 +4794,7 @@ void reemit() {
                         // 1-indexed fun courtesy of pascal
                         reg -= 1;
                         if (node->regdata.unk44[reg - 1] == 0) {
-                            func_004230F0(stat->expr, 3, NULL, false, node);
+                            emit_expr(stat->expr, 3, NULL, false, node);
 
                             if (!mips3_64data && (stat->u.par.dtype == Idt || stat->u.par.dtype == Kdt)) {
                                 sp8A = true;
@@ -4803,7 +4803,7 @@ void reemit() {
                             }
                         }
                     } else {
-                        func_004230F0(stat->expr, 3, NULL, false, node);
+                        emit_expr(stat->expr, 3, NULL, false, node);
                         sp8B = true;
                     }
                 } else if (stat->u.par.reg != 0) {
@@ -4811,7 +4811,7 @@ void reemit() {
                     sp8A = false;
                     sp8B = false;
                     if (node->regdata.unk44[reg - 1] == 0) {
-                        func_004230F0(stat->expr, 3, NULL, false, node);
+                        emit_expr(stat->expr, 3, NULL, false, node);
                         if (stat->u.par.dtype == Qdt && stat->u.par.reg < 24) {
                             OPC = Ucvt;
                             DTYPE2 = Qdt;
@@ -4855,7 +4855,7 @@ void reemit() {
                         genrop(Ustr, stat->u.par.reg, stat->u.par.dtype, stat->u.par.size);
                     }
                 } else {
-                    func_004230F0(stat->expr, 3, NULL, false, node);
+                    emit_expr(stat->expr, 3, NULL, false, node);
                     sp8B = true;
                 }
 
@@ -4881,7 +4881,7 @@ void reemit() {
                 break;
 
             case Uxpar:
-                func_004230F0(stat->expr, 4, NULL, false, node);
+                emit_expr(stat->expr, 4, NULL, false, node);
                 OPC = Uxpar;
                 DTYPE = Adt;
                 uwrite(&u);
@@ -4889,7 +4889,7 @@ void reemit() {
 
             case Upmov:
                 func_00424FFC(stat->expr, NULL, node);
-                func_004230F0(stat->expr, 3, NULL, false, node);
+                emit_expr(stat->expr, 3, NULL, false, node);
                 if (curmst->u.mst.proc->o3opt) {
                     OPC = Umpmv;
                 } else {
@@ -4917,7 +4917,7 @@ void reemit() {
                 sp97 = true;
                 func_00424FFC(stat->expr, NULL, node);
                 func_0042AADC(node);
-                func_004230F0(stat->expr, 0, NULL, false, node);
+                emit_expr(stat->expr, 0, NULL, false, node);
                 func_0042B09C(node);
                 if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                     func_0042A1C8(node);
@@ -5014,7 +5014,7 @@ void reemit() {
                     sp97 = true;
                     func_00424FFC(stat->expr, NULL, node);
                     func_0042AADC(node);
-                    func_004230F0(stat->expr, 0, NULL, false, node);
+                    emit_expr(stat->expr, 0, NULL, false, node);
                     func_0042B09C(node);
                     if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                         func_0042A1C8(node);
@@ -5038,7 +5038,7 @@ void reemit() {
                 }
                 func_00424FFC(stat->expr, NULL, node);
                 func_0042AADC(node);
-                func_004230F0(stat->expr, 0, NULL, false, node);
+                emit_expr(stat->expr, 0, NULL, false, node);
                 func_0042B09C(node);
                 if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                     func_0042A1C8(node);
@@ -5050,7 +5050,7 @@ void reemit() {
 
             case Uaos:
                 func_00424FFC(stat->expr, NULL, node);
-                func_004230F0(stat->expr, 0, NULL, false, node);
+                emit_expr(stat->expr, 0, NULL, false, node);
                 OPC = Uaos;
                 uwrite(&u);
                 break;
@@ -5116,7 +5116,7 @@ void reemit() {
                     boundswarning();
                 }
                 func_00424FFC(stat->expr, NULL, node);
-                func_004230F0(stat->expr, 0, NULL, false, node);
+                emit_expr(stat->expr, 0, NULL, false, node);
                 OPC = Uchkt;
                 LEXLEV = 0;
                 uwrite(&u);
@@ -5124,7 +5124,7 @@ void reemit() {
 
             case Upop:
                 if (stat->u.pop.unk15 != 0 && stat->u.pop.unk16 != 0) {
-                    func_004230F0(stat->expr, 3, NULL, false, node);
+                    emit_expr(stat->expr, 3, NULL, false, node);
                     gettemp(&sp84, 4);
                     spilltemplodstr(Ustr, Fdt, sp84);
                     func_0042AADC(node);
@@ -5134,7 +5134,7 @@ void reemit() {
                     if (stat->u.pop.unk15 != 0) {
                         func_0042AADC(node);
                     }
-                    func_004230F0(stat->expr, 3, NULL, false, node);
+                    emit_expr(stat->expr, 3, NULL, false, node);
                     if (stat->u.pop.unk15 == 0) {
                         OPC = Upop;
                         DTYPE = stat->u.pop.dtype;

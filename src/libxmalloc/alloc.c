@@ -308,8 +308,6 @@ void *alloc_new(ssize_t size, struct AllocBlock **heap) {
     ssize_t temp_t2;
     struct AllocItem *first_item;
     struct AllocItem *temp_t3;
-    struct AllocItem *temp_t3_2;
-    struct AllocItem *temp_t3_3;
     struct AllocItem *temp_t4;
     struct AllocBlock *phi_t0;
     struct AllocItem *phi_t1;
@@ -350,17 +348,17 @@ void *alloc_new(ssize_t size, struct AllocBlock **heap) {
         // Don't leave a hole of up to 256 bytes,
         // so waste this whole item,
         // and remove from the free list.
-        temp_t3_2 = phi_t1->prev;
+        temp_t3 = phi_t1->prev;
         temp_t4 = phi_t1->next;
-        temp_t3_2->next = temp_t4;
-        temp_t4->prev = temp_t3_2;
+        temp_t3->next = temp_t4;
+        temp_t4->prev = temp_t3;
 
-        phi_t0->item_list = temp_t3_2;
+        phi_t0->item_list = temp_t3;
 
         phi_t1->size |= 1;
 
-        temp_t3_3 = (struct AllocItem *)((unsigned char *)phi_t1 + free_size);
-        temp_t3_3->size |= 2;
+        temp_t3 = (struct AllocItem *)((unsigned char *)phi_t1 + free_size);
+        temp_t3->size |= 2;
         return (void *)&phi_t1->prev;
     } else {
         temp_t3 = (struct AllocItem *)((unsigned char *)phi_t1 + free_size);

@@ -603,8 +603,8 @@ void strkillprev(struct Statement *stmt) {
 
     for (access = curgraphnode->varlisthead; access != NULL; access = access->next) {
         if (access->type == 2 && !access->unk8) {
-            if (!access->data.var->unk2) {
-                access->data.var->unk2 = slkilled(stmt, access->data.var);
+            if (!access->data.var->killed) {
+                access->data.var->killed = slkilled(stmt, access->data.var);
             }
         } else if (access->type == 3) { // mov?
             if (access->data.move->u.store.unk1F) {
@@ -802,7 +802,7 @@ bool clkilled(int level, struct Proc *proc, struct Expression *expr) {
 0045D208 patchvectors
 */
 bool cmkilled(int level, struct Proc *proc, struct Statement *stat) {
-    bool killed;
+    bool killed = false;
 
     if (lang == LANG_C || lang == LANG_PL1 || lang == LANG_RESERVED1) {
         killed = true;
@@ -974,8 +974,8 @@ void cupkillprev(int level, struct Proc *proc) {
 
     for (access = curgraphnode->varlisthead; access != NULL; access = access->next) {
         if (access->type == 2) {
-            if (!access->data.var->unk2) {
-                access->data.var->unk2 = clkilled(level, proc, access->data.var);
+            if (!access->data.var->killed) {
+                access->data.var->killed = clkilled(level, proc, access->data.var);
             }
         } else if (access->type == 3) {
             if (access->data.store->u.store.unk1F) {
@@ -1004,7 +1004,7 @@ void ciakillprev(void) {
 
     for (access = curgraphnode->varlisthead; access != NULL; access = access->next) {
         if (access->type == 2) {
-            access->data.var->unk2 = true;
+            access->data.var->killed = true;
         } else if (access->type == 3) {
             access->data.move->u.store.unk1F = false;
             access->data.move->u.store.unk1D = false;
@@ -1328,8 +1328,8 @@ void parkillprev(struct Statement *parameters) {
 
     for (access = curgraphnode->varlisthead; access != NULL; access = access->next) {
         if (access->type == 2) {
-            if (!access->data.var->unk2) {
-                access->data.var->unk2 = listplkilled(parameters, access->data.var, access->unk8);
+            if (!access->data.var->killed) {
+                access->data.var->killed = listplkilled(parameters, access->data.var, access->unk8);
             }
         } else if (access->type == 1) {
             if (access->data.store->u.store.unk1F) {

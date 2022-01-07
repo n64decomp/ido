@@ -132,7 +132,6 @@ bool cupaltered(struct IChain *ichain, int level, struct Proc *proc) {
             break;
 
         case isop:
-            ichain = ichain;
             altered = cupaltered(ichain->isop.op1, level, proc);
             if (!altered && optab[ichain->isop.opc].is_binary_op) {
                 altered = cupaltered(ichain->isop.op2, level, proc);

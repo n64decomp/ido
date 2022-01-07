@@ -768,6 +768,9 @@ void optinit(void) {
     setregs[1] = (seterregs[1] | seteeregs[1]);
 
     gsptr = alloc_new(sizeof(struct Statement), &perm_heap);
+#ifdef AVOID_UB
+    *gsptr = (struct Statement){0};
+#endif
     gsptr->opc = Ustr;
 
     dft_livbb = alloc_new(sizeof(struct LiveUnit), &perm_heap);

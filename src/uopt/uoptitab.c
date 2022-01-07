@@ -711,6 +711,9 @@ void trep_image(struct Expression *expr, bool op1, bool ant, bool av, bool arg4)
     }
 
     trep = alloc_new(sizeof (struct TrepImageThing), &perm_heap);
+#ifdef AVOID_UB
+    *trep = (struct TrepImageThing){0};
+#endif
     if (op->type == islda || op->type == isilda || op->type == isconst) {
         trep->ichain = NULL;
     } else if (op->type != isvar && op->count != 1) {
@@ -791,8 +794,8 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
             *anticipated = true;
             *available = true;
         } else if (expr->type == isvar || expr->type == issvar) {
-            *anticipated = expr->unk3;
-            *available = !expr->unk2;
+            *anticipated = expr->initialVal;
+            *available = !expr->killed;
         } else {    // empty, isop, dumped, isrconst
             *anticipated = expr->data.isop.unk21;
             *available = expr->data.isop.unk22;
@@ -846,8 +849,8 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                     *anticipated = true;
                     *available = true;
                 } else {
-                    *anticipated = expr->data.islda_isilda.outer_stack->unk3;
-                    *available = !expr->data.islda_isilda.outer_stack->unk2;
+                    *anticipated = expr->data.islda_isilda.outer_stack->initialVal;
+                    *available = !expr->data.islda_isilda.outer_stack->killed;
                 }
 
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
@@ -914,8 +917,8 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                     setbit(&vareqv, ichain->bitpos);
                     setbit(&asgneqv, ichain->isvar_issvar.assignbit);
                 } else {
-                    *anticipated = expr->unk3;
-                    *available = !expr->unk2;
+                    *anticipated = expr->initialVal;
+                    *available = !expr->killed;
                 }
 
                 if (*anticipated) {
@@ -945,8 +948,8 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                     setbit(&vareqv, ichain->bitpos);
                     setbit(&asgneqv, ichain->isvar_issvar.assignbit);
                 } else {
-                    *anticipated = expr->unk3;
-                    *available = !expr->unk2;
+                    *anticipated = expr->initialVal;
+                    *available = !expr->killed;
                 }
 
                 if (*anticipated) {
@@ -1012,8 +1015,8 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                         case Uileq:
                         case Uiles:
                         case Uineq:
-                            *anticipated = *anticipated && expr->unk3;
-                            *available = *available && !expr->unk2;
+                            *anticipated = *anticipated && expr->initialVal;
+                            *available = *available && !expr->killed;
                             break;
 
                         default:
@@ -1054,8 +1057,8 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                         case Uilod:
                         case Uirld:
                         case Uirlv:
-                            *anticipated = op1ant && expr->unk3;
-                            *available = op1av && !expr->unk2;
+                            *anticipated = op1ant && expr->initialVal;
+                            *available = op1av && !expr->killed;
                             break;
 
                         default:
@@ -1268,7 +1271,7 @@ void codeimage(void) {
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
                 if (stat->expr->count != 0) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
-                    if (!stat->expr->unk2) {
+                    if (!stat->expr->killed) {
                         setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
                     }
                 }
@@ -1354,7 +1357,7 @@ void codeimage(void) {
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
                 if (stat->expr->count) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
-                    if (!stat->expr->unk2) {
+                    if (!stat->expr->killed) {
                         setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);
                     }
                 }

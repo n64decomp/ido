@@ -593,6 +593,9 @@ void controlflow() {
                 pred->graphnode = new_node;
                 new_node->interprocedural_controlflow = false;
                 stat = alloc_new(sizeof(struct Statement), &perm_heap);
+#ifdef AVOID_UB
+                *stat = (struct Statement){0};
+#endif
                 new_node->stat_head = stat;
                 stat->prev = curnode->stat_tail;
                 stat->next = curnode->stat_tail->next;

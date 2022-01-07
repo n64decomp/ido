@@ -43,7 +43,7 @@ void findbbtemps(struct Graphnode *node) {
 }
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
 0042BF08 reemit
 */
 void gettemp(struct Temploc **out_result, int size) {

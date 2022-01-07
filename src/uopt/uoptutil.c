@@ -210,7 +210,7 @@ void ovfwwarning(Uopcode opc) {
 00410204 codemotion
 0041550C func_0041550C
 0041FD3C genloadnum
-004230F0 func_004230F0
+004230F0 emit_expr
 00424FFC func_00424FFC
 00425618 func_00425618
 00426DE8 func_00426DE8
@@ -431,10 +431,10 @@ void copycoderep(struct Expression *dest, struct Expression *src) {
             dest->data.islda_isilda.address = src->data.islda_isilda.address;
 
             dest->data.islda_isilda.outer_stack = src->data.islda_isilda.outer_stack;
-            dest->data.islda_isilda.unk38 = src->data.islda_isilda.unk38;
+            dest->data.islda_isilda.temploc = src->data.islda_isilda.temploc;
 
             dest->unk4 = src->unk4;
-            dest->unk5 = src->unk5;
+            dest->visited = src->visited;
             dest->count = src->count;
             break;
 
@@ -453,10 +453,10 @@ void copycoderep(struct Expression *dest, struct Expression *src) {
 
         case isvar:
         case issvar:
-            dest->unk2 = src->unk2;
-            dest->unk3 = src->unk3;
+            dest->killed = src->killed;
+            dest->initialVal = src->initialVal;
             dest->unk4 = src->unk4;
-            dest->unk5 = src->unk5;
+            dest->visited = src->visited;
             dest->count = src->count;
 
             dest->data.isvar_issvar.size = src->data.isvar_issvar.size;
@@ -469,7 +469,7 @@ void copycoderep(struct Expression *dest, struct Expression *src) {
             dest->data.isvar_issvar.assigned_value = src->data.isvar_issvar.assigned_value;
             dest->data.isvar_issvar.assignment = src->data.isvar_issvar.assignment;
             dest->data.isvar_issvar.outer_stack = src->data.isvar_issvar.outer_stack;
-            dest->data.isvar_issvar.unk3C = src->data.isvar_issvar.unk3C;
+            dest->data.isvar_issvar.temploc = src->data.isvar_issvar.temploc;
             break;
 
         default:
@@ -892,7 +892,7 @@ void extendstat(Uopcode opc) {
 0041F048 genrop
 0041FB20 spilltemplodstr
 004205F8 genrlodrstr
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0042B2C0 func_0042B2C0
 0042B890 func_0042B890
@@ -1277,7 +1277,7 @@ void deccount(struct Expression *expr, struct Graphnode *node) {
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
                 deccount(expr->data.isvar_issvar.copy, node);
             } else if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) ||
-                    (!expr->unk3 && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
+                    (!expr->initialVal && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
                 expr->count--;
                 if (expr->count == 0) {
                     expr->var_access_list->type = 0;
@@ -1625,7 +1625,7 @@ struct Expression *binopwithconst(Uopcode opc, struct Expression *left, int valu
             binop->type = isop;
             binop->datatype = dtype;
             binop->unk4 = false;
-            binop->unk5 = 0;
+            binop->visited = 0;
             binop->count = 1;
             binop->graphnode = curgraphnode;
             binop->data.isop.opc = opc;
@@ -1633,7 +1633,7 @@ struct Expression *binopwithconst(Uopcode opc, struct Expression *left, int valu
             binop->data.isop.op1 = left;
             binop->data.isop.op2 = constant;
             binop->data.isop.aux2.v1.overflow_attr = false;
-            binop->data.isop.unk30 = 0;
+            binop->data.isop.temploc = 0;
         } else {
             binop->count++;
             decreasecount(left);
@@ -1669,7 +1669,7 @@ int regclassof(struct IChain *ichain) {
 }
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
 00426FA4 func_00426FA4
 0045E45C func_0045E45C
 0045E5C4 func_0045E5C4
@@ -2466,11 +2466,10 @@ bool check_ix_candidate(struct IChain *ichain, int loopno) {
 }
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
 */
 void check_loop_nest_ix_cand(struct IChain *ichain, int *loopno, int *ix_cand) {
     struct Loop *loop;
-    printf("called \n");
 
     *ix_cand = check_ix_candidate(ichain, *loopno);
     loop = looptab[*loopno].loop->outer;
@@ -2502,7 +2501,7 @@ bool check_ix_source(struct IChain *ichain, int loopno) {
 }
 
 /*
-004230F0 func_004230F0
+004230F0 emit_expr
 0042AADC func_0042AADC
 */
 struct ScmThing *get_ix_source(unsigned char unk11, int loopnum) {
