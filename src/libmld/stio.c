@@ -540,7 +540,7 @@ void st_writest(int fn, int flags) {
             pfd->ipdFirst = fdr.ipdFirst + fdr.cpd;
             sp120 += pfd->cpd * sizeof(PDR);
             if (pfd->cpd != 0) {
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
                 swap_pd(cfd->ppd, pfd->cpd, gethostsex());
 #endif
                 if (fwrite(cfd->ppd, sizeof(PDR), pfd->cpd, out) != pfd->cpd) {
@@ -565,7 +565,7 @@ void st_writest(int fn, int flags) {
             pfd->isymBase = fdr.isymBase + fdr.csym;
             sp120 += pfd->csym * sizeof(SYMR);
             if (pfd->csym != 0) {
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
                 swap_sym(cfd->psym, pfd->csym, gethostsex());
 #endif
                 if (fwrite(cfd->psym, sizeof(SYMR), pfd->csym, out) != pfd->csym) {
@@ -590,7 +590,7 @@ void st_writest(int fn, int flags) {
             pfd->ioptBase = fdr.ioptBase + fdr.copt;
             sp120 += pfd->copt * sizeof(OPTR);
             if (pfd->copt != 0) {
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
                 swap_opt(cfd->popt, pfd->copt, gethostsex());
 #endif
                 if (fwrite(cfd->popt, sizeof(OPTR), pfd->copt, out) != pfd->copt) {
@@ -688,7 +688,7 @@ void st_writest(int fn, int flags) {
             sp120 = st_pchdr->cfd * sizeof(FDR);
             hdr.cbFdOffset = fileOffset;
             if (st_pchdr->cfd != 0) {
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
                 swap_fd(st_pchdr->pfd, st_pchdr->cfd, gethostsex());
 #endif
                 if (fwrite(st_pchdr->pfd, sizeof(FDR), st_pchdr->cfd, out) != st_pchdr->cfd) {
@@ -707,7 +707,7 @@ void st_writest(int fn, int flags) {
             pfd->rfdBase = fdr.rfdBase + fdr.crfd;
             sp120 += pfd->crfd * sizeof(RFDT);
             if (pfd->crfd != 0) {
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
                 swap_fi(cfd->prfd, pfd->crfd, gethostsex());
 #endif
                 if (fwrite(cfd->prfd, sizeof(RFDT), pfd->crfd, out) != pfd->crfd) {
@@ -732,7 +732,7 @@ void st_writest(int fn, int flags) {
             hdr.cbExtOffset = fileOffset;
             sp120 *= sizeof(EXTR);
             if (st_pchdr->cext != 0) {
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
                 swap_ext(st_pchdr->pext, st_pchdr->cext, gethostsex());
 #endif
                 if (fwrite(st_pchdr->pext, sizeof(EXTR), st_pchdr->cext, out) != st_pchdr->cext) {
@@ -753,7 +753,7 @@ void st_writest(int fn, int flags) {
             hdr.idnMax = st_pchdr->cdn;
             if (st_pchdr->cdn != 0) {
                 // ?
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
                 swap_dn(st_pchdr->pdn, st_pchdr->cdn, gethostsex());
 #endif
                 if (st_pchdr->cdn != 0 && fwrite(st_pchdr->pdn, 8, st_pchdr->cdn, out) != st_pchdr->cdn) {
@@ -767,7 +767,7 @@ void st_writest(int fn, int flags) {
     fseek(out, startOffset, SEEK_SET);
     hdr.vstamp = 0x070A; // 7.10
     hdr.magic = stmagic;
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
     swap_hdr(&hdr, gethostsex());
 #endif
     if (fwrite(&hdr, 1, sizeof(HDRR), out) != sizeof(HDRR)) {

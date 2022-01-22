@@ -602,10 +602,10 @@ void localcolor(void) {
             if (ichain->isvar_issvar.location.addr != r_sp) {
                 if (ichain->isvar_issvar.location.addr == r_v0) {
                     if (!mips3_64data && r2_overlap_r3(ichain->expr->table_index)) {
-                        SET_ADD(tempset, firsterreg[0]);
-                        SET_ADD(tempset, firsterreg[0] + 1);
+                        SET_INIT(tempset, firsterreg[0]);
+                        SET_INIT(tempset, firsterreg[0] + 1);
                     } else {
-                        SET_ADD(tempset, firsterreg[0]);
+                        SET_INIT(tempset, firsterreg[0]);
                     }
 
                     if (staticlinkloc != 0 && SET_IN(graphhead->regsused[0], firsterreg[0]) &&
@@ -622,9 +622,9 @@ void localcolor(void) {
                     }
                 } else {
                     if (ichain->isvar_issvar.location.addr == r_f0) {
-                        SET_ADD(tempset, firsterreg[1]);
+                        SET_INIT(tempset, firsterreg[1]);
                     } else {
-                        SET_ADD(tempset, firsterreg[1] + 1);
+                        SET_INIT(tempset, firsterreg[1] + 1);
                     }
                 }
 
@@ -1616,7 +1616,7 @@ void split(struct LiveRange **src, struct LiveRange **dest, int regclass, bool a
         while (!found && lu != NULL) {
             if ((SET_NEQ64(lu->node->regsused[regclass - 1], setregs[regclass - 1]) || lu->reg != 0) &&
                     lu->load_count + lu->store_count != 0) {
-                found = 1;
+                found = true;
             } else {
                 lu = lu->next;
             }
@@ -1788,7 +1788,7 @@ block_37: // TODO: weird control flow
 /*
 00469280 globalcolor
 */
-float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
+float cupcosts(struct LiveRange *liverange, int reg, bool caller_saved) {
     struct Graphnode *node;
     struct Statement *stat;
     struct LiveUnit *lu; // s1
@@ -1802,10 +1802,10 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
                     bvectin(lu->node->predecessors->graphnode->num, &liverange->livebbs)) {
                 stat = lu->node->predecessors->graphnode->stat_tail;
                 if (stat->opc == Ucia) {
-                    if (flag && in_reg_masks(reg, stat->u.cia.unk20, stat->u.cia.len)) {
+                    if (caller_saved && in_reg_masks(reg, stat->u.cia.unk20, stat->u.cia.len)) {
                         cost += movcostused * lu->node->frequency;
                     }
-                } else if ((flag || stat->u.call.proc->o3opt) &&
+                } else if ((caller_saved || stat->u.call.proc->o3opt) &&
                         (!IS_TEMP_REGISTERS_INTACT_ATTR(stat->u.call.extrnal_flags) ||
                             stat->opc != Ucup || reg == 13) &&
                         (!stat->u.call.proc->o3opt ||
@@ -1820,10 +1820,10 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
             if (lu->node->successors != NULL && bvectin(lu->node->successors->graphnode->num, &liverange->livebbs)) {
                 stat = lu->node->stat_tail;
                 if (stat->opc == Ucia) {
-                    if (flag && in_reg_masks(reg, stat->u.cia.unk20, stat->u.cia.len)) {
+                    if (caller_saved && in_reg_masks(reg, stat->u.cia.unk20, stat->u.cia.len)) {
                         cost += movcostused * lu->node->frequency;
                     }
-                } else if ((flag || stat->u.call.proc->o3opt) &&
+                } else if ((caller_saved || stat->u.call.proc->o3opt) &&
                         (!IS_TEMP_REGISTERS_INTACT_ATTR(stat->u.call.extrnal_flags) || stat->opc != Ucup || reg == 13) &&
                         (!stat->u.call.proc->o3opt ||
                          stat->u.call.proc->regstaken_parregs->regstaken[reg - 1])) {
@@ -1871,10 +1871,10 @@ float cupcosts(struct LiveRange *liverange, int reg, bool flag) {
                     if ((stat->opc == Ucia || stat->opc == Ucup || stat->opc == Uicuf) &&
                             bvectin(node->predecessors->graphnode->num, &liverange->livebbs)) {
                         if (stat->opc == Ucia) {
-                            if (flag && in_reg_masks(reg, stat->u.cia.unk20, stat->u.cia.len)) {
+                            if (caller_saved && in_reg_masks(reg, stat->u.cia.unk20, stat->u.cia.len)) {
                                 cost += movcostused * node->frequency;
                             }
-                        } else if ((flag || stat->u.call.proc->o3opt) &&
+                        } else if ((caller_saved || stat->u.call.proc->o3opt) &&
                                 (!IS_TEMP_REGISTERS_INTACT_ATTR(stat->u.call.extrnal_flags) || stat->opc != Ucup || reg == 13) &&
                                 (!stat->u.call.proc->o3opt || stat->u.call.proc->regstaken_parregs->regstaken[reg - 1])) {
                             cost += movcostused * node->frequency;
@@ -2070,7 +2070,7 @@ void globalcolor(void) {
 
             phi_f20 = 1.0e20f;
             if (!o3opt) {
-                phi_f22 = cupcosts(liverange, firsterreg[regclass - 1] + 1, 1);
+                phi_f22 = cupcosts(liverange, firsterreg[regclass - 1] + 1, true);
             }
 
             for (reg = firsterreg[regclass - 1]; reg <= lasterreg[regclass - 1]; reg++) {
@@ -2078,7 +2078,7 @@ void globalcolor(void) {
                     if (!o3opt && !SET64_IN(spB8, reg)) {
                         registerCost = phi_f22;
                     } else {
-                        registerCost = cupcosts(liverange, reg, 1);
+                        registerCost = cupcosts(liverange, reg, true);
                     }
 
                     if (registerCost < phi_f20) {
@@ -2094,7 +2094,7 @@ void globalcolor(void) {
             }
 
             if (!o3opt) {
-                phi_f22 = cupcosts(liverange, firsteereg[regclass - 1], 0);
+                phi_f22 = cupcosts(liverange, firsteereg[regclass - 1], false);
             }
 
             for (reg = firsteereg[regclass - 1]; reg <= lasteereg[regclass - 1]; reg++) {
@@ -2102,7 +2102,7 @@ void globalcolor(void) {
                     if (!o3opt && !SET64_IN(spB8, reg)) {
                         registerCost = phi_f22;
                     } else {
-                        registerCost = cupcosts(liverange, reg, 0);
+                        registerCost = cupcosts(liverange, reg, false);
                     }
 
                     if (!allcallersave || SET64_IN(regscantpass, reg) || !propagate_ee_saves) {
@@ -2125,6 +2125,7 @@ void globalcolor(void) {
             //! this comparison makes -mfpmath=sse necessary, because otherwise the compiler uses double comparisons
             if (liverange->adjsave * liverange->unk1C <= phi_f20) {
                 split(&liverange, &splitlr, regclass, true);
+
                 if (outofmem) {
                     return;
                 }
@@ -2196,7 +2197,6 @@ void globalcolor(void) {
 
                 for (intf = liverange->interfere; intf != NULL; intf = intf->next) {
                     if (intf->liverange != NULL && intf->liverange->assigned_reg == 0 && !SET_IN(intf->liverange->forbidden, chosen_reg)) {
-
                         SET_ADD(intf->liverange->forbidden, chosen_reg);
 
                         intf->liverange->unk21--;
@@ -2245,7 +2245,7 @@ void globalcolor(void) {
                     if (!o3opt && !SET64_IN(spB8, reg)) {
                         registerCost = phi_f22;
                     } else {
-                        registerCost = cupcosts(liverange, reg, 1);
+                        registerCost = cupcosts(liverange, reg, true);
                     }
                     if (registerCost < phi_f20) {
                         chosen_reg = reg;

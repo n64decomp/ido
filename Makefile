@@ -8,7 +8,7 @@ ARCH ?= x86
 
 ifeq ($(ARCH),x86)
 CC := gcc
-ENDIANNESS := -DLITTLE_ENDIAN
+ENDIANNESS := -DUOPT_LITTLE_ENDIAN
 ARCH_FLAGS := -m32 -mfpmath=sse -msse2 -ffp-contract=off $(ENDIANNESS)
 OPTIMIZATION = -ggdb3
 #OPTIMIZATION = -O2 -march=native -mtune=native -flto

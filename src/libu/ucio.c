@@ -120,7 +120,7 @@ void uputint(int value, bool swap) {
         uputpos = 0;
     }
 
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
     // Convert back to big endian, except strings
     if (swap) {
         value = swap_word(value);
@@ -245,7 +245,7 @@ int ugetint(bool swap) {
     }
 
     in = ugetbufp[ugetpos++];
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
     // Most data should be converted to little endian, except for strings
     if (swap) {
         in = swap_word(in);
