@@ -22,8 +22,8 @@ typedef unsigned char bool;
 
 // Set bits [start..end) in a 64-bit word to ones (bit with index 0 is the msb)
 //#define GENMASK(start, end) ((((MAX((long long int)(start), 0LL) - MIN((long long int)(end), 64LL)) >> 63) << ((MAX((start), 0) - MIN((end), 64)) & 63)) >> MAX((start), 0))
-#define GENMASK(start, end) ((unsigned long long)(((MAX((long long)(start), 0LL) - MIN((long long)(end), 64LL)) >> 63) << ((MAX((start), 0) - MIN((end), 64)) & 63)) >> MAX((start), 0ULL))
-#define GENMASK32(start, end) ((unsigned int)(((MAX((int)(start), 0) - MIN((int)(end), 32)) >> 31) << ((MAX((start), 0) - MIN((end), 32)) & 31)) >> MAX((start), 0U))
+#define GENMASK(start, end) ((unsigned long long)(((MAX((long long)(start), 0LL) - MIN((long long)(end), 64LL)) >> 63) << ((MAX((start), 0) - MIN((end), 64)) & 63)) >> MAX((long long)(start), 0LL))
+#define GENMASK32(start, end) ((unsigned int)(((MAX((int)(start), 0) - MIN((int)(end), 32)) >> 31) << ((MAX((start), 0) - MIN((end), 32)) & 31)) >> MAX((int)(start), 0))
 
 //#define GETBIT32(set, index) ((int)(((unsigned int)(set) & -((unsigned int)(index) < 32)) << ((index) & 31)) < 0)
 #define GETBIT32(set, index) ((unsigned int)(index) < 32U && ((set) & (1U << (31 - (index)))))

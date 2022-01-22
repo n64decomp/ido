@@ -247,7 +247,7 @@ union Valu {
   long long dwval;
 #endif
   struct {
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
     int dwval_l, dwval_h;
 #else /* _MIPSEB */
     int dwval_h, dwval_l;
@@ -300,7 +300,7 @@ typedef unsigned char Uopcode;
 #endif
 
 struct Bcrec   {
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
           unsigned short Lexlev;
           unsigned char  Dtype :5;
           unsigned char  Mtype :3;
@@ -315,14 +315,14 @@ struct Bcrec   {
           /* ------- 2 words ------- */
           union {
             struct {
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
               unsigned :24; enum Datatype Dtype2:8;
 #else
               enum Datatype Dtype2:8; unsigned :24;
 #endif
             }secondty;
             struct {
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
                unsigned int pad :16;
                unsigned int Push :8, Pop :8;
 #else
@@ -345,7 +345,7 @@ struct Bcrec   {
                     } dwbnds;
 #endif
                   struct {
-#ifdef LITTLE_ENDIAN
+#ifdef UOPT_LITTLE_ENDIAN
                     int lbound_l, lbound_h;
                     int hbound_l, hbound_h;
 #else        /* _MIPSEB */
