@@ -151,15 +151,6 @@ void cursor_updaterow(struct Tile *tile, int row)
 {
     tile->cursRow = row;
     cursor_checkrow(tile);
-    /* 
-    if (tile->cursRow < tile->viewRow) {
-        tile->viewRow = MAX(row, 0); 
-        tile->cursRow = tile->viewRow;
-    } else if (tile->cursRow >= MIN(tile->viewRow + tile->wrows, tile->buf.numLines)) {
-        tile->viewRow = MAX(MIN(row, tile->buf.numLines - 1) - (tile->wrows - 1), 0); 
-        tile->cursRow = MIN(row, tile->buf.numLines - 1);
-    }
-     */
 }
 
 // set column without wmove
@@ -167,15 +158,6 @@ void cursor_updatecol(struct Tile *tile, int col)
 {
     tile->cursCol = col;
     cursor_checkcol(tile);
-    /* 
-    if (tile->cursCol < tile->viewCol) {
-        tile->viewCol = MAX(col, 0); 
-        tile->cursCol = tile->viewCol;
-    } else if (tile->cursCol >= MIN(tile->viewCol + tile->wcols, CURSOR_LINE(tile)->len)) {
-        tile->viewCol = MAX(MIN(col, CURSOR_LINE(tile)->len - 1) - (tile->wcols - 1), 0); 
-        tile->cursCol = MIN(col, CURSOR_LINE(tile)->len - 1);
-    }
-     */
 }
 
 void cursor_setrow(struct Tile *tile, int row)
@@ -196,13 +178,6 @@ void cursor_absmove(struct Tile *tile, int y, int x)
     cursor_updatecol(tile, x);
     wmove(tile->win, tile->cursRow, tile->cursCol);
 }
-/* 
-
-void cursor_check(struct Tile *tile)
-{
-    cursor_absmove(tile, tile->cursRow, tile->cursCol);
-}
- */
 
 void cursor_move(struct Tile *tile, int dy, int dx)
 {
@@ -441,6 +416,7 @@ void color_sr(struct Tile *tile)
     switch (sr->type) {
         case REGISTER:
         case INFO:
+        case LABEL:
             {
                 int color = highlight_random_color();
                 hl = (struct Highlighter) {
@@ -791,43 +767,13 @@ void tile_base_input(struct Tile *tile)
             cursor_move(tile, -n * (tile->wrows - 1) / 2, 0);
             break;
 
-            /* 
-        case 'v':
-            {
-                struct StringRep *sr = dl_get_sr_at_pos(CURSOR_LINE(tile), tile->cursCol);
-                if (sr && sr->type == EXPRESSION) {
-                    struct Highlighter hl = {
-                        .shouldHighlight = sr_expr_equals,
-                        .arg = sr->expr,
-                        .defaultColorPair = COLOR_BRIGHTRED
-                    };
-                    tile_highlight_all(NULL, &hl);
-                }
-            }
-            break;
-             */
-
         case 'c':
-                color_sr(tile);
-                /* 
-                struct StringRep *sr = dl_get_sr_at_pos(CURSOR_LINE(tile), tile->cursCol);
-                if (sr && sr->type == BITVECTOR) {
-                    struct Highlighter hl = {
-                        .shouldHighlight = sr_in_bv,
-                        .arg = &sr->bitvector,
-                        .defaultColorPair = highlight_random_color()
-                    };
-                    tile_highlight_all(tile, &hl);
-
-                }
-                 */
+            color_sr(tile);
             break;
 
         case 'x':
         case 'X':
-            {
-                examine(tile, c == 'X');
-            }
+            examine(tile, c == 'X');
             break;
 
         case 'V':

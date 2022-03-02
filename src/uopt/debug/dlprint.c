@@ -304,8 +304,14 @@ copy:
         case isilda:
             dl_printf(dl, "ILDA");
         case islda:
+            if (expr->data.islda_isilda.offset != 0) {
+                dl_printf(dl, "(");
+            }
             dl_printf(dl, "&");
             dl_print_variable(dl, expr->data.islda_isilda.address);
+            if (expr->data.islda_isilda.offset != 0) {
+                dl_printf(dl, " + %d)", expr->data.islda_isilda.offset);
+            }
             break;
 
         case isop:
@@ -880,6 +886,19 @@ void dl_print_trap(struct DisplayLine *dl, struct StringRep *sr, struct Statemen
     }
 }
 
+void dl_print_label(struct DisplayLine *dl, struct StringRep *parent, int label)
+{
+    struct StringRep *sr = sr_newchild(dl, parent);
+
+    sr->start = dl->pos;
+    sr->type = LABEL;
+    sr->data32 = label;
+
+    dl_printf(dl, "L%d", label);
+
+    sr->len = dl->pos - sr->start;
+}
+
 void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct Statement *stat)
 {
     if (stat == NULL) return;
@@ -898,11 +917,13 @@ void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct
 
         case Uxjp:
             dl_print_expr(dl, sr, stat->expr);
-            dl_printf(dl, ", %d [%lld-%lld], def %d", stat->u.xjp.cases_blockno, (((long long)stat->u.xjp.lbound_l << 32) | (long long)stat->u.xjp.lbound_h), (((long long)stat->u.xjp.hbound_l << 32) | (long long)stat->u.xjp.hbound_h), stat->u.xjp.default_blockno);
+            dl_printf(dl, ", %d [%lld-%lld], def ", stat->u.xjp.cases_blockno, (((long long)stat->u.xjp.lbound_l << 32) | (long long)stat->u.xjp.lbound_h), (((long long)stat->u.xjp.hbound_l << 32) | (long long)stat->u.xjp.hbound_h));
+            dl_print_label(dl, sr, stat->u.xjp.default_blockno);
             break;
 
         case Uclab:
-            dl_printf(dl, "%d", stat->u.label.blockno);
+            //dl_printf(dl, "%d", stat->u.label.blockno);
+            dl_print_label(dl, sr, stat->u.label.blockno);
             break;
 
         case Ubgnb:
@@ -940,17 +961,21 @@ void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct
             break;
 
         case Uujp:
-            dl_printf(dl, "%d", stat->u.jp.target_blockno);
+            dl_print_label(dl, sr, stat->u.jp.target_blockno);
+            //dl_printf(dl, "%d", stat->u.jp.target_blockno);
             break;
 
         case Ufjp:
         case Utjp:
             dl_print_expr(dl, sr, stat->expr);
-            dl_printf(dl, ", %d", stat->u.jp.target_blockno);
+            dl_printf(dl, ", ");
+            dl_print_label(dl, sr, stat->u.jp.target_blockno);
+            //dl_printf(dl, ", %d", stat->u.jp.target_blockno);
             break;
 
         case Ulab:
-            dl_printf(dl, "%d", stat->u.label.blockno);
+            dl_print_label(dl, sr, stat->u.label.blockno);
+            //blocknodl_printf(dl, "%d", stat->u.label.blockno);
             break;
 
         case Uisst:

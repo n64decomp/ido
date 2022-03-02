@@ -22,6 +22,7 @@ enum TypeID {
     VARIABLE,
     CONSTANT,
     VARLOC,
+    LABEL,
     REGISTER,
     REGSET64,
     REGBOOLARRAY,
