@@ -232,13 +232,12 @@ void dl_print_regset64(struct DisplayLine *dl, struct StringRep *parent, int set
     dl_printf(dl, "[");
     for (int reg = 1; reg <= 35; reg++) {
         if (SET_IN(set, reg)) {
-            int color = coloroffset(reg);
             if (firstPrint) {
-                dl_printf(dl, "%s", regname(color));
                 firstPrint = false;
             } else {
-                dl_printf(dl, " %s", regname(color));
+                dl_printf(dl, " ");
             }
+            dl_print_register(dl, sr, reg);
         }
     }
     dl_printf(dl, "]");
@@ -258,20 +257,18 @@ void dl_print_reg_boolarray(struct DisplayLine *dl, struct StringRep *parent, ch
     dl_printf(dl, "[");
     for (int reg = 1; reg <= 35; reg++) {
         if (BITARR_GET(regs, reg - 1)) {
-            int color = coloroffset(reg);
             if (firstPrint) {
-                dl_printf(dl, "%s", regname(color));
                 firstPrint = false;
             } else {
-                dl_printf(dl, " %s", regname(color));
+                dl_printf(dl, " ");
             }
+            dl_print_register(dl, sr, reg);
         }
     }
     dl_printf(dl, "]");
     sr->len = dl->pos - sr->start;
 }
 
-// TODO: it's weird that this and dl_print_ichain create a child, while dl_print_statement does not
 void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expression *expr)
 {
     bool leftParens = false;

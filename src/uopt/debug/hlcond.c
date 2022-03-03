@@ -502,16 +502,15 @@ void sr_highlight_children(struct Tile *tile, int line, struct StringRep *sr, in
 #endif
 }
 
-void tile_show_line_children(struct Tile *tile)
+void tile_highlight_line_parts(struct Tile *tile, int depth)
 {
-    sr_highlight_children(tile, tile->cursRow, CURSOR_LINE(tile)->top, sInput.selectionDepth);
-    sInput.selectionDepth++;
+    sr_highlight_children(tile, tile->cursRow, CURSOR_LINE(tile)->top, depth);
     tile_wmove_to_cursor(tile);
 }
 
 struct Graphnode *get_closest_node(struct LineBuffer buf, int line)
 {
-    if (line < 0 || line > buf.numLines) return NULL;
+    if (line < 0 || line >= buf.numLines) return NULL;
 
     for (int i = line; i >= 0; i--) {
         if (buf.lines->items[i]->top->type == GRAPHNODE) {

@@ -776,8 +776,14 @@ void tile_base_input(struct Tile *tile)
             examine(tile, c == 'X');
             break;
 
+        case 'v':
+            tile_highlight_line_parts(tile, sInput.selectionDepth++);
+            break;
+
         case 'V':
-            tile_show_line_children(tile);
+            // awkward logic so that 'v' after 'V' highlights a new depth instead of the same one
+            sInput.selectionDepth = MAX(sInput.selectionDepth - 2, 0);
+            tile_highlight_line_parts(tile, sInput.selectionDepth++);
             break;
 
         case 'q':
@@ -813,7 +819,7 @@ void tile_base_input(struct Tile *tile)
             break;
 
         case CTRL('L'):
-            sInput.selectionDepth = -1;
+            sInput.selectionDepth = 0;
             if (sInput.lastKey == c) {
                 for (struct Tile *t = tileHead; t != NULL; t = t->next) {
                     tile_redraw(t);

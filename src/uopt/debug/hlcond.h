@@ -31,5 +31,5 @@ int sr_get_register(struct StringRep *sr);
 bool sr_is_register(struct StringRep *sr, void *unused);
 int sr_register_color(struct StringRep *sr);
 void sr_highlight_children(struct Tile *tile, int line, struct StringRep *sr, int depth);
-void tile_show_line_children(struct Tile *tile);
+void tile_highlight_line_parts(struct Tile *tile, int depth);
 struct Graphnode *get_closest_node(struct LineBuffer buf, int line);
