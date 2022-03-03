@@ -10,7 +10,16 @@ An interactive ncurses debugger for the global optimization pass of the IDO mips
 
 Due to hardware differences, alignment issues, and probably subtle bugs in the decompilation, only the 32-bit version of uopt on x86 behaves correctly.
 
+To install 32-bit packages on Ubuntu run the following:
+`sudo dpkg --add-architecture i386 && sudo apt update`
+
+These are some of the requirements (This is not comprehensive):
+`sudo apt install libncurses6:i386 libtinfo-dev:i386`
+
 Install 32-bit ncurses and gcc, then type `make`.
+
+# Installation
+Replace the uopt binary used by IDO Recomp projects, and this provides and interactive ncurses based debugger.
 
 # Controls
 
