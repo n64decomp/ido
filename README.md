@@ -2,7 +2,7 @@
 
 ![Screenshot](/screenshots/screenshot2.png)
 
-An interactive ncurses debugger for the global optimization pass of the IDO mips compiler.
+An interactive ncurses debugger for the global optimization pass of the IDO C compiler.
 
 # Compilation
 
@@ -10,18 +10,25 @@ An interactive ncurses debugger for the global optimization pass of the IDO mips
 
 Due to hardware differences, alignment issues, and probably subtle bugs in the decompilation, only the 32-bit version of uopt on x86 behaves correctly.
 
+Install 32-bit ncurses and gcc, then type `make`.
+
+## Ubuntu
+
 To install 32-bit packages on Ubuntu run the following:
 `sudo dpkg --add-architecture i386 && sudo apt update`
 
-These are some of the requirements (This is not comprehensive):
+These are some of the requirements (not comprehensive):
 `sudo apt install libncurses6:i386 libtinfo-dev:i386`
 
-Install 32-bit ncurses and gcc, then type `make`.
+# Running the Debugger
 
-# Installation
-For now, replace the uopt binary in your decompilation project and compile the file you want to debug.
+Run `./udb.py path/to/source/file.c [make flags]`
 
-# Controls
+This compiles the given file, but runs the debugger instead of the normal uopt.
+
+The script assumes that your decomp project uses make as a build system and n64decomp/ido-static-recomp instead of qemu-irix.
+
+## Controls
 
 The main keys to know are `c` (`c`olor) and `x`/`X` (e`x`amine).
 
@@ -44,7 +51,7 @@ The main keys to know are `c` (`c`olor) and `x`/`X` (e`x`amine).
 | V    | Like v, but decreases the depth instead |
 
 See also the functions named `*_tile_input` in [ncdebug.c](/src/uopt/debug/ncdebug.c) for other controls specific to certain windows. 
-These will probably be removed so aren't worth including in the table above.
+These keys will probably be removed, so they aren't worth including in the table above.
 
 # IDO decompilation project
 
