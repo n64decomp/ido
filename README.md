@@ -19,7 +19,7 @@ These are some of the requirements (This is not comprehensive):
 Install 32-bit ncurses and gcc, then type `make`.
 
 # Installation
-Replace the uopt binary used by IDO Recomp projects, and this provides and interactive ncurses based debugger.
+For now, replace the uopt binary in your decompilation project and compile the file you want to debug.
 
 # Controls
 
