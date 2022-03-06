@@ -77,7 +77,7 @@ struct StringRep {
 
 struct OutputTrace {
     int indent;
-    int type; // 0 = message, 1 = bcode
+    enum TypeID type; // 0 = message, 1 = bcode
     union {
         const char *message;
         union Bcode bcode;

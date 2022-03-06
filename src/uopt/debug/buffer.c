@@ -215,26 +215,26 @@ struct LineBuffer build_ucode_output_buffer()
     if (gOutput == NULL) {
         vec_add(buf.lines, dl_placeholder("No output emitted"));
     } else {
-        for (struct StatOutput *o = gOutput; o != NULL; o = o->next)
-        {
-            if (o->type == STATEMENT)
-            vec_add(buf.lines, dl_from_statement(o->data));
-            else if (o->type == GRAPHNODE)
-            vec_add(buf.lines, dl_from_graphnode(o->data, false));
+        for (struct StatOutput *o = gOutput; o != NULL; o = o->next) {
+            if (o->type == STATEMENT) {
+                vec_add(buf.lines, dl_from_statement(o->data));
+            } else if (o->type == GRAPHNODE) {
+                vec_add(buf.lines, dl_from_graphnode(o->data, false));
+            }
 
-            for (int i = 0; i < o->out->length; i++)
-            {
-                switch (o->out->items[i]->type)
-                {
-                    case 0:
-                        {
+            for (int i = 0; i < o->out->length; i++) {
+                switch (o->out->items[i]->type) {
+                    case INFO: {
                         vec_add(buf.lines, dl_new_printf("%*c%s", o->out->items[i]->indent, ' ', o->out->items[i]->message));
                         buf.lines->items[buf.lines->length - 1]->top->message = o->out->items[i]->message;
-                        }
+                    }
+                    break;
+
+                    case UCODE:
+                        vec_add(buf.lines, dl_from_ucode(&o->out->items[i]->bcode));
                         break;
 
-                    case 1:
-                        vec_add(buf.lines, dl_from_ucode(&o->out->items[i]->bcode));
+                    default:
                         break;
                 }
             }
@@ -245,6 +245,7 @@ struct LineBuffer build_ucode_output_buffer()
     return buf;
 }
 
+/* Sort LiveRanges in roughly the order that they were allocated to registers */
 int liverange_cmp(const void *_a, const void *_b)
 {
     const struct LiveRange *a = *(void **)_a;

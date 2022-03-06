@@ -86,7 +86,7 @@ void push_trace(const char *message)
     if (gOutput == NULL || gCurOutput == NULL || gCurOutput->out == NULL) return;
 
     struct OutputTrace *out = calloc(1, sizeof(struct OutputTrace));
-    out->type = 0;
+    out->type = INFO;
     out->message = message;
     out->indent = sTraceIndent;
     vec_add(gCurOutput->out, out);
@@ -97,7 +97,7 @@ void push_output(union Bcode *b)
     if (gOutput == NULL || gCurOutput == NULL || gCurOutput->out == NULL) return;
 
     struct OutputTrace *out = calloc(1, sizeof(struct OutputTrace));
-    out->type = 1;
+    out->type = UCODE;
     out->bcode = *b;
     vec_add(gCurOutput->out, out);
 }
