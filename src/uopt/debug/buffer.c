@@ -5,6 +5,7 @@
 #include "uopt/uoptdata.h"
 #include "uopt/uoptutil.h"
 #include "uopt/uoptreg2.h"
+#include "uopt/uoptkill.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -51,6 +52,46 @@ struct LineBuffer build_proc_buffer()
     return buf;
 }
 
+/* Sort LiveRanges in roughly the order that they were allocated to registers */
+int lda_cmp(const void *_a, const void *_b)
+{
+    const struct LdatabEntry *a = *(void **)_a;
+    const struct LdatabEntry *b = *(void **)_b;
+    if (a->var.memtype < b->var.memtype) {
+        return -1;
+    }
+    if (a->var.memtype > b->var.memtype) {
+        return 1;
+    }
+    if (a->var.blockno < b->var.blockno) {
+        return -1;
+    }
+    if (a->var.blockno > b->var.blockno) {
+        return 1;
+    }
+    if (overlapping(a->var, b->var, a->size, b->size)) {
+        return 0;
+    }
+    return a->var.addr < b->var.addr ? -1 : 1;
+}
+
+// get the lda-only variables, sort them in order, return the vector of ldas
+// TODO: sometimes local variables are only accessed by address, (struct
+// copies, dummy variables passed by address, etc). They don't get added to the
+// Variable tree, so they don't appear in the stack display.
+__attribute__((unused)) static void *find_lda_variables() {
+    Vec(struct LdatabEntry *) *ldas = vec_new();
+    for (int i = 0; i < 3113; i++) {
+        struct LdatabEntry *entry = ldatab[i];
+        while (entry != NULL) {
+            vec_add(ldas, entry);
+            entry = entry->next;
+        }
+    }
+    qsort(ldas->items, ldas->length, sizeof(struct LdatabEntry *), lda_cmp);
+    return ldas;
+}
+
 static bool inorder_print_vartree(struct Variable *tree, void *lines, enum Memtype mtype, bool reverse, bool found, char *section)
 {
     if (tree == NULL) return found;
@@ -77,6 +118,22 @@ struct LineBuffer build_stack_buffer()
 
     inorder_print_vartree(curproc->vartree, buf.lines, Pmt, true, false, "Arguments");
     inorder_print_vartree(curproc->vartree, buf.lines, Mmt, true, false, "Local Variables");
+
+    /* TODO: ldatab is freed after prepass(), so this just prints garbage.
+     * Commenting out the alloc_release() allows the ldas to be analyzed here
+     * but seems like a bad solution.
+     */
+#if 0
+    Vec(struct LdatabEntry *) *ldas = find_lda_variables();
+    if (ldas->length > 0) {
+        vec_add(buf.lines, dl_placeholder("Ldas"));
+
+        for (int i = 0; i < ldas->length; i++) {
+            vec_add(buf.lines, dl_from_ldatab(ldas->items[i]));
+        }
+    }
+    vec_free(ldas);
+#endif
 
     if (templochead != NULL) {
         vec_add(buf.lines, dl_placeholder("Templocs"));

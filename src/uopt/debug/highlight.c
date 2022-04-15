@@ -116,8 +116,9 @@ void sr_highlight(struct Tile *tile, int line, struct StringRep *sr, struct High
         }
         tile_highlight_sr(tile, line, sr, colorPair);
         tile->needRedraw = true;
-        if (!hl->deep)
-        return;
+        if (!hl->deep) {
+            return;
+        }
     }
 
     if (hl->shallow) {
@@ -153,6 +154,81 @@ void tile_highlight_sr(struct Tile *tile, int line, struct StringRep *sr, int co
     mvwchgat(tile->win, line, sr->start, sr->len, 0, colorPair, NULL);
 }
 
+static bool is_red(int color)
+{
+    if (color == 1 || color == 9) return true;
+    if (color < 16 || color > 231) return false;
+
+    // subtract the first 16 colors
+    int base = color - 16;
+
+    int r = base / 36;
+    int g = base / 6 % 6;
+    int b = base % 6;
+
+    return r >= b && r > g;
+}
+
+static bool is_green(int color)
+{
+    if (color == 2 || color == 10) return true;
+    if (color < 16 || color > 231) return false;
+
+    // subtract the first 16 colors
+    int base = color - 16;
+
+    int r = base / 36;
+    int g = base / 6 % 6;
+    int b = base % 6;
+
+    return g > b && g > r;
+}
+
+static bool is_blue(int color)
+{
+    if (color == 4 || color == 12 || color == 6 || color == 14) return true;
+    if (color < 16 || color > 231) return false;
+
+    // subtract the first 16 colors
+    int base = color - 16;
+
+    int r = base / 36;
+    int g = base / 6 % 6;
+    int b = base % 6;
+
+    return b > r && b >= g;
+}
+
+int highlight_random_red()
+{
+    int color = 0;
+    while (!is_red(color)) {
+        color = 1 + (rand() % 231);
+    }
+
+    return color;
+}
+
+int highlight_random_green()
+{
+    int color = 0;
+    while (!is_green(color)) {
+        color = 1 + (rand() % 231);
+    }
+
+    return color;
+}
+
+int highlight_random_blue()
+{
+    int color = 0;
+    while (!is_blue(color)) {
+        color = 1 + (rand() % 231);
+    }
+
+    return color;
+}
+
 static bool color_blacklist(int color)
 {
     switch(color)
@@ -161,7 +237,7 @@ static bool color_blacklist(int color)
         case COLOR_WHITE:
         case COLOR_BRIGHTGRAY:
         case COLOR_BRIGHTWHITE:
-        case 16: case 59: case 102: case 145: case 188: case 231:
+        case 16: case 59: case 102: case 145: case 188: case 231: // grays
             return true;
 
         default:

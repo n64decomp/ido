@@ -207,7 +207,7 @@ void build_ucode_output_tile(struct Tile *tile)
     tile_new_window(tile);
     char *title = "Ucode Output";
     tile_set_title(tile, title, strlen(title));
-    tile_add_highlighter(tile, (struct Highlighter){.shouldHighlight = sr_ucode_stat_highlight, .defaultColorPair = COLOR_BLUE});
+    tile_add_highlighter(tile, (struct Highlighter){.shouldHighlight = sr_ucode_stat_highlight, .defaultColorPair = 39});
     tile_add_default_highlighters(tile);
 }
 
@@ -263,13 +263,13 @@ void stack_tile_input(struct Tile *tile, int c);
 
 static struct TileCreation tileMenu[] = {
     {"Procedure", build_proc_tile, proc_tile_input},
-    {"Var Accesses", build_var_access_tile, NULL},
-    {"Register Assignments", build_reg_assignment_tile, NULL},
-    {"Global Expressions", build_ichain_tile, ichain_tile_input},
-    {"Ucode Output", build_ucode_output_tile, NULL},
-    {"BitVectors", build_bitvect_tile, NULL},
-    {"Live Ranges", build_liverange_tile, liverange_tile_input}, 
     {"Stack", build_stack_tile, stack_tile_input}, 
+    {"Register Allocation", build_liverange_tile, liverange_tile_input}, 
+    {"Global Expressions", build_ichain_tile, ichain_tile_input},
+    {"Node Register Assignments", build_reg_assignment_tile, NULL},
+    {"Node Variable Accesses", build_var_access_tile, NULL},
+    {"Bit Vectors", build_bitvect_tile, NULL},
+    {"Ucode Output", build_ucode_output_tile, NULL},
 };
 
 void build_menu_tile(struct Tile *tile)
@@ -411,11 +411,10 @@ void ichain_tile_input(struct Tile *tile, int c)
 
 void color_sr(struct Tile *tile)
 {
-    struct StringRep *sr = dl_get_sr_at_pos(CURSOR_LINE(tile), tile->cursCol); //CURSOR_LINE(tile)->sr;
+    struct StringRep *sr = dl_get_sr_at_pos(CURSOR_LINE(tile), tile->cursCol); 
     struct Highlighter hl;
     switch (sr->type) {
         case REGISTER:
-        case INFO:
         case LABEL:
             {
                 int color = highlight_random_color();
@@ -435,7 +434,23 @@ void color_sr(struct Tile *tile)
                 struct Variable *variable = sr->variable;
                 hl = (struct Highlighter) {
                     .shouldHighlight = sr_has_variable,
-                        .arg = variable,
+                        .arg = &variable->location,
+                        .defaultColorPair = color,
+                        .shallow = false
+                };
+                tile_highlight_all(tile, &hl);
+                tile_highlight_sr(tile, tile->cursRow, sr, color);
+                tile_wmove_to_cursor(tile);
+            }
+            break;
+
+        case LDATAB_ENTRY:
+            {
+                int color = highlight_random_color();
+                struct LdatabEntry *ldatabEntry = sr->ldatabEntry;
+                hl = (struct Highlighter) {
+                    .shouldHighlight = sr_has_variable,
+                        .arg = &ldatabEntry->var,
                         .defaultColorPair = color,
                         .shallow = false
                 };
@@ -466,7 +481,7 @@ void color_sr(struct Tile *tile)
                 struct Highlighter hl = {
                     .shouldHighlight = sr_in_bv,
                     .arg = &sr->bitvector,
-                    .defaultColorPair = highlight_random_color()
+                    .defaultColorPair = highlight_random_color(),
                 };
                 tile_highlight_all(tile, &hl);
                 tile_wmove_to_cursor(tile);
@@ -475,15 +490,29 @@ void color_sr(struct Tile *tile)
 
         case BITVECTORBB:
             {
-                struct Highlighter hl_lr = {
+                struct Highlighter hl = {
                     .shouldHighlight = sr_stat_node_in_bv,
                     .arg = &sr->bitvector,
                     .defaultColorPair = highlight_random_color(),
                     .shallow = true,
                 };
-                tile_highlight_once(procTile, &hl_lr);
+                tile_highlight_once(procTile, &hl);
                 tile_nc_refresh(procTile);
                 tile_wmove_to_cursor(tile);
+            }
+            break;
+
+        case LIVERANGE:
+            {
+                struct Highlighter hl = {
+                    .shouldHighlight = sr_stat_node_in_bv,
+                    .arg = &sr->liverange->livebbs,
+                    .defaultColorPair = highlight_random_green(),
+                    .shallow = true,
+                };
+                tile_highlight_all(tile, &hl);
+                tile_wmove_to_cursor(tile);
+
             }
             break;
 

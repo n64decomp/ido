@@ -30,3 +30,6 @@ void tile_highlight_all(struct Tile *self, struct Highlighter *hl);
 void tile_highlight_once(struct Tile *tile, struct Highlighter *hl);
 void tile_highlight_sr(struct Tile *tile, int line, struct StringRep *sr, int colorPair);
 int highlight_random_color();
+int highlight_random_red();
+int highlight_random_green();
+int highlight_random_blue();

@@ -301,22 +301,30 @@ bool sr_has_temploc(struct StringRep *sr, void *temp)
     return false;
 }
 
-bool expr_var(struct Expression *expr, struct Variable *var)
+bool expr_var(struct Expression *expr, struct VariableLocation loc)
 {
     if (expr->type == isvar || expr->type == issvar) {
-        if (overlapping(expr->data.isvar_issvar.location, var->location, expr->data.isvar_issvar.size, var->size))
+        if (addreq(expr->data.isvar_issvar.location, loc))
         {
+            return true;
+        }
+    } else if (expr->type == islda) {
+        if (addreq(expr->data.islda_isilda.address, loc)) {
             return true;
         }
     }
     return false;
 }
 
-bool ichain_var(struct IChain *ichain, struct Variable *var)
+bool ichain_var(struct IChain *ichain, struct VariableLocation loc)
 {
     if (ichain->type == isvar || ichain->type == issvar) {
-        if (overlapping(ichain->isvar_issvar.location, var->location, ichain->isvar_issvar.size, var->size))
+        if (addreq(ichain->isvar_issvar.location, loc))
         {
+            return true;
+        }
+    } else if (ichain->type == islda) {
+        if (addreq(ichain->islda_isilda.address, loc)) {
             return true;
         }
     }
@@ -325,14 +333,15 @@ bool ichain_var(struct IChain *ichain, struct Variable *var)
 
 bool sr_has_variable(struct StringRep *sr, void *var)
 {
+    struct VariableLocation loc = *(struct VariableLocation *)var;
     switch (sr->type) {
         case EXPRESSION:
-            if (expr_var(sr->expr, var)) return true;
-            if (sr->expr->ichain != NULL && ichain_var(sr->expr->ichain, var)) return true;
+            if (expr_var(sr->expr, loc)) return true;
+            if (sr->expr->ichain != NULL && ichain_var(sr->expr->ichain, loc)) return true;
             break;
 
         case ICHAIN:
-            if (ichain_var(sr->ichain, var)) return true;
+            if (ichain_var(sr->ichain, loc)) return true;
             break;
 
         case STATEMENT:
@@ -343,7 +352,6 @@ bool sr_has_variable(struct StringRep *sr, void *var)
     }
     return false;
 }
-
 
 int sr_get_register(struct StringRep *sr)
 {
@@ -408,7 +416,7 @@ bool sr_ucode_stat_highlight(struct StringRep *sr, void *unused)
 
 bool sr_general_highlight(struct StringRep *sr, void *unused)
 {
-    return sr->type == INFO || sr->type == GRAPHNODE;
+    return sr->type == FIELDNAME || sr->type == INFO || sr->type == GRAPHNODE;
 }
 
 int sr_general_highlight_color(struct StringRep *sr)
@@ -416,6 +424,7 @@ int sr_general_highlight_color(struct StringRep *sr)
     switch (sr->type) {
         case GRAPHNODE: return COLOR_BLUE;
         case INFO: return COLOR_GRAY13;
+        case FIELDNAME: return COLOR_GRAY13;
 
         default: return 0;
     }

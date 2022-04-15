@@ -50,21 +50,22 @@ bool member_is_pointer(struct Member *m)
 void dl_print_typeid(struct DisplayLine *dl, struct StringRep *sr, void *data, enum TypeID type)
 {
     switch (type) {
-        case EXPRESSION:   dl_print_expr(dl, sr, *(void**)data); break;
-        case ICHAIN:       dl_print_ichain(dl, sr, *(void**)data); break;
-        case STATEMENT:    dl_print_statement(dl, sr, *(void**)data); break;
-        case GRAPHNODE:    dl_print_graphnode(dl, sr, *(void**)data, true); break;
-        case VAR_ACCESS:   dl_print_var_access(dl, sr, *(void**)data); break;
-        case TREP:         dl_print_trepimage(dl, sr, *(void**)data); break;
-        case TEMPLOC:      dl_print_temploc(dl, *(void**)data); break;
-        case VARLOC:       dl_print_variable(dl, *(struct VariableLocation*)data); break;
-        case BITVECTOR:    dl_print_bitvector(dl, sr, data); break;
-        case BITVECTORBB:  dl_print_bitvectorbb(dl, sr, data); break;
-        case LIVERANGE:    dl_print_liverange(dl, sr, *(void**)data); break;
-        case LIVEUNIT:     dl_print_liveunit(dl, sr, *(void**)data); break;
-        case REGISTER:     dl_print_register(dl, sr, *(char *)data); break;
-        case REGSET64:     dl_print_regset64(dl, sr, *(int(*)[2])data); break;
-        case REGBOOLARRAY: dl_print_reg_boolarray(dl, sr, *(char(*)[5])data); break;
+        case EXPRESSION:    dl_print_expr(dl, sr, *(void**)data); break;
+        case ICHAIN:        dl_print_ichain(dl, sr, *(void**)data); break;
+        case STATEMENT:     dl_print_statement(dl, sr, *(void**)data); break;
+        case GRAPHNODE:     dl_print_graphnode(dl, sr, *(void**)data, true); break;
+        case VAR_ACCESS:    dl_print_var_access(dl, sr, *(void**)data); break;
+        case TREP:          dl_print_trepimage(dl, sr, *(void**)data); break;
+        case TEMPLOC:       dl_print_temploc(dl, *(void**)data); break;
+        case VARLOC:        dl_print_variable(dl, *(struct VariableLocation*)data); break;
+        case BITVECTOR:     dl_print_bitvector(dl, sr, data); break;
+        case BITVECTORBB:   dl_print_bitvectorbb(dl, sr, data); break;
+        case LIVERANGE:     dl_print_liverange(dl, sr, *(void**)data); break;
+        case LIVEUNIT:      dl_print_liveunit(dl, sr, *(void**)data); break;
+        case INTERFERELIST: dl_print_interferelist(dl, sr, *(void**)data); break;
+        case REGISTER:      dl_print_register(dl, sr, *(char *)data); break;
+        case REGSET64:      dl_print_regset64(dl, sr, *(int(*)[2])data); break;
+        case REGBOOLARRAY:  dl_print_reg_boolarray(dl, sr, *(char(*)[5])data); break;
 
         // scalar types
         case EXPRTYPE: dl_printf(dl, "%s", exprtype_name(*(ExpressionType *)data)); break;
@@ -88,7 +89,8 @@ struct DisplayLine *dl_from_member(void **data, struct Member *m, void *lines)
     dl->top->type = MISC;
     struct StringRep *field = sr_newchild(dl, dl->top);
 
-    field->type = INFO;
+    field->type = FIELDNAME;
+    field->data = NULL;
     field->start = dl->pos;
     dl_printf(dl, "%s", m->name);
     field->len = dl->pos - field->start;
@@ -103,32 +105,12 @@ struct DisplayLine *dl_from_member(void **data, struct Member *m, void *lines)
     if (data == NULL || (member_is_pointer(m) && *data == NULL)) {
         dl_printf(dl, "NULL");
     } else {
-        // TODO
-        /* 
-        if (m->type == REGISTER) {
-            char reg = *(char*)data;
-            if (reg >= 1 && reg <= 35) {
-                sr->reg = coloroffset(reg);
-            } else sr->reg = reg;
-        } else if (m->type == BITVECTOR) {
-            sr->bitvector = *(struct BitVector*)data;
-        } else if (m->type == REGSET64) {
-            sr->regset[0] = (*(int(*)[2])data)[0];
-            sr->regset[1] = (*(int(*)[2])data)[1];
-        } else {
-            switch (m->size) {
-                case sizeof(int):   sr->data32 = *(int*)data;   break;
-                case sizeof(short): sr->data16 = *(short*)data; break;
-                case sizeof(char):  sr->data8  = *(char*)data;  break;
-                default: break;
-            }
-        }
-         */
-
         dl_print_typeid(dl, dl->top, data, m->type);
-
+        if (dl->top->children->length > 1) {
+            field->data = dl->top->children->items[1]; // TODO: hack
+        }
     }
-    //sr->len = dl->pos - sr->start;
+
     dl->top->len = dl->pos - dl->top->start;
     dl->len = dl->top->len;
     return dl;
@@ -142,10 +124,15 @@ void member_print(void *data, struct Member *m, void *lines)
                 member_print(data, &m->unionMembers[i], lines);
             }
         }
-        return;
+    } else if (m->isList) { // linked list
+        void **list = MEMBER_GET(data, m);
+        while (*list != NULL) {
+            vec_add(lines, dl_from_member(list, m, lines));
+            list = LIST_MEMBER_NEXT(*list, m);
+        }
+    } else {
+        vec_add(lines, dl_from_member(MEMBER_GET(data,m), m, lines));
     }
-
-    vec_add(lines, dl_from_member(MEMBER_GET(data,m), m, lines));
 }
 
 struct DisplayLine *dl_from_struct(struct StringRep *examined)
@@ -167,6 +154,11 @@ struct LineBuffer examine_buffer(struct StringRep *sr)
 {
     struct LineBuffer buf = {0};
     buf.lines = vec_new();
+
+    // TODO: hacky... sr->data points to the stringrep that should be examined
+    if (sr->type == FIELDNAME && sr->data != NULL) {
+        sr = sr->data;
+    }
     
     if (gStructData[sr->type].members == NULL) {
         vec_add(buf.lines, dl_new_printf("examine not implemented for this type (%d)", sr->type));

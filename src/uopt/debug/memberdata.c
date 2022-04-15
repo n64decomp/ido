@@ -54,6 +54,19 @@
     .numElements = nelems,                              \
 }
 
+#define LIST_MEMBER_DEF(typeid, member_type, member, nelems, list_type, list_next) \
+(struct Member)                                         \
+{                                                       \
+    .type = typeid,                                     \
+    .name = #member,                                    \
+    .typeName = #member_type,                           \
+    .offset = offsetof(PARENT_TYPE, member),            \
+    .size = sizeof(member_type),                        \
+    .numElements = nelems,                              \
+    .isList = true,                                       \
+    .listNextOffset = offsetof(list_type, list_next)    \
+}
+
 #define MEMBER_UNION(member, union_members, union_cond_func) \
 (struct Member)                                              \
 {                                                            \
@@ -71,6 +84,7 @@
 
 
 #define MEMBER(member_type, member) MEMBER_DEF(TYPE_TO_ID(MEMBER_TYPEOF(member)), member_type, member, 1)
+#define MEMBER_LIST(member_type, member, list_type, list_next) LIST_MEMBER_DEF(TYPE_TO_ID(MEMBER_TYPEOF(member)), member_type, member, 1, list_type, list_next)
 #define MEMBER_ARRAY(member_type, member) MEMBER_DEF(TYPE_TO_ID(MEMBER_TYPEOF(member)), member_type, member, ARRAYLEN(((PARENT_TYPE *)0)->member))
 
 #define MEMBER_SPECIAL(special_type, member_type, member) MEMBER_DEF(special_type, member_type, member, 1)
@@ -80,7 +94,7 @@
 struct Member liveRangeMembers[] = {
     MEMBER(struct IChain *, ichain),
     MEMBER(int, bitpos),
-    MEMBER(struct LiveUnit *,liveunits),
+    MEMBER_LIST(struct LiveUnit *,liveunits, struct LiveUnit, next),
     MEMBER_SPECIAL(BITVECTORBB, struct BitVector, reachingbbs),
     MEMBER_SPECIAL(BITVECTORBB, struct BitVector, livebbs),
     MEMBER(int, unk1C),
@@ -92,7 +106,7 @@ struct Member liveRangeMembers[] = {
     MEMBER_SPECIAL_ARRAY(REGSET64, int[2], forbidden),
     MEMBER(float, adjsave),
     MEMBER(struct LiveRange *, next),
-    MEMBER(struct InterfereList *, interfere),
+    MEMBER_LIST(struct InterfereList *, interfere, struct InterfereList, next),
     //MEMBER(struct LiveUnit *, liveunitsTail),
 };
 #undef PARENT_TYPE
@@ -110,6 +124,15 @@ struct Member liveUnitMembers[] = {
     MEMBER(bool, needreglod),
     MEMBER(bool, needregsave),
     MEMBER(bool, deadout),
+};
+#undef PARENT_TYPE
+
+#define PARENT_TYPE struct InterfereList
+struct Member interfereListMembers[] = {
+    MEMBER(struct LiveRange *, liverange),
+    MEMBER(struct InterfereList *, next),
+    MEMBER(unsigned char, unk8),
+    MEMBER(unsigned char, shared),
 };
 #undef PARENT_TYPE
 
@@ -707,7 +730,7 @@ struct Member graphnodeMembers[] = {
     MEMBER(struct VarAccessList *, varlisthead),
     MEMBER(struct VarAccessList *, varlisttail),
     MEMBER(unsigned int, frequency),
-    MEMBER(struct LiveUnit *, liveunit),
+    MEMBER_LIST(struct LiveUnit *, liveunit, struct LiveUnit, next_in_block),
     MEMBER_SPECIAL_ARRAY(REGSET64, int[2][2], regsused[0]),
     MEMBER_SPECIAL_ARRAY(REGSET64, int[2][2], regsused[1]),
     /* 
@@ -831,6 +854,7 @@ struct StructData gStructData[TYPE_ID_MAX] = {
     STRUCT_DATA_DEF(EXPRESSION, struct Expression, expressionMembers),
     STRUCT_DATA_DEF(ICHAIN, struct IChain, ichainMembers),
     STRUCT_DATA_DEF(GRAPHNODE, struct Graphnode, graphnodeMembers),
+    STRUCT_DATA_DEF(INTERFERELIST, struct InterfereList, interfereListMembers),
 };
 
 #endif

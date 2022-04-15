@@ -20,6 +20,7 @@ enum TypeID {
     TREP,
     TEMPLOC,
     VARIABLE,
+    LDATAB_ENTRY,
     CONSTANT,
     VARLOC,
     LABEL,
@@ -30,6 +31,7 @@ enum TypeID {
     MENU,
     MISC,
     INFO,
+    FIELDNAME,
 
     EXPRTYPE,
     DATATYPE,
@@ -42,7 +44,10 @@ enum TypeID {
     FLOAT,
     DOUBLE,
     TYPE_ID_MAX
-};
+} 
+#ifdef __GNUC__
+__attribute__((packed));
+#endif
 
 struct StringRep {
     int start, len; // indices into DisplayLine, used for chgat
@@ -57,10 +62,12 @@ struct StringRep {
         struct IChain *ichain;
         struct LiveRange *liverange;
         struct LiveUnit *liveunit;
+        struct InterfereList *interfere;
         struct Graphnode *node;
         struct VarAccessList *varAccess;
         struct Temploc *temploc;
         struct Variable *variable;
+        struct LdatabEntry *ldatabEntry;
         struct BitVector bitvector;
         int reg;
         int regset[2];
@@ -129,6 +136,7 @@ void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expr
 void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IChain *ichain);
 void dl_print_trepimage(struct DisplayLine *dl, struct StringRep *parent, struct TrepImageThing *trepimage);
 void dl_print_liveunit(struct DisplayLine *dl, struct StringRep *parent, struct LiveUnit *liveunit);
+void dl_print_interferelist(struct DisplayLine *dl, struct StringRep *parent, struct InterfereList *interfere);
 void dl_print_liverange(struct DisplayLine *dl, struct StringRep *parent, struct LiveRange *liverange);
 struct DisplayLine *dl_from_reg_assignment(int reg, struct IChain *ichain);
 void dl_print_assignment(struct DisplayLine *dl, struct StringRep *sr, struct Statement *stat);
@@ -153,6 +161,7 @@ struct DisplayLine *dl_from_bittab_liverange(int bit, struct LiveRange *liverang
 struct DisplayLine *dl_new_printf(char *fmt, ...);
 struct DisplayLine *dl_placeholder(const char *message);
 struct DisplayLine *dl_from_variable(struct Variable *var);
+struct DisplayLine *dl_from_ldatab(struct LdatabEntry *lda);
 struct DisplayLine *dl_from_temploc(struct Temploc *temp);
 struct DisplayLine *dl_from_bitvector(struct BitVector *bv, const char *name);
 struct DisplayLine *dl_from_ucode(union Bcode *b);

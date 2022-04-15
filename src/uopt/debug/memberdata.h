@@ -16,9 +16,13 @@ struct Member {
     int numUnionMembers;
     struct Member *unionMembers;
     bool (*unionCond)(void *);
+
+    bool isList;
+    size_t listNextOffset;
 };
 
 #define MEMBER_GET(pointer, member) ((void*)((char*)(pointer) + (member)->offset))
+#define LIST_MEMBER_NEXT(pointer, member) ((void*)((char*)(pointer) + (member)->listNextOffset))
 
 struct StructData {
     enum TypeID type;

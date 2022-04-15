@@ -273,14 +273,20 @@ void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expr
 {
     bool leftParens = false;
     bool rightParens = false;
+
+    expr = expr_base(expr); // follow the copy links to the base expression
+                            // doing this here should make highlighting
+                            // consistent since we highlight based on the StringRep's expr
     if (expr == NULL) return;
 
     struct StringRep *sr = sr_newchild(dl, parent);
 
     sr->start = dl->pos;
     sr->type = EXPRESSION;
+    sr->expr = expr;
 
-copy:
+
+//copy:
 
     switch (expr->type) {
         case isconst:
@@ -290,10 +296,12 @@ copy:
         case isvar:
         case issvar:
             // TODO: make this optional
+            /* 
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
                 expr = expr->data.isvar_issvar.copy;
                 goto copy;
             }
+             */
 
             dl_print_variable(dl, expr->data.isvar_issvar.location);
             break;
@@ -459,7 +467,6 @@ copy:
             fprintf(stderr, "unhandled expr type %p %d", expr, expr->type);
             break;
     }
-    sr->expr = expr;
     sr->len = dl->pos - sr->start;
 }
 
@@ -772,9 +779,53 @@ void dl_print_liveunit(struct DisplayLine *dl, struct StringRep *parent, struct 
     sr->liveunit = liveunit;
 
     dl_printf(dl, "lu: ");
+    if (liveunit->liverange != NULL && liveunit->liverange->ichain != NULL)
+    {
+        if (liveunit->reg != 0) {
+            dl_print_register(dl, sr, liveunit->reg);
+            dl_printf(dl, " -> ");
+        }
+        dl_print_ichain(dl, sr, liveunit->liverange->ichain);
+        dl_printf(dl, " in ");
+    }
     if (liveunit->node != NULL) {
         dl_print_graphnode(dl, sr, liveunit->node, false);
     }
+    sr->len = dl->pos - sr->start;
+}
+
+void dl_print_interferelist(struct DisplayLine *dl, struct StringRep *parent, struct InterfereList *interfere)
+{
+    if (interfere == NULL) return;
+
+    struct StringRep *sr = sr_newchild(dl, parent);
+    sr->start = dl->pos;
+    sr->type = INTERFERELIST;
+    sr->interfere = interfere;
+
+    /* 
+    bool firstPrint = true;
+    dl_printf(dl, "interfere: [");
+    while (interfere != NULL) {
+        if (!firstPrint) {
+            dl_printf(dl, ", ");
+        } else {
+            firstPrint = false;
+        }
+        dl_print_liverange(dl, sr, interfere->liverange);
+
+        interfere = interfere->next;
+    }
+     */
+    
+    dl_printf(dl, "interfere: ");
+    if (interfere->liverange != NULL) {
+        dl_print_liverange(dl, sr, interfere->liverange);
+    } else {
+        dl_printf(dl, "none");
+    }
+
+
     sr->len = dl->pos - sr->start;
 }
 
@@ -1343,8 +1394,27 @@ struct DisplayLine *dl_from_variable(struct Variable *var)
     sr->variable = var;
     sr->start = dl->pos;
 
-    sr->start += dl_printf(dl, "  off % 4d: ", var->location.addr);
+    sr->start += dl_printf(dl, " % 4d: ", var->location.addr);
     dl_print_variable(dl, var->location);
+    //dl_printf(dl, "temp %d: offset %d, %s", temp->index, temp->disp, temp->not_spilled ? "not spilled" : "spilled");
+
+    sr->len = dl->pos - sr->start;
+    dl->top = sr;
+    dl->len = dl->pos;
+    return dl;
+}
+
+struct DisplayLine *dl_from_ldatab(struct LdatabEntry *lda)
+{
+    struct DisplayLine *dl = dl_new();
+    struct StringRep *sr = sr_new();
+    sr->type = LDATAB_ENTRY;
+    sr->ldatabEntry = lda;
+    sr->start = dl->pos;
+
+    sr->start += dl_printf(dl, " % 4d: ", lda->var.addr);
+    dl_print_variable(dl, lda->var);
+    dl_printf(dl, " (lda only)");
     //dl_printf(dl, "temp %d: offset %d, %s", temp->index, temp->disp, temp->not_spilled ? "not spilled" : "spilled");
 
     sr->len = dl->pos - sr->start;
@@ -1355,7 +1425,7 @@ struct DisplayLine *dl_from_variable(struct Variable *var)
 
 void dl_print_temploc(struct DisplayLine *dl, struct Temploc *temp)
 {
-    dl_printf(dl, "off % 4d: temp %d, %s", temp->disp, temp->index, temp->not_spilled ? "not spilled" : "spilled");
+    dl_printf(dl, "% 4d: temp %d, %s", temp->disp, temp->index, temp->not_spilled ? "not spilled" : "spilled");
 }
 
 struct DisplayLine *dl_from_temploc(struct Temploc *temp)
@@ -1366,7 +1436,7 @@ struct DisplayLine *dl_from_temploc(struct Temploc *temp)
     sr->temploc = temp;
     sr->start = dl->pos;
 
-    sr->start += dl_printf(dl, "  off % 4d: ", temp->disp);
+    sr->start += dl_printf(dl, " % 4d: ", temp->disp);
     dl_printf(dl, "temp %d, %s", temp->index, temp->not_spilled ? "not spilled" : "spilled");
 
     sr->len = dl->pos - sr->start;

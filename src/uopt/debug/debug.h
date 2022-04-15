@@ -135,3 +135,4 @@ const char *opc_operator(Uopcode opc);
 extern int opc_precedence[Uirsv + 1];
 int higher_precedence_expr(Uopcode opc, struct Expression *op);
 int higher_precedence_image(Uopcode opc, struct IChain *op);
+struct Expression *expr_base(struct Expression *expr);

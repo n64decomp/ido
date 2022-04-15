@@ -931,6 +931,26 @@ void print_function_statements(const char *desc) {
 
 }
 
+struct Expression *expr_base(struct Expression *expr)
+{
+    if (expr == NULL) return expr;
+copy:
+    switch (expr->type)
+    {
+        case isvar:
+        case issvar:
+            if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
+                expr = expr->data.isvar_issvar.copy;
+                goto copy;
+            }
+
+        default:
+            break;
+    }
+
+    return expr;
+}
+
 void print_bitvector(struct BitVector *bv) {
     int blockpos;
     int word = 0;
