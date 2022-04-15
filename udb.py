@@ -177,7 +177,7 @@ def main():
     compiler_directory = os.path.dirname(shlex.quote(compiler[0]))
 
     cfe_bin = compiler_directory + "/cfe"
-    uopt_bin = os.path.abspath("./build/uopt")
+    uopt_bin = sys.path[0] + "/build/uopt"
 
     # change to project directory to avoid changing include arguments
     try:
