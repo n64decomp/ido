@@ -247,7 +247,7 @@ static bool color_blacklist(int color)
 
 int highlight_random_color()
 {
-    /* 
+    /*
     static int colorList[] = {
         COLOR_BRIGHTRED, COLOR_BRIGHTGREEN, COLOR_BRIGHTYELLOW, COLOR_BRIGHTBLUE, COLOR_BRIGHTMAGENTA, COLOR_BRIGHTCYAN,
         21, 39, 46, 48, 75, 105, 129, 177, 214, 202, 154, 226, 196, 198, 93, 126, 174, 72, 166, 124, 165, 119, 201, 57

@@ -88,7 +88,7 @@
 #define MEMBER_ARRAY(member_type, member) MEMBER_DEF(TYPE_TO_ID(MEMBER_TYPEOF(member)), member_type, member, ARRAYLEN(((PARENT_TYPE *)0)->member))
 
 #define MEMBER_SPECIAL(special_type, member_type, member) MEMBER_DEF(special_type, member_type, member, 1)
-#define MEMBER_SPECIAL_ARRAY(special_type, member_type, member) MEMBER_DEF(special_type, member_type, member, ARRAYLEN(((PARENT_TYPE *)0)->member)) 
+#define MEMBER_SPECIAL_ARRAY(special_type, member_type, member) MEMBER_DEF(special_type, member_type, member, ARRAYLEN(((PARENT_TYPE *)0)->member))
 
 #define PARENT_TYPE struct LiveRange
 struct Member liveRangeMembers[] = {
@@ -386,7 +386,7 @@ struct Member ichainIsop[] = {
         MEMBER_SPECIAL(DATATYPE, Datatype, isop.cvtfrom),
         MEMBER(unsigned short, isop.unk24_u16),
         //MEMBER(struct ExpSourceThing *, isop.unk24_cand),
-            /* 
+            /*
         union {
             // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
             int word; // offset for istr/irst
@@ -733,7 +733,7 @@ struct Member graphnodeMembers[] = {
     MEMBER_LIST(struct LiveUnit *, liveunit, struct LiveUnit, next_in_block),
     MEMBER_SPECIAL_ARRAY(REGSET64, int[2][2], regsused[0]),
     MEMBER_SPECIAL_ARRAY(REGSET64, int[2][2], regsused[1]),
-    /* 
+    /*
     struct RegisterData {
         struct IChain *unk44[35];
     } regdata;
@@ -750,7 +750,7 @@ struct Member graphnodeMembers[] = {
     MEMBER(struct BitVector, indiracc),
     MEMBER(struct BitVector, hoistedexp),
     //union {
-    /* 
+    /*
         struct {
             int unk104[(0x134 - 0x104) / 4];
             int line; // 0x134
@@ -816,7 +816,7 @@ struct Member graphnodeMembers[] = {
             //MEMBER(struct BitVector, bvs.stage2.unk164),
             MEMBER(struct BitVector, bvs.stage2.unk16C),
         //} stage2;
-        /* 
+        /*
         struct {
             int app; // 0x104
             int av; // 0x108

@@ -23,7 +23,7 @@ bool expr_in_bvect(struct Expression *expr, struct BitVector *bv)
     {
         return bvectin0(expr->ichain->bitpos, bv);
     }
-    /* 
+    /*
     switch (expr->type) {
         case isop:
             return bvectin0(expr->ichain->bitpos, bv);
@@ -33,7 +33,7 @@ bool expr_in_bvect(struct Expression *expr, struct BitVector *bv)
 
         case isilda:
         case issvar:
-            // warn about pascal 
+            // warn about pascal
         case islda:
         case isconst:
         case isrconst:
@@ -374,7 +374,7 @@ int sr_get_register(struct StringRep *sr)
         default:
             break;
     }
-    
+
     return -1;
 }
 
@@ -435,7 +435,7 @@ int sr_store_bool_color(struct StringRep *sr)
     // rainbow, 8 dark, then 8 pastel
     static int colors[] = {
         196, 202, 226, 46, 51, 21, 129, 201,
-        203, 221, 230, 156, 195, 219, 177, 
+        203, 221, 230, 156, 195, 219, 177,
     };
     int index = (sr->stat->u.store.unk1C << 3) | (sr->stat->u.store.unk1D << 2) |
                 (sr->stat->u.store.unk1E << 1) | (sr->stat->u.store.unk1F << 0);
@@ -461,15 +461,15 @@ void sr_highlight_children(struct Tile *tile, int line, struct StringRep *sr, in
 {
     // blue, green, yellow, red, white, red, blue
     static int colors[] = {
-        21, 26, 31, 36, 41, 46, 
-        82, 118, 154, 190, 226, 
+        21, 26, 31, 36, 41, 46,
+        82, 118, 154, 190, 226,
         220, 214, 208, 202, 196,
-        203, 210, 217, 224, 231, 
-        195, 159, 123, 87, 51, 
-        45, 39, 33, 27, 21, 
-        //83, 120, 157, 194, 231, 
-        //224, 217, 210, 203, 196, 
-        //161, 126, 91, 56, 21, 
+        203, 210, 217, 224, 231,
+        195, 159, 123, 87, 51,
+        45, 39, 33, 27, 21,
+        //83, 120, 157, 194, 231,
+        //224, 217, 210, 203, 196,
+        //161, 126, 91, 56, 21,
     };
     static int curColor = 0;
 

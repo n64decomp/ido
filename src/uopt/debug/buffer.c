@@ -24,8 +24,8 @@
  *                        ^-----------^   top->children[1]
  *                        ^-^             top->children[1]->children[0]
  *                              ^-----^   top->children[1]->chlidren[1]
- *      
- * Highlighting is done by a preorder traversal that stops and calls mvwchgat when a condition is met. 
+ *
+ * Highlighting is done by a preorder traversal that stops and calls mvwchgat when a condition is met.
  * ncurses maintains the character attributes, even when scrolled off screen.
  *
  * TODO: DisplayLine isn't exactly necessary right now, but will be used for searching
@@ -307,7 +307,7 @@ int liverange_cmp(const void *_a, const void *_b)
 {
     const struct LiveRange *a = *(void **)_a;
     const struct LiveRange *b = *(void **)_b;
-    
+
     if (a->assigned_reg > 0  && b->assigned_reg == 0) return -1;
     if (a->assigned_reg == 0 && b->assigned_reg > 0) return 1;
 

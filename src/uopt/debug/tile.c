@@ -234,7 +234,7 @@ void tile_split(struct Tile *tile, int direction, struct Tile *newTile)
         // the old tile always needs a border
         newTile->hasBorder = tile->hasBorder;
         tile->hasBorder = true;
-        
+
         tile->container->width = tile->wcols + tile->hasBorder;
         newTile->container->height = tile->container->height;
         newTile->container->width = newTile->wcols + newTile->hasBorder;
@@ -313,13 +313,13 @@ void tile_close(struct Tile *tile)
 
         /* now merge with the container above if it has the same split direction
          *
-         *    ____V____           ____V____           ____V____                       
-         *   /    |    \         /    |    \         /    |    \          ____V____   
+         *    ____V____           ____V____           ____V____
+         *   /    |    \         /    |    \         /    |    \          ____V____
          * [ ]    H    [ ] --> [ ]    H    [ ] --> [ ]    V    [ ] -->   /   / \   \
          *       / \                  |                  / \           [ ] [ ] [ ] [ ]
-         *      V   X<-delete         V                [ ] [ ]                
+         *      V   X<-delete         V                [ ] [ ]
          *     / \                   / \
-         *   [ ] [ ]               [ ] [ ]  
+         *   [ ] [ ]               [ ] [ ]
          */
         struct Container *grandparent = parent->parent;
         if (grandparent != NULL && parent->type == grandparent->type) {
@@ -363,7 +363,7 @@ void tile_switch_horizontal(struct Tile *tile, bool right)
     struct Container *target = tile->container;
     struct Container *next = NULL;
     struct Container *cont;
-   
+
     for (cont = tile->container;; cont = cont->parent) {
         if (cont == rootContainer) {
             return;
@@ -382,7 +382,7 @@ void tile_switch_horizontal(struct Tile *tile, bool right)
         }
 
         cont = next->child;
-        // moving left into a vertical split, need rightmost container 
+        // moving left into a vertical split, need rightmost container
         if (!right && next->type == CONTAINER_SPLIT_VERTICAL) {
             while (cont->next != NULL) {
                 cont = cont->next;
@@ -417,7 +417,7 @@ void tile_switch_vertical(struct Tile *tile, bool down)
         }
 
         cont = next->child;
-        // moving up into a horizontal split, need bottom container 
+        // moving up into a horizontal split, need bottom container
         if (!down && next->type == CONTAINER_SPLIT_HORIZONTAL) {
             while (cont->next != NULL) {
                 cont = cont->next;

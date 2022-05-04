@@ -22,11 +22,11 @@ bool member_is_pointer(struct Member *m)
 {
     switch (m->type)
     {
-        case BOOL: 
-        case CHAR: 
+        case BOOL:
+        case CHAR:
         case SHORT:
-        case INT:  
-        case LONG: 
+        case INT:
+        case LONG:
         case FLOAT:
 
         case OPCODE:
@@ -97,7 +97,7 @@ struct DisplayLine *dl_from_member(void **data, struct Member *m, void *lines)
 
     dl_printf(dl, "=", m->name);
 
-    /* 
+    /*
     struct StringRep *sr = sr_newchild(dl, dl->top);
     sr->type = MISC;
     sr->start = dl->pos;
@@ -159,7 +159,7 @@ struct LineBuffer examine_buffer(struct StringRep *sr)
     if (sr->type == FIELDNAME && sr->data != NULL) {
         sr = sr->data;
     }
-    
+
     if (gStructData[sr->type].members == NULL) {
         vec_add(buf.lines, dl_new_printf("examine not implemented for this type (%d)", sr->type));
         buf.numLines = 1;

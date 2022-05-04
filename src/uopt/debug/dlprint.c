@@ -27,7 +27,7 @@ struct StringRep *sr_new()
 void sr_free(struct StringRep *sr)
 {
     if (sr == NULL) return;
-    
+
     for (int i = 0; i < sr->children->length; i++) {
         sr_free(sr->children->items[i]);
     }
@@ -38,7 +38,7 @@ void sr_free(struct StringRep *sr)
 
 struct StringRep *sr_newchild(struct DisplayLine *dl, struct StringRep *parent)
 {
-    if (parent == NULL) { 
+    if (parent == NULL) {
         dl->top = sr_new();
         return dl->top;
     }
@@ -116,7 +116,7 @@ int dl_printf(struct DisplayLine *restrict dl, char *restrict fmt, ...)
     va_end(args);
     return printed;
 
-    /* 
+    /*
     int printed;
     int maxLen;
     do {
@@ -253,7 +253,7 @@ void dl_print_reg_boolarray(struct DisplayLine *dl, struct StringRep *parent, ch
         sr->regboolarray[i] = regs[i];
     }
     bool firstPrint = true;
-    
+
     dl_printf(dl, "[");
     for (int reg = 1; reg <= 35; reg++) {
         if (BITARR_GET(regs, reg - 1)) {
@@ -296,7 +296,7 @@ void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expr
         case isvar:
         case issvar:
             // TODO: make this optional
-            /* 
+            /*
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
                 expr = expr->data.isvar_issvar.copy;
                 goto copy;
@@ -394,7 +394,7 @@ void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expr
                             closeInnerParens = true;
                             dl_printf(dl,  "(");
                         }
-                        
+
                         dl_print_expr(dl, sr, expr->data.isop.op1);
 
                         if (closeInnerParens) {
@@ -470,7 +470,7 @@ void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expr
     sr->len = dl->pos - sr->start;
 }
 
-// duplicate code because IChains are ridiculously similar to Expressions. 
+// duplicate code because IChains are ridiculously similar to Expressions.
 // it was the 80's or something, so uopt didn't just reuse Expression
 void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IChain *ichain)
 {
@@ -582,7 +582,7 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
                             closeInnerParens = true;
                             dl_printf(dl,  "(");
                         }
-                        
+
                         dl_print_ichain(dl, sr, ichain->isop.op1);
 
                         if (closeInnerParens) {
@@ -803,7 +803,7 @@ void dl_print_interferelist(struct DisplayLine *dl, struct StringRep *parent, st
     sr->type = INTERFERELIST;
     sr->interfere = interfere;
 
-    /* 
+    /*
     bool firstPrint = true;
     dl_printf(dl, "interfere: [");
     while (interfere != NULL) {
@@ -817,7 +817,7 @@ void dl_print_interferelist(struct DisplayLine *dl, struct StringRep *parent, st
         interfere = interfere->next;
     }
      */
-    
+
     dl_printf(dl, "interfere: ");
     if (interfere->liverange != NULL) {
         dl_print_liverange(dl, sr, interfere->liverange);
@@ -955,7 +955,7 @@ void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct
     sr->stat = stat;
     sr->start = dl->pos;
     dl_print_opcode(dl, stat->opc);
-    
+
     switch (stat->opc) {
         case Unop:
             break;
@@ -1058,7 +1058,7 @@ void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct
         case Upar:
             dl_printf(dl, "%d, ", stat->u.par.index);
             dl_print_expr(dl, sr, stat->expr);
-            /* 
+            /*
             if (stat->u.par.dtype == Adt) {
                 dl_printf(dl, ", ");
                 dl_print_expr(dl, sr, stat->u.par.baseaddr);
@@ -1160,7 +1160,7 @@ struct DisplayLine *dl_from_statement(struct Statement *stat)
     if (stat == NULL) return NULL;
 
     struct DisplayLine *dl = dl_new();
-    /* 
+    /*
     struct StringRep *sr = sr_new();
     sr->type = STATEMENT;
     sr->stat = stat;
@@ -1169,7 +1169,7 @@ struct DisplayLine *dl_from_statement(struct Statement *stat)
 
     dl_print_statement(dl, NULL, stat);
 
-    /* 
+    /*
     sr->len = dl->pos - sr->start;
     dl->top = sr;
     dl->len = sr->len;
@@ -1220,7 +1220,7 @@ struct DisplayLine *dl_from_graphnode(struct Graphnode *node, bool printPredSucc
 {
     if (node == NULL) return NULL;
     struct DisplayLine *dl = dl_new();
-    /* 
+    /*
     struct StringRep *sr = sr_new();
     sr->type = GRAPHNODE;
     sr->node = node;
@@ -1229,7 +1229,7 @@ struct DisplayLine *dl_from_graphnode(struct Graphnode *node, bool printPredSucc
 
     dl_print_graphnode(dl, NULL, node, printPredSucc);
 
-    /* 
+    /*
     sr->len = dl->pos - sr->start;
     dl->top = sr;
      */
@@ -1265,7 +1265,7 @@ void dl_print_var_access(struct DisplayLine *dl, struct StringRep *parent, struc
 struct DisplayLine *dl_from_var_access(struct VarAccessList *access)
 {
     struct DisplayLine *dl = dl_new();
-    /* 
+    /*
     struct StringRep *sr = sr_new();
     sr->type = VAR_ACCESS;
     sr->varAccess = access;
@@ -1296,7 +1296,7 @@ struct DisplayLine *dl_from_var_access(struct VarAccessList *access)
     //    dl_printf(dl, ")");
     //}
 
-    /* 
+    /*
     sr->len = dl->pos - sr->start;
     dl->top = sr;
      */

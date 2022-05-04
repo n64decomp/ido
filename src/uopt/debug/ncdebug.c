@@ -120,10 +120,10 @@ struct DisplayLine *dl_menu(int line, struct TileCreation *entry) {
 void cursor_checkrow(struct Tile *tile)
 {
     if (tile->cursRow < tile->viewRow) {
-        tile->viewRow = MAX(tile->cursRow, 0); 
+        tile->viewRow = MAX(tile->cursRow, 0);
         tile->cursRow = tile->viewRow;
     } else if (tile->cursRow >= MIN(tile->viewRow + tile->wrows, tile->buf.numLines)) {
-        tile->viewRow = MAX(MIN(tile->cursRow, tile->buf.numLines - 1) - (tile->wrows - 1), 0); 
+        tile->viewRow = MAX(MIN(tile->cursRow, tile->buf.numLines - 1) - (tile->wrows - 1), 0);
         tile->cursRow = MIN(tile->cursRow, tile->buf.numLines - 1);
     }
 
@@ -132,10 +132,10 @@ void cursor_checkrow(struct Tile *tile)
 void cursor_checkcol(struct Tile *tile)
 {
     if (tile->cursCol < tile->viewCol) {
-        tile->viewCol = MAX(tile->cursCol, 0); 
+        tile->viewCol = MAX(tile->cursCol, 0);
         tile->cursCol = tile->viewCol;
     } else if (tile->cursCol >= MIN(tile->viewCol + tile->wcols, CURSOR_LINE(tile)->len)) {
-        tile->viewCol = MAX(MIN(tile->cursCol, CURSOR_LINE(tile)->len - 1) - (tile->wcols - 1), 0); 
+        tile->viewCol = MAX(MIN(tile->cursCol, CURSOR_LINE(tile)->len - 1) - (tile->wcols - 1), 0);
         tile->cursCol = MIN(tile->cursCol, CURSOR_LINE(tile)->len - 1);
     }
 }
@@ -263,8 +263,8 @@ void stack_tile_input(struct Tile *tile, int c);
 
 static struct TileCreation tileMenu[] = {
     {"Procedure", build_proc_tile, proc_tile_input},
-    {"Stack", build_stack_tile, stack_tile_input}, 
-    {"Register Allocation", build_liverange_tile, liverange_tile_input}, 
+    {"Stack", build_stack_tile, stack_tile_input},
+    {"Register Allocation", build_liverange_tile, liverange_tile_input},
     {"Global Expressions", build_ichain_tile, ichain_tile_input},
     {"Node Register Assignments", build_reg_assignment_tile, NULL},
     {"Node Variable Accesses", build_var_access_tile, NULL},
@@ -298,7 +298,7 @@ void tile_focus(struct Tile *nextTile)
 int sr_unk4_color(struct StringRep *sr)
 {
     //return sr->expr->unk4;
-    
+
     switch (sr->expr->unk4) {
         case 1: return COLOR_BRIGHTRED; // return 33;
         case 2: return COLOR_BRIGHTYELLOW; // return 69;
@@ -411,18 +411,16 @@ void ichain_tile_input(struct Tile *tile, int c)
 
 void color_sr(struct Tile *tile)
 {
-    struct StringRep *sr = dl_get_sr_at_pos(CURSOR_LINE(tile), tile->cursCol); 
-    struct Highlighter hl;
+    struct StringRep *sr = dl_get_sr_at_pos(CURSOR_LINE(tile), tile->cursCol);
     switch (sr->type) {
         case REGISTER:
         case LABEL:
             {
-                int color = highlight_random_color();
-                hl = (struct Highlighter) {
+                struct Highlighter hl = {
                     .shouldHighlight = sr_data_equals,
-                        .arg = sr->data,
-                        .defaultColorPair = color,
-                        .shallow = false
+                    .arg = sr->data,
+                    .defaultColorPair = highlight_random_color(),
+                    .shallow = false
                 };
                 tile_highlight_all(NULL, &hl);
             }
@@ -432,11 +430,11 @@ void color_sr(struct Tile *tile)
             {
                 int color = highlight_random_color();
                 struct Variable *variable = sr->variable;
-                hl = (struct Highlighter) {
+                struct Highlighter hl = {
                     .shouldHighlight = sr_has_variable,
-                        .arg = &variable->location,
-                        .defaultColorPair = color,
-                        .shallow = false
+                    .arg = &variable->location,
+                    .defaultColorPair = color,
+                    .shallow = false
                 };
                 tile_highlight_all(tile, &hl);
                 tile_highlight_sr(tile, tile->cursRow, sr, color);
@@ -448,11 +446,11 @@ void color_sr(struct Tile *tile)
             {
                 int color = highlight_random_color();
                 struct LdatabEntry *ldatabEntry = sr->ldatabEntry;
-                hl = (struct Highlighter) {
+                struct Highlighter hl = {
                     .shouldHighlight = sr_has_variable,
-                        .arg = &ldatabEntry->var,
-                        .defaultColorPair = color,
-                        .shallow = false
+                    .arg = &ldatabEntry->var,
+                    .defaultColorPair = color,
+                    .shallow = false
                 };
                 tile_highlight_all(tile, &hl);
                 tile_highlight_sr(tile, tile->cursRow, sr, color);
@@ -464,11 +462,11 @@ void color_sr(struct Tile *tile)
             {
                 int color = highlight_random_color();
                 struct Temploc *temploc = sr->temploc;
-                hl = (struct Highlighter) {
+                struct Highlighter hl = {
                     .shouldHighlight = sr_has_temploc,
-                        .arg = temploc,
-                        .defaultColorPair = color,
-                        .shallow = false
+                    .arg = temploc,
+                    .defaultColorPair = color,
+                    .shallow = false
                 };
                 tile_highlight_all(tile, &hl);
                 tile_highlight_sr(tile, tile->cursRow, sr, color);
@@ -510,6 +508,11 @@ void color_sr(struct Tile *tile)
                     .defaultColorPair = highlight_random_green(),
                     .shallow = true,
                 };
+                // highlight livebbs as green
+                tile_highlight_all(tile, &hl);
+                hl.arg = &sr->liverange->reachingbbs;
+                // highlight reachingbbs in red
+                hl.defaultColorPair = highlight_random_red(),
                 tile_highlight_all(tile, &hl);
                 tile_wmove_to_cursor(tile);
 
@@ -571,7 +574,7 @@ void color_sr(struct Tile *tile)
 void stack_tile_input(struct Tile *tile, int c)
 {
     switch (c) {
-        /* 
+        /*
         case 'c':
             {
                 struct StringRep *top = CURSOR_LINE(tile)->top;
@@ -735,7 +738,7 @@ void tile_base_input(struct Tile *tile)
 {
     int n = 1; // in case I ever want to allow vim-style counts before commands
     int c;
-    
+
     c = wgetch(tile->win);
     switch (c) {
         case 'j':
@@ -927,7 +930,7 @@ void ncurses_loop()
     tile_append(NULL, procTile);
 
     root_container_init();
-    
+
     sInput.curTile = procTile;
     sInput.quit = false;
     while (!sInput.quit) {

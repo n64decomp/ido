@@ -128,7 +128,7 @@ char mtype_name(enum Memtype type) {
         case Amt: return 'A';
     }
 }
-/* 
+/*
 
 char dtype_name(enum Datatype type) {
     switch (type) {
@@ -157,7 +157,7 @@ char dtype_name(enum Datatype type) {
 
 void dl_print_dtype(struct DisplayLine *dl, enum Datatype type) {
     dl_printf(dl, "%s ", dtype_name(type));
-            /* 
+            /*
     char dt = dtype_name(type);
     switch (dt)
     {
@@ -172,7 +172,7 @@ void dl_print_dtype(struct DisplayLine *dl, enum Datatype type) {
     if (dt == 'U') dl_printf (dl, "(%hhu) ", type);
      */
 }
-/* 
+/*
 
 void dl_print_small_dtype(enum Datatype type, int length) {
     char dtypeSign;
@@ -242,7 +242,7 @@ void dl_print_register_ucode(struct DisplayLine *dl, struct StringRep *parent, i
         sr->reg = regNum;
         dl_printf(dl, "%s ", reg_names[regNum]);
     }
-    /* 
+    /*
     if (regColor >= 1 && regColor <= 35) {
         sr->reg = coloroffset(regColor);
         dl_printf(dl, "%s", regnames[sr->reg]);

@@ -59,7 +59,7 @@ const char *regname_print_colors[] = {
     [r_k0 ... r_k1] = COLOR_RGB(255,165,0),
     [r_gp]          = COLOR_RGB(255,165,0),
 
-    /* 
+    /*
      r_t0, r_t1, r_t2, r_t3, r_t4, r_t5, r_t6, r_t7,
      r_s0, r_s1, r_s2, r_s3, r_s4, r_s5, r_s6, r_s7,
      r_t8, r_t9,
@@ -429,7 +429,7 @@ void print_image(struct IChain *image) {
                             closeInnerParens = true;
                             fprintf(stdout, "(");
                         }
-                        
+
                         print_image(image->isop.op1);
 
                         if (closeInnerParens) {
@@ -580,7 +580,7 @@ void print_expr(struct Expression *expr)
                             closeInnerParens = true;
                             fprintf(stdout, "(");
                         }
-                        
+
                         print_expr(expr->data.isop.op1);
 
                         if (closeInnerParens) {
@@ -845,7 +845,7 @@ void print_node_statements(struct Graphnode *node)
     //            } else if (bvectin0(bittab[i].ichain->bitpos, &node->bvs.stage1.antlocs)) {
     //                highlight[image_statement_map[i]] = "\e[94m";
     //            }
-    //            /* 
+    //            /*
     //            else if (bvectin0(bittab[i].ichain->bitpos, &node->bvs.stage1.alters)) {
     //                highlight[image_statement_map[i]] = "\e[91m";
     //            }
@@ -863,7 +863,7 @@ void print_node_statements(struct Graphnode *node)
 
     i = 0;
     for (stat = node->stat_head; stat != NULL; stat = stat->next) {
-        /* 
+        /*
         if ((stat->opc == Uistr ||
              stat->opc == Uistv ||
              stat->opc == Ustr  ||
@@ -878,12 +878,12 @@ void print_node_statements(struct Graphnode *node)
             }
         }
          */
-        /* 
+        /*
         if (highlight[i] != NULL) {
             fprintf(stderr, "%s", highlight[i]);
         }
          */
-        /* 
+        /*
         switch (stat->opc)
         {
             case Uisst:
@@ -972,7 +972,7 @@ void print_bitvector(struct BitVector *bv) {
         }
         word += 128;
     }
-    /* 
+    /*
     if (inside_range && !at_first_element_in_range) {
         printf("..%4d", i - 1);
         //write_string(stdout, "..", 2, 2);
