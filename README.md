@@ -1,6 +1,6 @@
 # IDO uopt debugger
 
-![Screenshot](/screenshots/screenshot2.png)
+![Screenshot](/screenshots/screenshot3.png)
 
 An interactive ncurses debugger for the global optimization pass of the IDO C compiler.
 
