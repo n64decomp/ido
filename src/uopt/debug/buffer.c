@@ -1,4 +1,4 @@
-#ifndef __mips
+#ifdef UOPT_DEBUG
 #include <ncurses.h>
 
 #include "libu/libu.h"
@@ -259,6 +259,23 @@ struct LineBuffer build_bitvect_buffer()
     vec_add(buf.lines, dl_from_bitvector(&iscolored[1], "iscolored[1]"));
     vec_add(buf.lines, dl_from_bitvector(&old, "old"));
     vec_add(buf.lines, dl_from_bitvector(&workbvect, "workbvect"));
+
+    buf.numLines = buf.lines->length;
+    return buf;
+}
+
+struct LineBuffer build_ucode_input_buffer()
+{
+    struct LineBuffer buf = {0};
+    buf.lines = vec_new();
+
+    if (gUcodeInput == NULL) {
+        vec_add(buf.lines, dl_placeholder("No input read"));
+    } else {
+        for (int i = 0; i < gUcodeInput->out->length; i++) {
+            vec_add(buf.lines, dl_from_ucode(gUcodeInput->out->items[i]));
+        }
+    }
 
     buf.numLines = buf.lines->length;
     return buf;

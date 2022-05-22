@@ -2039,6 +2039,7 @@ void readnxtinst(void) {
                     tmp1 = val_when_exponent0(stexpr2->data.isconst.real_significand, stexpr2->data.isconst.real_exponent);
                 }
                 switch (tmp1) {
+                    // replace x * 0.0 with 0
                     case 0:
                         if (!strictieee) {
                             if (stexpr1->type == isconst) {
@@ -2052,6 +2053,7 @@ void readnxtinst(void) {
                         }
                         break;
 
+                    // eliminate x * +-1.0
                     case -1:
                     case 1:
                         if (stexpr1->type == isconst) {
@@ -2065,6 +2067,7 @@ void readnxtinst(void) {
                         eliminated = true;
                         break;
 
+                    // change x * 2.0 into x + x
                     case -2:
                     case 2:
                         if (stexpr1->type == isconst) {

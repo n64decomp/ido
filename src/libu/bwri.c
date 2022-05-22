@@ -233,7 +233,9 @@ void uwrite(union Bcode *bcode) {
         return;
     }
 
+#ifdef UOPT_DEBUG
     push_output(bcode);
+#endif
 
     struct utabrec urec = utab[uinstr->Opc];
     for (i = 0; i < urec.instlength; i += 2) {

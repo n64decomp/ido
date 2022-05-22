@@ -1,4 +1,4 @@
-#if 1
+#ifdef UOPT_DEBUG
 #include "libu/libu.h"
 #include "uoptdata.h"
 #include "uoptutil.h"

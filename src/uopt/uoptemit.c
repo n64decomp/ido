@@ -4574,7 +4574,9 @@ void reemit() {
     reset(&strp, " ", 0, 0);
     strpdisplace = 0;
 
+#ifdef UOPT_DEBUG
     output_new_graphnode(graphhead);
+#endif
     prolog();
 
     stat = graphhead->stat_head;
@@ -4596,7 +4598,9 @@ void reemit() {
 
     sp97 = false;
     while (stat != NULL) {
+#ifdef UOPT_DEBUG
         output_new_stat(stat);
+#endif
         if (stat->opc == Uret || stat->opc == Uujp) {
             sp97 = true;
             func_0042AADC(node);
@@ -5331,7 +5335,9 @@ void reemit() {
 
             sp97 = false;
             node = stat->graphnode;
+#ifdef UOPT_DEBUG
             output_new_graphnode(node);
+#endif
             findbbtemps(stat->graphnode);
 
             has_ix = mipsflag == 3 && func_0042BE58(node->loop);

@@ -8,6 +8,7 @@ extern const int reg_nc_colors[];
 enum TypeID {
     UNDEFINED,
     STATEMENT,
+    STATEMENT_OPC,
     EXPRESSION,
     ICHAIN,
     LIVERANGE,
@@ -28,6 +29,8 @@ enum TypeID {
     REGSET64,
     REGBOOLARRAY,
     UCODE,
+    UCODEOPC,
+    UCODEDATA,
     MENU,
     MISC,
     INFO,
@@ -73,6 +76,7 @@ struct StringRep {
         int regset[2];
         char regboolarray[5];
         struct TileCreation *menuEntry;
+        Uopcode opc;
         void *data;
         int   data32;
         short data16;
@@ -84,7 +88,7 @@ struct StringRep {
 
 struct OutputTrace {
     int indent;
-    enum TypeID type; // 0 = message, 1 = bcode
+    enum TypeID type;
     union {
         const char *message;
         union Bcode bcode;
@@ -99,6 +103,11 @@ struct StatOutput {
     struct StatOutput *next;
 };
 
+struct UcodeList {
+    Vec (union Bcode *) *out;
+};
+
+extern struct UcodeList *gUcodeInput;
 extern struct StatOutput *gOutput;
 extern struct StatOutput *gCurOutput;
 
@@ -125,7 +134,7 @@ void dl_free(struct DisplayLine *dl);
 void dlprint_init();
 
 int dl_printf(struct DisplayLine *restrict dl, char *restrict fmt, ...);
-void dl_print_opcode(struct DisplayLine *dl, Uopcode opc);
+void dl_print_opcode(struct DisplayLine *dl, struct StringRep *parent, Uopcode opc);
 void dl_print_variable(struct DisplayLine *dl, struct VariableLocation loc);
 void dl_print_constant(struct DisplayLine *dl, Datatype dtype, union Constant constval);
 void dl_print_small_dtype(struct DisplayLine *dl, enum Datatype type, int length);

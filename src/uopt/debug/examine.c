@@ -1,4 +1,4 @@
-#ifndef __mips
+#ifdef UOPT_DEBUG
 #include <string.h>
 #include "uopt/uoptutil.h"
 #include "debug.h"
@@ -53,6 +53,7 @@ void dl_print_typeid(struct DisplayLine *dl, struct StringRep *sr, void *data, e
         case EXPRESSION:    dl_print_expr(dl, sr, *(void**)data); break;
         case ICHAIN:        dl_print_ichain(dl, sr, *(void**)data); break;
         case STATEMENT:     dl_print_statement(dl, sr, *(void**)data); break;
+        case STATEMENT_OPC: dl_print_statement(dl, sr, *(void**)data); break;
         case GRAPHNODE:     dl_print_graphnode(dl, sr, *(void**)data, true); break;
         case VAR_ACCESS:    dl_print_var_access(dl, sr, *(void**)data); break;
         case TREP:          dl_print_trepimage(dl, sr, *(void**)data); break;
@@ -70,7 +71,7 @@ void dl_print_typeid(struct DisplayLine *dl, struct StringRep *sr, void *data, e
         // scalar types
         case EXPRTYPE: dl_printf(dl, "%s", exprtype_name(*(ExpressionType *)data)); break;
         case DATATYPE: dl_printf(dl, "%s", dtype_name(*(enum Datatype *)data)); break;
-        case OPCODE:   dl_print_opcode(dl, *(Uopcode *)data); break;
+        case OPCODE:   dl_print_opcode(dl, sr, *(Uopcode *)data); break;
         case BOOL:     dl_printf(dl, "%s", *(bool *)data ? "true" : "false"); break;
         case CHAR:     dl_printf(dl, "%hhd", *(char *)data); break;
         case SHORT:    dl_printf(dl, "%hd", *(short *)data); break;
@@ -148,6 +149,15 @@ struct DisplayLine *dl_from_struct(struct StringRep *examined)
     dl->top = sr;
     dl->len = dl->pos;
     return dl;
+}
+
+struct StringRep *sr_fieldname(struct StringRep *sr)
+{
+    if (sr->data != NULL) {
+        return sr->data;
+    } else {
+        return sr;
+    }
 }
 
 struct LineBuffer examine_buffer(struct StringRep *sr)

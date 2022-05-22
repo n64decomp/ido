@@ -1,4 +1,4 @@
-#ifndef __mips
+#ifdef UOPT_DEBUG
 #include <ncurses.h>
 
 #include "libu/libu.h"
@@ -101,6 +101,11 @@ void tile_add_default_highlighters(struct Tile *tile)
         .getColorPair = sr_register_color
     };
     tile_add_highlighter(tile, highlight_registers);
+    struct Highlighter highlight_opc = {
+        .shouldHighlight = sr_has_opcode,
+        .getColorPair = sr_ucode_color
+    };
+    tile_add_highlighter(tile, highlight_opc);
 }
 
 

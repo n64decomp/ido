@@ -1,4 +1,4 @@
-#ifndef __mips
+#ifdef UOPT_DEBUG
 #include <ncurses.h>
 
 #include "uopt/uoptdata.h"
@@ -422,7 +422,7 @@ bool sr_general_highlight(struct StringRep *sr, void *unused)
 int sr_general_highlight_color(struct StringRep *sr)
 {
     switch (sr->type) {
-        case GRAPHNODE: return COLOR_BLUE;
+        case GRAPHNODE: return 166;//77;
         case INFO: return COLOR_GRAY13;
         case FIELDNAME: return COLOR_GRAY13;
 

@@ -1,4 +1,4 @@
-#ifndef __mips
+#ifdef UOPT_DEBUG
 #include <ncurses.h>
 
 #include "libu/libu.h"

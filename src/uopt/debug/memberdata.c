@@ -1,4 +1,4 @@
-#ifndef __mips
+#ifdef UOPT_DEBUG
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -851,6 +851,7 @@ struct StructData gStructData[TYPE_ID_MAX] = {
     STRUCT_DATA_DEF(LIVERANGE, struct LiveRange, liveRangeMembers),
     STRUCT_DATA_DEF(LIVEUNIT, struct LiveUnit, liveUnitMembers),
     STRUCT_DATA_DEF(STATEMENT, struct Statement, statementMembers),
+    STRUCT_DATA_DEF(STATEMENT_OPC, struct Statement, statementMembers),
     STRUCT_DATA_DEF(EXPRESSION, struct Expression, expressionMembers),
     STRUCT_DATA_DEF(ICHAIN, struct IChain, ichainMembers),
     STRUCT_DATA_DEF(GRAPHNODE, struct Graphnode, graphnodeMembers),

@@ -1,4 +1,4 @@
-#ifndef __mips
+#ifdef UOPT_DEBUG
 #include <ncurses.h>
 
 #include "libu/libu.h"
@@ -34,6 +34,11 @@ void sr_free(struct StringRep *sr)
 
     vec_free(sr->children);
     free(sr);
+}
+
+struct StringRep *sr_lastchild(struct StringRep *parent)
+{
+    return parent->children->items[parent->children->length - 1];
 }
 
 struct StringRep *sr_newchild(struct DisplayLine *dl, struct StringRep *parent)
@@ -134,9 +139,14 @@ int dl_printf(struct DisplayLine *restrict dl, char *restrict fmt, ...)
      */
 }
 
-void dl_print_opcode(struct DisplayLine *dl, Uopcode opc)
+void dl_print_opcode(struct DisplayLine *dl, struct StringRep *parent, Uopcode opc)
 {
+    struct StringRep *sr = sr_newchild(dl, parent);
+    sr->type = OPCODE;
+    sr->opc = opc;
+    sr->start = dl->pos;
     dl_printf(dl, "%.4s ", utab[opc].opcname);
+    sr->len = dl->pos - sr->start;
 }
 
 void dl_print_variable(struct DisplayLine *dl, struct VariableLocation loc)
@@ -309,13 +319,13 @@ void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expr
         case isilda:
             dl_printf(dl, "ILDA");
         case islda:
-            if (expr->data.islda_isilda.offset != 0) {
+            if (expr->data.islda_isilda.offset != expr->data.islda_isilda.address.addr) {
                 dl_printf(dl, "(");
             }
             dl_printf(dl, "&");
             dl_print_variable(dl, expr->data.islda_isilda.address);
-            if (expr->data.islda_isilda.offset != 0) {
-                dl_printf(dl, " + %d)", expr->data.islda_isilda.offset);
+            if (expr->data.islda_isilda.offset != expr->data.islda_isilda.address.addr) {
+                dl_printf(dl, " + %d)", expr->data.islda_isilda.offset - expr->data.islda_isilda.address.addr);
             }
             break;
 
@@ -443,7 +453,7 @@ void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expr
                     break;
 
                 default:
-                    dl_print_opcode(dl, expr->data.isop.opc);
+                    dl_print_opcode(dl, sr, expr->data.isop.opc);
                     dl_printf(dl, "(");
                     dl_print_expr(dl, sr, expr->data.isop.op1);
                     if (optab[expr->data.isop.opc].is_binary_op) {
@@ -496,13 +506,13 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
 
         case islda:
         case isilda:
-            if (ichain->islda_isilda.offset != 0) {
+            if (ichain->islda_isilda.offset != ichain->islda_isilda.address.addr) {
                 dl_printf(dl, "(");
             }
             dl_printf(dl, "&");
             dl_print_variable(dl, ichain->islda_isilda.address);
-            if (ichain->islda_isilda.offset != 0) {
-                dl_printf(dl, " + %d)", ichain->islda_isilda.offset);
+            if (ichain->islda_isilda.offset != ichain->islda_isilda.address.addr) {
+                dl_printf(dl, " + %d)", ichain->islda_isilda.offset - ichain->islda_isilda.address.addr);
             }
             break;
 
@@ -634,7 +644,7 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
                 // these aren't marked as binary operators, even though they have two operands
                 case Uisst:
                 case Ustr:
-                    dl_print_opcode(dl, ichain->isop.opc);
+                    dl_print_opcode(dl, sr, ichain->isop.opc);
                     dl_print_ichain(dl, sr, ichain->isop.op1);
                     dl_printf(dl, " = ");
                     dl_print_ichain(dl, sr, ichain->isop.op2);
@@ -647,7 +657,7 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
                         bool closeParens = false;
                         bool hasOffset = ichain->isop.s.word != 0;
 
-                        dl_print_opcode(dl, ichain->isop.opc);
+                        dl_print_opcode(dl, sr, ichain->isop.opc);
                         // *((e1 + e2) + offset) = op2
                         dl_printf(dl, "%s", opc_operator(ichain->isop.opc));
                         if (hasOffset || higher_precedence_image(ichain->isop.opc, ichain->isop.op1)) {
@@ -676,7 +686,7 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
 
                 case Umov:
                 case Umovv:
-                    dl_print_opcode(dl, ichain->isop.opc);
+                    dl_print_opcode(dl, sr, ichain->isop.opc);
                     dl_print_ichain(dl, sr, ichain->isop.op1);
                     dl_printf(dl, " <- ");
                     dl_print_ichain(dl, sr, ichain->isop.op2);
@@ -684,7 +694,7 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
 
                 case Uirsv:
                 case Uirst:
-                    dl_print_opcode(dl, ichain->isop.opc);
+                    dl_print_opcode(dl, sr, ichain->isop.opc);
                     // print rhs first
                     dl_print_ichain(dl, sr, ichain->isop.op2);
                     dl_printf(dl, ", ");
@@ -697,7 +707,7 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
                 case Utple:
                 case Utplt:
                 case Utpne:
-                    dl_print_opcode(dl, ichain->isop.opc);
+                    dl_print_opcode(dl, sr, ichain->isop.opc);
                     // lhs first
                     dl_print_ichain(dl, sr, ichain->isop.op1);
                     dl_printf(dl, ", ");
@@ -705,7 +715,7 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
                     break;
 
                 case Ucg1:
-                    dl_print_opcode(dl, ichain->isop.opc);
+                    dl_print_opcode(dl, sr, ichain->isop.opc);
                     dl_printf(dl, "(");
                     dl_print_ichain(dl, sr, ichain->isop.op1);
                     if (optab[ichain->isop.opc].is_binary_op) {
@@ -718,7 +728,7 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
 
                 case Uchkt:
                 default:
-                    dl_print_opcode(dl, ichain->isop.opc);
+                    dl_print_opcode(dl, sr, ichain->isop.opc);
                     dl_printf(dl, "(");
                     dl_print_ichain(dl, sr, ichain->isop.op1);
                     if (optab[ichain->isop.opc].is_binary_op) {
@@ -954,7 +964,11 @@ void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct
     sr->type = STATEMENT;
     sr->stat = stat;
     sr->start = dl->pos;
-    dl_print_opcode(dl, stat->opc);
+
+    dl_print_opcode(dl, sr, stat->opc);
+    struct StringRep *sr_opc = sr_lastchild(sr);
+    sr_opc->type = STATEMENT_OPC;
+    sr_opc->stat = stat;
 
     switch (stat->opc) {
         case Unop:

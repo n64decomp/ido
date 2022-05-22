@@ -1,4 +1,4 @@
-#ifndef __mips
+#ifdef UOPT_DEBUG
 #include <ncurses.h>
 
 #include "libu/libu.h"
@@ -21,6 +21,8 @@ struct TileCreation {
     void (*build_function)(struct Tile *tile);
     void (*input)(struct Tile *tile, int c);
 };
+
+struct UcodeList *gUcodeInput = NULL;
 
 struct StatOutput *gOutput = NULL;
 struct StatOutput *gCurOutput = NULL;
@@ -92,6 +94,30 @@ void push_trace(const char *message)
     vec_add(gCurOutput->out, out);
 }
 
+bool ucode_has_string(union Bcode *b)
+{
+    struct Bcrec *uinstr = &b->Ucode;
+    struct utabrec *urec = &utab[uinstr->Opc];
+
+    if (!urec->hasconst) return false;
+    if ((uinstr->Dtype == Mdt ||
+            uinstr->Dtype == Qdt ||
+            uinstr->Dtype == Rdt ||
+            uinstr->Dtype == Sdt ||
+            uinstr->Dtype == Xdt) || uinstr->Opc == Ucomm) {
+        return true;
+    }
+    return false;
+}
+
+void copy_ucode_string(union Bcode *dst, union Bcode *src)
+{
+    if (!ucode_has_string(src)) return;
+
+    dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars = calloc(dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival, sizeof(char));
+    memcpy(dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars, src->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars, src->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival);
+}
+
 void push_output(union Bcode *b)
 {
     if (gOutput == NULL || gCurOutput == NULL || gCurOutput->out == NULL) return;
@@ -99,7 +125,38 @@ void push_output(union Bcode *b)
     struct OutputTrace *out = calloc(1, sizeof(struct OutputTrace));
     out->type = UCODE;
     out->bcode = *b;
+    copy_ucode_string(&out->bcode, b);
     vec_add(gCurOutput->out, out);
+}
+
+struct UcodeList *new_ucodelist()
+{
+    struct UcodeList *list = calloc(1, sizeof(struct UcodeList));
+    list->out = vec_new();
+    return list;
+}
+
+void push_input(union Bcode *b) {
+    if (gUcodeInput == NULL) gUcodeInput = new_ucodelist();
+
+    union Bcode *item = calloc(1, sizeof(union Bcode));
+    *item = *b;
+    copy_ucode_string(item, b);
+    vec_add(gUcodeInput->out, item);
+}
+
+void ucode_input_clear()
+{
+    if (gUcodeInput == NULL) return;
+
+    for (int i = 0; i < gUcodeInput->out->length; i++) {
+        if (ucode_has_string(gUcodeInput->out->items[i])) {
+            free(gUcodeInput->out->items[i]->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars);
+        }
+    }
+    vec_free(gUcodeInput->out);
+    free(gUcodeInput);
+    gUcodeInput = NULL;
 }
 
 struct DisplayLine *dl_menu(int line, struct TileCreation *entry) {
@@ -207,7 +264,16 @@ void build_ucode_output_tile(struct Tile *tile)
     tile_new_window(tile);
     char *title = "Ucode Output";
     tile_set_title(tile, title, strlen(title));
+    tile_add_default_highlighters(tile);
     tile_add_highlighter(tile, (struct Highlighter){.shouldHighlight = sr_ucode_stat_highlight, .defaultColorPair = 39});
+}
+
+void build_ucode_input_tile(struct Tile *tile)
+{
+    tile->buf = build_ucode_input_buffer();
+    tile_new_window(tile);
+    char *title = "Ucode Input";
+    tile_set_title(tile, title, strlen(title));
     tile_add_default_highlighters(tile);
 }
 
@@ -269,6 +335,7 @@ static struct TileCreation tileMenu[] = {
     {"Node Register Assignments", build_reg_assignment_tile, NULL},
     {"Node Variable Accesses", build_var_access_tile, NULL},
     {"Bit Vectors", build_bitvect_tile, NULL},
+    {"Ucode Input", build_ucode_input_tile, NULL},
     {"Ucode Output", build_ucode_output_tile, NULL},
 };
 
@@ -412,6 +479,9 @@ void ichain_tile_input(struct Tile *tile, int c)
 void color_sr(struct Tile *tile)
 {
     struct StringRep *sr = dl_get_sr_at_pos(CURSOR_LINE(tile), tile->cursCol);
+    if (sr->type == FIELDNAME && sr->data != NULL) {
+        sr = sr->data;
+    }
     switch (sr->type) {
         case REGISTER:
         case LABEL:
@@ -541,6 +611,7 @@ void color_sr(struct Tile *tile)
             }
             break;
 
+        case STATEMENT_OPC:
         case STATEMENT:
             {
                 struct Highlighter hl = {
@@ -560,8 +631,11 @@ void color_sr(struct Tile *tile)
                     .arg = sr->node,
                     .defaultColorPair = COLOR_GRAY9
                 };
+                /* 
                 tile_highlight_once(procTile, &hl);
                 tile_nc_refresh(procTile);
+                 */
+                tile_highlight_all(NULL, &hl);
                 tile_wmove_to_cursor(tile);
             }
             break;

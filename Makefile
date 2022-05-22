@@ -6,12 +6,19 @@ AVOID_UB ?= 1
 
 ARCH ?= x86
 
+# Build uopt with ncurses debugging
+DEBUG ?= 1
+
 ifeq ($(ARCH),x86)
 CC := gcc
 ENDIANNESS := -DUOPT_LITTLE_ENDIAN
-ARCH_FLAGS := -m32 -mfpmath=sse -msse2 -ffp-contract=off $(ENDIANNESS) -lncurses
-OPTIMIZATION = -Og -flto=auto -ggdb3
-#OPTIMIZATION = -O2 -march=native -mtune=native -flto=auto
+ARCH_FLAGS := -m32 -mfpmath=sse -msse2 -ffp-contract=off $(ENDIANNESS)
+    ifeq ($(DEBUG),1)
+        ARCH_FLAGS += -lncurses -DUOPT_DEBUG
+        OPTIMIZATION := -Og -flto=auto -ggdb3
+    else
+        OPTIMIZATION := -O2 -march=native -mtune=native -flto=auto
+    endif
 else ifeq ($(ARCH),mips)
 CC := mips-linux-gnu-gcc
 ARCH_FLAGS := -fPIC -mips2 -mfp32

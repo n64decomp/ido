@@ -481,8 +481,11 @@ void oneproc(void) {
 
             opt_saved_regs();
             reemit();
+#ifdef UOPT_DEBUG
             ncdebug();
             ucode_output_clear();
+            ucode_input_clear();
+#endif
             if (dbugno == 2) {
                 printtab();
             }

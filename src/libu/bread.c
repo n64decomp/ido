@@ -170,6 +170,10 @@ void readuinstr(union Bcode *bcode, char *ustr) {
             }
         }
     }
+
+#ifdef UOPT_DEBUG
+    push_input(bcode);
+#endif
 }
 
 

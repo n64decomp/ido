@@ -1,4 +1,4 @@
-#ifndef __mips
+#ifdef UOPT_DEBUG
 #include <ncurses.h>
 
 #include "libu/libu.h"
@@ -101,6 +101,243 @@ static struct FieldNames field_names[Uirsv + 1] = {
 
     [Uregs] = {.ione="class"},
 };
+
+// ucode syntax highlighting
+const int ucode_nc_colors[] = {
+    // misc
+    [Ucomm] =  123,
+    [Uloc]  =  104,
+
+    [Ulex]  =  123,
+    [Umtag] =  123,
+    [Uinit] =  123,
+    [Uoptn] =  123,
+    [Ubgn]  =  123,
+    [Ustp]  =  123,
+    [Ubgnb] =  123,
+    [Uendb] =  123,
+
+    [Udef]  =  123,
+    [Uldef] =  123,
+    [Updef] =  123,
+    [Usdef] =  123,
+
+    [Ulbgn] =  123,
+    [Ulbdy] =  123,
+    [Ultrm] =  123,
+    [Ulend] =  123,
+
+    [Unop] =   123,
+
+    // function
+    [Uaent] = 227,
+    [Uent]  = 227,
+    [Uend]  = 227,
+
+    // memory
+    [Uvreg] = 31,
+    [Uregs] = 31,
+
+    // arithmetic
+    [Uadd] = 214,
+    [Usub] = 214,
+    [Udiv] = 214,
+    [Urem] = 214,
+    [Umod] = 214,
+    [Umpy] = 214,
+    [Umin] = 214,
+    [Umax] = 214,
+    [Uinc] = 214,
+    [Udec] = 214,
+    [Uneg] = 214,
+    [Uodd] = 214,
+    // huh
+    [Ubsub] = 214,
+
+    [Uabs]  = 214,
+    [Usign] = 214,
+    [Usqr]  = 214,
+    [Usqrt] = 214,
+
+    //set ops
+    [Uuni] = 214,
+    [Uint] = 214,
+    [Udif] = 214,
+    [Uinn] = 214,
+    [Umus] = 214,
+    [Uadj] = 214,
+    [Usgs] = 214,
+
+    // bitwise
+    [Uand] = 214,
+    [Uior] = 214,
+    [Uxor] = 214,
+    [Unot] = 214,
+    [Ulnot] = 214,
+    [Ushl] = 214,
+    [Ushr] = 214,
+
+    // casts
+    [Ucvt] = 214,
+    [Ucvtl] = 214,
+    [Utyp] = 214,
+    [Uswp] = 214,
+    [Uctrl] = 214,
+    [Upop] = 214,
+
+    // alloca
+    [Uaos] = 31,
+    [Uldsp] = 31,
+    [Ustsp] = 31,
+    [Uldap] = 31,
+
+    // control flow
+    [Ufjp] = 227,
+    [Utjp] = 227,
+    [Uujp] = 227,
+    [Uxjp] = 227,
+    [Uijp] = 227,
+
+    // check traps
+    [Uchkt] = 227,
+    [Uchkh] = 227,
+    [Uchkl] = 227,
+    [Uchkn] = 227,
+
+    [Uclab] = 227,
+    [Ulab]  = 227,
+
+    // traps
+    [Utpeq] = 213,
+    [Utpne] = 213,
+    [Utplt] = 213,
+    [Utpgt] = 213,
+    [Utpge] = 213,
+    [Utple] = 213,
+
+    // function
+    [Umst] = 227,
+    [Ucia] = 227,
+    [Ucup] = 227,
+    [Urcuf] = 227,
+    [Uicuf] = 227,
+
+    [Upar] = 227,
+    [Urpar] = 227,
+    [Uxpar] = 227,
+    [Upmov] = 227,
+    [Umpmv] = 227,
+    [Uret] = 227,
+
+    // lower and upper bound
+    [Uclbd] = 123,
+    [Ucubd] = 123,
+    [Uubd] = 123,
+    [Ulbd] = 123,
+
+    // conditional
+    [Uequ] = 204,
+    [Uneq] = 204,
+    [Ugeq] = 204,
+    [Ugrt] = 204,
+    [Uleq] = 204,
+    [Ules] = 204,
+
+    // struct comparisons
+    [Uiequ] = 204,
+    [Uineq] = 204,
+    [Uigeq] = 204,
+    [Uigrt] = 204,
+    [Uileq] = 204,
+    [Uiles] = 204,
+
+    // memory
+    [Uixa] = 31,
+    [Ulod] = 31,
+    [Ustr] = 31,
+    [Ulca] = 31,
+    [Ulda] = 31,
+    [Uldc] = 31,
+    [Uldrc] = 31,
+
+    // indirect load/store
+    [Uilod] = 31,
+    [Uildv] = 31,
+    [Uilda] = 31,
+    [Uistr] = 31,
+    [Uisld] = 31,
+    [Uisst] = 31,
+    [Uistv] = 31,
+    [Uildi] = 31,
+    [Uisti] = 31,
+
+    // register load/store
+    [Urlda] = 31,
+    [Urldc] = 31,
+    [Urlod] = 31,
+    [Urstr] = 31,
+
+    // indirect register load/store?
+    [Uirld] = 31,
+    [Uirst] = 31,
+    [Uirlv] = 31,
+    [Uirsv] = 31,
+
+    [Umov] = 31,
+    [Umovv] = 31,
+
+    [Uidx] = 31,
+
+    // misc
+    [Udup] = 123,
+    [Ufill] = 123,
+
+    [Urnd] = 123,
+    [Ustep] = 123,
+    [Ualia] = 123,
+    // wtf, but used, links two registers together?
+    [Uunal] = 123,
+    [Ucg1] = 123,
+    [Ucg2] = 123,
+
+    // symbol
+    [Uasym] = 31,
+    [Uhsym] = 31,
+    [Ucsym] = 31,
+    [Uesym] = 31,
+    [Ufsym] = 31,
+    [Ugsym] = 31,
+    [Ulsym] = 31,
+    [Ussym] = 31,
+    [Umsym] = 31,
+    [Uksym] = 31,
+    [Uosym] = 31,
+
+    [Ueof] = 123,
+};
+
+int ucode_opc_color(int opc)
+{
+    if (opc <= 0 || opc >= ARRAYLEN(ucode_nc_colors)) return 0;
+    return ucode_nc_colors[opc];
+}
+
+bool sr_has_opcode(struct StringRep *sr, void *arg)
+{
+    return sr->type == UCODEOPC || sr->type == STATEMENT_OPC || sr->type == OPCODE;
+}
+
+int sr_ucode_color(struct StringRep *sr)
+{
+    if (sr->type == UCODEOPC)
+    {
+        return ucode_opc_color(sr->ucode->Ucode.Opc);
+    } else if (sr->type == STATEMENT_OPC) {
+        return ucode_opc_color(sr->stat->opc);
+    } else {
+        return ucode_opc_color(sr->opc);
+    }
+}
 
 static struct FieldNames default_names = {.lexlev="lexlev", .ione="num", .offset="off", .length="len"};
 
@@ -456,8 +693,6 @@ static bool (*print_function[Uirsv + 1])(struct DisplayLine *dl, union Bcode *b)
 };
 
 void dl_print_ucode(struct DisplayLine *dl, struct StringRep *parent, union Bcode *b) {
-    //if (OPC(*b) == Ueof) return;
-
     struct StringRep *sr = sr_newchild(dl, parent);
     sr->type = UCODE;
     sr->ucode = b;
@@ -465,13 +700,16 @@ void dl_print_ucode(struct DisplayLine *dl, struct StringRep *parent, union Bcod
 
     struct utabrec urec = utab[OPC(*b)];
 
-    //if (OPC(*b) == Uent) puts("");
+    struct StringRep *sr_opc = sr_newchild(dl, parent);
+    sr_opc->type = UCODEOPC;
+    sr_opc->ucode = b;
+    sr_opc->start = dl->pos;
     dl_printf(dl, "  %.4s ", urec.opcname);
+    sr_opc->len = dl->pos - sr_opc->start;
 
     // handle unique opcodes, usually just to print the right field as a register
     if (print_function[OPC(*b)] != NULL) {
         if (print_function[OPC(*b)](dl, b)) {
-            //puts("");
             sr->len = dl->pos - sr->start;
             return;
         }
@@ -515,7 +753,6 @@ void dl_print_ucode(struct DisplayLine *dl, struct StringRep *parent, union Bcod
             default:                                                break;
         }
     }
-    //puts("");
     sr->len = dl->pos - sr->start;
 }
 

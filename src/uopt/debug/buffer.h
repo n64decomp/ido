@@ -18,4 +18,5 @@ struct LineBuffer build_liverange_buffer();
 struct LineBuffer build_reg_assignment_buffer();
 struct LineBuffer build_bitvect_buffer();
 struct LineBuffer build_ucode_output_buffer();
+struct LineBuffer build_ucode_input_buffer();
 void linebuffer_free(struct LineBuffer dbg);

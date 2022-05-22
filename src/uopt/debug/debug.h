@@ -98,6 +98,8 @@
 #define ARRAYLEN(arr) (sizeof((arr)) / sizeof((arr)[0]))
 
 void ucode_output_clear();
+void ucode_input_clear();
+void push_input(union Bcode *b);
 void push_output(union Bcode *b);
 void push_trace(const char *message);
 #define _STRINGIFY(msg) #msg
@@ -136,3 +138,6 @@ extern int opc_precedence[Uirsv + 1];
 int higher_precedence_expr(Uopcode opc, struct Expression *op);
 int higher_precedence_image(Uopcode opc, struct IChain *op);
 struct Expression *expr_base(struct Expression *expr);
+
+bool sr_has_opcode(struct StringRep *sr, void *);
+int sr_ucode_color(struct StringRep *sr);

@@ -1,3 +1,4 @@
+#ifdef UOPT_DEBUG
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -83,4 +84,4 @@ void _vec_free(struct VecBase *v)
     free(v->items);
     free(v);
 }
-
+#endif
