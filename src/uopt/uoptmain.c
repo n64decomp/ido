@@ -28,6 +28,8 @@
 #include "uoptemit.h"
 #include "opt_saved_regs.h"
 
+#include "debug.h"
+
 /*
 00456A2C oneproc
 */
@@ -261,6 +263,7 @@ void oneproc(void) {
             if (ustackbot != ustack) {
                 stackerror();
             }
+            //ncdebug();
 
             u_copy = u;
             lastcopiedu.Ucode.Opc = Uend;
@@ -344,6 +347,7 @@ void oneproc(void) {
             lasttime = time1;
 
             copypropagate();
+            //ncdebug();
             if (outofmem) {
                 goto done;
             }
@@ -373,6 +377,7 @@ void oneproc(void) {
             }
 
             codemotion();
+            //ncdebug();
             if (outofmem) {
                 goto done;
             }
@@ -393,6 +398,7 @@ void oneproc(void) {
             lasttime = time1;
 
             eliminduct();
+            //ncdebug();
 
             time1 = getclock();
             if (listwritten) {
@@ -453,6 +459,7 @@ void oneproc(void) {
             lasttime = time1;
 
             globalcolor();
+
             if (outofmem) {
                 goto done;
             }
@@ -474,6 +481,11 @@ void oneproc(void) {
 
             opt_saved_regs();
             reemit();
+#ifdef UOPT_DEBUG
+            ncdebug();
+            ucode_output_clear();
+            ucode_input_clear();
+#endif
             if (dbugno == 2) {
                 printtab();
             }

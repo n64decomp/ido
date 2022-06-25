@@ -788,7 +788,7 @@ struct LiveRange {
     /* 0x21 */ unsigned char unk21; // regsleft
     /* 0x22 */ bool hasstore;
     /* 0x23 */ unsigned char unk23;
-    /* 0x24 */ int unk24; // num_interfering
+    /* 0x24 */ int unk24; // number of interfering liveranges that have registers
     /* 0x28 */ int forbidden[2];
     /* 0x30 */ float adjsave;
     /* 0x34 */ struct LiveRange *next;

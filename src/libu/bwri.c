@@ -2,6 +2,8 @@
 #include "ucode.h"
 #include "libu.h"
 
+#include "debug.h"
+
 #if 0
 __asm__(R""(
 .macro glabel label
@@ -230,6 +232,10 @@ void uwrite(union Bcode *bcode) {
     if (!noerrorsyet) {
         return;
     }
+
+#ifdef UOPT_DEBUG
+    push_output(bcode);
+#endif
 
     struct utabrec urec = utab[uinstr->Opc];
     for (i = 0; i < urec.instlength; i += 2) {
