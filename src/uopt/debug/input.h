@@ -17,5 +17,5 @@ struct Input {
     int lastKey;
 };
 
-extern struct Input sInput;
+extern struct Input gInput;
 void tile_focus(struct Tile *nextTile);

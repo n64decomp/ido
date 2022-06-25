@@ -1,5 +1,6 @@
 #include "common.h"
 #include "libu.h"
+#include "debug.h"
 
 #if 0
 __asm__(R""(

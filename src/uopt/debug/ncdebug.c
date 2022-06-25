@@ -12,7 +12,7 @@
 
 #include "debug.h"
 
-struct Input sInput;
+struct Input gInput;
 
 static struct Tile *prevProcTile;
 
@@ -358,8 +358,8 @@ void build_menu_tile(struct Tile *tile)
 
 void tile_focus(struct Tile *nextTile)
 {
-    sInput.prevTile = sInput.curTile;
-    sInput.curTile = nextTile;
+    gInput.prevTile = gInput.curTile;
+    gInput.curTile = nextTile;
 }
 
 int sr_unk4_color(struct StringRep *sr)
@@ -369,9 +369,9 @@ int sr_unk4_color(struct StringRep *sr)
     switch (sr->expr->unk4) {
         case 1: return COLOR_BRIGHTRED; // return 33;
         case 2: return COLOR_BRIGHTYELLOW; // return 69;
-        case 3: return COLOR_BRIGHTGREEN;// return 99;
-        case 4: return COLOR_BRIGHTBLUE;// return 128;
-        case 5: return COLOR_BRIGHTMAGENTA;// return 162;
+        case 3: return COLOR_BRIGHTGREEN; // return 99;
+        case 4: return COLOR_BRIGHTBLUE; // return 128;
+        case 5: return COLOR_BRIGHTMAGENTA; // return 162;
 
         case 0:
         default:
@@ -403,7 +403,6 @@ void proc_tile_input(struct Tile *tile, int c)
                     .defaultColorPair = 0,
                 };
                 tile_highlight_once(tile, &hl);
-
             }
             break;
 
@@ -443,16 +442,12 @@ void proc_tile_input(struct Tile *tile, int c)
 
         case '1':
             {
-
                 struct Highlighter hl_lr = {
                     .shouldHighlight = sr_stat_node_terminal,
                     .defaultColorPair = 150,
                     .shallow = true,
                 };
                 tile_highlight_once(tile, &hl_lr);
-                //tile_nc_refresh(procTile);
-                //tile_highlight_sr(tile, CURSOR_LINE(tile)->top, COLOR_CYAN);
-                //tile_wmove_to_cursor(tile);
             }
             break;
     }
@@ -564,8 +559,7 @@ void color_sr(struct Tile *tile)
                     .defaultColorPair = highlight_random_color(),
                     .shallow = true,
                 };
-                tile_highlight_once(procTile, &hl);
-                tile_nc_refresh(procTile);
+                tile_highlight_all(tile, &hl);
                 tile_wmove_to_cursor(tile);
             }
             break;
@@ -631,10 +625,6 @@ void color_sr(struct Tile *tile)
                     .arg = sr->node,
                     .defaultColorPair = COLOR_GRAY9
                 };
-                /* 
-                tile_highlight_once(procTile, &hl);
-                tile_nc_refresh(procTile);
-                 */
                 tile_highlight_all(NULL, &hl);
                 tile_wmove_to_cursor(tile);
             }
@@ -741,6 +731,7 @@ void liverange_tile_input(struct Tile *tile, int c)
                 }
                 break;
 
+                /* 
             case '#':
                 {
 
@@ -785,8 +776,7 @@ void liverange_tile_input(struct Tile *tile, int c)
                     tile_wmove_to_cursor(tile);
                 }
                 break;
-
-
+                 */
         }
     }
 }
@@ -883,13 +873,13 @@ void tile_base_input(struct Tile *tile)
             break;
 
         case 'v':
-            tile_highlight_line_parts(tile, sInput.selectionDepth++);
+            tile_highlight_line_parts(tile, gInput.selectionDepth++);
             break;
 
         case 'V':
             // awkward logic so that 'v' after 'V' highlights a new depth instead of the same one
-            sInput.selectionDepth = MAX(sInput.selectionDepth - 2, 0);
-            tile_highlight_line_parts(tile, sInput.selectionDepth++);
+            gInput.selectionDepth = MAX(gInput.selectionDepth - 2, 0);
+            tile_highlight_line_parts(tile, gInput.selectionDepth++);
             break;
 
         case 'q':
@@ -897,7 +887,7 @@ void tile_base_input(struct Tile *tile)
             break;
 
         case 'Q':
-            sInput.quit = true;
+            gInput.quit = true;
             break;
 
         case 'L':
@@ -917,16 +907,16 @@ void tile_base_input(struct Tile *tile)
             break;
 
         case 's':
-            tile_split(sInput.curTile, CONTAINER_SPLIT_HORIZONTAL, NULL);
+            tile_split(gInput.curTile, CONTAINER_SPLIT_HORIZONTAL, NULL);
             break;
 
         case 'S':
-            tile_split(sInput.curTile, CONTAINER_SPLIT_VERTICAL, NULL);
+            tile_split(gInput.curTile, CONTAINER_SPLIT_VERTICAL, NULL);
             break;
 
         case CTRL('L'):
-            sInput.selectionDepth = 0;
-            if (sInput.lastKey == c) {
+            gInput.selectionDepth = 0;
+            if (gInput.lastKey == c) {
                 for (struct Tile *t = tileHead; t != NULL; t = t->next) {
                     tile_redraw(t);
                 }
@@ -942,7 +932,7 @@ void tile_base_input(struct Tile *tile)
             }
             break;
     }
-    sInput.lastKey = c;
+    gInput.lastKey = c;
 }
 
 void store_current_proc()
@@ -983,6 +973,18 @@ void ncurses_init()
     keypad(stdscr, true);
 
     dlprint_init();
+
+    // create the procedure window
+    procTile = tile_new();
+    build_proc_tile(procTile);
+    procTile->input = proc_tile_input;
+    tileHead = NULL;
+    tileTail = NULL;
+    tile_append(NULL, procTile);
+
+    root_container_init();
+
+    gInput.curTile = procTile;
 }
 
 void ncurses_end()
@@ -996,20 +998,10 @@ void ncurses_loop()
 {
     ncurses_init();
 
-    procTile = tile_new();
-    build_proc_tile(procTile);
-    procTile->input = proc_tile_input;
-    tileHead = NULL;
-    tileTail = NULL;
-    tile_append(NULL, procTile);
-
-    root_container_init();
-
-    sInput.curTile = procTile;
-    sInput.quit = false;
-    while (!sInput.quit) {
-        tile_nc_refresh(sInput.curTile);
-        tile_base_input(sInput.curTile);
+    gInput.quit = false;
+    while (!gInput.quit) {
+        tile_nc_refresh(gInput.curTile);
+        tile_base_input(gInput.curTile);
     }
 
     container_free(rootContainer);

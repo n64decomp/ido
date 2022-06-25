@@ -12,7 +12,21 @@
 
 #include "debug.h"
 
-extern struct Input sInput;
+/*
+ *    CONTAINER_SPLIT_VERTICAL                    CONTAINER_SPLIT_HORIZONTAL       
+ *                                                                            
+ * ###############################             ###############################
+ * #              #              #             #                             #
+ * #              #              #             #                             #
+ * #              #              #             #                             #
+ * #              #              #             #                             #
+ * #              #              #             ###############################
+ * #              #              #             #                             #
+ * #              #              #             #                             #
+ * #              #              #             #                             #
+ * #              #              #             #                             #
+ * ###############################             ###############################
+ */
 
 // linked list for redrawing
 struct Tile *tileHead;
@@ -102,7 +116,6 @@ void tile_setdims(struct Tile *tile, int y, int x, int rows, int cols)
     tile_newsize(tile, rows, cols);
 }
 
-void sr_highlight(struct Tile *tile, int line, struct StringRep *sr, struct Highlighter *hl);
 void tile_redraw(struct Tile *tile)
 {
     for (int line = 0; line < tile->buf.numLines; line++) {
@@ -256,13 +269,29 @@ void tile_split(struct Tile *tile, int direction, struct Tile *newTile)
     tile_wmove_to_cursor(newTile);
 }
 
+/* 
+ * (1) The container marked X is deleted. The cursor moves to the sibling's first tile.
+ * (2) This leaves the parent (The horizontal container H) with only 1 child left, so it is removed.
+ * (3) If the grandparent container has the same orientation, squash it.
+ * (4) Final container tree.
+ *
+ *       (1)                 (2)                 (3)                 (4)
+ *
+ *    ____V____           ____V____           ____V____
+ *   /    |    \         /    |    \         /    |    \          ____V____
+ * [ ]    H    [ ] --> [ ]    H    [ ] --> [ ]    V    [ ] -->   /   / \   \
+ *       / \                  |                  / \           [ ] [ ] [ ] [ ]
+ *      V   X<-delete         V                [ ] [ ]
+ *     / \                   / \
+ *   [ ] [ ]               [ ] [ ]
+ */
 void tile_close(struct Tile *tile)
 {
     struct Container *closed = tile->container;
     struct Container *neighbor = NULL;
     struct Container *redrawTarget;
 
-    if (tile == procTile) return; // TODO
+    //if (tile == procTile) return; // TODO
 
     if (closed->prev != NULL) {
         neighbor = closed->prev;
@@ -289,10 +318,10 @@ void tile_close(struct Tile *tile)
     redrawTarget = neighbor;
 
     // need to move the cursor to a valid tile
-    if (tile == sInput.curTile) {
+    if (tile == gInput.curTile) {
         struct Tile *nextTile = container_first_tile(neighbor);
-        sInput.curTile = nextTile;
-        sInput.prevTile = NULL;
+        gInput.curTile = nextTile;
+        gInput.prevTile = NULL;
     }
 
     // only one child left, squash it with its parent
@@ -311,16 +340,7 @@ void tile_close(struct Tile *tile)
 
         redrawTarget = parent;
 
-        /* now merge with the container above if it has the same split direction
-         *
-         *    ____V____           ____V____           ____V____
-         *   /    |    \         /    |    \         /    |    \          ____V____
-         * [ ]    H    [ ] --> [ ]    H    [ ] --> [ ]    V    [ ] -->   /   / \   \
-         *       / \                  |                  / \           [ ] [ ] [ ] [ ]
-         *      V   X<-delete         V                [ ] [ ]
-         *     / \                   / \
-         *   [ ] [ ]               [ ] [ ]
-         */
+        // (3) now merge with the container above if it has the same split direction
         struct Container *grandparent = parent->parent;
         if (grandparent != NULL && parent->type == grandparent->type) {
             if (grandparent->child == parent) {
