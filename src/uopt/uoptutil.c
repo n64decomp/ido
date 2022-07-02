@@ -8,6 +8,8 @@
 #include "uoptdata.h"
 #include "uoptdbg.h"
 
+#include "debug.h"
+
 /*
 0047B51C ovfwwarning
 */
@@ -881,6 +883,14 @@ void extendstat(Uopcode opc) {
         stat->prev = stattail;
         stattail->next = stat;
     }
+
+#ifdef UOPT_DEBUG
+    if (gDebugTracingInput) {
+        gCurInput->stat = stat;
+        new_ucode_input();
+    }
+#endif
+
     stattail = stat;
     if (curgraphnode != NULL && curgraphnode->stat_head == NULL) {
         curgraphnode->stat_head = stattail;

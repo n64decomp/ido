@@ -23,15 +23,41 @@ struct TileCreation {
 };
 
 struct UcodeList *gUcodeInput = NULL;
+struct UcodeList *gCurInput = NULL;
 
 struct StatOutput *gOutput = NULL;
 struct StatOutput *gCurOutput = NULL;
 static int sTraceIndent = 0;
+bool gDebugTracingInput = false;
+
+bool ucode_has_string(union Bcode *b)
+{
+    struct Bcrec *uinstr = &b->Ucode;
+    struct utabrec *urec = &utab[uinstr->Opc];
+
+    if (!urec->hasconst) return false;
+    if ((uinstr->Dtype == Mdt ||
+            uinstr->Dtype == Qdt ||
+            uinstr->Dtype == Rdt ||
+            uinstr->Dtype == Sdt ||
+            uinstr->Dtype == Xdt) || uinstr->Opc == Ucomm) {
+        return true;
+    }
+    return false;
+}
+
+void copy_ucode_string(union Bcode *dst, union Bcode *src)
+{
+    if (!ucode_has_string(src)) return;
+
+    dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars = calloc(dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival, sizeof(char));
+    memcpy(dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars, src->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars, src->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival);
+}
 
 void output_new_stat(struct Statement *stat)
 {
     if (stat == NULL) return;
-    struct StatOutput *next  = calloc(1, sizeof(struct StatOutput));
+    struct StatOutput *next = calloc(1, sizeof(struct StatOutput));
     next->out = vec_new();
     if (gOutput == NULL) {
         gCurOutput = gOutput = next;
@@ -46,7 +72,7 @@ void output_new_stat(struct Statement *stat)
 void output_new_graphnode(struct Graphnode *node)
 {
     if (node == NULL) return;
-    struct StatOutput *next  = calloc(1, sizeof(struct StatOutput));
+    struct StatOutput *next = calloc(1, sizeof(struct StatOutput));
     next->out = vec_new();
     if (gOutput == NULL) {
         gCurOutput = gOutput = next;
@@ -61,10 +87,18 @@ void output_new_graphnode(struct Graphnode *node)
 void ucode_output_clear()
 {
     struct StatOutput *prev;
-    for (struct StatOutput *o = gOutput; o != NULL;) {
-        prev = o;
-        vec_free(o->out);
-        o = o->next;
+    for (struct StatOutput *cur = gOutput; cur != NULL;) {
+        prev = cur;
+        for (int i = 0; i < cur->out->length; i++) {
+            if (cur->out->items[i]->type == UCODE) {
+                if (ucode_has_string(&cur->out->items[i]->bcode)) {
+                    free(cur->out->items[i]->bcode.Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars);
+                }
+                free(cur->out->items[i]);
+            }
+        }
+        vec_free(cur->out);
+        cur = cur->next;
         free(prev);
     }
     gOutput = NULL;
@@ -94,30 +128,6 @@ void push_trace(const char *message)
     vec_add(gCurOutput->out, out);
 }
 
-bool ucode_has_string(union Bcode *b)
-{
-    struct Bcrec *uinstr = &b->Ucode;
-    struct utabrec *urec = &utab[uinstr->Opc];
-
-    if (!urec->hasconst) return false;
-    if ((uinstr->Dtype == Mdt ||
-            uinstr->Dtype == Qdt ||
-            uinstr->Dtype == Rdt ||
-            uinstr->Dtype == Sdt ||
-            uinstr->Dtype == Xdt) || uinstr->Opc == Ucomm) {
-        return true;
-    }
-    return false;
-}
-
-void copy_ucode_string(union Bcode *dst, union Bcode *src)
-{
-    if (!ucode_has_string(src)) return;
-
-    dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars = calloc(dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival, sizeof(char));
-    memcpy(dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars, src->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars, src->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival);
-}
-
 void push_output(union Bcode *b)
 {
     if (gOutput == NULL || gCurOutput == NULL || gCurOutput->out == NULL) return;
@@ -136,27 +146,45 @@ struct UcodeList *new_ucodelist()
     return list;
 }
 
+void new_ucode_input()
+{
+    struct UcodeList *next = new_ucodelist();
+    if (gUcodeInput == NULL) {
+        gUcodeInput = gCurInput = next;
+    } else {
+        gCurInput->next = next;
+        gCurInput = next;
+    }
+}
+
 void push_input(union Bcode *b) {
-    if (gUcodeInput == NULL) gUcodeInput = new_ucodelist();
+    if (gUcodeInput == NULL) new_ucode_input();
 
     union Bcode *item = calloc(1, sizeof(union Bcode));
     *item = *b;
     copy_ucode_string(item, b);
-    vec_add(gUcodeInput->out, item);
+    vec_add(gCurInput->out, item);
 }
 
 void ucode_input_clear()
 {
     if (gUcodeInput == NULL) return;
 
-    for (int i = 0; i < gUcodeInput->out->length; i++) {
-        if (ucode_has_string(gUcodeInput->out->items[i])) {
-            free(gUcodeInput->out->items[i]->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars);
+    struct UcodeList *prev;
+    for (struct UcodeList *cur = gUcodeInput; cur != NULL;) {
+        prev = cur;
+        for (int i = 0; i < cur->out->length; i++) {
+            if (ucode_has_string(cur->out->items[i])) {
+                free(cur->out->items[i]->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars);
+            }
+            free(cur->out->items[i]);
         }
+        vec_free(cur->out);
+        cur = cur->next;
+        free(prev);
     }
-    vec_free(gUcodeInput->out);
-    free(gUcodeInput);
     gUcodeInput = NULL;
+    gCurInput = NULL;
 }
 
 struct DisplayLine *dl_menu(int line, struct TileCreation *entry) {
@@ -275,6 +303,7 @@ void build_ucode_input_tile(struct Tile *tile)
     char *title = "Ucode Input";
     tile_set_title(tile, title, strlen(title));
     tile_add_default_highlighters(tile);
+    tile_add_highlighter(tile, (struct Highlighter){.shouldHighlight = sr_ucode_stat_highlight, .defaultColorPair = 39});
 }
 
 void build_var_access_tile(struct Tile *tile)

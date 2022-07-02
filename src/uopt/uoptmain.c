@@ -251,6 +251,10 @@ void oneproc(void) {
                 curstaticno = 1;
             }
 
+#ifdef UOPT_DEBUG
+            gDebugTracingInput = true;
+#endif
+
             elim_dead_code = false;
             filteringout = false;
             while (OPC != Uend) {
@@ -263,7 +267,11 @@ void oneproc(void) {
             if (ustackbot != ustack) {
                 stackerror();
             }
-            //ncdebug();
+
+#ifdef UOPT_DEBUG
+            gDebugTracingInput = false;
+            // ndebug();
+#endif
 
             u_copy = u;
             lastcopiedu.Ucode.Opc = Uend;

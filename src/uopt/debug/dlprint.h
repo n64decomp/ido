@@ -104,12 +104,16 @@ struct StatOutput {
 };
 
 struct UcodeList {
+    struct Statement *stat;
     Vec (union Bcode *) *out;
+    struct UcodeList *next;
 };
 
 extern struct UcodeList *gUcodeInput;
+extern struct UcodeList *gCurInput;
 extern struct StatOutput *gOutput;
 extern struct StatOutput *gCurOutput;
+extern bool gDebugTracingInput;
 
 
 struct DisplayLine {

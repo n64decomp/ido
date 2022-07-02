@@ -9,6 +9,8 @@
 #include "uoptutil.h"
 #include "uoptkill.h"
 
+#include "debug.h"
+
 // Linked list, sorted by num
 struct NumLinkedList {
     int num;
@@ -1422,6 +1424,9 @@ void prepass(void) {
     findallvregs(prochead);
     alloc_release(&lda_heap, lda_heap_mark);
     initur(sourcename);
+#ifdef UOPT_DEBUG
+    ucode_input_clear();
+#endif
 }
 
 /*

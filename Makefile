@@ -16,6 +16,7 @@ ARCH_FLAGS := -m32 -mfpmath=sse -msse2 -ffp-contract=off $(ENDIANNESS)
     ifeq ($(DEBUG),1)
         ARCH_FLAGS += -lncurses -DUOPT_DEBUG
         OPTIMIZATION := -Og -flto=auto -ggdb3
+        #OPTIMIZATION := -O0 -ggdb3
     else
         OPTIMIZATION := -O2 -march=native -mtune=native -flto=auto
     endif

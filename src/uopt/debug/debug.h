@@ -100,6 +100,7 @@
 void ucode_output_clear();
 void ucode_input_clear();
 void push_input(union Bcode *b);
+void new_ucode_input();
 void push_output(union Bcode *b);
 void push_trace(const char *message);
 #define _STRINGIFY(msg) #msg

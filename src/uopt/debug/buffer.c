@@ -272,8 +272,18 @@ struct LineBuffer build_ucode_input_buffer()
     if (gUcodeInput == NULL) {
         vec_add(buf.lines, dl_placeholder("No input read"));
     } else {
-        for (int i = 0; i < gUcodeInput->out->length; i++) {
-            vec_add(buf.lines, dl_from_ucode(gUcodeInput->out->items[i]));
+        struct Graphnode *node;
+        for (struct UcodeList *cur = gUcodeInput; cur != NULL; cur = cur->next) {
+            if (cur->stat != NULL) {
+                if (node != cur->stat->graphnode) {
+                    vec_add(buf.lines, dl_from_graphnode(cur->stat->graphnode, false));
+                    node = cur->stat->graphnode;
+                }
+                vec_add(buf.lines, dl_from_statement(cur->stat));
+            }
+            for (int i = 0; i < cur->out->length; i++) {
+                vec_add(buf.lines, dl_from_ucode(cur->out->items[i]));
+            }
         }
     }
 

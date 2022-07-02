@@ -140,7 +140,15 @@ struct DisplayLine *dl_from_struct(struct StringRep *examined)
 {
     struct DisplayLine *dl = dl_new();
     struct StringRep *sr = sr_new();
-    sr->type = examined->type;
+
+    // TODO: need passthrough/transparent nodes that just have different coloring
+    // or change the structure to support fine grained highlighting...
+    if (examined->type == STATEMENT_OPC) {
+        sr->type = STATEMENT;
+    } else {
+        sr->type = examined->type;
+    }
+
     sr->data = examined->data;
     dl_printf(dl, "%s ", gStructData[examined->type].structName);
     sr->start = dl->pos;
