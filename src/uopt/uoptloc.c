@@ -369,140 +369,144 @@ void ixafold(struct Expression *ixa, struct Expression *left, struct Expression 
 /* 
 0041550C func_0041550C
 00451764 restructure
+
+change an ilod from a known address into a direct load
 */
 struct Expression *ilodfold(struct Expression *ilod) {
     struct VariableLocation loc;
     unsigned short hash;
-    struct Expression *left;
-    struct Expression *expr;
+    struct Expression *address;
+    struct Expression *var;
     struct Expression *prev;
     bool found;
 
-    left = ilod->data.isop.op1;
-    loc = left->data.islda_isilda.address;
-    loc.addr = left->data.islda_isilda.offset + ilod->data.isop.datasize;
+    address = ilod->data.isop.op1;
+    loc = address->data.islda_isilda.address;
+    loc.addr = address->data.islda_isilda.offset + ilod->data.isop.datasize;
     if (insertvar(loc, ilod->data.isop.aux2.v1.unk3C, ilod->datatype, &curproc->vartree, 1, 0, 0)->veqv) {
         return ilod;
     }
     hash = isvarhash(loc);
-    expr = table[hash];
+    var = table[hash];
     found = false;
     prev = NULL;
-    while (!found && expr != 0) {
-        if (expr->type == isvar && addreq(expr->data.isvar_issvar.location, loc)) {
-            found = ilod->graphnode == expr->graphnode &&
-                ilod->killed == expr->killed &&
-                ilod->initialVal == expr->initialVal &&
-                (expr->data.isvar_issvar.copy == NULL || expr->data.isvar_issvar.copy == nocopy);
+    while (!found && var != 0) {
+        if (var->type == isvar && addreq(var->data.isvar_issvar.location, loc)) {
+            found = ilod->graphnode == var->graphnode &&
+                ilod->killed == var->killed &&
+                ilod->initialVal == var->initialVal &&
+                (var->data.isvar_issvar.copy == NULL || var->data.isvar_issvar.copy == nocopy);
 
-            prev = expr;
-            if (found && expr->killed && !expr->initialVal) {
+            prev = var;
+            if (found && var->killed && !var->initialVal) {
                 found = false;
             }
         }
 
         if (!found) {
-            expr = expr->next;
+            var = var->next;
         }
     }
 
     if (!found) {
-        expr = appendchain(hash);
+        var = appendchain(hash);
         if (outofmem != 0) {
             return NULL;
         }
         if (!inlopt && prev != NULL) {
-            copycoderep(expr, prev);
+            copycoderep(var, prev);
         } else {
-            expr->type = isvar;
-            expr->datatype = ilod->datatype;
-            expr->unk4 = 0;
-            expr->visited = 0;
-            expr->data.isvar_issvar.veqv = false;
-            expr->data.isvar_issvar.unk22 = false;
-            expr->data.isvar_issvar.location = loc;
-            expr->data.isvar_issvar.outer_stack = NULL;
-            expr->data.isvar_issvar.size = ilod->data.isop.aux2.v1.unk3C;
-            expr->data.isvar_issvar.location.level = blktolev(loc.blockno);
-            expr->data.isvar_issvar.temploc = 0;
-            expr->data.isvar_issvar.is_volatile = false;
+            var->type = isvar;
+            var->datatype = ilod->datatype;
+            var->unk4 = 0;
+            var->visited = 0;
+            var->data.isvar_issvar.veqv = false;
+            var->data.isvar_issvar.vreg = false;
+            var->data.isvar_issvar.location = loc;
+            var->data.isvar_issvar.outer_stack = NULL;
+            var->data.isvar_issvar.size = ilod->data.isop.aux2.v1.unk3C;
+            var->data.isvar_issvar.location.level = blktolev(loc.blockno);
+            var->data.isvar_issvar.temploc = 0;
+            var->data.isvar_issvar.is_volatile = false;
         }
-        expr->count = 1;
-        expr->data.isvar_issvar.copy = NULL;
-        expr->data.isvar_issvar.assignment = NULL;
-        expr->data.isvar_issvar.assigned_value = NULL;
-        expr->graphnode = ilod->graphnode;
-        expr->initialVal = ilod->initialVal;
-        expr->killed = ilod->killed;
+        var->count = 1;
+        var->data.isvar_issvar.copy = NULL;
+        var->data.isvar_issvar.assignment = NULL;
+        var->data.isvar_issvar.assigned_value = NULL;
+        var->graphnode = ilod->graphnode;
+        var->initialVal = ilod->initialVal;
+        var->killed = ilod->killed;
     } else {
-        increasecount(expr);
+        increasecount(var);
     }
 
-    if (!found || expr->var_access_list == NULL) {
-        expr->var_access_list = alloc_new(sizeof(struct VarAccessList), &perm_heap);
-        expr->var_access_list->prev = ilod->var_access_list->prev;
-        if (expr->var_access_list->prev != 0) {
-            expr->var_access_list->prev->next = expr->var_access_list;
+    if (!found || var->var_access_list == NULL) {
+        var->var_access_list = alloc_new(sizeof(struct VarAccessList), &perm_heap);
+        var->var_access_list->prev = ilod->var_access_list->prev;
+        if (var->var_access_list->prev != NULL) {
+            var->var_access_list->prev->next = var->var_access_list;
         } else {
-            expr->graphnode->varlisthead = expr->var_access_list;
+            var->graphnode->varlisthead = var->var_access_list;
         }
-        expr->var_access_list->next = ilod->var_access_list;
-        ilod->var_access_list->prev = expr->var_access_list;
-        expr->var_access_list->unk8 = false;
-        expr->var_access_list->type = 2;
-        expr->var_access_list->data.var = expr;
+        var->var_access_list->next = ilod->var_access_list;
+        ilod->var_access_list->prev = var->var_access_list;
+        var->var_access_list->unk8 = false;
+        var->var_access_list->type = 2;
+        var->var_access_list->data.var = var;
     }
     decreasecount(ilod);
-    return expr;
+    return var;
 }
 
 /* 
 004175BC copypropagate
 00452DAC constarith
+
+change an istr to a known address into a direct store
 */
 void istrfold(struct Statement *stmt) {
     struct VariableLocation loc;
-    struct Expression *expr;
+    struct Expression *var;
     int increment;
-    struct Expression *istr;
+    struct Expression *address;
 
-    istr = stmt->expr;
-    loc = istr->data.islda_isilda.address;
-    loc.addr = istr->data.islda_isilda.offset + stmt->u.store.u.istr.offset;
+    address = stmt->expr;
+    loc = address->data.islda_isilda.address;
+    loc.addr = address->data.islda_isilda.offset + stmt->u.store.u.istr.offset;
     if (insertvar(loc, stmt->u.store.size, stmt->u.store.u.istr.dtype, &curproc->vartree, 0, 0, 0)->veqv) {
         return;
     }
 
-    expr = appendchain(isvarhash(loc));
+    var = appendchain(isvarhash(loc));
     if (outofmem) {
         return;
     }
-    expr->type = isvar;
-    expr->datatype = stmt->u.store.u.istr.dtype;
-    expr->killed = !stmt->u.store.unk1F;
-    expr->initialVal = false;
-    expr->unk4 = 0;
-    expr->visited = 0;
-    expr->count = 0;
-    expr->graphnode = stmt->graphnode;
-    expr->var_access_list = NULL;
+    var->type = isvar;
+    var->datatype = stmt->u.store.u.istr.dtype;
+    var->killed = !stmt->u.store.store_av;
+    var->initialVal = false;
+    var->unk4 = 0;
+    var->visited = 0;
+    var->count = 0;
+    var->graphnode = stmt->graphnode;
+    var->var_access_list = NULL;
 
-    expr->data.isvar_issvar.size = stmt->u.store.size;
-    expr->data.isvar_issvar.veqv = false;
-    expr->data.isvar_issvar.unk22 = false;
-    expr->data.isvar_issvar.is_volatile = false;
-    expr->data.isvar_issvar.outer_stack = NULL;
-    expr->data.isvar_issvar.location = loc;
-    expr->data.isvar_issvar.location.level = blktolev(loc.blockno);
-    expr->data.isvar_issvar.copy = NULL;
-    expr->data.isvar_issvar.assigned_value = stmt->u.store.expr;
-    expr->data.isvar_issvar.assignment = stmt;
-    expr->data.isvar_issvar.temploc = 0;
+    var->data.isvar_issvar.size = stmt->u.store.size;
+    var->data.isvar_issvar.veqv = false;
+    var->data.isvar_issvar.vreg = false;
+    var->data.isvar_issvar.is_volatile = false;
+    var->data.isvar_issvar.outer_stack = NULL;
+    var->data.isvar_issvar.location = loc;
+    var->data.isvar_issvar.location.level = blktolev(loc.blockno);
+    var->data.isvar_issvar.copy = NULL;
+    var->data.isvar_issvar.assigned_value = stmt->u.store.expr;
+    var->data.isvar_issvar.assignment = stmt;
+    var->data.isvar_issvar.temploc = 0;
 
     stmt->opc = Ustr;
     stmt->is_increment = false;
-    stmt->expr = expr;
-    if (checkincre(expr->data.isvar_issvar.assigned_value, expr, &increment) && increment == 1) {
+    stmt->expr = var;
+    if (checkincre(var->data.isvar_issvar.assigned_value, var, &increment) && increment == 1) {
         stmt->is_increment = true;
     }
     stmt->suppressed_iv = false;

@@ -1122,7 +1122,7 @@ static void determine_if_unrollable(struct Interval *child, struct Interval *out
 
         failed = false;
         loopIncrement = NULL;
-        if (loopVar->data.isvar_issvar.unk22) {
+        if (loopVar->data.isvar_issvar.vreg) {
             find_increment_expr(parent, childNode, loopVar, &failed, &loopIncrement);
         }
 
@@ -1131,7 +1131,7 @@ static void determine_if_unrollable(struct Interval *child, struct Interval *out
             if (loopVar->type == isvar) {
                 failed = false;
                 loopIncrement = NULL;
-                if (loopVar->data.isvar_issvar.unk22) {
+                if (loopVar->data.isvar_issvar.vreg) {
                     find_increment_expr(parent, childNode, loopVar, &failed, &loopIncrement);
                 }
             }

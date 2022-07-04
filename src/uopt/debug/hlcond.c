@@ -19,28 +19,9 @@
 
 bool expr_in_bvect(struct Expression *expr, struct BitVector *bv)
 {
-    if (expr->ichain != NULL && expr->ichain->bitpos > 0 && expr->ichain->bitpos < bitposcount)
-    {
+    if (expr->ichain != NULL && expr->ichain->bitpos >= 0 && expr->ichain->bitpos < bitposcount) {
         return bvectin0(expr->ichain->bitpos, bv);
     }
-    /*
-    switch (expr->type) {
-        case isop:
-            return bvectin0(expr->ichain->bitpos, bv);
-
-        case isvar:
-            return bvectin0(expr->ichain->bitpos, bv);
-
-        case isilda:
-        case issvar:
-            // warn about pascal
-        case islda:
-        case isconst:
-        case isrconst:
-        default:
-            break;
-    }
-     */
 
     return false;
 }
@@ -304,8 +285,7 @@ bool sr_has_temploc(struct StringRep *sr, void *temp)
 bool expr_var(struct Expression *expr, struct VariableLocation loc)
 {
     if (expr->type == isvar || expr->type == issvar) {
-        if (addreq(expr->data.isvar_issvar.location, loc))
-        {
+        if (addreq(expr->data.isvar_issvar.location, loc)) {
             return true;
         }
     } else if (expr->type == islda) {
@@ -319,8 +299,7 @@ bool expr_var(struct Expression *expr, struct VariableLocation loc)
 bool ichain_var(struct IChain *ichain, struct VariableLocation loc)
 {
     if (ichain->type == isvar || ichain->type == issvar) {
-        if (addreq(ichain->isvar_issvar.location, loc))
-        {
+        if (addreq(ichain->isvar_issvar.location, loc)) {
             return true;
         }
     } else if (ichain->type == islda) {
@@ -437,8 +416,8 @@ int sr_store_bool_color(struct StringRep *sr)
         196, 202, 226, 46, 51, 21, 129, 201,
         203, 221, 230, 156, 195, 219, 177,
     };
-    int index = (sr->stat->u.store.unk1C << 3) | (sr->stat->u.store.unk1D << 2) |
-                (sr->stat->u.store.unk1E << 1) | (sr->stat->u.store.unk1F << 0);
+    int index = (sr->stat->u.store.lval_ant << 3) | (sr->stat->u.store.lval_av << 2) |
+                (sr->stat->u.store.store_ant << 1) | (sr->stat->u.store.store_av << 0);
 
     return colors[index];
 }

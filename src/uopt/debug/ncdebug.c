@@ -634,7 +634,6 @@ void color_sr(struct Tile *tile)
             }
             break;
 
-        case STATEMENT_OPC:
         case STATEMENT:
             {
                 struct Highlighter hl = {

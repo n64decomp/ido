@@ -270,7 +270,7 @@ void oneproc(void) {
 
 #ifdef UOPT_DEBUG
             gDebugTracingInput = false;
-            // ndebug();
+            //ncdebug();
 #endif
 
             u_copy = u;

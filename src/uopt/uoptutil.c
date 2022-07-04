@@ -463,7 +463,7 @@ void copycoderep(struct Expression *dest, struct Expression *src) {
 
             dest->data.isvar_issvar.size = src->data.isvar_issvar.size;
             dest->data.isvar_issvar.veqv = src->data.isvar_issvar.veqv;
-            dest->data.isvar_issvar.unk22 = src->data.isvar_issvar.unk22;
+            dest->data.isvar_issvar.vreg = src->data.isvar_issvar.vreg;
             dest->data.isvar_issvar.is_volatile = src->data.isvar_issvar.is_volatile;
             dest->data.isvar_issvar.location = src->data.isvar_issvar.location;
 
@@ -1240,11 +1240,11 @@ void vartreeinfo(struct Variable *var) {
     struct Expression *entry;
 
     while (var != NULL) {
-        if (var->unk2 || var->veqv) {
+        if (var->vreg || var->veqv) {
             entry = searchvar(isvarhash(var->location), &var->location);
             entry->graphnode = NULL;
             entry->data.isvar_issvar.size = (unsigned char)var->size;
-            entry->data.isvar_issvar.unk22 = var->unk2;
+            entry->data.isvar_issvar.vreg = var->vreg;
             entry->data.isvar_issvar.veqv = var->veqv;
         }
         vartreeinfo(var->left);
@@ -1311,7 +1311,7 @@ void deccount(struct Expression *expr, struct Graphnode *node) {
 
         case isop:
             if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) ||
-                    (!expr->data.isop.unk21 && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
+                    (!expr->data.isop.anticipated && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
                 expr->count--;
                 if (expr->count == 0) {
                     if (expr->data.isop.opc == Uiequ ||

@@ -439,7 +439,7 @@ void printitab(void) {
                 write_integer(list.c_file, ichain->isvar_issvar.location.blockno, 5, 10);
                 write_char(list.c_file, ' ', 1);
                 write_integer(list.c_file, ichain->isvar_issvar.location.addr, 5, 10);
-                if (ichain->isvar_issvar.unk19) {
+                if (ichain->isvar_issvar.vreg) {
                     write_string(list.c_file, "vreg", 4, 4);
                     writeln(list.c_file);
                 } else {

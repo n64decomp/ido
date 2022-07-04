@@ -361,6 +361,7 @@ void getexpsources(void) {
     numdataflow += 1;
     node_s2 = graphhead;
     while (node_s2 != NULL) {
+        // SINK = (SUBDELETE & ~(ALTERS & AVLOC) & SUBINSERT) | (DELETE & ~SUBDELETE)
         bvectcopy(&node_s2->bvs.stage1.u.scm.sink, &node_s2->bvs.stage1.u.cm.subdelete);
         bvectminus(&node_s2->bvs.stage1.u.scm.sink, &node_s2->bvs.stage1.alters);
         unionnot(&node_s2->bvs.stage1.u.scm.sink, &node_s2->bvs.stage1.avlocs);

@@ -115,7 +115,7 @@ void regdataflow(void) {
                             }
                         } else {
                             if (!clkilled(node->stat_tail->u.call.level, node->stat_tail->u.call.proc, ichain->expr) &&
-                                    !listplkilled(node->stat_tail->u.call.parameters, ichain->expr, ichain->isvar_issvar.unk19)) {
+                                    !listplkilled(node->stat_tail->u.call.parameters, ichain->expr, ichain->isvar_issvar.vreg)) {
                                 resetbit(&node->bvs.stage2.ppin, i);
                             }
                         }
@@ -143,7 +143,7 @@ void regdataflow(void) {
                     if (bvectin(i, &node->bvs.stage2.ppin)) {
                         ichain = bittab[i].ichain;
                         if (!IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags) || !clkilled(curlevel, indirprocs, ichain->expr)) {
-                            if (!listplkilled(node->stat_tail->u.cia.parameters, ichain->expr, ichain->isvar_issvar.unk19)) {
+                            if (!listplkilled(node->stat_tail->u.cia.parameters, ichain->expr, ichain->isvar_issvar.vreg)) {
                                 resetbit(&node->bvs.stage2.ppin, i);
                             }
                         }

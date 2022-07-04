@@ -123,7 +123,7 @@ struct VariableLocation {
 struct Variable {
     Datatype dtype;
     bool veqv;
-    bool unk2;
+    bool vreg;
     struct VariableLocation location;
     int size;
 
@@ -160,7 +160,7 @@ struct Statement;
 struct VarAccessList {
     /* 0x00 */ struct VarAccessList *prev; // towards head
     /* 0x04 */ struct VarAccessList *next; // towards tail
-    /* 0x08 */ bool unk8; // expr->isvar_issvar.unk22
+    /* 0x08 */ bool unk8; // expr->isvar_issvar.vreg
     /* 0x09 */ unsigned char type; // 0: none?, 1: store (Statement), 2: load (Expression), 3: move (Statement)
     /* 0x0C */ union {
                    struct Statement *store;
@@ -369,7 +369,7 @@ struct Graphnode {
             struct BitVector unk154; // 0x154
             struct BitVector unk15C; // 0x15C findbbtemps
             struct BitVector unk164; // 0x164
-            struct BitVector unk16C; // 0x16C
+            struct BitVector unk16C; // 0x16C constant valued expression that is also in cm.insert and (scm.source or storeop or trapop)...
         } stage2;
         struct {
             int app; // 0x104
@@ -449,10 +449,12 @@ struct Statement {
         struct {
             struct Expression *expr; // 0x14
             struct VarAccessList *var_access_list_item; // 0x18
-            bool unk1C; //not strlkilled, true -> assignbit anticipated
-            bool unk1D; // av
-            bool unk1E; // not strskilled, ant
-            bool unk1F; // av
+            // TODO: dest_unused_before, dest_unused_after?
+            bool lval_ant;  // in this basic block, target variable unused before this assignment
+            bool lval_av;   // in this basic block, target variable unused after this assignment
+            // TODO: first_store, last_store?
+            bool store_ant; // in this basic block, no assignments to the same dest before this
+            bool store_av;  // in this basic block, no assignments to the same dest after this
             int size; // 0x20
             struct Expression *baseaddr; // 0x24
             struct IChain *ichain; //0x28
@@ -701,7 +703,7 @@ struct IChain { // TODO: rename
             /* 0x18 */ unsigned char size;
                        // The order of these two bools is swapped from expr's isvar_issvar
                        // 0x19 = 0x22, and 0x1A = 0x21
-            /* 0x19 */ bool unk19; // see fix_par_vreg inner function
+            /* 0x19 */ bool vreg; // see fix_par_vreg inner function
             /* 0x1A */ bool veqv;
             /* 0x1B */ unsigned char unk1B;
             /* 0x1C */ struct IChain *outer_stack_ichain;
@@ -862,8 +864,8 @@ struct Expression {
         } islda_isilda;
         struct {
             /* 0x20 */ unsigned char size; // in bytes
-            /* 0x21 */ bool veqv;
-            /* 0x22 */ bool unk22;
+            /* 0x21 */ bool veqv; // true if another variable occupies the same memory location (usually union types)
+            /* 0x22 */ bool vreg; // true if the variable is only accessed by direct loads and stores
             /* 0x23 */ bool is_volatile;
             /* 0x24 */ struct Expression *outer_stack;
             /* 0x28 */ struct VariableLocation location;
@@ -874,8 +876,8 @@ struct Expression {
         } isvar_issvar;
         struct {
             /* 0x20 */ Uopcode opc;
-            /* 0x21 */ bool unk21; // anticipatable? exprimage
-            /* 0x22 */ bool unk22; // available? exprimage
+            /* 0x21 */ bool anticipated; // Every
+            /* 0x22 */ bool available;
             /* 0x23 */ Datatype datatype;
             /* 0x24 */ struct Expression *op1;
             /* 0x28 */ struct Expression *op2;

@@ -126,7 +126,7 @@ bool no_ref_param(struct Statement *parameters) {
 static void func_00475E38(struct Variable *vartree, struct Statement *pmov_stmt) {
     struct Expression *expr;
     if (vartree != NULL) {
-        if (vartree->unk2 && vartree->location.memtype == Pmt && curblk == vartree->location.blockno) {
+        if (vartree->vreg && vartree->location.memtype == Pmt && curblk == vartree->location.blockno) {
             int loc = vartree->location.addr;
             if ((loc >= pmov_stmt->u.store.u.mov.offset && loc - pmov_stmt->u.store.u.mov.offset < pmov_stmt->u.store.size) ||
                 (pmov_stmt->u.store.u.mov.offset >= loc && pmov_stmt->u.store.u.mov.offset - loc < vartree->size))
@@ -141,9 +141,9 @@ static void func_00475E38(struct Variable *vartree, struct Statement *pmov_stmt)
                     if (vartree->location.addr != expr->data.isvar_issvar.location.addr) {
                         continue;
                     }
-                    expr->data.isvar_issvar.unk22 = false;
+                    expr->data.isvar_issvar.vreg = false;
                     if (expr->ichain != NULL) {
-                        expr->ichain->isvar_issvar.unk19 = false;
+                        expr->ichain->isvar_issvar.vreg = false;
                     }
                 }
             }

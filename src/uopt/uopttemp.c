@@ -13,26 +13,24 @@ void findbbtemps(struct Graphnode *node) {
     initbv(&setofspills, (struct BitVectorBlock) {0});
 
     for (i = 0; i < firstconstbit; i++) {
-        if (bvectin(i, &node->bvs.stage1.u.scm.region)) {
-            if (bvectin(i, &coloreditems)) {
-                ichain = bittab[i].ichain;
-                switch (ichain->type) {
-                    case isop:
-                        setbit(&setofspills, ichain->isop.temploc->index);
-                        break;
+        if (bvectin(i, &node->bvs.stage1.u.scm.region) && bvectin(i, &coloreditems)) {
+            ichain = bittab[i].ichain;
+            switch (ichain->type) {
+                case isop:
+                    setbit(&setofspills, ichain->isop.temploc->index);
+                    break;
 
-                    case isilda:
-                        setbit(&setofspills, ichain->islda_isilda.temploc->index);
-                        break;
+                case isilda:
+                    setbit(&setofspills, ichain->islda_isilda.temploc->index);
+                    break;
 
-                    case issvar:
-                        setbit(&setofspills, ichain->isvar_issvar.temploc->index);
-                        break;
+                case issvar:
+                    setbit(&setofspills, ichain->isvar_issvar.temploc->index);
+                    break;
 
-                    default:
-                        caseerror(1, 40, "uopttemp.p", 10);
-                        break;
-                }
+                default:
+                    caseerror(1, 40, "uopttemp.p", 10);
+                    break;
             }
         }
     }

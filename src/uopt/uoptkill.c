@@ -585,8 +585,8 @@ void movkillprev(struct Statement *stmt) {
 
     for (access = curgraphnode->varlisthead; access != NULL; access = access->next) {
         if (access->type == 1 && !access->unk8) {
-            if (access->data.store->u.store.unk1D) {
-                access->data.store->u.store.unk1D = !smkilled(access->data.store, stmt);
+            if (access->data.store->u.store.lval_av) {
+                access->data.store->u.store.lval_av = !smkilled(access->data.store, stmt);
             }
         }
     }
@@ -607,12 +607,12 @@ void strkillprev(struct Statement *stmt) {
                 access->data.var->killed = slkilled(stmt, access->data.var);
             }
         } else if (access->type == 3) { // mov?
-            if (access->data.move->u.store.unk1F) {
-                access->data.move->u.store.unk1F = !smkilled(stmt, access->data.move);
+            if (access->data.move->u.store.store_av) {
+                access->data.move->u.store.store_av = !smkilled(stmt, access->data.move);
             }
         } else if (access->type == 1 && !access->unk8) {
-            if (access->data.store->u.store.unk1F) {
-                access->data.store->u.store.unk1F = !sskilled(stmt, access->data.store);
+            if (access->data.store->u.store.store_av) {
+                access->data.store->u.store.store_av = !sskilled(stmt, access->data.store);
             }
         }
     }
@@ -626,8 +626,8 @@ void lodkillprev(struct Expression *expr) {
     struct VarAccessList *list;
 
     for (list = curgraphnode->varlisthead; list != NULL; list = list->next) {
-        if (list->type == 1 && !list->unk8 && list->data.store->u.store.unk1D) {
-            list->data.store->u.store.unk1D = !slkilled(list->data.store, expr);
+        if (list->type == 1 && !list->unk8 && list->data.store->u.store.lval_av) {
+            list->data.store->u.store.lval_av = !slkilled(list->data.store, expr);
         }
     }
 }
@@ -654,24 +654,22 @@ bool clkilled(int level, struct Proc *proc, struct Expression *expr) {
         } else {
             switch (lang) {
                 case LANG_PL1:
-                    if (!expr->data.isvar_issvar.unk22 || curproc->nonlocal_goto) {
+                    if (!expr->data.isvar_issvar.vreg || curproc->nonlocal_goto) {
                         killed = true;
                     } else if (proc == indirprocs) {
                         killed = true;
-                    } else {
-                        if (expr->data.isvar_issvar.location.level >= level) {
-                            killed = false;
-                        } else if (proc->unk9 && expr->data.isvar_issvar.location.level < 2) {
-                            killed = true;
-                        } else if (varintree(expr->data.isvar_issvar.location, proc->vartree) || furthervarintree(expr, proc)) {
-                            killed = true;
-                        }
+                    } else if (expr->data.isvar_issvar.location.level >= level) {
+                        killed = false;
+                    } else if (proc->unk9 && expr->data.isvar_issvar.location.level < 2) {
+                        killed = true;
+                    } else if (varintree(expr->data.isvar_issvar.location, proc->vartree) || furthervarintree(expr, proc)) {
+                        killed = true;
                     }
                     break;
 
                 case LANG_C:
                 case LANG_RESERVED1:
-                    if (!expr->data.isvar_issvar.unk22) {
+                    if (!expr->data.isvar_issvar.vreg) {
                         killed = true;
                     } else if (expr->data.isvar_issvar.location.level >= level) {
                         killed = false;
@@ -690,7 +688,7 @@ bool clkilled(int level, struct Proc *proc, struct Expression *expr) {
                     break;
 
                 case LANG_FORTRAN:
-                    if (use_c_semantics && !expr->data.isvar_issvar.unk22) {
+                    if (use_c_semantics && !expr->data.isvar_issvar.vreg) {
                         killed = true;
                     } else if (expr->data.isvar_issvar.location.level >= level) {
                         killed = false;
@@ -698,7 +696,7 @@ bool clkilled(int level, struct Proc *proc, struct Expression *expr) {
                         killed = false;
                     } else if (in_fsym(expr->data.isvar_issvar.location.blockno)) {
                         killed = false;
-                    } else if (!expr->data.isvar_issvar.unk22) {
+                    } else if (!expr->data.isvar_issvar.vreg) {
                         killed = true;
                     } else if (proc == indirprocs || proc->unk9 ||
                             varintree(expr->data.isvar_issvar.location, proc->vartree) || furthervarintree(expr, proc)) {
@@ -707,11 +705,11 @@ bool clkilled(int level, struct Proc *proc, struct Expression *expr) {
                     break;
 
                 case LANG_ADA:
-                    if (!expr->data.isvar_issvar.unk22 && use_c_semantics) {
+                    if (!expr->data.isvar_issvar.vreg && use_c_semantics) {
                         killed = true;
                     } else if (expr->data.isvar_issvar.location.level >= level) {
                         killed = false;
-                    } else if (!expr->data.isvar_issvar.unk22) {
+                    } else if (!expr->data.isvar_issvar.vreg) {
                         killed = true;
                     } else if (proc->unk9 && expr->data.isvar_issvar.location.memtype == Smt) {
                         killed = true;
@@ -725,7 +723,7 @@ bool clkilled(int level, struct Proc *proc, struct Expression *expr) {
                 case LANG_PASCAL:
                     if (expr->data.isvar_issvar.location.level >= level) {
                         killed = false;
-                    } else if (!expr->data.isvar_issvar.unk22 || (proc->has_longjmp && curproc->nonlocal_goto)) {
+                    } else if (!expr->data.isvar_issvar.vreg || (proc->has_longjmp && curproc->nonlocal_goto)) {
                         killed = true;
                     } else if (proc == indirprocs || (proc->unk9 && expr->data.isvar_issvar.location.memtype == Smt) ||
                             varintree(expr->data.isvar_issvar.location, proc->vartree) || furthervarintree(expr, proc)) {
@@ -846,7 +844,7 @@ bool cskilled(int level, struct Proc *proc, struct Statement *stat) {
         } else {
             switch (lang) {
                 case LANG_PL1:
-                    if (!expr->data.isvar_issvar.unk22 || curproc->nonlocal_goto) {
+                    if (!expr->data.isvar_issvar.vreg || curproc->nonlocal_goto) {
                         killed = true;
                     } else if (proc == indirprocs) {
                         killed = true;
@@ -863,7 +861,7 @@ bool cskilled(int level, struct Proc *proc, struct Statement *stat) {
 
                 case LANG_C:
                 case LANG_RESERVED1:
-                    if (!expr->data.isvar_issvar.unk22) {
+                    if (!expr->data.isvar_issvar.vreg) {
                         killed = true;
                     } else if (expr->data.isvar_issvar.location.level >= level) {
                         killed = false;
@@ -882,7 +880,7 @@ bool cskilled(int level, struct Proc *proc, struct Statement *stat) {
                     break;
 
                 case LANG_FORTRAN:
-                    if (use_c_semantics && !expr->data.isvar_issvar.unk22) {
+                    if (use_c_semantics && !expr->data.isvar_issvar.vreg) {
                         killed = true;
                     } else if (expr->data.isvar_issvar.location.level >= level) {
                         killed = false;
@@ -890,7 +888,7 @@ bool cskilled(int level, struct Proc *proc, struct Statement *stat) {
                         killed = false;
                     } else if (in_fsym(expr->data.isvar_issvar.location.blockno)) {
                         killed = false;
-                    } else if (!expr->data.isvar_issvar.unk22) {
+                    } else if (!expr->data.isvar_issvar.vreg) {
                         killed = true;
                     } else if (proc == indirprocs || proc->unk9 ||
                             varintree(expr->data.isvar_issvar.location, proc->vartree) || furthervarintree(stat->expr, proc)) {
@@ -899,11 +897,11 @@ bool cskilled(int level, struct Proc *proc, struct Statement *stat) {
                     break;
 
                 case LANG_ADA:
-                    if (!expr->data.isvar_issvar.unk22 && use_c_semantics) {
+                    if (!expr->data.isvar_issvar.vreg && use_c_semantics) {
                         killed = true;
                     } else if (expr->data.isvar_issvar.location.level >= level) {
                         killed = false;
-                    } else if (!expr->data.isvar_issvar.unk22) {
+                    } else if (!expr->data.isvar_issvar.vreg) {
                         killed = true;
                     } else if (proc->unk9 && expr->data.isvar_issvar.location.memtype == Smt) {
                         killed = true;
@@ -915,7 +913,7 @@ bool cskilled(int level, struct Proc *proc, struct Statement *stat) {
                 case LANG_PASCAL:
                     if (expr->data.isvar_issvar.location.level >= level) {
                         killed = false;
-                    } else if (!expr->data.isvar_issvar.unk22 || (proc->has_longjmp && curproc->nonlocal_goto)) {
+                    } else if (!expr->data.isvar_issvar.vreg || (proc->has_longjmp && curproc->nonlocal_goto)) {
                         killed = true;
                     } else if (proc == indirprocs || (proc->unk9 && expr->data.isvar_issvar.location.memtype == Smt) ||
                             varintree(expr->data.isvar_issvar.location, proc->vartree) || furthervarintree(stat->expr, proc)) {
@@ -978,18 +976,18 @@ void cupkillprev(int level, struct Proc *proc) {
                 access->data.var->killed = clkilled(level, proc, access->data.var);
             }
         } else if (access->type == 3) {
-            if (access->data.store->u.store.unk1F) {
-                access->data.store->u.store.unk1F = !cmkilled(level, proc, access->data.move);
+            if (access->data.store->u.store.store_av) {
+                access->data.store->u.store.store_av = !cmkilled(level, proc, access->data.move);
             }
-            if (!access->data.store->u.store.unk1F) {
-                access->data.store->u.store.unk1D = false;
+            if (!access->data.store->u.store.store_av) {
+                access->data.store->u.store.lval_av = false;
             }
         } else if (access->type == 1) {
-            if (access->data.store->u.store.unk1F) {
-                access->data.store->u.store.unk1F = !cskilled(level, proc, access->data.store);
+            if (access->data.store->u.store.store_av) {
+                access->data.store->u.store.store_av = !cskilled(level, proc, access->data.store);
             }
-            if (!access->data.store->u.store.unk1F) {
-                access->data.store->u.store.unk1D = false;
+            if (!access->data.store->u.store.store_av) {
+                access->data.store->u.store.lval_av = false;
             }
         }
     }
@@ -1006,11 +1004,11 @@ void ciakillprev(void) {
         if (access->type == 2) {
             access->data.var->killed = true;
         } else if (access->type == 3) {
-            access->data.move->u.store.unk1F = false;
-            access->data.move->u.store.unk1D = false;
+            access->data.move->u.store.store_av = false;
+            access->data.move->u.store.lval_av = false;
         } else if (access->type == 1) {
-            access->data.store->u.store.unk1F = false;
-            access->data.store->u.store.unk1D = false;
+            access->data.store->u.store.store_av = false;
+            access->data.store->u.store.lval_av = false;
         }
     }
 }
@@ -1332,12 +1330,12 @@ void parkillprev(struct Statement *parameters) {
                 access->data.var->killed = listplkilled(parameters, access->data.var, access->unk8);
             }
         } else if (access->type == 1) {
-            if (access->data.store->u.store.unk1F) {
-                access->data.store->u.store.unk1F = !listpskilled(parameters, access->data.store, access->unk8);
+            if (access->data.store->u.store.store_av) {
+                access->data.store->u.store.store_av = !listpskilled(parameters, access->data.store, access->unk8);
             }
 
-            if (!access->data.store->u.store.unk1F) {
-                access->data.store->u.store.unk1D = false;
+            if (!access->data.store->u.store.store_av) {
+                access->data.store->u.store.lval_av = false;
             }
         }
     }

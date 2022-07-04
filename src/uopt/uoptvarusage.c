@@ -102,7 +102,7 @@ bool expr_has_direct_usage(struct Graphnode *node, struct Expression *expr, stru
                 TRAP_IF(scm->unk10 != true);
                 return arg4 != scm->unkC;
             }
-            if ((!expr->data.isop.unk21 && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) ||
+            if ((!expr->data.isop.anticipated && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) ||
                     !bvectin(expr->ichain->bitpos, &node->bvs.stage1.antlocs)) {
                 if (!optab[expr->data.isop.opc].is_binary_op) {
                     arg3 = false;

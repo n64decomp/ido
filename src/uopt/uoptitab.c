@@ -459,7 +459,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                 ichain->isvar_issvar.size = expr->data.isvar_issvar.size;
 
                 // The two bools' order is swapped!
-                ichain->isvar_issvar.unk19 = expr->data.isvar_issvar.unk22;
+                ichain->isvar_issvar.vreg = expr->data.isvar_issvar.vreg;
                 ichain->isvar_issvar.veqv = expr->data.isvar_issvar.veqv;
                 ichain->expr = expr;
                 break;
@@ -469,7 +469,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
                 ichain->isvar_issvar.size = expr->data.isvar_issvar.size;
 
                 // The two bools' order is swapped!
-                ichain->isvar_issvar.unk19 = expr->data.isvar_issvar.unk22;
+                ichain->isvar_issvar.vreg = expr->data.isvar_issvar.vreg;
                 ichain->isvar_issvar.veqv = expr->data.isvar_issvar.veqv;
                 ichain->expr = expr;
 
@@ -797,8 +797,8 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
             *anticipated = expr->initialVal;
             *available = !expr->killed;
         } else {    // empty, isop, dumped, isrconst
-            *anticipated = expr->data.isop.unk21;
-            *available = expr->data.isop.unk22;
+            *anticipated = expr->data.isop.anticipated;
+            *available = expr->data.isop.available;
         }
     } else {
         switch (expr->type) {
@@ -1005,8 +1005,8 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                         }
                     }
                     ichain = isearchloop(isopihash(expr->data.isop.opc, op1_ichain, op2_ichain), expr, op1_ichain, op2_ichain);
-                    *anticipated = op1ant ? op2ant : op1ant;
-                    *available = op1av ? op2av : op1av;
+                    *anticipated = op1ant && op2ant;
+                    *available = op1av && op2av;
 
                     switch (expr->data.isop.opc) {
                         case Uiequ:
@@ -1073,9 +1073,12 @@ struct IChain *exprimage(struct Expression *expr, bool *anticipated, bool *avail
                     *anticipated = false;
                     *available = false;
                 }
-                expr->data.isop.unk21 = *anticipated;
-                expr->data.isop.unk22 = *available;
+
+                expr->data.isop.anticipated = *anticipated;
+                expr->data.isop.available = *available;
+
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, ichain->bitpos);
+
                 if (*anticipated) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, ichain->bitpos);
                 }
@@ -1244,11 +1247,12 @@ struct IChain *searchstore(unsigned short hash, Uopcode opc /* sp3f */, struct I
 void codeimage(void) {
     bool exprant; // expr 1
     bool exprav; // expr 1
-    bool storeant; // expr 2
-    bool storeav; // expr 2
+    bool value_ant; // expr 2
+    bool value_av; // expr 2
     unsigned short opihash;
     struct IChain *ichain; // s3, antlocs
     struct IChain *store_ichain; // s1, avlocs
+    struct IChain *assigned_val;
     struct Statement *stat_tail;
     struct Statement *stat;
 
@@ -1281,11 +1285,11 @@ void codeimage(void) {
                     setbit(&asgneqv, ichain->isvar_issvar.assignbit);
                 }
 
-                if (stat->u.store.unk1C) {
+                if (stat->u.store.lval_ant) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, ichain->isvar_issvar.assignbit);
                 }
 
-                if (!stat->u.store.unk1C || !stat->u.store.unk1D) {
+                if (!stat->u.store.lval_ant || !stat->u.store.lval_av) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
                 }
                 else
@@ -1295,27 +1299,27 @@ void codeimage(void) {
                         if (lang == LANG_ADA) {
                             setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
                         } else if ((IS_CIA_CALLS_ATTR(stat_tail->u.cia.flags) && cskilled(curlevel, indirprocs, stat)) ||
-                                listpskilled(stat_tail->u.cia.parameters, stat, stat->expr->data.isvar_issvar.unk22)) {
+                                listpskilled(stat_tail->u.cia.parameters, stat, stat->expr->data.isvar_issvar.vreg)) {
                             setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
                         }
 
                     } else if (stat_tail->opc == Ucup || stat_tail->opc == Uicuf) {
                         if (cskilled(stat_tail->u.call.level, stat_tail->u.call.proc, stat) ||
-                                listpskilled(stat_tail->u.call.parameters, stat, stat->expr->data.isvar_issvar.unk22)) {
+                                listpskilled(stat_tail->u.call.parameters, stat, stat->expr->data.isvar_issvar.vreg)) {
                             setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
                         }
                     }
                 }
 
-                store_ichain = exprimage(stat->expr->data.isvar_issvar.assigned_value, &storeant, &storeav);
+                assigned_val = exprimage(stat->expr->data.isvar_issvar.assigned_value, &value_ant, &value_av);
                 if (outofmem) return;
-                if (store_ichain == NULL) {
+                if (assigned_val == NULL) {
                     dbgerror(0x1AC);
                 }
-                if (store_ichain->type == isop) {
+                if (assigned_val->type == isop) {
                     // store_chain->opc in [Uequ, ...]
                     // Bool expressions
-                    switch (store_ichain->isop.opc) {
+                    switch (assigned_val->isop.opc) {
                         case Uequ:
                         case Ugeq:
                         case Ugrt:
@@ -1323,7 +1327,7 @@ void codeimage(void) {
                         case Uleq:
                         case Ules:
                         case Uneq:
-                            resetbit(&boolexp, store_ichain->bitpos);
+                            resetbit(&boolexp, assigned_val->bitpos);
                             break;
 
                         default:
@@ -1331,26 +1335,26 @@ void codeimage(void) {
                     }
                 }
 
-                store_ichain = searchstore(isopihash(stat->opc, ichain, store_ichain), stat->opc, ichain, store_ichain, 0, 0);
+                store_ichain = searchstore(isopihash(stat->opc, ichain, assigned_val), stat->opc, ichain, assigned_val, 0, 0);
                 if (outofmem) return;
 
                 setbit(&curgraphnode->bvs.stage1.u.precm.expoccur, store_ichain->bitpos);
                 store_ichain->isop.stat = stat;
                 store_ichain->dtype = ichain->dtype;
                 stat->u.store.ichain = store_ichain;
-                if (stat->u.store.unk1C && stat->u.store.unk1E && storeant) {
+                if (stat->u.store.lval_ant && stat->u.store.store_ant && value_ant) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, store_ichain->bitpos);
                 }
-                if (!stat->u.store.unk1E || !stat->u.store.unk1F ||
-                        !stat->u.store.unk1C || !stat->u.store.unk1D ||
-                        !storeant || !storeav) {
+                if (!stat->u.store.store_ant || !stat->u.store.store_av ||
+                        !stat->u.store.lval_ant || !stat->u.store.lval_av ||
+                        !value_ant || !value_av) {
                     setbit(&curgraphnode->bvs.stage1.alters, store_ichain->bitpos);
                 }
-                if (stat->u.store.unk1F && storeav) {
+                if (stat->u.store.store_av && value_av) {
                     setbit(&curgraphnode->bvs.stage1.u.precm.pavlocs, store_ichain->bitpos);
                 }
-                if (!stat->u.store.unk1E || !stat->u.store.unk1F ||
-                        !storeant || !storeav) {
+                if (!stat->u.store.store_ant || !stat->u.store.store_av ||
+                        !value_ant || !value_av) {
                     setbit(&curgraphnode->bvs.stage1.absalters, store_ichain->bitpos);
                 }
             } else {
@@ -1363,7 +1367,7 @@ void codeimage(void) {
                 }
 
                 setbit(&curgraphnode->bvs.stage1.antlocs, ichain->isvar_issvar.assignbit);
-                if (!stat->u.store.unk1D) {
+                if (!stat->u.store.lval_av) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
                 } else {
                     stat_tail = curgraphnode->stat_tail;
@@ -1371,7 +1375,7 @@ void codeimage(void) {
                         setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
                     } else if (stat_tail->opc == Ucup || stat_tail->opc == Uicuf) {
                         if (cskilled(stat_tail->u.call.level, stat_tail->u.call.proc, stat) ||
-                                listpskilled(curgraphnode->stat_tail->u.call.parameters, stat, stat->expr->data.isvar_issvar.unk22)) {
+                                listpskilled(curgraphnode->stat_tail->u.call.parameters, stat, stat->expr->data.isvar_issvar.vreg)) {
                             setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
                         }
                     }
@@ -1435,7 +1439,7 @@ void codeimage(void) {
 
             store_ichain = NULL;
             if (stat->opc != Uchkt) {
-                store_ichain = exprimage(stat->u.store.expr, &storeant, &storeav);
+                store_ichain = exprimage(stat->u.store.expr, &value_ant, &value_av);
             }
             if (outofmem) return;
 
@@ -1561,37 +1565,37 @@ void codeimage(void) {
                     store_ichain->isop.unk24_u16 = stat->u.store.u.mov.src_align + (stat->u.store.u.mov.dst_align << 8);
                 }
 
-                if (stat->u.store.unk1C && stat->u.store.unk1E && exprant && storeant) {
+                if (stat->u.store.lval_ant && stat->u.store.store_ant && exprant && value_ant) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, store_ichain->bitpos);
                 }
 
-                if (!stat->u.store.unk1C || !stat->u.store.unk1D ||
-                        !stat->u.store.unk1E || !stat->u.store.unk1F ||
-                        !exprant || !exprav || !storeant || !storeav) {
+                if (!stat->u.store.lval_ant || !stat->u.store.lval_av ||
+                        !stat->u.store.store_ant || !stat->u.store.store_av ||
+                        !exprant || !exprav || !value_ant || !value_av) {
                     setbit(&curgraphnode->bvs.stage1.alters, store_ichain->bitpos);
                 }
-                if (stat->u.store.unk1F && exprav && storeav) {
+                if (stat->u.store.store_av && exprav && value_av) {
                     setbit(&curgraphnode->bvs.stage1.u.precm.pavlocs, store_ichain->bitpos);
                 }
-                if (!stat->u.store.unk1E || !stat->u.store.unk1F ||
-                        !exprant || !exprav || !storeant || !storeav) {
+                if (!stat->u.store.store_ant || !stat->u.store.store_av ||
+                        !exprant || !exprav || !value_ant || !value_av) {
                     setbit(&curgraphnode->bvs.stage1.absalters, store_ichain->bitpos);
                 }
             } else {
                 // traps
                 if (stat->opc == Uchkt) {
-                    storeant = true;
-                    storeav = true;
+                    value_ant = true;
+                    value_av = true;
                 } else {
                     store_ichain->dtype = stat->u.trap.dtype;
                 }
-                if (exprant && storeant) {
+                if (exprant && value_ant) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, store_ichain->bitpos);
                 }
-                if (exprav && storeav) {
+                if (exprav && value_av) {
                     setbit(&curgraphnode->bvs.stage1.avlocs, store_ichain->bitpos);
                 }
-                if (!exprant || !exprav || !storeant || !storeav) {
+                if (!exprant || !exprav || !value_ant || !value_av) {
                     setbit(&curgraphnode->bvs.stage1.alters, store_ichain->bitpos);
                 }
             }

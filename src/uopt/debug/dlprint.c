@@ -50,8 +50,13 @@ struct StringRep *sr_newchild(struct DisplayLine *dl, struct StringRep *parent)
     struct StringRep *child = sr_new();
     vec_add(parent->children, child);
     return child;
-    //parent->children[parent->numChildren] = sr_new();
-    //return parent->children[parent->numChildren++];
+}
+
+struct StringRep *sr_transparent(struct DisplayLine *dl, struct StringRep *parent)
+{
+    struct StringRep *sr = sr_newchild(dl, parent);
+    sr->transparent = true;
+    return sr;
 }
 
 struct StringRep *sr_get_child_at_pos(struct StringRep *sr, int pos)
@@ -59,7 +64,17 @@ struct StringRep *sr_get_child_at_pos(struct StringRep *sr, int pos)
     for (int c = 0; c < sr->children->length; c++) {
         struct StringRep *child = sr->children->items[c];
         if (pos >= child->start && pos < child->start + child->len) {
-            return sr_get_child_at_pos(child, pos);
+            struct StringRep *result = sr_get_child_at_pos(child, pos);
+
+            // if a StringRep is transparent, it can't be interacted with.
+            // interaction passes through to a child, or stops at the parent
+            if (!result->transparent) {
+                return result;
+            } else if (!child->transparent) {
+                return child;
+            } else {
+                return sr;
+            }
         }
     }
     return sr;
@@ -67,7 +82,6 @@ struct StringRep *sr_get_child_at_pos(struct StringRep *sr, int pos)
 
 struct StringRep *dl_get_sr_at_pos(struct DisplayLine *dl, int pos)
 {
-    if (pos < 0 || pos >= dl->len) return NULL;
     return sr_get_child_at_pos(dl->top, pos);
 }
 
@@ -141,7 +155,7 @@ int dl_printf(struct DisplayLine *restrict dl, char *restrict fmt, ...)
 
 void dl_print_opcode(struct DisplayLine *dl, struct StringRep *parent, Uopcode opc)
 {
-    struct StringRep *sr = sr_newchild(dl, parent);
+    struct StringRep *sr = sr_transparent(dl, parent);
     sr->type = OPCODE;
     sr->opc = opc;
     sr->start = dl->pos;
@@ -966,9 +980,6 @@ void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct
     sr->start = dl->pos;
 
     dl_print_opcode(dl, sr, stat->opc);
-    struct StringRep *sr_opc = sr_lastchild(sr);
-    sr_opc->type = STATEMENT_OPC;
-    sr_opc->stat = stat;
 
     switch (stat->opc) {
         case Unop:
@@ -1172,24 +1183,16 @@ void dl_print_bitvector(struct DisplayLine *dl, struct StringRep *parent, struct
 struct DisplayLine *dl_from_statement(struct Statement *stat)
 {
     if (stat == NULL) return NULL;
-
     struct DisplayLine *dl = dl_new();
-    /*
-    struct StringRep *sr = sr_new();
-    sr->type = STATEMENT;
-    sr->stat = stat;
-    sr->start = dl->pos;
-     */
-
     dl_print_statement(dl, NULL, stat);
-
-    /*
-    sr->len = dl->pos - sr->start;
-    dl->top = sr;
-    dl->len = sr->len;
-     */
     dl->len = dl->top->len;
     return dl;
+}
+
+void dl_print_graphnode_list(struct DisplayLine *dl, struct StringRep *parent, struct GraphnodeList *list, bool printPredSucc)
+{
+    if (list == NULL) return;
+    dl_print_graphnode(dl, parent, list->graphnode, printPredSucc);
 }
 
 void dl_print_graphnode(struct DisplayLine *dl, struct StringRep *parent, struct Graphnode *node, bool printPredSucc)

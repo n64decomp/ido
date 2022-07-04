@@ -8,7 +8,6 @@ extern const int reg_nc_colors[];
 enum TypeID {
     UNDEFINED,
     STATEMENT,
-    STATEMENT_OPC,
     EXPRESSION,
     ICHAIN,
     LIVERANGE,
@@ -17,6 +16,7 @@ enum TypeID {
     BITVECTOR,
     BITVECTORBB,
     GRAPHNODE,
+    GRAPHNODE_LIST,
     VAR_ACCESS,
     TREP,
     TEMPLOC,
@@ -29,7 +29,6 @@ enum TypeID {
     REGSET64,
     REGBOOLARRAY,
     UCODE,
-    UCODEOPC,
     UCODEDATA,
     MENU,
     MISC,
@@ -56,6 +55,8 @@ struct StringRep {
     int start, len; // indices into DisplayLine, used for chgat
 
     Vec(struct StringRep *) *children; // left to right
+
+    bool transparent;
 
     enum TypeID type;
     // pointer to original struct
@@ -129,6 +130,7 @@ extern int bittabdigits; // maximum digits in an ichain/liverange's bitpos
 struct StringRep *sr_new();
 void sr_free(struct StringRep *sr);
 struct StringRep *sr_newchild(struct DisplayLine *dl, struct StringRep *parent);
+struct StringRep *sr_transparent(struct DisplayLine *dl, struct StringRep *parent);
 struct StringRep *sr_get_child_at_pos(struct StringRep *sr, int pos);
 struct StringRep *dl_get_sr_at_pos(struct DisplayLine *dl, int pos);
 
@@ -144,6 +146,7 @@ void dl_print_constant(struct DisplayLine *dl, Datatype dtype, union Constant co
 void dl_print_small_dtype(struct DisplayLine *dl, enum Datatype type, int length);
 void dl_print_register(struct DisplayLine *dl, struct StringRep *parent, int regColor);
 void dl_print_graphnode(struct DisplayLine *dl, struct StringRep *parent, struct Graphnode *node, bool printPredSucc);
+void dl_print_graphnode_list(struct DisplayLine *dl, struct StringRep *parent, struct GraphnodeList *list, bool printPredSucc);
 void dl_print_var_access(struct DisplayLine *dl, struct StringRep *parent, struct VarAccessList *access);
 void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expression *expr);
 void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IChain *ichain);

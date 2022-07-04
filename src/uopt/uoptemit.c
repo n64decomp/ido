@@ -99,11 +99,11 @@ void igen3(Uopcode opc, struct IChain *ichain, bool is_volatile) {
         IONE = ichain->isvar_issvar.location.blockno;
         OFFSET = ichain->isvar_issvar.location.addr;
         LENGTH = ichain->isvar_issvar.size;
-        if (ichain->isvar_issvar.unk19 && ichain->isvar_issvar.location.memtype != Rmt && ichain->dtype != Sdt) {
+        if (ichain->isvar_issvar.vreg && ichain->isvar_issvar.location.memtype != Rmt && ichain->dtype != Sdt) {
             if (dogenvreg && ichain->isvar_issvar.location.blockno == curblk ) {
                 uwrite(&u);
             }
-            ichain->isvar_issvar.unk19 = false;
+            ichain->isvar_issvar.vreg = false;
         }
 
         if (lang != LANG_ADA && is_volatile) {

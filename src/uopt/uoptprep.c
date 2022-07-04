@@ -25,7 +25,7 @@ bool lvalaltered(struct IChain *ichain, struct Graphnode *node) {
         }
     }
     
-    if (!ichain->isvar_issvar.unk19 && !altered) {
+    if (!ichain->isvar_issvar.vreg && !altered) {
         gsptr->expr = ichain->expr;
         if (!strlant(gsptr, node->varlisttail)) {
             altered = true;
@@ -36,14 +36,14 @@ bool lvalaltered(struct IChain *ichain, struct Graphnode *node) {
         if (node->stat_tail->opc == Ucia) {
             if (lang == LANG_ADA ||
                     (IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags) && clkilled(curlevel, indirprocs, ichain->expr)) ||
-                    listplkilled(node->stat_tail->u.cia.parameters, ichain->expr, ichain->isvar_issvar.unk19)) {
+                    listplkilled(node->stat_tail->u.cia.parameters, ichain->expr, ichain->isvar_issvar.vreg)) {
                 altered = true;
             }
         } else if ((node->stat_tail->opc == Ucup ||
                     node->stat_tail->opc == Uicuf ||
                     node->stat_tail->opc == Urcuf) &&
                 (clkilled(node->stat_tail->u.call.level, node->stat_tail->u.call.proc, ichain->expr) ||
-                 listplkilled(node->stat_tail->u.call.parameters, ichain->expr, ichain->isvar_issvar.unk19))) {
+                 listplkilled(node->stat_tail->u.call.parameters, ichain->expr, ichain->isvar_issvar.vreg))) {
             altered = true;
         }
     }
@@ -189,7 +189,7 @@ bool expaltered(struct IChain *ichain, struct Graphnode *node) {
                 altered = true;
             } else {
                 sp26 = false;
-                if (!ichain->isvar_issvar.unk19) {
+                if (!ichain->isvar_issvar.vreg) {
                     sp26 = varkilled(ichain->expr, node->varlisthead);
                 }
                 sp25 = false;
@@ -200,14 +200,14 @@ bool expaltered(struct IChain *ichain, struct Graphnode *node) {
                     else if (IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags) && cupaltered(ichain, curlevel, indirprocs)) {
                         sp25 = true;
                     }
-                    else if (listplkilled(node->stat_tail->u.cia.parameters, ichain->expr, ichain->isvar_issvar.unk19)) {
+                    else if (listplkilled(node->stat_tail->u.cia.parameters, ichain->expr, ichain->isvar_issvar.vreg)) {
                         sp25 = true;
                     }
                 } else {
                     if (node->stat_tail->opc == Ucup || node->stat_tail->opc == Uicuf || node->stat_tail->opc == Urcuf) {
                         if (cupaltered(ichain, node->stat_tail->u.call.level, node->stat_tail->u.call.proc)) {
                             sp25 = true;
-                        } else if (listplkilled(node->stat_tail->u.call.parameters, ichain->expr, ichain->isvar_issvar.unk19)) {
+                        } else if (listplkilled(node->stat_tail->u.call.parameters, ichain->expr, ichain->isvar_issvar.vreg)) {
                             sp25 = true;
                         }
                     }
@@ -314,7 +314,7 @@ void patchvectors(void) {
             for(i = 0; i < bitposcount; i++) {
                 ichain = bittab[i].ichain;
                 if (bvectin(i, &asgnbits)) {
-                    if (!ichain->isvar_issvar.unk19) {
+                    if (!ichain->isvar_issvar.vreg) {
                         if (ichain->isvar_issvar.veqv) {
                             setbit(&node->bvs.stage1.alters, i);
                         } else if (!bvectin(i, &node->bvs.stage1.alters) && !bvectin(i, &node->bvs.stage1.u.precm.expoccur)) {

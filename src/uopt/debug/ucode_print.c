@@ -324,19 +324,12 @@ int ucode_opc_color(int opc)
 
 bool sr_has_opcode(struct StringRep *sr, void *arg)
 {
-    return sr->type == UCODEOPC || sr->type == STATEMENT_OPC || sr->type == OPCODE;
+    return sr->type == OPCODE;
 }
 
 int sr_ucode_color(struct StringRep *sr)
 {
-    if (sr->type == UCODEOPC)
-    {
-        return ucode_opc_color(sr->ucode->Ucode.Opc);
-    } else if (sr->type == STATEMENT_OPC) {
-        return ucode_opc_color(sr->stat->opc);
-    } else {
-        return ucode_opc_color(sr->opc);
-    }
+    return ucode_opc_color(sr->opc);
 }
 
 static struct FieldNames default_names = {.lexlev="lexlev", .ione="num", .offset="off", .length="len"};
@@ -700,12 +693,8 @@ void dl_print_ucode(struct DisplayLine *dl, struct StringRep *parent, union Bcod
 
     struct utabrec urec = utab[OPC(*b)];
 
-    struct StringRep *sr_opc = sr_newchild(dl, parent);
-    sr_opc->type = UCODEOPC;
-    sr_opc->ucode = b;
-    sr_opc->start = dl->pos;
-    dl_printf(dl, "  %.4s ", urec.opcname);
-    sr_opc->len = dl->pos - sr_opc->start;
+    dl_printf(dl, "  ");
+    dl_print_opcode(dl, sr, OPC(*b));
 
     // handle unique opcodes, usually just to print the right field as a register
     if (print_function[OPC(*b)] != NULL) {

@@ -471,7 +471,7 @@ static void func_00477E20(struct Expression *op1, struct Expression *op2, struct
             break;
 
         case isop:
-            if (ichain1->expr != NULL || !op2->data.isop.unk21 || !bvectin(ichain1->bitpos, &node->bvs.stage1.u.cm.delete)) {
+            if (ichain1->expr != NULL || !op2->data.isop.anticipated || !bvectin(ichain1->bitpos, &node->bvs.stage1.u.cm.delete)) {
                 return;
             }
             break;
@@ -602,7 +602,7 @@ static void func_0047847C(struct Expression *expr, struct SharedBcode *sb) {
 
             expr->visited = 3;
             phi_t0 = expr;
-            if (((!expr->data.isop.unk21 && !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.cand)) ||
+            if (((!expr->data.isop.anticipated && !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.cand)) ||
                         !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.delete))) {
                 func_0047847C(expr->data.isop.op1, sb);
                 if (optab[expr->data.isop.opc].is_binary_op) {
@@ -720,7 +720,7 @@ static void func_00478820(struct Expression *expr, struct Graphnode *node) {
                 break;
             }
             if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) &&
-                    (expr->data.isop.unk21 ||
+                    (expr->data.isop.anticipated ||
                      bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
                 if (expr->data.isop.op1->type == isvar || expr->data.isop.op1->type == issvar) {
                     func_004787B0(expr->data.isop.op1);
@@ -823,7 +823,7 @@ static void func_00478ED4(struct Graphnode *node) {
     int i;
 
     for (i = 0; i < bitposcount; i++) {
-        if (bvectin(i, &asgnbits) && !bittab[i].ichain->isvar_issvar.unk19) {
+        if (bvectin(i, &asgnbits) && !bittab[i].ichain->isvar_issvar.vreg) {
             setbit(&node->bvs.stage1.alters, i);
         }
     }
@@ -844,7 +844,7 @@ static void func_00478FA0(struct IChain *ichain, struct Graphnode *node) {
         }
 
         var = bittab[i].ichain;
-        if (var->isvar_issvar.unk19 == 0 && var->isvar_issvar.veqv == 0) {
+        if (var->isvar_issvar.vreg == 0 && var->isvar_issvar.veqv == 0) {
             if (bvectin(i, &node->indiracc) == 0) {
                 indir = false;
                 if (ichain->isop.opc == Uilod || ichain->isop.opc == Uirld) {
@@ -949,7 +949,7 @@ static void func_004793C4(struct Expression *expr, struct Graphnode *node) {
             }
             expr->visited = 5;
 
-            if ((!expr->data.isop.unk21 && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) ||
+            if ((!expr->data.isop.anticipated && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) ||
                         !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete)) {
                 if (expr->data.isop.opc == Uequ ||
                         expr->data.isop.opc == Ugeq ||
@@ -1038,7 +1038,7 @@ static void func_00479778(struct Expression *expr, struct Graphnode *node) {
             }
 
             expr->visited = 6;
-            if ((!expr->data.isop.unk21 && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) ||
+            if ((!expr->data.isop.anticipated && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) ||
                     !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete)) {
                 func_00479778(expr->data.isop.op1, node);
                 if (optab[expr->data.isop.opc].is_binary_op) {
@@ -1232,7 +1232,7 @@ void eliminduct(void) {
                 }
                 if (stat->u.store.ichain != NULL &&
                         bvectin(stat->u.store.ichain->bitpos, &node->bvs.stage1.u.cm.delete) &&
-                        stat->u.store.unk1E) {
+                        stat->u.store.store_ant) {
 
                     stat->u.store.var_access_list_item->type = 0;
                     if (!stat->u.store.ichain->isop.op1->isvar_issvar.veqv) {
@@ -1267,7 +1267,7 @@ void eliminduct(void) {
                     stat->opc == Uirsv) {
                 if (stat->u.store.ichain != NULL &&
                         bvectin(stat->u.store.ichain->bitpos, &node->bvs.stage1.u.cm.delete) &&
-                        (stat->u.store.unk1E
+                        (stat->u.store.store_ant
                          || (stat->opc == Uchkt ||
                              stat->opc == Utpeq ||
                              stat->opc == Utpge ||

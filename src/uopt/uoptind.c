@@ -913,7 +913,7 @@ void findinduct(void) {
                             if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.iv)) {
                                 if (IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags) && cupaltered(bittab[i].ichain, curlevel, indirprocs)) {
                                     BVBLOCK_RESETBIT(node->bvs.stage1.u.cm.iv, bit, block);
-                                } else if (listplkilled(node->stat_tail->u.cia.parameters, bittab[i].ichain->expr, bittab[i].ichain->isvar_issvar.unk19)) {
+                                } else if (listplkilled(node->stat_tail->u.cia.parameters, bittab[i].ichain->expr, bittab[i].ichain->isvar_issvar.vreg)) {
                                     BVBLOCK_RESETBIT(node->bvs.stage1.u.cm.iv, bit, block);
                                 }
                             }
@@ -936,7 +936,7 @@ void findinduct(void) {
                         if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.iv)) {
                             if (cupaltered(bittab[i].ichain, node->stat_tail->u.call.level, node->stat_tail->u.call.proc)) {
                                 BVBLOCK_RESETBIT(node->bvs.stage1.u.cm.iv, bit, block);
-                            } else if (listplkilled(node->stat_tail->u.call.parameters, bittab[i].ichain->expr, bittab[i].ichain->isvar_issvar.unk19)) {
+                            } else if (listplkilled(node->stat_tail->u.call.parameters, bittab[i].ichain->expr, bittab[i].ichain->isvar_issvar.vreg)) {
                                 BVBLOCK_RESETBIT(node->bvs.stage1.u.cm.iv, bit, block);
                             }
                         }

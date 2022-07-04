@@ -50,7 +50,7 @@ bool entryav(struct Expression *expr) {
             break;
 
         case isop:
-            available = expr->data.isop.unk22;
+            available = expr->data.isop.available;
             break;
 
         case dumped:
@@ -100,7 +100,7 @@ bool entryant(struct Expression *expr) {
             break;
 
         case isop:
-            anticipated = expr->data.isop.unk21;
+            anticipated = expr->data.isop.anticipated;
             break;
 
         case dumped:
@@ -146,9 +146,9 @@ void varinsert(struct Expression *expr, struct Graphnode *node) {
              stat->opc == Umovv ||
              stat->opc == Uirst ||
              stat->opc == Uirsv) &&
-                ((expr->type != isvar && expr->type != issvar) || !expr->ichain->isvar_issvar.unk19)) {
+                ((expr->type != isvar && expr->type != issvar) || !expr->ichain->isvar_issvar.vreg)) {
             if (stat->u.store.ichain != NULL && slkilled(stat, expr)) {
-                stat->u.store.unk1C = false;
+                stat->u.store.lval_ant = false;
                 resetbit(&node->bvs.stage1.antlocs, stat->u.store.ichain->bitpos);
                 setbit(&node->bvs.stage1.alters, stat->u.store.ichain->bitpos);
             }
@@ -156,7 +156,7 @@ void varinsert(struct Expression *expr, struct Graphnode *node) {
                     stat->opc == Ustr) &&
                 !stat->expr->data.isvar_issvar.veqv &&
                 stat->u.store.ichain != NULL && slkilled(stat, expr)) {
-            stat->u.store.unk1C = false;
+            stat->u.store.lval_ant = false;
             resetbit(&node->bvs.stage1.antlocs, stat->u.store.ichain->bitpos);
             setbit(&node->bvs.stage1.alters, stat->u.store.ichain->bitpos);
         }
@@ -181,7 +181,7 @@ void varinsert(struct Expression *expr, struct Graphnode *node) {
                  bittab[i].ichain->isop.opc == Umovv ||
                  bittab[i].ichain->isop.opc == Uirst ||
                  bittab[i].ichain->isop.opc == Uirsv) &&
-                    ((expr->type != isvar && expr->type != issvar) || !expr->ichain->isvar_issvar.unk19) &&
+                    ((expr->type != isvar && expr->type != issvar) || !expr->ichain->isvar_issvar.vreg) &&
                     slkilled(bittab[i].ichain->isop.stat, expr)) {
                 setbit(&node->bvs.stage1.alters, i);
             }
@@ -301,7 +301,7 @@ static bool exprant(struct IChain *ichain, struct Expression *expr) {
 
         case isop:
             if (expr->ichain == ichain) {
-                phi_v1 = expr->data.isop.unk21;
+                phi_v1 = expr->data.isop.anticipated;
             } else if (optab[expr->data.isop.opc].is_binary_op) {
                 phi_v1 = exprant(ichain, expr->data.isop.op1) || exprant(ichain, expr->data.isop.op2);
             } else {
@@ -359,7 +359,7 @@ static bool exprav(struct IChain *ichain, struct Expression *expr) {
 
         case isop:
             if (expr->ichain == ichain) {
-                phi_v1 = expr->data.isop.unk22;
+                phi_v1 = expr->data.isop.available;
             } else if (optab[expr->data.isop.opc].is_binary_op) {
                 phi_v1 = exprav(ichain, expr->data.isop.op1) || exprav(ichain, expr->data.isop.op2);
             } else {
@@ -589,10 +589,10 @@ void exprdelete(struct Expression *expr, struct Graphnode *node) {
 
                 checkexpoccur(expr->ichain, node);
                 if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.precm.expoccur)) {
-                    if (expr->data.isop.unk21) {
+                    if (expr->data.isop.anticipated) {
                         resetbit(&node->bvs.stage1.antlocs, expr->ichain->bitpos);
                     }
-                    if (expr->data.isop.unk22) {
+                    if (expr->data.isop.available) {
                         resetbit(&node->bvs.stage1.avlocs, expr->ichain->bitpos);
                     }
                 } else {
@@ -1245,7 +1245,7 @@ static void func_00414108(struct IChain *ichain, struct Expression *expr, struct
 
                 (*dest)->var_access_list->next = varlist;
                 varlist->prev = (*dest)->var_access_list;
-                (*dest)->var_access_list->unk8 = (*dest)->data.isvar_issvar.unk22;
+                (*dest)->var_access_list->unk8 = (*dest)->data.isvar_issvar.vreg;
                 (*dest)->var_access_list->type = 2;
                 (*dest)->var_access_list->data.var = *dest;
                 varinsert(*dest, node_sharedD4);
@@ -1443,10 +1443,10 @@ static void func_00414108(struct IChain *ichain, struct Expression *expr, struct
 
                 setbit(&node_sharedD4->bvs.stage1.antlocs, ichain->bitpos);
 
-                (*dest)->data.isop.unk21 = true;
-                (*dest)->data.isop.unk22 = entryav((*dest)->data.isop.op1);
+                (*dest)->data.isop.anticipated = true;
+                (*dest)->data.isop.available = entryav((*dest)->data.isop.op1);
                 if (optab[ichain->isop.opc].is_binary_op) {
-                    (*dest)->data.isop.unk22 = (*dest)->data.isop.unk22 && entryav((*dest)->data.isop.op2);
+                    (*dest)->data.isop.available = (*dest)->data.isop.available && entryav((*dest)->data.isop.op2);
                 }
 
                 if (ichain->isop.opc == Uiequ ||
@@ -1480,10 +1480,10 @@ static void func_00414108(struct IChain *ichain, struct Expression *expr, struct
                     varinsert(*dest, node_sharedD4);
                     (*dest)->initialVal = true;
                     (*dest)->killed = bvectin0(ichain->bitpos, &node_sharedD4->bvs.stage1.alters);
-                    (*dest)->data.isop.unk22 = (*dest)->data.isop.unk22 && !(*dest)->killed;
+                    (*dest)->data.isop.available = (*dest)->data.isop.available && !(*dest)->killed;
                 }
 
-                if ((*dest)->data.isop.unk22) {
+                if ((*dest)->data.isop.available) {
                     setbit(&node_sharedD4->bvs.stage1.avlocs, ichain->bitpos);
                 }
                 setbit(&node_sharedD4->bvs.stage1.u.precm.expoccur, ichain->bitpos);
@@ -1561,16 +1561,16 @@ static struct Expression *func_004150E4(struct Expression *expr, int size, Datat
         sp48->data.isop.aux2.v1.overflow_attr = false;
         sp48->data.isop.temploc = 0;
         sp48->data.isop.datasize = size;
-        sp48->data.isop.unk21 = true;
+        sp48->data.isop.anticipated = true;
 
         //! when expr is isconst, unaryfold overwrites this
         // but expr can also be isvar/issvar. this happens in oot
         // is this a bug, or are unk21/unk22 the same for isop/isvar/issvar
         if (expr->type == isop) {
-            sp48->data.isop.unk22 = expr->data.isop.unk22;
+            sp48->data.isop.available = expr->data.isop.available;
         } else {
             // unaligned on x86_64
-            sp48->data.isop.unk22 = expr->data.isvar_issvar.unk22;
+            sp48->data.isop.available = expr->data.isvar_issvar.vreg;
         }
     }
     sp48->count++;
@@ -1593,10 +1593,10 @@ static struct Expression *func_004150E4(struct Expression *expr, int size, Datat
     sp48->ichain = temp_s1;
     setbit(&node_sharedD4->bvs.stage1.antlocs, temp_s1->bitpos);
     setbit(&node_sharedD4->bvs.stage1.u.precm.expoccur, temp_s1->bitpos);
-    if (sp48->data.isop.unk22) {
+    if (sp48->data.isop.available) {
         setbit(&node_sharedD4->bvs.stage1.avlocs, temp_s1->bitpos);
     }
-    if (temp_s1->bitpos >= oldbitposcount && (!sp48->data.isop.unk21 || !sp48->data.isop.unk22)) {
+    if (temp_s1->bitpos >= oldbitposcount && (!sp48->data.isop.anticipated || !sp48->data.isop.available)) {
         setbit(&node_sharedD4->bvs.stage1.alters, temp_s1->bitpos);
     }
 
@@ -1690,7 +1690,7 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                                 // in oot, they're always the same
                                 if (has_ilod(search->data.isvar_issvar.assignment->expr->data.isvar_issvar.assigned_value) ||
                                         is_incr(search->data.isvar_issvar.assignment->expr->data.isvar_issvar.assigned_value) ||
-                                        ((!expr->data.isop.unk22 || curblk != expr->data.isvar_issvar.location.blockno) &&
+                                        ((!expr->data.isop.available || curblk != expr->data.isvar_issvar.location.blockno) &&
                                          !doingcopy && !curproc->has_trap) ||
                                         arg2 ||
                                         countvars(temp_s5->isop.op2) >= 10) {
@@ -1747,7 +1747,7 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                                             if (has_ilod(phi_s0->data.isvar_issvar.assigned_value) ||
                                                     // typos?
                                                     is_incr(search->data.isvar_issvar.assignment->expr->data.isvar_issvar.assigned_value) ||
-                                                    ((!(*ichain)->isvar_issvar.unk19 || curblk != (*ichain)->isvar_issvar.location.blockno) && !doingcopy && !curproc->has_trap) ||
+                                                    ((!(*ichain)->isvar_issvar.vreg || curblk != (*ichain)->isvar_issvar.location.blockno) && !doingcopy && !curproc->has_trap) ||
                                                     arg2 ||
                                                     countvars(temp_s5->isop.op2) >= 10) {
                                                 continue;
@@ -1857,11 +1857,11 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                 }
 
                 temp_s5 = expr->ichain;
-                if (expr->data.isop.unk21) {
+                if (expr->data.isop.anticipated) {
                     resetbit(&node_sharedD4->bvs.stage1.antlocs, temp_s5->bitpos);
                 }
 
-                if (expr->data.isop.unk22) {
+                if (expr->data.isop.available) {
                     resetbit(&node_sharedD4->bvs.stage1.avlocs, temp_s5->bitpos);
                 }
 
@@ -1991,27 +1991,27 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                 }
 
                 checkexpoccur(temp_s5, node_sharedD4);
-                if (expr->data.isop.unk21) {
+                if (expr->data.isop.anticipated) {
                     setbit(&node_sharedD4->bvs.stage1.antlocs, (*ichain)->bitpos);
                 }
                 setbit(&node_sharedD4->bvs.stage1.u.precm.expoccur, (*ichain)->bitpos);
 
-                expr->data.isop.unk22 = entryav(expr->data.isop.op1) && entryav(expr->data.isop.op2);
-                if (expr->data.isop.unk22 && 
+                expr->data.isop.available = entryav(expr->data.isop.op1) && entryav(expr->data.isop.op2);
+                if (expr->data.isop.available && 
                         (expr->data.isop.opc == Uiequ ||
                          expr->data.isop.opc == Uineq ||
                          expr->data.isop.opc == Uigeq ||
                          expr->data.isop.opc == Uigrt ||
                          expr->data.isop.opc == Uileq ||
                          expr->data.isop.opc == Uiles)) {
-                    expr->data.isop.unk22 = !expr->killed;
+                    expr->data.isop.available = !expr->killed;
                 }
 
-                if (expr->data.isop.unk22) {
+                if (expr->data.isop.available) {
                     setbit(&node_sharedD4->bvs.stage1.avlocs, (*ichain)->bitpos);
                 }
 
-                if (!expr->data.isop.unk21 || !expr->data.isop.unk22) {
+                if (!expr->data.isop.anticipated || !expr->data.isop.available) {
                     setbit(&node_sharedD4->bvs.stage1.alters, (*ichain)->bitpos);
                 } else {
                     resetbit(&node_sharedD4->bvs.stage1.alters, (*ichain)->bitpos);
@@ -2065,11 +2065,11 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                 }
 
                 temp_s5 = expr->ichain;
-                if (expr->data.isop.unk21) {
+                if (expr->data.isop.anticipated) {
                     resetbit(&node_sharedD4->bvs.stage1.antlocs, temp_s5->bitpos);
                 }
 
-                if (expr->data.isop.unk22) {
+                if (expr->data.isop.available) {
                     resetbit(&node_sharedD4->bvs.stage1.avlocs, temp_s5->bitpos);
                 }
 
@@ -2227,27 +2227,27 @@ static void func_0041550C(struct Expression *expr, struct IChain **ichain, bool 
                         return;
                     }
 
-                    if (expr->data.isop.unk21) {
+                    if (expr->data.isop.anticipated) {
                         setbit(&node_sharedD4->bvs.stage1.antlocs, (*ichain)->bitpos);
                     }
 
                     setbit(&node_sharedD4->bvs.stage1.u.precm.expoccur, (*ichain)->bitpos);
-                    expr->data.isop.unk22 = entryav(expr->data.isop.op1);
+                    expr->data.isop.available = entryav(expr->data.isop.op1);
 
                     if (expr->data.isop.opc == Uildv ||
                             expr->data.isop.opc == Uilod ||
                             expr->data.isop.opc == Uirld ||
                             expr->data.isop.opc == Uirlv) {
-                        if (expr->data.isop.unk22) {
-                            expr->data.isop.unk22 = !expr->killed;
+                        if (expr->data.isop.available) {
+                            expr->data.isop.available = !expr->killed;
                         }
                     }
 
-                    if (expr->data.isop.unk22) {
+                    if (expr->data.isop.available) {
                         setbit(&node_sharedD4->bvs.stage1.avlocs, (*ichain)->bitpos);
                     }
 
-                    if (!expr->data.isop.unk21 || !expr->data.isop.unk22) {
+                    if (!expr->data.isop.anticipated || !expr->data.isop.available) {
                         setbit(&node_sharedD4->bvs.stage1.alters, (*ichain)->bitpos);
                     } else  {
                         resetbit(&node_sharedD4->bvs.stage1.alters, (*ichain)->bitpos);
@@ -2422,32 +2422,32 @@ void copypropagate(void) {
                             stat->u.store.ichain = spB0;
                             stat->is_increment = false;
 
-                            if (stat->u.store.unk1C && stat->u.store.unk1E && entryant(stat->expr->data.isvar_issvar.assigned_value)) {
+                            if (stat->u.store.lval_ant && stat->u.store.store_ant && entryant(stat->expr->data.isvar_issvar.assigned_value)) {
                                 resetbit(&node->bvs.stage1.antlocs, temp_s7->bitpos);
                                 setbit(&node->bvs.stage1.antlocs, spB0->bitpos);
                             }
-                            if (stat->u.store.unk1F && phi_s8) {
+                            if (stat->u.store.store_av && phi_s8) {
                                 resetbit(&node->bvs.stage1.u.precm.pavlocs, temp_s7->bitpos);
                             }
                             checkexpoccur(temp_s7, node);
 
-                            phi_s1 = entryav(stat->expr->data.isvar_issvar.assigned_value) && stat->u.store.unk1F;
+                            phi_s1 = entryav(stat->expr->data.isvar_issvar.assigned_value) && stat->u.store.store_av;
                             if (phi_s1) {
                                 setbit(&node->bvs.stage1.u.precm.pavlocs, spB0->bitpos);
                             }
 
                             if (spB0->bitpos >= oldbitposcount) {
                                 if (!phi_s1 ||
-                                        !stat->u.store.unk1F ||
-                                        !stat->u.store.unk1E) {
+                                        !stat->u.store.store_av ||
+                                        !stat->u.store.store_ant) {
                                     setbit(&node->bvs.stage1.absalters, spB0->bitpos);
                                 }
 
                                 if (!phi_s1 ||
-                                        !stat->u.store.unk1F ||
-                                        !stat->u.store.unk1D ||
-                                        !stat->u.store.unk1E ||
-                                        !stat->u.store.unk1C) {
+                                        !stat->u.store.store_av ||
+                                        !stat->u.store.lval_av ||
+                                        !stat->u.store.store_ant ||
+                                        !stat->u.store.lval_ant) {
                                     setbit(&node->bvs.stage1.alters, spB0->bitpos);
                                 }
                             }
@@ -2574,11 +2574,11 @@ void copypropagate(void) {
                             setbit(&node->bvs.stage1.u.precm.expoccur, temp_s4_3->isvar_issvar.assignbit);
                             setbit(&node->bvs.stage1.alters, temp_s4_3->bitpos);
 
-                            if (!stat->u.store.unk1D || !stat->u.store.unk1C) {
+                            if (!stat->u.store.lval_av || !stat->u.store.lval_ant) {
                                 setbit(&node->bvs.stage1.alters, temp_s4_3->isvar_issvar.assignbit);
                             }
 
-                            if (!temp_s4_3->isvar_issvar.veqv && stat->u.store.unk1C) {
+                            if (!temp_s4_3->isvar_issvar.veqv && stat->u.store.lval_ant) {
                                 setbit(&node->bvs.stage1.antlocs, temp_s4_3->isvar_issvar.assignbit);
                             }
 
@@ -2595,17 +2595,17 @@ void copypropagate(void) {
                             spB0->isop.stat = stat;
                             stat->u.store.ichain = spB0;
                             stat->is_increment = false;
-                            if (stat->u.store.unk1C && stat->u.store.unk1E && entryant(stat->expr->data.isvar_issvar.assigned_value)) {
+                            if (stat->u.store.lval_ant && stat->u.store.store_ant && entryant(stat->expr->data.isvar_issvar.assigned_value)) {
                                 resetbit(&node->bvs.stage1.antlocs, temp_s7->bitpos);
                                 setbit(&node->bvs.stage1.antlocs, spB0->bitpos);
                             }
 
-                            if (stat->u.store.unk1F && phi_s8) {
+                            if (stat->u.store.store_av && phi_s8) {
                                 resetbit(&node->bvs.stage1.u.precm.pavlocs, temp_s7->bitpos);
                             }
 
                             checkexpoccur(temp_s7, node);
-                            phi_s1 = entryav(stat->expr->data.isvar_issvar.assigned_value) && stat->u.store.unk1F;
+                            phi_s1 = entryav(stat->expr->data.isvar_issvar.assigned_value) && stat->u.store.store_av;
 
                             if (phi_s1) {
                                 setbit(&node->bvs.stage1.u.precm.pavlocs, spB0->bitpos);
@@ -2613,16 +2613,16 @@ void copypropagate(void) {
 
                             if (spB0->bitpos >= oldbitposcount) {
                                 if (!phi_s1 ||
-                                        !stat->u.store.unk1F ||
-                                        !stat->u.store.unk1E) {
+                                        !stat->u.store.store_av ||
+                                        !stat->u.store.store_ant) {
                                     setbit(&node->bvs.stage1.absalters, spB0->bitpos);
                                 }
 
                                 if (!phi_s1 ||
-                                        !stat->u.store.unk1F ||
-                                        !stat->u.store.unk1D ||
-                                        !stat->u.store.unk1E ||
-                                        !stat->u.store.unk1C) {
+                                        !stat->u.store.store_av ||
+                                        !stat->u.store.lval_av ||
+                                        !stat->u.store.store_ant ||
+                                        !stat->u.store.lval_ant) {
                                     setbit(&node->bvs.stage1.alters, spB0->bitpos);
                                 }
                             }
@@ -2735,32 +2735,32 @@ void copypropagate(void) {
                                 if (stat->opc == Umov || stat->opc == Umovv) {
                                     spB0->isop.unk24_u16 = stat->u.store.u.mov.src_align + (stat->u.store.u.mov.dst_align << 8);
                                 }
-                                if (stat->u.store.unk1C && stat->u.store.unk1E && phi_s1) {
+                                if (stat->u.store.lval_ant && stat->u.store.store_ant && phi_s1) {
                                     resetbit(&node->bvs.stage1.antlocs, temp_s7->bitpos);
                                     setbit(&node->bvs.stage1.antlocs, spB0->bitpos);
                                 }
 
-                                if (stat->u.store.unk1F && phi_s8) {
+                                if (stat->u.store.store_av && phi_s8) {
                                     resetbit(&node->bvs.stage1.u.precm.pavlocs, temp_s7->bitpos);
                                 }
 
-                                phi_s1 = entryav(stat->expr) && entryav(stat->u.store.expr) && stat->u.store.unk1F;
+                                phi_s1 = entryav(stat->expr) && entryav(stat->u.store.expr) && stat->u.store.store_av;
                                 if (phi_s1) {
                                     setbit(&node->bvs.stage1.u.precm.pavlocs, spB0->bitpos);
                                 }
 
                                 if (spB0->bitpos < oldbitposcount) {
                                     if (!phi_s1 ||
-                                        !stat->u.store.unk1F ||
-                                        !stat->u.store.unk1E) {
+                                        !stat->u.store.store_av ||
+                                        !stat->u.store.store_ant) {
                                         setbit(&node->bvs.stage1.absalters, spB0->bitpos);
                                     }
 
                                     if (!phi_s1 ||
-                                        !stat->u.store.unk1D ||
-                                        !stat->u.store.unk1F ||
-                                        !stat->u.store.unk1C ||
-                                        !stat->u.store.unk1E) {
+                                        !stat->u.store.lval_av ||
+                                        !stat->u.store.store_av ||
+                                        !stat->u.store.lval_ant ||
+                                        !stat->u.store.store_ant) {
                                         setbit(&node->bvs.stage1.alters, spB0->bitpos);
                                     }
                                 }
@@ -2872,7 +2872,7 @@ void copypropagate(void) {
         } else if (node->varlisthead != NULL) {
             for (i = 0; i < bitposcount; i++) {
                 if (bvectin(i, &varbits)) {
-                    if (!bittab[i].ichain->isvar_issvar.unk19 && !bittab[i].ichain->isvar_issvar.veqv && indirectaccessed(bittab[i].ichain->isvar_issvar.location, bittab[i].ichain->isvar_issvar.size, node->varlisthead)) {
+                    if (!bittab[i].ichain->isvar_issvar.vreg && !bittab[i].ichain->isvar_issvar.veqv && indirectaccessed(bittab[i].ichain->isvar_issvar.location, bittab[i].ichain->isvar_issvar.size, node->varlisthead)) {
                         setbit(&node->indiracc, i);
                         setbit(&node->indiracc, i + 1);
                         aliasedlu++;
@@ -3154,7 +3154,7 @@ void copypropagate(void) {
             spD2 = false;
             stat = node->stat_head;
             while (!spD2 && stat != NULL) {
-                if ((stat->opc == Uisst || stat->opc == Ustr) && !stat->outpar && stat->u.store.unk1D && stat->u.store.unk1F && bvectin(stat->expr->ichain->isvar_issvar.assignbit, &node->bvs.stage1.u.precm.antout)) {
+                if ((stat->opc == Uisst || stat->opc == Ustr) && !stat->outpar && stat->u.store.lval_av && stat->u.store.store_av && bvectin(stat->expr->ichain->isvar_issvar.assignbit, &node->bvs.stage1.u.precm.antout)) {
                     stat->u.store.var_access_list_item->type = 0;
                     resetbit(&node->bvs.stage1.antlocs, stat->expr->ichain->isvar_issvar.assignbit);
                     if (stat->u.store.ichain != NULL) {

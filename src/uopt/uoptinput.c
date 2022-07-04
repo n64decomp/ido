@@ -11,6 +11,8 @@
 #include "uoptkill.h"
 #include "uoptcontrolflow.h"
 
+#include "debug.h"
+
 struct ParameterList {
     int key;
     void *value;
@@ -193,7 +195,7 @@ bool formal_parm_vreg(int addr) {
 
     for (entry = table[isvarhash(loc)]; entry != NULL; entry = entry->next) {
         if (entry->type == isvar && addreq(entry->data.isvar_issvar.location, loc)) {
-            return entry->data.isvar_issvar.unk22;
+            return entry->data.isvar_issvar.vreg;
         }
     }
 
@@ -501,11 +503,11 @@ void incroccurrence(struct Expression **entry) {
                 stat->expr->data.isvar_issvar.size >= 4 &&
                 stat->expr->count != 0)
             {
-                if ((!stat->expr->data.isvar_issvar.unk22 ||
+                if ((!stat->expr->data.isvar_issvar.vreg ||
                     curblk != stat->expr->data.isvar_issvar.location.blockno) &&
                     !doingcopy && !curproc->has_trap)
                 {
-                    stat->u.store.unk1D = false;
+                    stat->u.store.lval_av = false;
                     done = true;
                     stat->expr->count++;
                     switch ((*entry)->type) {
@@ -532,12 +534,12 @@ void incroccurrence(struct Expression **entry) {
                     }
 
                     *entry = stat->expr;
-                    if (!stat->expr->data.isvar_issvar.unk22) {
+                    if (!stat->expr->data.isvar_issvar.vreg) {
                         lodkillprev(stat->expr);
                     }
                     if ((*entry)->count == 1) {
                         appendbbvarlst(*entry);
-                        if ((*entry)->data.isvar_issvar.unk22) {
+                        if ((*entry)->data.isvar_issvar.vreg) {
                             curgraphnode->varlisttail->unk8 = true;
                         }
                     }
@@ -780,7 +782,7 @@ static struct Expression *readnxtinst_searchloop(unsigned short tableIdx, struct
 
                     // don't reuse expr if it was modified
                     found = expr->graphnode == curgraphnode && !expr->killed;
-                    if (expr->data.isvar_issvar.unk22) {
+                    if (expr->data.isvar_issvar.vreg) {
                         sp30 = true;
                     }
 
@@ -801,7 +803,7 @@ static struct Expression *readnxtinst_searchloop(unsigned short tableIdx, struct
 
                     found = curgraphnode == expr->graphnode && !expr->killed &&
                              !expr->data.isvar_issvar.outer_stack->data.isvar_issvar.veqv;
-                    if (expr->data.isvar_issvar.unk22) {
+                    if (expr->data.isvar_issvar.vreg) {
                         sp30 = true;
                     }
 
@@ -1065,7 +1067,7 @@ next:
         // originally performs useless checks for below opcodes including Ulca Ulda Uldc, then overwrites with && below
         if (OPC == Uisld || OPC == Uisst || OPC == Ulod || OPC == Ustr) {
                 expr->data.isvar_issvar.veqv = var_equivalence;
-                expr->data.isvar_issvar.unk22 = !var_equivalence && sp30;
+                expr->data.isvar_issvar.vreg = !var_equivalence && sp30;
         }
 
         if (killed) {
@@ -1365,7 +1367,7 @@ static void func_0043CBFC(struct UstackEntry *head) { // XXX: never called in oo
             }
 
             outer_stack->data.isvar_issvar.veqv = false;
-            outer_stack->data.isvar_issvar.unk22 = true;
+            outer_stack->data.isvar_issvar.vreg = true;
             outer_stack->graphnode = curgraphnode;
         }
 
@@ -1393,7 +1395,7 @@ static void func_0043CBFC(struct UstackEntry *head) { // XXX: never called in oo
     }
 
     head->expr->data.isvar_issvar.location.level = 200;
-    head->expr->data.isvar_issvar.unk22 = true;
+    head->expr->data.isvar_issvar.vreg = true;
 }
 
 /*
@@ -1409,7 +1411,7 @@ static bool func_0043CE64(struct Expression *stexpr1, int val) {
         if (var->type == 1) {
             store = var->data.store;
             if (store->opc == Uistr && store->expr == stexpr1 && store->u.store.u.istr.offset == val
-                    && store->u.store.unk1F && store->u.store.u.istr.dtype == DTYPE && store->u.store.size == LENGTH
+                    && store->u.store.store_av && store->u.store.u.istr.dtype == DTYPE && store->u.store.size == LENGTH
                     && !treekilled(store->u.store.expr)) {
                 decreasecount(stexpr1);
                 expr = var->data.store->u.store.expr;
@@ -1451,8 +1453,8 @@ void readnxtinst(void) {
     bool eliminated;
     bool negative;
     bool at_current_realpool_entry;
-    bool unk1C;
-    bool unk1E;
+    bool lval_ant;
+    bool store_ant;
     struct Expression *expr2;
     struct Statement *stmt;
     struct Graphnode *target_graphnode;
@@ -1483,7 +1485,7 @@ void readnxtinst(void) {
         expr->graphnode = curgraphnode;
         expr->data.isvar_issvar.size = ustack->expr->data.isvar_issvar.size;
         expr->data.isvar_issvar.veqv = false;
-        expr->data.isvar_issvar.unk22 = true;
+        expr->data.isvar_issvar.vreg = true;
         expr->data.isvar_issvar.is_volatile = false;
         expr->data.isvar_issvar.outer_stack = NULL;
         expr->data.isvar_issvar.location = ustack->expr->data.isvar_issvar.location;
@@ -1499,10 +1501,10 @@ void readnxtinst(void) {
         stattail->expr = expr;
         stattail->is_increment = false;
         stattail->suppressed_iv = false;
-        stattail->u.store.unk1C = false;
-        stattail->u.store.unk1E = false;
-        stattail->u.store.unk1D = false;
-        stattail->u.store.unk1F = false;
+        stattail->u.store.lval_ant = false;
+        stattail->u.store.store_ant = false;
+        stattail->u.store.lval_av = false;
+        stattail->u.store.store_av = false;
         stattail->u.store.u.str.unk2C = 0;
         stattail->u.store.u.str.unk30 = 0;
         expr->data.isvar_issvar.assignment = NULL;
@@ -1608,7 +1610,7 @@ void readnxtinst(void) {
                 } else {
                     TRAP_IF(ustack->expr->type != issvar);
                     ustack->expr->data.isvar_issvar.location.level = 200;
-                    ustack->expr->data.isvar_issvar.unk22 = true;
+                    ustack->expr->data.isvar_issvar.vreg = true;
                     ustack->expr->var_access_list->unk8 = true;
                 }
             }
@@ -1638,7 +1640,7 @@ void readnxtinst(void) {
 
                 if (!expr->data.isvar_issvar.veqv) {
                     expr->killed = false;
-                    if (expr->initialVal && !expr->data.isvar_issvar.unk22) {
+                    if (expr->initialVal && !expr->data.isvar_issvar.vreg) {
                         expr->initialVal = !varkilled(expr, curgraphnode->varlisthead);
                     }
                 } else {
@@ -1653,18 +1655,18 @@ void readnxtinst(void) {
                 ustack = ustack->down;
             }
 
-            if (expr->data.isvar_issvar.assignment == NULL || !expr->data.isvar_issvar.assignment->u.store.unk1F) {
+            // The variable was not assigned in the block, or previous assignment can't be moved forwards
+            if (expr->data.isvar_issvar.assignment == NULL || !expr->data.isvar_issvar.assignment->u.store.store_av) {
                 ustack_push(expr);
                 increasecount(expr);
 
-                // unk22 == true if variable was used?
-                if (!expr->data.isvar_issvar.unk22) {
+                if (!expr->data.isvar_issvar.vreg) {
                     lodkillprev(expr);
                 }
 
                 if (expr->count == 1 && MTYPE != Amt) {
                     appendbbvarlst(expr);
-                    if (expr->data.isvar_issvar.unk22) {
+                    if (expr->data.isvar_issvar.vreg) {
                         curgraphnode->varlisttail->unk8 = true;
                     }
                 }
@@ -1675,21 +1677,23 @@ void readnxtinst(void) {
                 return;
             } else if ((bigtree(expr->data.isvar_issvar.assigned_value, 20) || treekilled(expr->data.isvar_issvar.assigned_value))
                     || (expr->data.isvar_issvar.assigned_value->type == isop && expr->data.isvar_issvar.assigned_value->count == 1
-                        && (!((expr->data.isvar_issvar.unk22 && expr->data.isvar_issvar.location.blockno == curblk)
+                        && (!((expr->data.isvar_issvar.vreg && expr->data.isvar_issvar.location.blockno == curblk)
                                 || doingcopy || curproc->has_trap)
                             || has_ilod(expr->data.isvar_issvar.assigned_value))
                         && !constexp(expr->data.isvar_issvar.assigned_value))) {
                 ustack_push(expr);
-                expr->data.isvar_issvar.assignment->u.store.unk1D = false;
+
+                // the assignment can't be moved forwards in the block, since the variable was used after the assignment
+                expr->data.isvar_issvar.assignment->u.store.lval_av = false;
 
                 if (expr->count == 0) {
-                    if (!expr->data.isvar_issvar.unk22) {
+                    if (!expr->data.isvar_issvar.vreg) {
                         lodkillprev(expr);
                     }
 
                     if (expr->data.isvar_issvar.location.memtype != Amt) {
                         appendbbvarlst(expr);
-                        if (expr->data.isvar_issvar.unk22) {
+                        if (expr->data.isvar_issvar.vreg) {
                             curgraphnode->varlisttail->unk8 = true;
                         }
                     }
@@ -1807,7 +1811,7 @@ void readnxtinst(void) {
                 } else {
                     TRAP_IF(ustack->expr->type != issvar);
                     ustack->expr->data.isvar_issvar.location.level = 200;
-                    ustack->expr->data.isvar_issvar.unk22 = true;
+                    ustack->expr->data.isvar_issvar.vreg = true;
                     ustack->expr->var_access_list->unk8 = true;
                 }
             }
@@ -3025,7 +3029,7 @@ void readnxtinst(void) {
                         func_0043CBFC(ustack);
                     } else if (ustack->expr->type == issvar) {
                         ustack->expr->data.isvar_issvar.location.level = 200;
-                        ustack->expr->data.isvar_issvar.unk22 = true;
+                        ustack->expr->data.isvar_issvar.vreg = true;
                         ustack->expr->var_access_list->unk8 = true;
                     }
                 }
@@ -3043,7 +3047,7 @@ void readnxtinst(void) {
                     expr = searchvar(isvarhash(loc), &loc);
                     expr->data.isvar_issvar.size = 4;
                     expr->graphnode = NULL;
-                    expr->data.isvar_issvar.unk22 = true;
+                    expr->data.isvar_issvar.vreg = true;
                     expr->data.isvar_issvar.veqv = false;
                     decreasecount(ustack->expr);
                     ustack = ustack->down;
@@ -3064,7 +3068,7 @@ void readnxtinst(void) {
                 } else {
                     TRAP_IF(ustack->down->expr->type != issvar);
                     ustack->down->expr->data.isvar_issvar.location.level = 200;
-                    ustack->down->expr->data.isvar_issvar.unk22 = true;
+                    ustack->down->expr->data.isvar_issvar.vreg = true;
                     ustack->down->expr->var_access_list->unk8 = true;
                 }
             }
@@ -3082,11 +3086,13 @@ void readnxtinst(void) {
                 return;
             }
 
-            unk1C = true;
-            unk1E = true;
+            lval_ant = true;
+            store_ant = true;
             if (expr->type != empty) {
+                // The variable was loaded earlier in the block
                 stmt = expr->data.isvar_issvar.assignment;
                 if (stmt == NULL) {
+                    // The variable's assignment occurred in a different block, or is undefined
                     expr->killed = true;
                     expr2 = expr;
                     expr = appendchain(expr->table_index);
@@ -3094,15 +3100,23 @@ void readnxtinst(void) {
                         return;
                     }
                     expr->graphnode = curgraphnode;
-                    expr->data.isvar_issvar.unk22 = expr2->data.isvar_issvar.unk22;
+                    expr->data.isvar_issvar.vreg = expr2->data.isvar_issvar.vreg;
                     expr->initialVal = false;
                     expr->data.isvar_issvar.veqv = expr2->data.isvar_issvar.veqv;
-                    unk1C = false;
-                    unk1E = true;
-                } else if (expr->data.isvar_issvar.assigned_value != NULL && stmt->u.store.unk1D) {
+
+                    // TODO: does this make sense with current names...?
+                    // L-value is not anticipated since it was used before this assignment
+                    lval_ant = false;
+                    // the assignment IS anticipated since it's the first assignment in the block
+                    store_ant = true;
+                } else if (expr->data.isvar_issvar.assigned_value != NULL && stmt->u.store.lval_av) {
+                    // Variable was assigned, and was not used before this assignment
+
+                    // The variable was assigned, but the assigned value hasn't changed since the assignment
+
+                    // Remove the redundant store
                     stmt->u.store.var_access_list_item->type = 0;
                     if (has_volt_ovfw(stmt->expr->data.isvar_issvar.assigned_value)) {
-
                         stmt->opc = Upop;
                         stmt->u.pop.dtype = expr->datatype;
                         stmt->u.pop.unk15 = 0;
@@ -3114,9 +3128,10 @@ void readnxtinst(void) {
                         decreasecount(expr->data.isvar_issvar.assigned_value);
                         stmt->opc = Unop;
                     }
-                    unk1C = stmt->u.store.unk1C;
-                    unk1E = stmt->u.store.unk1E;
-                } else if (ustack->expr == expr->data.isvar_issvar.assigned_value && stmt->u.store.unk1F) {
+                    lval_ant = stmt->u.store.lval_ant;
+                    store_ant = stmt->u.store.store_ant;
+                } else if (ustack->expr == expr->data.isvar_issvar.assigned_value && stmt->u.store.store_av) {
+                    // assigning the same value, and 
                     decreasecount(ustack->expr);
                     ustack = ustack->down;
                     if (OPC == Uisst) {
@@ -3126,18 +3141,18 @@ void readnxtinst(void) {
                     return;
                 } else {
                     expr->killed = true;
-                    stmt->u.store.unk1F = false;
+                    stmt->u.store.store_av = false;
                     expr2 = expr;
                     expr = appendchain(expr->table_index);
                     if (outofmem) {
                         return;
                     }
                     expr->graphnode = curgraphnode;
-                    expr->data.isvar_issvar.unk22 = expr2->data.isvar_issvar.unk22;
+                    expr->data.isvar_issvar.vreg = expr2->data.isvar_issvar.vreg;
                     expr->initialVal = false;
                     expr->data.isvar_issvar.veqv = expr2->data.isvar_issvar.veqv;
-                    unk1C = false;
-                    unk1E = false;
+                    lval_ant = false;
+                    store_ant = false;
                 }
             }
 
@@ -3173,9 +3188,10 @@ void readnxtinst(void) {
             }
 
             if (expr->data.isvar_issvar.veqv) {
-                unk1C = false;
-                unk1E = false;
+                lval_ant = false;
+                store_ant = false;
             }
+
             if (lang != LANG_C ||
                     ((expr->datatype == Adt || expr->datatype == Idt || expr->datatype == Jdt || expr->datatype == Kdt || expr->datatype == Ldt) && expr->data.isvar_issvar.size >= 4)) {
                 if (!checkincre(ustack->expr, expr, &increment_result)) {
@@ -3228,19 +3244,19 @@ void readnxtinst(void) {
             stattail->expr = expr;
             expr->data.isvar_issvar.assignment = stattail;
             if (!stattail->outpar) {
-                stattail->u.store.unk1C = unk1C;
-                if (!expr->data.isvar_issvar.unk22 && unk1C) {
-                    stattail->u.store.unk1C = !strlkilled(stattail, curgraphnode->varlisthead);
+                stattail->u.store.lval_ant = lval_ant;
+                if (!expr->data.isvar_issvar.vreg && lval_ant) {
+                    stattail->u.store.lval_ant = !strlkilled(stattail, curgraphnode->varlisthead);
                 }
-                stattail->u.store.unk1E = unk1E;
-                if (!expr->data.isvar_issvar.unk22 && unk1E) {
-                    stattail->u.store.unk1E = !strskilled(stattail, curgraphnode->varlisthead);
+                stattail->u.store.store_ant = store_ant;
+                if (!expr->data.isvar_issvar.vreg && store_ant) {
+                    stattail->u.store.store_ant = !strskilled(stattail, curgraphnode->varlisthead);
                 }
                 if (stattail->expr->data.isvar_issvar.location.memtype == Rmt) {
-                    stattail->u.store.unk1E = false;
+                    stattail->u.store.store_ant = false;
                 }
-                stattail->u.store.unk1D = !expr->data.isvar_issvar.veqv;
-                stattail->u.store.unk1F = !expr->data.isvar_issvar.veqv;
+                stattail->u.store.lval_av = !expr->data.isvar_issvar.veqv;
+                stattail->u.store.store_av = !expr->data.isvar_issvar.veqv;
                 if (increment_result == 1 && !hasvolatile(expr->data.isvar_issvar.assigned_value)) {
                     switch (stattail->expr->datatype) {
                         case Adt:
@@ -3260,20 +3276,20 @@ void readnxtinst(void) {
                     stattail->is_increment = false;
                 }
             } else {
-                stattail->u.store.unk1C = false;
-                stattail->u.store.unk1E = false;
-                stattail->u.store.unk1D = false;
-                stattail->u.store.unk1F = false;
+                stattail->u.store.lval_ant = false;
+                stattail->u.store.store_ant = false;
+                stattail->u.store.lval_av = false;
+                stattail->u.store.store_av = false;
                 stattail->is_increment = false;
             }
             stattail->u.store.u.str.unk2C = 0;
             stattail->u.store.u.str.unk30 = 0;
             stattail->suppressed_iv = false;
-            if (!expr->data.isvar_issvar.unk22) {
+            if (!expr->data.isvar_issvar.vreg) {
                 strkillprev(stattail);
             }
             appendstorelist();
-            if (expr->data.isvar_issvar.unk22) {
+            if (expr->data.isvar_issvar.vreg) {
                 curgraphnode->varlisttail->unk8 = true;
             }
             loc_not_yet_seen = false;
@@ -3785,12 +3801,12 @@ void readnxtinst(void) {
                     if (stmt->opc == Uistr && ustack->down->expr == stmt->expr &&
                             IONE + ustack->down->value == stmt->u.store.u.istr.offset && LENGTH == stmt->u.store.size)
                     {
-                        if (stmt->u.store.unk1D) {
+                        if (stmt->u.store.lval_av) {
                             decreasecount(stmt->expr);
                             decreasecount(stmt->u.store.expr);
                             stmt->opc = Unop;
                             stmt->u.store.var_access_list_item->type = 0;
-                        } else if (stmt->u.store.unk1F && ustack->expr == stmt->u.store.expr) {
+                        } else if (stmt->u.store.store_av && ustack->expr == stmt->u.store.expr) {
                             decreasecount(ustack->expr);
                             ustack = ustack->down;
                             decreasecount(ustack->expr);
@@ -3847,15 +3863,15 @@ void readnxtinst(void) {
             stattail->u.store.baseaddr = findbaseaddr(stattail->expr);
 
             if (OPC == Uistr) {
-                stattail->u.store.unk1C = !strlkilled(stattail, curgraphnode->varlisthead);
-                stattail->u.store.unk1D = true;
-                stattail->u.store.unk1E = !strskilled(stattail, curgraphnode->varlisthead);
-                stattail->u.store.unk1F = true;
+                stattail->u.store.lval_ant = !strlkilled(stattail, curgraphnode->varlisthead);
+                stattail->u.store.lval_av = true;
+                stattail->u.store.store_ant = !strskilled(stattail, curgraphnode->varlisthead);
+                stattail->u.store.store_av = true;
             } else {
-                stattail->u.store.unk1C = false;
-                stattail->u.store.unk1D = false;
-                stattail->u.store.unk1E = false;
-                stattail->u.store.unk1F = false;
+                stattail->u.store.lval_ant = false;
+                stattail->u.store.lval_av = false;
+                stattail->u.store.store_ant = false;
+                stattail->u.store.store_av = false;
             }
             strkillprev(stattail);
             appendstorelist();
@@ -3915,15 +3931,15 @@ void readnxtinst(void) {
             ustack = ustack->down;
             stattail->u.store.baseaddr = findbaseaddr(stattail->expr);
             if (OPC == Uirst) {
-                stattail->u.store.unk1C = !strlkilled(stattail, curgraphnode->varlisthead);
-                stattail->u.store.unk1D = true;
-                stattail->u.store.unk1E = !strskilled(stattail, curgraphnode->varlisthead);
-                stattail->u.store.unk1F = true;
+                stattail->u.store.lval_ant = !strlkilled(stattail, curgraphnode->varlisthead);
+                stattail->u.store.lval_av = true;
+                stattail->u.store.store_ant = !strskilled(stattail, curgraphnode->varlisthead);
+                stattail->u.store.store_av = true;
             } else {
-                stattail->u.store.unk1C = false;
-                stattail->u.store.unk1D = false;
-                stattail->u.store.unk1E = false;
-                stattail->u.store.unk1F = false;
+                stattail->u.store.lval_ant = false;
+                stattail->u.store.lval_av = false;
+                stattail->u.store.store_ant = false;
+                stattail->u.store.store_av = false;
             }
             strkillprev(stattail);
             appendstorelist();
@@ -3960,15 +3976,15 @@ void readnxtinst(void) {
             movkillprev(stattail);
             stattail->u.store.baseaddr = findbaseaddr(stattail->expr);
             if (OPC == Umov) {
-                stattail->u.store.unk1C = !strlkilled(stattail, curgraphnode->varlisthead);
-                stattail->u.store.unk1E = !strlkilled(stattail, curgraphnode->varlisthead); // not strskilled?
-                stattail->u.store.unk1D = true;
-                stattail->u.store.unk1F = true;
+                stattail->u.store.lval_ant = !strlkilled(stattail, curgraphnode->varlisthead);
+                stattail->u.store.store_ant = !strlkilled(stattail, curgraphnode->varlisthead); // not strskilled?
+                stattail->u.store.lval_av = true;
+                stattail->u.store.store_av = true;
             } else {
-                stattail->u.store.unk1C = false;
-                stattail->u.store.unk1D = false;
-                stattail->u.store.unk1E = false;
-                stattail->u.store.unk1F = false;
+                stattail->u.store.lval_ant = false;
+                stattail->u.store.lval_av = false;
+                stattail->u.store.store_ant = false;
+                stattail->u.store.store_av = false;
             }
             strkillprev(stattail);
             appendstorelist();

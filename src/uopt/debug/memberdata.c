@@ -16,6 +16,7 @@
         struct LiveRange *: LIVERANGE, \
         struct LiveUnit *: LIVEUNIT, \
         struct Graphnode *: GRAPHNODE, \
+        struct GraphnodeList *: GRAPHNODE_LIST, \
         struct VarAccessList *: VAR_ACCESS, \
         struct Temploc *: TEMPLOC, \
         struct Variable *: VARIABLE, \
@@ -151,7 +152,7 @@ struct Member exprIsvar[] =
 {
         MEMBER(unsigned char, data.isvar_issvar.size),
         MEMBER(bool, data.isvar_issvar.veqv),
-        MEMBER(bool, data.isvar_issvar.unk22),
+        MEMBER(bool, data.isvar_issvar.vreg),
         MEMBER(bool, data.isvar_issvar.is_volatile),
         MEMBER(struct Expression *, data.isvar_issvar.outer_stack),
         MEMBER(struct VariableLocation, data.isvar_issvar.location),
@@ -255,8 +256,8 @@ struct Member exprAux2overflow[] = {
 struct Member exprIsop[] =
 {
         MEMBER_SPECIAL(OPCODE, Uopcode, data.isop.opc),
-        MEMBER(bool, data.isop.unk21),
-        MEMBER(bool, data.isop.unk22),
+        MEMBER(bool, data.isop.anticipated),
+        MEMBER(bool, data.isop.available),
         MEMBER_SPECIAL(DATATYPE, Datatype, data.isop.datatype),
         MEMBER(struct Expression *, data.isop.op1),
         MEMBER(struct Expression *, data.isop.op2),
@@ -334,7 +335,7 @@ struct Member ichainIslda[] = {
 struct Member ichainIsvar[] = {
     MEMBER(struct VariableLocation, isvar_issvar.location),
     MEMBER(unsigned char, isvar_issvar.size),
-    MEMBER(bool, isvar_issvar.unk19),
+    MEMBER(bool, isvar_issvar.vreg),
     MEMBER(bool, isvar_issvar.veqv),
     MEMBER(unsigned char, isvar_issvar.unk1B),
     MEMBER(struct IChain *, isvar_issvar.outer_stack_ichain),
@@ -470,10 +471,10 @@ bool condStatStoreMov(void *_stat) {
 struct Member statStore[] = {
     MEMBER(struct Expression *, u.store.expr),
     MEMBER(struct VarAccessList *, u.store.var_access_list_item),
-    MEMBER(bool, u.store.unk1C),
-    MEMBER(bool, u.store.unk1D),
-    MEMBER(bool, u.store.unk1E),
-    MEMBER(bool, u.store.unk1F),
+    MEMBER(bool, u.store.lval_ant),
+    MEMBER(bool, u.store.lval_av),
+    MEMBER(bool, u.store.store_ant),
+    MEMBER(bool, u.store.store_av),
     MEMBER(int, u.store.size),
     MEMBER(struct Expression *, u.store.baseaddr),
     MEMBER(struct IChain *, u.store.ichain),
@@ -723,8 +724,8 @@ struct Member graphnodeMembers[] = {
     //MEMBER(unsigned char, unkBb4),
     MEMBER(struct Graphnode *, next),
     MEMBER(struct Graphnode *, prev),
-    //MEMBER(struct GraphnodeList *, predecessors),
-    //MEMBER(struct GraphnodeList *, successors),
+    MEMBER_LIST(struct GraphnodeList *, predecessors, struct GraphnodeList, next),
+    MEMBER_LIST(struct GraphnodeList *, successors, struct GraphnodeList, next),
     MEMBER(struct Statement *, stat_head),
     MEMBER(struct Statement *, stat_tail),
     MEMBER(struct VarAccessList *, varlisthead),
@@ -851,7 +852,6 @@ struct StructData gStructData[TYPE_ID_MAX] = {
     STRUCT_DATA_DEF(LIVERANGE, struct LiveRange, liveRangeMembers),
     STRUCT_DATA_DEF(LIVEUNIT, struct LiveUnit, liveUnitMembers),
     STRUCT_DATA_DEF(STATEMENT, struct Statement, statementMembers),
-    STRUCT_DATA_DEF(STATEMENT_OPC, struct Statement, statementMembers),
     STRUCT_DATA_DEF(EXPRESSION, struct Expression, expressionMembers),
     STRUCT_DATA_DEF(ICHAIN, struct IChain, ichainMembers),
     STRUCT_DATA_DEF(GRAPHNODE, struct Graphnode, graphnodeMembers),

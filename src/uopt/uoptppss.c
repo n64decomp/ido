@@ -330,7 +330,7 @@ void update_veqv_in_table(struct Variable *var) {
         entry = searchvar(hash, &var->location);
         entry->graphnode = NULL;
         entry->data.isvar_issvar.size = (unsigned char)var->size;
-        entry->data.isvar_issvar.unk22 = var->unk2;
+        entry->data.isvar_issvar.vreg = var->vreg;
         entry->data.isvar_issvar.veqv = var->veqv;
     }
 }
@@ -345,7 +345,7 @@ void make_subloc_veqv(struct VariableLocation loc, int size, struct Variable **p
             case 0:
                 if (!(*pos)->veqv) {
                     (*pos)->veqv = true;
-                    (*pos)->unk2 = false;
+                    (*pos)->vreg = false;
                     if (inlopt) {
                         update_veqv_in_table(*pos);
                     }
@@ -408,14 +408,14 @@ struct Variable *insertvar(struct VariableLocation loc, int size, Datatype dtype
             case 0:
                 if ((loc.addr == v->location.addr && size == v->size) || loc.memtype == Rmt) {
                     if ((dtype == Qdt || dtype == Rdt) == (v->dtype == Qdt || v->dtype == Rdt)) {
-                        if (arg6 && !v->unk2 && !v->veqv) {
+                        if (arg6 && !v->vreg && !v->veqv) {
                             v->veqv = true;
                             if (inlopt) {
                                 update_veqv_in_table(v);
                             }
                         }
                         if (is_register) {
-                            v->unk2 = true;
+                            v->vreg = true;
                             v->veqv = false;
                         }
                     } else {
@@ -475,7 +475,7 @@ struct Variable *insertvar(struct VariableLocation loc, int size, Datatype dtype
     v->size = size;
     v->left = NULL;
     v->right = NULL;
-    v->unk2 = is_register;
+    v->vreg = is_register;
     v->dtype = dtype;
     return v;
 }
@@ -1294,7 +1294,7 @@ void checkforvreg(struct Variable *var) {
     unsigned char cmp;
 
     if (var != NULL) {
-        if (!var->veqv && !var->unk2) {
+        if (!var->veqv && !var->vreg) {
             hash = var->location.blockno % 3113;
             if (hash < 0) {
                 hash += 3113; // dead code
@@ -1313,7 +1313,7 @@ void checkforvreg(struct Variable *var) {
                     entry = entry->next;
                 }
             }
-            var->unk2 = !stop || cmp == 2;
+            var->vreg = !stop || cmp == 2;
         }
         checkforvreg(var->left);
         checkforvreg(var->right);
