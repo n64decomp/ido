@@ -106,6 +106,17 @@ void tile_close(struct Tile *tile);
 void tile_switch_horizontal(struct Tile *tile, bool right);
 void tile_switch_vertical(struct Tile *tile, bool down);
 
+/* Cursor */
+void cursor_checkrow(struct Tile *tile);
+void cursor_checkcol(struct Tile *tile);
+void cursor_check(struct Tile *tile);
+void cursor_updaterow(struct Tile *tile, int row);
+void cursor_updatecol(struct Tile *tile, int col);
+void cursor_setrow(struct Tile *tile, int row);
+void cursor_setcol(struct Tile *tile, int col);
+void cursor_absmove(struct Tile *tile, int y, int x);
+void cursor_move(struct Tile *tile, int dy, int dx);
+
 /* Container */
 struct Container *container_new(struct Tile *tile);
 void container_free(struct Container *cont);

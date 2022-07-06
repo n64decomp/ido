@@ -106,6 +106,7 @@ void tile_newsize(struct Tile *tile, int rows, int cols)
     tile->wrows = rows;
     tile->wcols = cols;
     wresize(tile->win, MAX(rows, tile->buf.numLines), MAX(cols, tile->buf.maxWidth));
+    cursor_check(tile);
     tile->needRedraw = true;
 }
 
@@ -298,7 +299,7 @@ void tile_close(struct Tile *tile)
     } else if (closed->next != NULL) {
         neighbor = closed->next;
     } else {
-        // TODO: only child, but this shouldn't happen unless the closing the last tile
+        // TODO: only child, but this shouldn't happen unless closing the last tile
         return;
     }
 
@@ -446,6 +447,96 @@ void tile_switch_vertical(struct Tile *tile, bool down)
     }
 
     tile_focus(target->tile);
+}
+
+/* Cursor */
+
+void cursor_checkrow(struct Tile *tile)
+{
+    // keep cursor in bounds
+    if (tile->cursRow < 0) {
+        tile->cursRow = 0;
+    } else if (tile->cursRow >= tile->buf.numLines) {
+        tile->cursRow = tile->buf.numLines - 1;
+    }
+
+    // follow the cursor
+    if (tile->cursRow < tile->viewRow) {
+        tile->viewRow = tile->cursRow;
+    } else if (tile->cursRow >= tile->viewRow + tile->wrows) {
+        tile->viewRow = MAX(tile->cursRow - (tile->wrows - 1), 0);
+    }
+
+    // scroll up if the window grows
+    if (tile->viewRow + tile->wrows >= tile->buf.numLines) {
+        tile->viewRow = MAX(tile->buf.numLines - tile->wrows, 0);
+    }
+}
+
+void cursor_checkcol(struct Tile *tile)
+{
+    // keep cursor in bounds
+    if (tile->cursCol < 0) {
+        tile->cursCol = 0;
+    } else if (tile->cursCol >= CURSOR_LINE(tile)->len) {
+        tile->cursCol = CURSOR_LINE(tile)->len - 1;
+    }
+
+    // follow the cursor
+    if (tile->cursCol < tile->viewCol) {
+        tile->viewCol = tile->cursCol;
+    } else if (tile->cursCol >= tile->viewCol + tile->wcols) {
+        tile->viewCol = MAX(tile->cursCol - (tile->wcols - 1), 0);
+    }
+
+    // scroll left if the window grows
+    if (tile->viewCol + tile->wcols >= CURSOR_LINE(tile)->len) {
+        tile->viewCol = MAX(CURSOR_LINE(tile)->len - tile->wcols, 0);
+    }
+}
+
+void cursor_check(struct Tile *tile)
+{
+    cursor_checkrow(tile);
+    cursor_checkcol(tile);
+}
+
+// set row without wmove
+void cursor_updaterow(struct Tile *tile, int row)
+{
+    tile->cursRow = row;
+    cursor_checkrow(tile);
+}
+
+// set column without wmove
+void cursor_updatecol(struct Tile *tile, int col)
+{
+    tile->cursCol = col;
+    cursor_checkcol(tile);
+}
+
+void cursor_setrow(struct Tile *tile, int row)
+{
+    cursor_updaterow(tile, row);
+    wmove(tile->win, tile->cursRow, tile->cursCol);
+}
+
+void cursor_setcol(struct Tile *tile, int col)
+{
+    cursor_updatecol(tile, col);
+    wmove(tile->win, tile->cursRow, tile->cursCol);
+}
+
+void cursor_absmove(struct Tile *tile, int y, int x)
+{
+    cursor_updaterow(tile, y);
+    cursor_updatecol(tile, x);
+    wmove(tile->win, tile->cursRow, tile->cursCol);
+}
+
+void cursor_move(struct Tile *tile, int dy, int dx)
+{
+    cursor_absmove(tile, tile->cursRow + dy, tile->cursCol + dx);
 }
 
 /* Container */
