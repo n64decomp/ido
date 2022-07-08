@@ -354,6 +354,7 @@ void oneproc(void) {
             }
             lasttime = time1;
 
+            //ncdebug();
             copypropagate();
             //ncdebug();
             if (outofmem) {

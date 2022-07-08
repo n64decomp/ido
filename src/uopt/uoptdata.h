@@ -312,14 +312,18 @@ struct Graphnode {
             int line; // 0x134
         } init;
         struct {
-            struct BitVector antlocs; // 0x104
-            struct BitVector alters; // 0x10C
-            struct BitVector avlocs; // 0x114
-            struct BitVector absalters; // 0x11C
+            // Local data flow attributes: only true if the expression also occurs in this block.
+            // Even if an expression isn't altered in a block, it won't necessarily be in ANTLOC/AVLOC.
+            // (except for alters, absalters, these are global and computed in copypropagate)
+            /* 0x104 */ struct BitVector antlocs; // anticipated here: all paths leading from this point contain the expression
+            /* 0x10C */ struct BitVector alters;
+            /* 0x114 */ struct BitVector avlocs; // available here: all paths leading to this point contain the expression
+            /* 0x11C */ struct BitVector absalters;
             union {
                 struct {
-                    struct BitVector pavlocs; // 0x124
+                    struct BitVector pavlocs; // 0x124, Partially available: same as avlocs, but for statements...
                     struct BitVector expoccur; // 0x12C
+                    // Global data flow attributes
                     struct BitVector unk134; // 0x134
                     struct BitVector unk13C; // 0x13C
                     struct BitVector avin; // 0x144

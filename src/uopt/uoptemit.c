@@ -2352,7 +2352,6 @@ static void func_00424FFC(struct Expression *expr, struct Expression *baseaddr, 
 0042BF08 reemit
 */
 static void func_00425594(struct JumpFallthroughBB *bbs) {
-
     while (bbs != NULL) {
         if (bbs->unk1) {
             genrlodrstr(Urlod, bbs->reg, bbs->ichain);

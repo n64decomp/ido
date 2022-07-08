@@ -74,7 +74,7 @@ bool lvalantloc(struct IChain *ichain, struct Graphnode *node) {
     return anticipated;
 }
 /* 
-0041550C func_0041550C
+0041550C find_replacements
 004175BC copypropagate
 0045CD78 expaltered
 0045D208 patchvectors

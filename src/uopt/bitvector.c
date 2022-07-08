@@ -31,9 +31,9 @@ void initbv(struct BitVector *bv, struct BitVectorBlock repeated_data) {
 00410204 codemotion
 004122D8 vardelete
 004123C4 varinsert
-00414108 func_00414108
-004150E4 func_004150E4
-0041550C func_0041550C
+00414108 insert_copied_expr
+004150E4 add_cvtl
+0041550C find_replacements
 004175BC copypropagate
 00430FF4 func_00430FF4
 00431508 candidate
@@ -99,7 +99,7 @@ void setbit(struct BitVector *bv, int bitpos) {
 00412CB4 checkexp_ant_av
 00413000 exprdelete
 00413428 checkstatoccur
-0041550C func_0041550C
+0041550C find_replacements
 004175BC copypropagate
 004324F4 findinduct
 00445E44 exprimage
@@ -482,10 +482,10 @@ void bvectpp1(struct BitVector *dest, struct BitVector *a, struct BitVector *b, 
     int i;
 
     for (i = 0; i < dest->num_blocks; i++) {
-        dest->blocks[i].words[0] = a->blocks[i].words[0] & (b->blocks[i].words[0] | (d->blocks[i].words[0] & ~c->blocks[i].words[0]));
-        dest->blocks[i].words[1] = a->blocks[i].words[1] & (b->blocks[i].words[1] | (d->blocks[i].words[1] & ~c->blocks[i].words[1]));
-        dest->blocks[i].words[2] = a->blocks[i].words[2] & (b->blocks[i].words[2] | (d->blocks[i].words[2] & ~c->blocks[i].words[2]));
-        dest->blocks[i].words[3] = a->blocks[i].words[3] & (b->blocks[i].words[3] | (d->blocks[i].words[3] & ~c->blocks[i].words[3]));
+        dest->blocks[i].words[0] = a->blocks[i].words[0] & (b->blocks[i].words[0] | (~c->blocks[i].words[0] & d->blocks[i].words[0]));
+        dest->blocks[i].words[1] = a->blocks[i].words[1] & (b->blocks[i].words[1] | (~c->blocks[i].words[1] & d->blocks[i].words[1]));
+        dest->blocks[i].words[2] = a->blocks[i].words[2] & (b->blocks[i].words[2] | (~c->blocks[i].words[2] & d->blocks[i].words[2]));
+        dest->blocks[i].words[3] = a->blocks[i].words[3] & (b->blocks[i].words[3] | (~c->blocks[i].words[3] & d->blocks[i].words[3]));
 
     }
 }

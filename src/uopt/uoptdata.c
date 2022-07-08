@@ -51,7 +51,7 @@
 union Bcode u;
 
 /*
-00414108 func_00414108
+00414108 insert_copied_expr
 0041FD3C genloadnum
 0042BD94 func_0042BD94
 0042BF08 reemit
@@ -154,7 +154,7 @@ union Bcode lastcopiedu;
 0040C4C4 checkbvlist
 0040F610 formbvlivran
 0040F7B8 checkinitbvlivran
-00414108 func_00414108
+00414108 insert_copied_expr
 0042020C gen_static_link
 00425618 func_00425618
 00426DE8 func_00426DE8
@@ -236,8 +236,8 @@ struct AllocBlock *heapptr;
 00412B18 exprav
 00413000 exprdelete
 00413684 func_00413684
-00414108 func_00414108
-0041550C func_0041550C
+00414108 insert_copied_expr
+0041550C find_replacements
 00422D04 func_00422D04
 004230F0 emit_expr
 00424FFC func_00424FFC
@@ -299,9 +299,9 @@ struct optabrec optab[0x9C];
 bool endblock;
 
 /*
-004137DC func_004137DC
-004150E4 func_004150E4
-0041550C func_0041550C
+004137DC copy_searchloop
+004150E4 add_cvtl
+0041550C find_replacements
 0041AC2C printtab
 00425618 func_00425618
 00439188 procinit
@@ -430,7 +430,7 @@ struct Temploc *temploctail;
 int curlevel;
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 004175BC copypropagate
 0041EC10 igen3
 0041EE30 outparlod
@@ -510,7 +510,7 @@ char entnam0[1024];
 size_t entnam0len;
 
 /*
-00414108 func_00414108
+00414108 insert_copied_expr
 0041C914 printregs
 0041FD3C genloadnum
 00439188 procinit
@@ -763,9 +763,9 @@ int staticlinkloc;
 0041297C exprant
 00412B18 exprav
 00413000 exprdelete
-00413510 func_00413510
+00413510 adjust_count
 004135CC func_004135CC
-0041550C func_0041550C
+0041550C find_replacements
 0041AC2C printtab
 0042305C func_0042305C
 004230F0 emit_expr
@@ -803,8 +803,8 @@ struct Expression *nocopy;
 struct ExpSourceThing *nota_candof;
 
 /*
-004150E4 func_004150E4
-0041550C func_0041550C
+004150E4 add_cvtl
+0041550C find_replacements
 0043771C optinit
 */
 struct VarAccessList *constprop;
@@ -855,8 +855,8 @@ struct LiveUnit *dft_livbb;
 int bitposcount;
 
 /*
-004150E4 func_004150E4
-0041550C func_0041550C
+004150E4 add_cvtl
+0041550C find_replacements
 004175BC copypropagate
 0041C914 printregs
 00469280 globalcolor
@@ -989,7 +989,7 @@ struct BitVector trapop;
 struct BitVector trapconstop;
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 0041B8C8 printlinfo
 0041C1B0 printcm
 004324F4 findinduct
@@ -1003,7 +1003,7 @@ struct BitVector indmults;
 
 /*
 00410204 codemotion
-0041550C func_0041550C
+0041550C find_replacements
 004175BC copypropagate
 0041B8C8 printlinfo
 004324F4 findinduct
@@ -1797,7 +1797,7 @@ int dbugno;
 bool genbbnum;
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 00434720 processargs
 0043771C optinit
 0043ABD0 incroccurrence
@@ -2101,10 +2101,10 @@ bool dokpicopt;
 /*
 0040F610 formbvlivran
 00410204 codemotion
-004137DC func_004137DC
-00414108 func_00414108
-004150E4 func_004150E4
-0041550C func_0041550C
+004137DC copy_searchloop
+00414108 insert_copied_expr
+004150E4 add_cvtl
+0041550C find_replacements
 004175BC copypropagate
 0042F424 appendgraph
 00439188 procinit
@@ -2279,7 +2279,7 @@ bool use_c_semantics;
 bool stack_reversed;
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 00434720 processargs
 0043771C optinit
 0043CFCC readnxtinst
@@ -2351,7 +2351,7 @@ struct LdatabEntry *ldatab[3113];
 
 /*
 00410204 codemotion
-0041550C func_0041550C
+0041550C find_replacements
 004175BC copypropagate
 0041D560 printinterproc
 0042020C gen_static_link

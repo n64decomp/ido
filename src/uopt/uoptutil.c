@@ -16,7 +16,7 @@
 const char uopcode_enum_values[] = "uabs\x00   uadd\x00   uadj\x00   uaent\x00  uand\x00   uaos\x00   uasym\x00  ubgn\x00   ubgnb\x00  ubsub\x00  ucg1\x00   ucg2\x00   uchkh\x00  uchkl\x00  uchkn\x00  uchkt\x00  ucia\x00   uclab\x00  uclbd\x00  ucomm\x00  ucsym\x00  uctrl\x00  ucubd\x00  ucup\x00   ucvt\x00   ucvtl\x00  udec\x00   udef\x00   udif\x00   udiv\x00   udup\x00   uend\x00   uendb\x00  uent\x00   ueof\x00   uequ\x00   uesym\x00  ufill\x00  ufjp\x00   ufsym\x00  ugeq\x00   ugrt\x00   ugsym\x00  uhsym\x00  uicuf\x00  uidx\x00   uiequ\x00  uigeq\x00  uigrt\x00  uijp\x00   uilda\x00  uildv\x00  uileq\x00  uiles\x00  uilod\x00  uinc\x00   uineq\x00  uinit\x00  uinn\x00   uint\x00   uior\x00   uisld\x00  uisst\x00  uistr\x00  uistv\x00  uixa\x00   ulab\x00   ulbd\x00   ulbdy\x00  ulbgn\x00  ulca\x00   ulda\x00   uldap\x00  uldc\x00   uldef\x00  uldsp\x00  ulend\x00  uleq\x00   ules\x00   ulex\x00   ulnot\x00  uloc\x00   ulod\x00   ulsym\x00  ultrm\x00  umax\x00   umin\x00   umod\x00   umov\x00   umovv\x00  umpmv\x00  umpy\x00   umst\x00   umus\x00   uneg\x00   uneq\x00   unop\x00   unot\x00   uodd\x00   uoptn\x00  upar\x00   updef\x00  upmov\x00  upop\x00   uregs\x00  urem\x00   uret\x00   urlda\x00  urldc\x00  urlod\x00  urnd\x00   urpar\x00  urstr\x00  usdef\x00  usgs\x00   ushl\x00   ushr\x00   usign\x00  usqr\x00   usqrt\x00  ussym\x00  ustep\x00  ustp\x00   ustr\x00   ustsp\x00  usub\x00   uswp\x00   utjp\x00   utpeq\x00  utpge\x00  utpgt\x00  utple\x00  utplt\x00  utpne\x00  utyp\x00   uubd\x00   uujp\x00   uunal\x00  uuni\x00   uvreg\x00  uxjp\x00   uxor\x00   uxpar\x00  umtag\x00  ualia\x00  uildi\x00  uisti\x00  uirld\x00  uirst\x00  uldrc\x00  umsym\x00  urcuf\x00  uksym\x00  uosym\x00  uirlv\x00  uirsv\x00\x00 ";
 
 /*
-004137DC func_004137DC
+004137DC copy_searchloop
 00417480 func_00417480
 0041F22C base_noalias
 0042020C gen_static_link
@@ -78,7 +78,7 @@ void boundswarning(void) {
 }
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 00425618 func_00425618
 0044F738 linearize
 00451764 restructure
@@ -210,7 +210,7 @@ void ovfwwarning(Uopcode opc) {
 
 /*
 00410204 codemotion
-0041550C func_0041550C
+0041550C find_replacements
 0041FD3C genloadnum
 004230F0 emit_expr
 00424FFC func_00424FFC
@@ -246,8 +246,8 @@ void dbgerror(int code) {
 }
 
 /*
-004137DC func_004137DC
-004150E4 func_004150E4
+004137DC copy_searchloop
+004150E4 add_cvtl
 0043B334 func_0043B334
 0043B504 func_0043B504
 0043CBFC func_0043CBFC
@@ -381,8 +381,8 @@ struct Expression *findsimilar(struct Expression *expr) {
 }
 
 /* 
-00414108 func_00414108
-0041550C func_0041550C
+00414108 insert_copied_expr
+0041550C find_replacements
 0044E604 binaryfold
 0044ED5C ixafold
 0044EDF8 ilodfold
@@ -518,7 +518,7 @@ void fix_base(struct Expression *expr) {
 }
 
 /* 
-0041550C func_0041550C
+0041550C find_replacements
 004712A4 reset_images
 004713E8 loopunroll
 0047C650 delentry
@@ -550,7 +550,7 @@ void fixcorr(struct Expression *expr) {
 
 /*
 00413000 exprdelete
-0041550C func_0041550C
+0041550C find_replacements
 0043CFCC readnxtinst
 0044FF6C mergeconst
 00451764 restructure
@@ -736,7 +736,7 @@ void increasecount(struct Expression *expr) {
 }
 
 /*
-00414108 func_00414108
+00414108 insert_copied_expr
 0043CFCC readnxtinst
 0047E100 enter_const
 */
@@ -746,7 +746,7 @@ int isconsthash(int number) {
 }
 
 /*
-00414108 func_00414108
+00414108 insert_copied_expr
 0043C248 func_0043C248
 0043C56C func_0043C56C
 0043CFCC readnxtinst
@@ -764,7 +764,7 @@ int realhash(int len) {
 }
 
 /*
-00414108 func_00414108
+00414108 insert_copied_expr
 00425618 func_00425618
 00439FA4 formal_parm_vreg
 0043CBFC func_0043CBFC
@@ -787,7 +787,7 @@ int isvarhash(struct VariableLocation loc) {
 }
 
 /*
-00414108 func_00414108
+00414108 insert_copied_expr
 0043CFCC readnxtinst
 0046BA10 change_to_const_eq
 0046BD90 change_to_var_eq
@@ -827,8 +827,8 @@ int isophash(Uopcode opc, struct Expression *op1, struct Expression *op2) {
 }
 
 /*
-00414108 func_00414108
-004150E4 func_004150E4
+00414108 insert_copied_expr
+004150E4 add_cvtl
 0043CFCC readnxtinst
 0046D428 oneloopblockexpr
 */
@@ -898,7 +898,7 @@ void extendstat(Uopcode opc) {
 }
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 0041F048 genrop
 0041FB20 spilltemplodstr
 004205F8 genrlodrstr
@@ -1734,7 +1734,7 @@ bool ldainreg(Memtype mtype, int addr, unsigned char optype) {
 }
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 00444A84 isearchloop
 */
 bool in_indmults(struct IChain *ichain) {
@@ -1846,7 +1846,7 @@ int findincre(struct Expression *entry) {
 }
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 0047ED9C countvars
 */
 int countvars(struct IChain *ichain) {
@@ -1924,7 +1924,7 @@ bool has_volt_ovfw(struct Expression *expr) {
 }
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 0043ABD0 incroccurrence
 0043CFCC readnxtinst
 0047F0AC has_ilod
@@ -1946,7 +1946,7 @@ bool has_ilod(struct Expression *expr) {
 }
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 */
 bool is_incr(struct Expression *expr) {
     if (expr->type != isop) {
@@ -2164,7 +2164,7 @@ bool is_power5(unsigned int v) {
 }
 
 /*
-00414108 func_00414108
+00414108 insert_copied_expr
 0043CFCC readnxtinst
 */
 int getfloatval(struct Expression *expr, int *exponent10) {

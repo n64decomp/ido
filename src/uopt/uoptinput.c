@@ -2636,10 +2636,10 @@ void readnxtinst(void) {
                 expr->count = 1;
                 expr->data.isop.opc = OPC;
                 expr->data.isop.datasize = IONE;
-                expr->data.isop.temploc = 0;
+                expr->data.isop.temploc = NULL;
                 expr->visited = 0;
                 expr->data.isop.aux2.v1.overflow_attr = IS_OVERFLOW_ATTR(LEXLEV);
-                expr->unk4 = false;
+                expr->unk4 = 0;
             } else {
                 incroccurrence(&expr);
             }

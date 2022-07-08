@@ -7,7 +7,7 @@
 00410204 codemotion
 004122D8 vardelete
 00413000 exprdelete
-00414108 func_00414108
+00414108 insert_copied_expr
 004175BC copypropagate
 0041C914 printregs
 00426FA4 func_00426FA4
@@ -77,8 +77,8 @@ int bvectin(int bitpos, struct BitVector *bv) {
 
 /*
 004123C4 varinsert
-00414108 func_00414108
-0041550C func_0041550C
+00414108 insert_copied_expr
+0041550C find_replacements
 00454514 func_00454514
 00454D08 func_00454D08
 00455060 func_00455060

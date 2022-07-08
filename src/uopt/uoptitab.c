@@ -10,8 +10,8 @@
 #include "uoptmtag.h"
 
 /*
-004150E4 func_004150E4
-0041550C func_0041550C
+004150E4 add_cvtl
+0041550C find_replacements
 004175BC copypropagate
 00445E44 exprimage
 0046BA10 change_to_const_eq
@@ -24,18 +24,18 @@ int isconstihash(int value) {
 }
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 00445E44 exprimage
 */
 int realihash(union Constant value) {
-    // only the u16 at value+0x2 is used, but 8 bytes are always passed to this function, see func_0041550C asm
+    // only the u16 at value+0x2 is used, but 8 bytes are always passed to this function, see find_replacements asm
     int hash = ((value.real.len * value.real.len) << 6) % 0x653;
     if (hash < 0) hash += 0x653;
     return hash;
 }
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 004175BC copypropagate
 0042020C gen_static_link
 00445E44 exprimage
@@ -48,7 +48,7 @@ int isvarihash(struct VariableLocation loc) {
 }
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 00445E44 exprimage
 0046BA10 change_to_const_eq
 */
@@ -60,7 +60,7 @@ int isldaihash(struct VariableLocation loc, unsigned int addr) {
 
 /*
 00410204 codemotion
-0041550C func_0041550C
+0041550C find_replacements
 004175BC copypropagate
 00445E44 exprimage
 004471AC codeimage
@@ -81,8 +81,8 @@ int isopihash(Uopcode opc, struct IChain *op1, struct IChain *op2) {
 }
 
 /*
-004150E4 func_004150E4
-0041550C func_0041550C
+004150E4 add_cvtl
+0041550C find_replacements
 00445AEC trep_image
 00445E44 exprimage
 */
@@ -136,8 +136,8 @@ struct IChain *appendichain(unsigned short table_index, bool not_isop) {
 }
 
 /*
-004150E4 func_004150E4
-0041550C func_0041550C
+004150E4 add_cvtl
+0041550C find_replacements
 004175BC copypropagate
 00445E44 exprimage
 004471AC codeimage
@@ -688,7 +688,7 @@ struct IChain *isearchloop(unsigned short hash, struct Expression *expr, struct 
 }
 
 /*
-0041550C func_0041550C
+0041550C find_replacements
 00445E44 exprimage
 0046BD90 change_to_var_eq
 */
@@ -1291,9 +1291,7 @@ void codeimage(void) {
 
                 if (!stat->u.store.lval_ant || !stat->u.store.lval_av) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
-                }
-                else
-                {
+                } else {
                     stat_tail = curgraphnode->stat_tail;
                     if (stat_tail->opc == Ucia) {
                         if (lang == LANG_ADA) {
@@ -1302,7 +1300,6 @@ void codeimage(void) {
                                 listpskilled(stat_tail->u.cia.parameters, stat, stat->expr->data.isvar_issvar.vreg)) {
                             setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
                         }
-
                     } else if (stat_tail->opc == Ucup || stat_tail->opc == Uicuf) {
                         if (cskilled(stat_tail->u.call.level, stat_tail->u.call.proc, stat) ||
                                 listpskilled(stat_tail->u.call.parameters, stat, stat->expr->data.isvar_issvar.vreg)) {
@@ -1342,6 +1339,10 @@ void codeimage(void) {
                 store_ichain->isop.stat = stat;
                 store_ichain->dtype = ichain->dtype;
                 stat->u.store.ichain = store_ichain;
+
+                // an asignment is ANTLOC only if there are no uses of the destination before the assignment (lval_ant),
+                // the assignment is locally anticipated (store_ant)
+                // and the assigned expression is not modified (value_ant)
                 if (stat->u.store.lval_ant && stat->u.store.store_ant && value_ant) {
                     setbit(&curgraphnode->bvs.stage1.antlocs, store_ichain->bitpos);
                 }
@@ -1350,16 +1351,23 @@ void codeimage(void) {
                         !value_ant || !value_av) {
                     setbit(&curgraphnode->bvs.stage1.alters, store_ichain->bitpos);
                 }
+
+                // PAVLOC (partially available) only takes into account the assignment itself (store_av),
+                // and the assigned value (value_av)
+                //
+                // The destination var could be used before or after the assignment, unlike for ANTLOC
                 if (stat->u.store.store_av && value_av) {
                     setbit(&curgraphnode->bvs.stage1.u.precm.pavlocs, store_ichain->bitpos);
                 }
+
+                // ABSALTERED (Absolutely altered) similarly ignores whether the destination variable was used in the block.
                 if (!stat->u.store.store_ant || !stat->u.store.store_av ||
                         !value_ant || !value_av) {
                     setbit(&curgraphnode->bvs.stage1.absalters, store_ichain->bitpos);
                 }
             } else {
                 setbit(&curgraphnode->bvs.stage1.alters, ichain->bitpos);
-                if (stat->expr->count) {
+                if (stat->expr->count != 0) {
                     setbit(&curgraphnode->bvs.stage1.alters, ichain->isvar_issvar.assignbit);
                     if (!stat->expr->killed) {
                         setbit(&curgraphnode->bvs.stage1.avlocs, ichain->bitpos);

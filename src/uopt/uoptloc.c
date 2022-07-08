@@ -7,7 +7,7 @@
 #include "uoptcontrolflow.h"
 
 /* 
-0041550C func_0041550C
+0041550C find_replacements
 0044FF6C mergeconst
 004510A0 distrlaw
 00451764 restructure
@@ -98,7 +98,7 @@ bool binaryovfw(Datatype dtype, Uopcode opc, struct Expression *left, struct Exp
 }
 
 /* 
-0041550C func_0041550C
+0041550C find_replacements
 0044FF6C mergeconst
 00451764 restructure
 */
@@ -118,7 +118,7 @@ bool ixaovfw(struct Expression *expr, struct Expression *left, struct Expression
 }
 
 /* 
-0041550C func_0041550C
+0041550C find_replacements
 00451764 restructure
 */
 bool unaryovfw(struct Expression *expr) {
@@ -167,7 +167,7 @@ bool unaryovfw(struct Expression *expr) {
 }
 
 /* 
-0041550C func_0041550C
+0041550C find_replacements
 0044FF6C mergeconst
 004510A0 distrlaw
 00451764 restructure
@@ -339,7 +339,7 @@ void binaryfold(Uopcode opc, Datatype dtype, struct Expression *left, struct Exp
 }
 
 /* 
-0041550C func_0041550C
+0041550C find_replacements
 0044FF6C mergeconst
 00451764 restructure
 */
@@ -367,7 +367,7 @@ void ixafold(struct Expression *ixa, struct Expression *left, struct Expression 
 }
 
 /* 
-0041550C func_0041550C
+0041550C find_replacements
 00451764 restructure
 
 change an ilod from a known address into a direct load
@@ -517,7 +517,7 @@ void istrfold(struct Statement *stmt) {
 }
 
 /* 
-0041550C func_0041550C
+0041550C find_replacements
 00451764 restructure
 */
 void cvtfold(struct Expression *cvt) {
@@ -528,8 +528,8 @@ void cvtfold(struct Expression *cvt) {
 }
 
 /* 
-004150E4 func_004150E4
-0041550C func_0041550C
+004150E4 add_cvtl
+0041550C find_replacements
 00451764 restructure
 */
 void unaryfold(struct Expression *expr) { //! wtf
