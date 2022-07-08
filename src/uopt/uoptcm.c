@@ -15,8 +15,6 @@
 00410204 codemotion
 */
 void resetsubdelete(struct Expression *expr, struct Graphnode *node) {
-    bool phi_s1;
-
     if (expr == NULL) {
         return;
     }
@@ -47,12 +45,7 @@ void resetsubdelete(struct Expression *expr, struct Graphnode *node) {
             case isop:
                 if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) && (expr->data.isop.anticipated || bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
                     resetbit(&node->bvs.stage1.u.cm.subdelete, expr->ichain->bitpos);
-                    phi_s1 = false;
                 } else {
-                    phi_s1 = true;
-                }
-
-                if (phi_s1) {
                     resetsubdelete(expr->data.isop.op1, node);
                     if (optab[expr->data.isop.opc].is_binary_op) {
                         resetsubdelete(expr->data.isop.op2, node);
@@ -213,13 +206,13 @@ void delete_unmoved_recur(struct Statement *stat, struct Graphnode *node) {
     last_inpath = NULL;
     recur = stat->u.store.u.str.unk30; // always NULL in oot
     while (recur != NULL) {
-        if (bvectin(recur->ichain->bitpos, &node->bvs.stage1.u.precm.expoccur)) {
-            if (bvectin(recur->ichain->bitpos, &node->bvs.stage1.u.precm.pavout)) {
+        if (bvectin(recur->ichain->bitpos, &node->bvs.stage1.u.cm.ppin)) {
+            if (bvectin(recur->ichain->bitpos, &node->bvs.stage1.u.cm.ppout)) {
                 inpath = true;
             } else {
                 inpath = inpathafter(recur->ichain, stat);
             }
-        } else if (bvectin(recur->ichain->bitpos, &node->bvs.stage1.u.precm.pavout)) {
+        } else if (bvectin(recur->ichain->bitpos, &node->bvs.stage1.u.cm.ppout)) {
             inpath = inpathbefore(recur->ichain, stat);
         } else {
             inpath = false;
@@ -244,7 +237,7 @@ void delete_unmoved_recur(struct Statement *stat, struct Graphnode *node) {
 00456A2C oneproc
 */
 void codemotion(void) {
-    struct Statement *sp1E4;
+    struct Statement *assert_jump;
     union Constant sp1C0;
     Uopcode trapopc; // sp1BB
     struct Graphnode *node;
@@ -271,8 +264,8 @@ void codemotion(void) {
     bvectminus(&asgnbits, &slasgnbits);
 
     // for each node, initialize avin, avout, antin, antout, pavin, pavout
-    node = graphhead;
-    while (node != NULL) {
+    
+    for (node = graphhead; node != NULL; node = node->next) {
         checkbvlist(&node->bvs.stage1.u.precm.expoccur);
 
         // update data flow attributes with strength reduction candidate information:
@@ -301,21 +294,21 @@ void codemotion(void) {
             bvectminus(&node->bvs.stage1.absalters, &node->bvs.stage1.u.cm.cand);
             initbv(&node->bvs.stage1.u.precm.expoccur, (struct BitVectorBlock) {0});
 
-            if (has_assert(node, &sp1E4)) {
+            if (has_assert(node, &assert_jump)) {
                 if (node->blockno == 0) {
-                    phi_v1 = sp1E4->opc == Ufjp;
-                } else if (sp1E4->u.jp.target_blockno == node->blockno) {
-                    phi_v1 = sp1E4->opc == Utjp;
+                    phi_v1 = assert_jump->opc == Ufjp;
+                } else if (assert_jump->u.jp.target_blockno == node->blockno) {
+                    phi_v1 = assert_jump->opc == Utjp;
                 } else {
-                    phi_v1 = sp1E4->opc == Ufjp;
+                    phi_v1 = assert_jump->opc == Ufjp;
                 }
 
-                if (sp1E4->u.jp.incre < 0) {
+                if (assert_jump->u.jp.incre < 0) {
                     trapopc = Utple;
-                } else if (sp1E4->u.jp.incre > 0) {
+                } else if (assert_jump->u.jp.incre > 0) {
                     trapopc = Utpge;
                 } else if (!phi_v1) {
-                    switch (sp1E4->expr->data.isop.opc) {
+                    switch (assert_jump->expr->data.isop.opc) {
                         case Ules:
                             trapopc = Utplt;
                             break;
@@ -334,7 +327,7 @@ void codemotion(void) {
                             break;
                     }
                 } else {
-                    switch (sp1E4->expr->data.isop.opc) {
+                    switch (assert_jump->expr->data.isop.opc) {
                         case Ules:
                             trapopc = Utpge;
                             break;
@@ -357,13 +350,13 @@ void codemotion(void) {
                     }
                 }
 
-                if (sp1E4->expr->data.isop.op2->type == isconst) {
-                    sp1C0 = sp1E4->expr->data.isop.op2->data.isconst.number;
+                if (assert_jump->expr->data.isop.op2->type == isconst) {
+                    sp1C0 = assert_jump->expr->data.isop.op2->data.isconst.number;
 
-                    if (sp1E4->u.jp.incre > 1) {
-                        sp1C0.intval = (sp1C0.intval - sp1E4->u.jp.incre) + 1;
-                    } else if (sp1E4->u.jp.incre < -1) {
-                        sp1C0.intval = (sp1C0.intval - sp1E4->u.jp.incre) - 1;
+                    if (assert_jump->u.jp.incre > 1) {
+                        sp1C0.intval = (sp1C0.intval - assert_jump->u.jp.incre) + 1;
+                    } else if (assert_jump->u.jp.incre < -1) {
+                        sp1C0.intval = (sp1C0.intval - assert_jump->u.jp.incre) - 1;
                     }
 
                     if (trapopc == Utple) {
@@ -374,22 +367,22 @@ void codemotion(void) {
                         trapopc = Utpge;
                     }
                     
-                    hash = isopihash(trapopc, sp1E4->expr->ichain->isop.op1, NULL);
+                    hash = isopihash(trapopc, assert_jump->expr->ichain->isop.op1, NULL);
                     const_trap = true;
                 } else {
-                    hash = isopihash(trapopc, sp1E4->expr->ichain->isop.op1, sp1E4->expr->ichain->isop.op2);
+                    hash = isopihash(trapopc, assert_jump->expr->ichain->isop.op1, assert_jump->expr->ichain->isop.op2);
                     const_trap = false;
                 }
 
                 trap_ichain = itable[hash];
                 while (trap_ichain != NULL) {
-                    if (trap_ichain->dtype == sp1E4->expr->datatype) {
+                    if (trap_ichain->dtype == assert_jump->expr->datatype) {
                         if (const_trap) {
-                            if (trap_implying(trapopc, sp1E4->expr->ichain->isop.op1, &sp1C0, trap_ichain)) {
+                            if (trap_implying(trapopc, assert_jump->expr->ichain->isop.op1, &sp1C0, trap_ichain)) {
                                 setbit(&node->bvs.stage1.u.precm.expoccur, trap_ichain->bitpos);
                             }
                         } else {
-                            if (trap_implying_v(trapopc, sp1E4->expr->ichain->isop.op1, sp1E4->expr->ichain->isop.op2, trap_ichain)) {
+                            if (trap_implying_v(trapopc, assert_jump->expr->ichain->isop.op1, assert_jump->expr->ichain->isop.op2, trap_ichain)) {
                                 setbit(&node->bvs.stage1.u.precm.expoccur, trap_ichain->bitpos);
                             }
                         }
@@ -444,16 +437,13 @@ void codemotion(void) {
         if (outofmem) {
             return;
         }
-
-        node = node->next;
     }
 
     savedexp.num_blocks = 0;
     savedexp.blocks = NULL;
     checkbvlist(&savedexp);
     if (!docm) {
-        node = graphhead;
-        while (node != NULL) {
+        for (node = graphhead; node != NULL; node = node->next) {
             initbv(&node->bvs.stage1.u.precm.pavlocs, (struct BitVectorBlock) {0});
             initbv(&node->bvs.stage1.u.precm.avin, (struct BitVectorBlock)  {0});
             initbv(&node->bvs.stage1.u.precm.pavin, (struct BitVectorBlock) {0});
@@ -463,11 +453,15 @@ void codemotion(void) {
             initbv(&node->bvs.stage1.u.precm.expoccur, (struct BitVectorBlock) {0});
             initbv(&node->bvs.stage1.u.precm.pavout, (struct BitVectorBlock) {0});
             checkbvlist(&node->bvs.stage1.u.precm.pavin);
-            node = node->next;
         }
         return;
     }
 
+    /* Complute global availability of expressions.
+     *
+     * An expression is available at a point if every path leading to that point contains the expression.
+     * In other words the expression doesn't need to be recomputed since it was computed earlier, and the value hasn't changed.
+     */
     do {
         dataflowiter += 1;
         changed = false;
@@ -496,7 +490,11 @@ void codemotion(void) {
             if (!changed) {
                 bvectcopy(&old, &node->bvs.stage1.u.precm.avout);
             }
+
             // avout = pavlocs | (avin & ~absalters)
+            // 
+            // The expression is already locally available, (pavlocs)
+            // or it's available going into the the block (avin), and the block doesn't change the value (~abslaters)
             bvectglop(&node->bvs.stage1.u.precm.avout, &node->bvs.stage1.u.precm.pavlocs, &node->bvs.stage1.u.precm.avin, &node->bvs.stage1.absalters);
             if (docodehoist) {
                 bvectunion(&node->bvs.stage1.u.precm.avout, &node->hoistedexp);
@@ -508,20 +506,27 @@ void codemotion(void) {
         }
     } while (changed);
 
+    /* Global anticipatability
+     *
+     * An expression is anticipated at a point if every path leading out from that point contains the expresion.
+     * In other words the expression is precomputed at this point.
+     *
+     * Note that anticipatability implies backwards code motion, while availability does not.
+     * This means ALTERED must be used instead of ABSALTERED, because ALTERED is more strictly applied to assignments.
+     */
     do {
         dataflowiter += 1;
         changed = false;
-        node = graphtail;
-        while (node != NULL) {
+        for (node = graphtail; node != NULL; node = node->prev) {
+            // update ANTOUT
             if (node->successors != NULL) {
                 if (!changed) {
                     bvectcopy(&old, &node->bvs.stage1.u.precm.antout);
                 }
 
-                succ = node->successors;
-                while (succ != NULL) {
+                // expression is ANTOUT if it is ANTIN in every successor
+                for (succ = node->successors; succ != NULL; succ = succ->next) {
                     bvectintsect(&node->bvs.stage1.u.precm.antout, &succ->graphnode->bvs.stage1.u.precm.antin);
-                    succ = succ->next;
                 }
 
                 if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.antout)) {
@@ -529,34 +534,39 @@ void codemotion(void) {
                 }
             }
 
+            // update ANTIN
             if (!changed) {
                 bvectcopy(&old, &node->bvs.stage1.u.precm.antin);
             }
 
+            // antin = antlocs | (antout & ~alters)
+            //
+            // The expression is already locally anticipated, (antlocs)
+            // or it's anticipated at the exit (antout) and not altered in this block (~alters)
             bvectglop(&node->bvs.stage1.u.precm.antin, &node->bvs.stage1.antlocs, &node->bvs.stage1.u.precm.antout, &node->bvs.stage1.alters);
 
             if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.antin)) {
                 changed = true;
             }
-            
-            node = node->prev;
         }
     } while (changed);
 
+    /* Partial availability
+     *
+     * Same as availability, but only one path leading to the point needs to have the expression.
+     */
     do {
         dataflowiter += 1;
         changed = false;
-        node = graphhead;
-        while (node != NULL) {
+        for (node = graphhead; node != NULL; node = node->next) {
             if (node->predecessors != NULL) {
                 if (!changed) {
                     bvectcopy(&old, &node->bvs.stage1.u.precm.pavin);
                 }
 
-                pred = node->predecessors;
-                while (pred != NULL) {
+                // note union instead of intsect
+                for (pred = node->predecessors; pred != NULL; pred = pred->next) {
                     bvectunion(&node->bvs.stage1.u.precm.pavin, &pred->graphnode->bvs.stage1.u.precm.pavout);
-                    pred = pred->next;
                 }
 
                 if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.pavin)) {
@@ -568,25 +578,27 @@ void codemotion(void) {
                 bvectcopy(&old, &node->bvs.stage1.u.precm.pavout);
             }
 
+            // note pavout is already initialized to pavlocs.
+            // pavout |= pavin & ~absalters
+            //
+            // pavout accumulates pavin, but this is fine because pavin doesn't fluctuate
             unionminus(&node->bvs.stage1.u.precm.pavout, &node->bvs.stage1.u.precm.pavin, &node->bvs.stage1.absalters);
 
             if (!changed && !bvecteq(&old, &node->bvs.stage1.u.precm.pavout)) {
                 changed = true;
             }
-            
-            node = node->next;
         }
     } while (changed);
 
     if (dbugno == 25) {
         printprecm();
     }
-
+    
     // End of precm
-
-    node = graphhead;
-    while (node != NULL) {
+    for (node = graphhead; node != NULL; node = node->next) {
         if (!moremotion) {
+            // note insert overlaps with precm.pavin, but this is still pavin since pavin is part of ppin's definition later
+            // pavin & antin
             bvectintsect(&node->bvs.stage1.u.precm.pavin, &node->bvs.stage1.u.precm.antin);
         } else {
             bvectcopy(&node->bvs.stage1.u.precm.pavin, &node->bvs.stage1.u.precm.antin);
@@ -595,7 +607,6 @@ void codemotion(void) {
 
         if (lang == LANG_ADA && node->blockno != 0) {
             stat = node->stat_head;
-
             while (stat->opc != Ulab) {
                 stat = stat->next;
             }
@@ -627,24 +638,23 @@ void codemotion(void) {
             bvcopynot(&node->bvs.stage1.u.cm.ppout, &asgnbits);
             bvectminus(&node->bvs.stage1.u.cm.ppout, &varbits);
         }
-
-        node = node->next;
     }
 
+    /* Placement Possible:
+     *
+     * Expression is PP if it is anticipated, and inserting at this point would make later instances of the expression redundant.
+     */
     do {
         dataflowiter += 1;
-        node = graphtail;
         changed = false;
-        while (node != NULL) {
+        for (node = graphtail; node != NULL; node = node->prev) {
             if (node->successors != NULL) {
                 if (!changed) {
                     bvectcopy(&old, &node->bvs.stage1.u.cm.ppout);
                 }
 
-                succ = node->successors;
-                while (succ != NULL) {
+                for (succ = node->successors; succ != NULL; succ = succ->next) {
                     bvectintsect(&node->bvs.stage1.u.cm.ppout, &succ->graphnode->bvs.stage1.u.cm.ppin);
-                    succ = succ->next;
                 }
 
                 if (!changed && !bvecteq(&old, &node->bvs.stage1.u.cm.ppout)) {
@@ -653,15 +663,19 @@ void codemotion(void) {
             }
 
             if (node->predecessors != NULL) {
-                pred = node->predecessors;
                 if (!node->interprocedural_controlflow) {
                     if (!changed) {
                         bvectcopy(&old, &node->bvs.stage1.u.cm.ppin);
                     }
+                    // ppin = (pavin & antin) & (antlocs | (~alters & ppout))
+                    //
+                    // note pavin was intersected with antin earlier
                     bvectpp1(&node->bvs.stage1.u.cm.ppin, &node->bvs.stage1.u.precm.pavin, &node->bvs.stage1.antlocs, &node->bvs.stage1.alters, &node->bvs.stage1.u.cm.ppout);
-                    while (pred != NULL) {
+                    
+                    // expressions are also ppout if they are avout
+                    for (pred = node->predecessors; pred != NULL; pred = pred->next) {
+                        // ppin = ppin & pred->(ppout | avout)
                         bvectpp2(&node->bvs.stage1.u.cm.ppin, &pred->graphnode->bvs.stage1.u.cm.ppout, &pred->graphnode->bvs.stage1.u.precm.avout);
-                        pred = pred->next;
                     }
 
                     if (!changed && !bvecteq(&old, &node->bvs.stage1.u.cm.ppin)) {
@@ -669,13 +683,12 @@ void codemotion(void) {
                     }
                 }
             }
-            node = node->prev;
         }
     } while (changed);
 
     dataflowtime = (dataflowtime + getclock()) - lastdftime;
-    node = graphhead;
-    while (node != NULL) {
+    for (node = graphhead; node != NULL; node = node->next) {
+        // insert = ppout & ~avout & (~ppin | alters)
         bvectinsert(&node->bvs.stage1.u.cm.insert, &node->bvs.stage1.u.cm.ppout, &node->bvs.stage1.u.precm.avout, &node->bvs.stage1.u.cm.ppin, &node->bvs.stage1.alters);
         if (docodehoist) {
             bvectunion(&node->bvs.stage1.u.cm.insert, &node->hoistedexp);
@@ -709,8 +722,10 @@ void codemotion(void) {
             }
         }
 
+        // expressions are also PPOUT if they are AVOUT
         bvectunion(&node->bvs.stage1.u.cm.ppout, &node->bvs.stage1.u.precm.avout);
 
+        // subinsert: expressions that are not in INSERT, but are nested in a larger expression that is in INSERT
         initbv(&node->bvs.stage1.u.cm.subinsert, (struct BitVectorBlock) {0});
         block = 0;
         i = 0;
@@ -730,8 +745,7 @@ void codemotion(void) {
                             dbgerror(0x2BE);
                         } else if (insertichain->isop.opc == Ustr) {
                             setsubinsert(insertichain->isop.op2, node);
-                        }
-                        else if (insertichain->isop.opc == Uisst) {
+                        } else if (insertichain->isop.opc == Uisst) {
                             setsubinsert(insertichain->isop.op1->isvar_issvar.outer_stack_ichain, node);
                             setsubinsert(insertichain->isop.op2, node);
                         } else if (insertichain->isop.opc == Uistr ||
@@ -764,27 +778,29 @@ void codemotion(void) {
             block++;
         }
         bvectunion(&savedexp, &node->bvs.stage1.u.cm.subinsert);
-        node = node->next;
     }
 
     if (outofmem) {
         return;
     }
 
-    node = graphhead;
-    while (node != NULL) {
-        bvectunion(&node->bvs.stage1.u.cm.ppin, &node->bvs.stage1.u.cm.subdelete); // avin?
+    for (node = graphhead; node != NULL; node = node->next) {
+        // expressions are also PPIN if they are AVIN
+        bvectunion(&node->bvs.stage1.u.cm.ppin, &node->bvs.stage1.u.precm.avin);
+
+        // delete = ppin & antlocs
         bvectcopy(&node->bvs.stage1.u.cm.delete, &node->bvs.stage1.u.cm.ppin);
         bvectminus(&node->bvs.stage1.u.cm.delete, &boolexp);
         bvectintsect(&node->bvs.stage1.u.cm.delete, &node->bvs.stage1.antlocs);
 
+        // subdelete: expressions that are DELETE and only appear nested inside a larger expression that is also DELETE
         initbv(&node->bvs.stage1.u.cm.subdelete, (struct BitVectorBlock) {0});
         bvectcopy(&node->bvs.stage1.u.cm.subdelete, &node->bvs.stage1.u.cm.delete);
         bvectminus(&node->bvs.stage1.u.cm.subdelete, &storeop);
         bvectminus(&node->bvs.stage1.u.cm.subdelete, &trapop);
 
         stat = node->stat_head;
-        done = 0;
+        done = false;
         while (!done && stat != NULL) {
             if (stat->opc == Uisst || stat->opc == Ustr) {
                 if (!stat->outpar) {
@@ -822,7 +838,7 @@ void codemotion(void) {
                        stat->opc == Utple ||
                        stat->opc == Utplt ||
                        stat->opc == Utpne) {
-                if (bvectin(stat->u.store.ichain->bitpos, &node->bvs.stage1.u.cm.delete) == 0) {
+                if (!bvectin(stat->u.store.ichain->bitpos, &node->bvs.stage1.u.cm.delete)) {
                     resetsubdelete(stat->expr, node);
                     if (stat->opc != Uchkt) {
                         resetsubdelete(stat->u.trap.expr2, node);
@@ -861,6 +877,5 @@ void codemotion(void) {
             stat = stat->next;
         }
         unionminus(&savedexp, &node->bvs.stage1.u.cm.delete, &node->bvs.stage1.u.cm.subdelete);
-        node = node->next;
     }
 }
