@@ -50,8 +50,22 @@ void copy_ucode_string(union Bcode *dst, union Bcode *src)
 {
     if (!ucode_has_string(src)) return;
 
-    dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars = calloc(dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival, sizeof(char));
-    memcpy(dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars, src->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars, src->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival);
+    if (src->Ucode.Opc != Uinit) {
+        dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars = calloc(dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival, sizeof(char));
+        memcpy(dst->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars, src->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars, src->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Ival);
+    } else {
+        dst->Ucode.Uopcde.uiequ1.uop2.uinit.initval.swpart.Chars = calloc(dst->Ucode.Uopcde.uiequ1.uop2.uinit.initval.swpart.Ival, sizeof(char));
+        memcpy(dst->Ucode.Uopcde.uiequ1.uop2.uinit.initval.swpart.Chars, src->Ucode.Uopcde.uiequ1.uop2.uinit.initval.swpart.Chars, src->Ucode.Uopcde.uiequ1.uop2.uinit.initval.swpart.Ival);
+    }
+}
+
+void ucode_free_string(union Bcode *bcode)
+{
+    if (bcode->Ucode.Opc != Uinit) {
+        free(bcode->Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars);
+    } else {
+        free(bcode->Ucode.Uopcde.uiequ1.uop2.uinit.initval.swpart.Chars);
+    }
 }
 
 void output_new_stat(struct Statement *stat)
@@ -92,7 +106,7 @@ void ucode_output_clear()
         for (int i = 0; i < cur->out->length; i++) {
             if (cur->out->items[i]->type == UCODE) {
                 if (ucode_has_string(&cur->out->items[i]->bcode)) {
-                    free(cur->out->items[i]->bcode.Ucode.Uopcde.uiequ1.uop2.Constval.swpart.Chars);
+                    ucode_free_string(&cur->out->items[i]->bcode);
                 }
                 free(cur->out->items[i]);
             }
