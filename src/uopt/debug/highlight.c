@@ -148,7 +148,7 @@ void tile_highlight_all(struct Tile *self, struct Highlighter *hl)
 
 void tile_highlight_once(struct Tile *tile, struct Highlighter *hl)
 {
-    for (int line = 0; line < tile->buf.numLines; line++) {
+    for (int line = 0; line < tile->buf.lines->length; line++) {
         sr_highlight(tile, line, BUFFER_LINE(tile, line)->top, hl);
     }
     tile_wmove_to_cursor(tile);

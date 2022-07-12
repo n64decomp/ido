@@ -9,6 +9,8 @@
 #include "uopt/debug/hlcond.h"
 #include "uopt/debug/memberdata.h"
 #include "uopt/debug/examine.h"
+#include "uopt/debug/cmtrace.h"
+#include "uopt/debug/menu.h"
 
 #define C_RED "\e[91m"
 #define C_GREEN "\e[92m"

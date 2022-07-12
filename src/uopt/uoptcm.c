@@ -9,6 +9,8 @@
 #include "uoptdbg.h"
 #include "uoptitab.h"
 
+#include "debug.h"
+
 /*
 0040F8D0 resetsubdelete
 00410098 delete_unmoved_recur
@@ -593,6 +595,15 @@ void codemotion(void) {
     if (dbugno == 25) {
         printprecm();
     }
+
+#ifdef UOPT_DEBUG
+    cmtrace_trace_all_precm();
+    /* 
+    for (node = graphhead; node != NULL; node = node->next) {
+        cmtrace_copy_precm(node);
+    }
+     */
+#endif
     
     // End of precm
     for (node = graphhead; node != NULL; node = node->next) {
@@ -878,4 +889,13 @@ void codemotion(void) {
         }
         unionminus(&savedexp, &node->bvs.stage1.u.cm.delete, &node->bvs.stage1.u.cm.subdelete);
     }
+
+#ifdef UOPT_DEBUG
+    cmtrace_trace_all_cm();
+    /* 
+    for (node = graphhead; node != NULL; node = node->next) {
+        cmtrace_copy_cm(node);
+    }
+     */
+#endif
 }

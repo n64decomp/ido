@@ -105,7 +105,7 @@ void tile_newsize(struct Tile *tile, int rows, int cols)
 {
     tile->wrows = rows;
     tile->wcols = cols;
-    wresize(tile->win, MAX(rows, tile->buf.numLines), MAX(cols, tile->buf.maxWidth));
+    wresize(tile->win, MAX(rows, tile->buf.lines->length), MAX(cols, tile->buf.maxWidth));
     cursor_check(tile);
     tile->needRedraw = true;
 }
@@ -119,7 +119,7 @@ void tile_setdims(struct Tile *tile, int y, int x, int rows, int cols)
 
 void tile_redraw(struct Tile *tile)
 {
-    for (int line = 0; line < tile->buf.numLines; line++) {
+    for (int line = 0; line < tile->buf.lines->length; line++) {
         int color = 0;
         mvwchgat(tile->win, line, 0, -1, 0, color, NULL);
         for (int h = 0; h < tile->numHighlighters; h++) {
@@ -133,7 +133,7 @@ void tile_redraw(struct Tile *tile)
 void tile_new_window(struct Tile *tile)
 {
     int mw = 0;
-    for (int line = 0; line < tile->buf.numLines; line++) {
+    for (int line = 0; line < tile->buf.lines->length; line++) {
         if (mw < BUFFER_LINE(tile, line)->len) {
             mw = BUFFER_LINE(tile, line)->len;
         }
@@ -142,12 +142,12 @@ void tile_new_window(struct Tile *tile)
 
     // TODO: reorganize nc pad creation. (and use wresize?)
     // if pad fills all available space, then there won't be artifacts from splitting and resizing tiles
-    tile->win = newpad(MAX(LINES, tile->buf.numLines), MAX(COLS, tile->buf.maxWidth));
+    tile->win = newpad(MAX(LINES, tile->buf.lines->length), MAX(COLS, tile->buf.maxWidth));
     intrflush(tile->win, false);
     keypad(tile->win, true);
 
     // print lines
-    for (int line = 0; line < tile->buf.numLines; line++) {
+    for (int line = 0; line < tile->buf.lines->length; line++) {
         mvwaddnstr(tile->win, line, 0, BUFFER_LINE(tile, line)->s, BUFFER_LINE(tile, line)->len);
     }
 }
@@ -195,7 +195,6 @@ void tile_redraw_changed()
     }
 }
 
-void build_menu_tile(struct Tile *tile);
 void tile_split(struct Tile *tile, int direction, struct Tile *newTile)
 {
     assert(direction == CONTAINER_SPLIT_VERTICAL || direction == CONTAINER_SPLIT_HORIZONTAL);
@@ -230,7 +229,7 @@ void tile_split(struct Tile *tile, int direction, struct Tile *newTile)
     // default tile
     if (newTile == NULL) {
         newTile = tile_new();
-        build_menu_tile(newTile);
+        menu_new(newTile);
     }
 
     struct Container *child = container_new(newTile);
@@ -456,8 +455,8 @@ void cursor_checkrow(struct Tile *tile)
     // keep cursor in bounds
     if (tile->cursRow < 0) {
         tile->cursRow = 0;
-    } else if (tile->cursRow >= tile->buf.numLines) {
-        tile->cursRow = tile->buf.numLines - 1;
+    } else if (tile->cursRow >= tile->buf.lines->length) {
+        tile->cursRow = tile->buf.lines->length - 1;
     }
 
     // follow the cursor
@@ -468,8 +467,8 @@ void cursor_checkrow(struct Tile *tile)
     }
 
     // scroll up if the window grows
-    if (tile->viewRow + tile->wrows >= tile->buf.numLines) {
-        tile->viewRow = MAX(tile->buf.numLines - tile->wrows, 0);
+    if (tile->viewRow + tile->wrows >= tile->buf.lines->length) {
+        tile->viewRow = MAX(tile->buf.lines->length - tile->wrows, 0);
     }
 }
 

@@ -492,8 +492,9 @@ void oneproc(void) {
             reemit();
 #ifdef UOPT_DEBUG
             ncdebug();
-            ucode_output_clear();
             ucode_input_clear();
+            ucode_output_clear();
+            cmtrace_clear();
 #endif
             if (dbugno == 2) {
                 printtab();

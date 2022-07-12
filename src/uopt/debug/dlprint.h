@@ -76,7 +76,7 @@ struct StringRep {
         int reg;
         int regset[2];
         char regboolarray[5];
-        struct TileCreation *menuEntry;
+        struct MenuEntry *menuEntry;
         Uopcode opc;
         void *data;
         int   data32;

@@ -48,7 +48,6 @@ struct LineBuffer build_proc_buffer()
         }
     }
 
-    buf.numLines = buf.lines->length;
     return buf;
 }
 
@@ -150,7 +149,6 @@ struct LineBuffer build_stack_buffer()
     if (buf.lines->length == 0) {
         vec_add(buf.lines, dl_placeholder("No local variables"));
     }
-    buf.numLines = buf.lines->length;
     return buf;
 }
 
@@ -178,7 +176,6 @@ struct LineBuffer build_reg_assignment_buffer()
         }
     }
 
-    buf.numLines = buf.lines->length;
     return buf;
 }
 
@@ -204,7 +201,6 @@ struct LineBuffer build_var_access_buffer()
         }
     }
 
-    buf.numLines = buf.lines->length;
     return buf;
 }
 
@@ -224,7 +220,6 @@ struct LineBuffer build_ichain_buffer()
         }
     }
 
-    buf.numLines = buf.lines->length;
     return buf;
 }
 
@@ -260,7 +255,6 @@ struct LineBuffer build_bitvect_buffer()
     vec_add(buf.lines, dl_from_bitvector(&old, "old"));
     vec_add(buf.lines, dl_from_bitvector(&workbvect, "workbvect"));
 
-    buf.numLines = buf.lines->length;
     return buf;
 }
 
@@ -287,7 +281,6 @@ struct LineBuffer build_ucode_input_buffer()
         }
     }
 
-    buf.numLines = buf.lines->length;
     return buf;
 }
 
@@ -325,7 +318,6 @@ struct LineBuffer build_ucode_output_buffer()
         }
     }
 
-    buf.numLines = buf.lines->length;
     return buf;
 }
 
@@ -368,13 +360,12 @@ struct LineBuffer build_liverange_buffer()
         vec_add(buf.lines, dl_placeholder("No liveranges created"));
     }
 
-    buf.numLines = buf.lines->length;
     return buf;
 }
 
 void linebuffer_free(struct LineBuffer dbg)
 {
-    for (int i = 0; i < dbg.numLines; i++) {
+    for (int i = 0; i < dbg.lines->length; i++) {
         dl_free(dbg.lines->items[i]);
     }
 

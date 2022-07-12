@@ -6,7 +6,6 @@
 
 struct LineBuffer {
     int maxWidth;
-    int numLines;
     Vec(struct DisplayLine *) *lines;
 };
 

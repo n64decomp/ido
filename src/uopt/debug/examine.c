@@ -173,7 +173,6 @@ struct LineBuffer examine_buffer(struct StringRep *sr)
 
     if (gStructData[sr->type].members == NULL) {
         vec_add(buf.lines, dl_new_printf("examine not implemented for this type (%d)", sr->type));
-        buf.numLines = 1;
         return buf;
     }
 
@@ -183,7 +182,6 @@ struct LineBuffer examine_buffer(struct StringRep *sr)
         member_print(sr->data, &gStructData[sr->type].members[i], buf.lines);
     }
 
-    buf.numLines = buf.lines->length;
     return buf;
 }
 

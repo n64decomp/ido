@@ -498,7 +498,7 @@ void tile_highlight_line_parts(struct Tile *tile, int depth)
 
 struct Graphnode *get_closest_node(struct LineBuffer buf, int line)
 {
-    if (line < 0 || line >= buf.numLines) return NULL;
+    if (line < 0 || line >= buf.lines->length) return NULL;
 
     for (int i = line; i >= 0; i--) {
         if (buf.lines->items[i]->top->type == GRAPHNODE) {
