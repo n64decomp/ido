@@ -344,7 +344,35 @@ struct Member ichainIsvar[] = {
         MEMBER(unsigned short, isvar_issvar.assignbit),
         MEMBER(int, isvar_issvar.unk24),
     //};
+};
 
+bool condIchainIsopCvtfrom(void *_ichain) {
+    struct IChain *ichain = _ichain;
+    return ichain->isop.opc == Ucvt || ichain->isop.opc == Urnd || ichain->isop.opc == Utyp;
+}
+
+bool condIchainIsopUnk24u16(void *_ichain) {
+    struct IChain *ichain = _ichain;
+    return ichain->isop.opc == Uinn || ichain->isop.opc == Uadj || ichain->isop.opc == Uilod || ichain->isop.opc == Uirld ||
+        ichain->isop.opc == Uildv || ichain->isop.opc == Uirlv || ichain->isop.opc == Uiequ || ichain->isop.opc == Uineq ||
+        ichain->isop.opc == Uigeq || ichain->isop.opc == Uigrt || ichain->isop.opc == Uileq || ichain->isop.opc == Uiles;
+}
+
+bool condIchainIsopSWord(void *_ichain) {
+    struct IChain *ichain = _ichain;
+    return ichain->isop.opc == Uistr || ichain->isop.opc == Uistv || ichain->isop.opc == Uirsv || ichain->isop.opc == Uirst;
+}
+
+struct Member ichainIsopCvtfrom[] = {
+    MEMBER_SPECIAL(DATATYPE, Datatype, isop.cvtfrom),
+};
+
+struct Member ichainIsopUnk24u16[] = {
+    MEMBER(unsigned short, isop.unk24_u16),
+};
+
+struct Member ichainIsopSWord[] = {
+    MEMBER(unsigned short, isop.s.word),
 };
 
 bool condIchainIsopStat(void *_ichain) {
@@ -384,8 +412,9 @@ struct Member ichainIsop[] = {
         MEMBER_UNION(isop.temploc, ichainIsopTemploc, condIchainIsopTemploc),
     //};
     //union {
-        MEMBER_SPECIAL(DATATYPE, Datatype, isop.cvtfrom),
-        MEMBER(unsigned short, isop.unk24_u16),
+        MEMBER_UNION(isop.cvtfrom, ichainIsopCvtfrom, condIchainIsopCvtfrom),
+        MEMBER_UNION(isop.unk24_u16, ichainIsopUnk24u16, condIchainIsopUnk24u16),
+        MEMBER_UNION(isop.s.word, ichainIsopSWord, condIchainIsopSWord),
         //MEMBER(struct ExpSourceThing *, isop.unk24_cand),
             /*
         union {
@@ -450,6 +479,7 @@ struct Member statMov[] = {
     MEMBER(unsigned char, u.store.u.mov.src_align),
     MEMBER(unsigned char, u.store.u.mov.dst_align),
 };
+
 bool condStatStoreOutpar(void *_stat) {
     struct Statement *stat = _stat;
     return (stat->opc == Ustr && stat->outpar == true);
