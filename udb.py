@@ -42,7 +42,7 @@ def fixup_build_command(
         if skip_count > 0:
             skip_count -= 1
             continue
-        if part == ["-MF", "-o"]:
+        if part in ["-MF", "-o"]:
             skip_count = 1
             continue
         if part == ignore_part:
@@ -60,7 +60,11 @@ def fixup_build_command(
         )
         ind1 = res.index("--", ind0 + 1)
         ind2 = res.index("--", ind1 + 1)
-        res = res[ind0 + 1 : ind1] + res[ind2 + 1 :]
+        compiler = res[ind0 + 1 : ind1]
+        compiler_args = res[ind2 + 1 :]
+        while compiler and compiler[0].startswith("-"):
+            compiler.pop(0)
+        res = compiler + compiler_args
     except ValueError:
         pass
 
@@ -245,6 +249,7 @@ def main():
     #print("CFE COMMAND:", ' '.join(cfe_command))
     #print("UOPT COMMAND:", ' '.join(uopt_command))
     try:
+        #uopt_command = ['gdb', '--args'] + uopt_command
         with open(os.devnull, 'w') as FNULL:
             subprocess.check_call(cfe_command, stdout=cfe_out, stderr=FNULL)
             subprocess.check_call(uopt_command, stderr=FNULL)
