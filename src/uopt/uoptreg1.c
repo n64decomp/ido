@@ -270,7 +270,7 @@ int sizeofsetexpr(struct IChain *ichain) {
 /*
 0045E5C4 func_0045E5C4
 */
-static void func_0045E45C(struct TrepImageThing *trep, bool is_equ_neq, struct Graphnode *node_shared) {
+static void func_0045E45C(struct TrepImageThing *trep, bool is_equ_neq, struct Graphnode *node) {
     struct LiveUnit *sp3C;
     union Constant value;
     bool const_reg;
@@ -289,14 +289,14 @@ static void func_0045E45C(struct TrepImageThing *trep, bool is_equ_neq, struct G
 
         if (const_reg) {
             trep->unk28->bitpos = newbit(trep->unk28, NULL);
-            formlivbb(trep->unk28, node_shared, &sp3C);
+            formlivbb(trep->unk28, node, &sp3C);
             if (outofmem) {
                 return;
             }
 
             sp3C->load_count++;
             if (sp3C->load_count == 1) {
-                setbit(&node_shared->bvs.stage2.loclive, trep->unk28->bitpos);
+                setbit(&node->bvs.stage2.loclive, trep->unk28->bitpos);
             }
         }
     }
@@ -307,7 +307,7 @@ static void func_0045E45C(struct TrepImageThing *trep, bool is_equ_neq, struct G
 00461640 func_00461640
 00461AAC makelivranges
 */
-static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Graphnode *node_shared, struct LiveUnit **lu) {
+static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Graphnode *node, struct LiveUnit **lu) {
     struct LiveUnit *old_lu;
     int phi_s1;
     struct IChain *ichain;
@@ -326,14 +326,14 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                     expr->ichain->bitpos = newbit(expr->ichain, NULL);
                 }
 
-                formlivbb(expr->ichain, node_shared, lu);
+                formlivbb(expr->ichain, node, lu);
                 if (outofmem) {
                     return;
                 }
 
                 (*lu)->load_count++;
                 if ((*lu)->load_count == 1) {
-                    setbit(&node_shared->bvs.stage2.loclive, expr->ichain->bitpos);
+                    setbit(&node->bvs.stage2.loclive, expr->ichain->bitpos);
                 }
             }
             return;
@@ -344,50 +344,50 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                     expr->ichain->bitpos = newbit(expr->ichain, NULL);
                 }
 
-                formlivbb(expr->ichain, node_shared, lu);
+                formlivbb(expr->ichain, node, lu);
                 if (outofmem) {
                     return;
                 }
 
                 (*lu)->load_count++;
                 if ((*lu)->load_count == 1) {
-                    setbit(&node_shared->bvs.stage2.loclive, expr->ichain->bitpos);
+                    setbit(&node->bvs.stage2.loclive, expr->ichain->bitpos);
                 }
             }
             return;
 
         case isvar:
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
-                func_0045E5C4(expr->data.isvar_issvar.copy, arg1, node_shared, lu);
+                func_0045E5C4(expr->data.isvar_issvar.copy, arg1, node, lu);
             }
             return;
 
         case isilda:
             if (expr->unk4 == 0) {
-                if (!bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.scm.region)) {
-                    if (!bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.subinsert) ||
+                if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.scm.region)) {
+                    if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.subinsert) ||
                             (expr->data.islda_isilda.outer_stack->type == issvar &&
                              expr->data.islda_isilda.outer_stack->killed &&
-                             !bvectin(expr->data.islda_isilda.outer_stack->ichain->bitpos, &node_shared->bvs.stage1.u.cm.cand))) {
+                             !bvectin(expr->data.islda_isilda.outer_stack->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
                         expr->unk4 = 1;
                     } else {
                         expr->unk4 = 5;
-                        setbit(&node_shared->bvs.stage1.u.scm.region, expr->ichain->bitpos);
+                        setbit(&node->bvs.stage1.u.scm.region, expr->ichain->bitpos);
                         setbit(&coloreditems, expr->ichain->bitpos);
                     }
-                } else if (bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.delete) &&
+                } else if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) &&
                         (expr->data.islda_isilda.outer_stack->type != issvar ||
                          expr->data.islda_isilda.outer_stack->initialVal ||
-                         bvectin(expr->data.islda_isilda.outer_stack->ichain->bitpos, &node_shared->bvs.stage1.u.cm.cand))) {
+                         bvectin(expr->data.islda_isilda.outer_stack->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
                     expr->unk4 = 2;
                     expr->visited = 7;
                 } else if (expr->data.islda_isilda.outer_stack->type == issvar &&
                         expr->data.islda_isilda.outer_stack->killed &&
-                        !bvectin(expr->data.islda_isilda.outer_stack->ichain->bitpos, &node_shared->bvs.stage1.u.cm.cand)) {
+                        !bvectin(expr->data.islda_isilda.outer_stack->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) {
                     expr->unk4 = 4;
-                } else if (bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.scm.source)) {
+                } else if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.scm.source)) {
                     expr->unk4 = 3;
-                } else if (bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.subinsert)) {
+                } else if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.subinsert)) {
                     expr->unk4 = 5;
                 } else {
                     expr->unk4 = 4;
@@ -395,26 +395,26 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
             }
 
             if (expr->visited == 7) {
-                formlivbb(expr->ichain, node_shared, lu);
+                formlivbb(expr->ichain, node, lu);
                 if (outofmem) {
                     return;
                 }
 
                 (*lu)->load_count++;
                 if ((*lu)->load_count == 1 && (*lu)->store_count == 0) {
-                    setbit(&node_shared->bvs.stage2.loclive, expr->ichain->bitpos);
+                    setbit(&node->bvs.stage2.loclive, expr->ichain->bitpos);
                 }
             } else {
-                func_0045E5C4(expr->data.islda_isilda.outer_stack, 3, node_shared, lu);
+                func_0045E5C4(expr->data.islda_isilda.outer_stack, 3, node, lu);
 
                 if ((expr->count > 1 && expr->unk4 != 2) || ((expr->unk4 == 3 || expr->unk4 == 5) && expr->visited != 7)) {
-                    formlivbb(expr->ichain, node_shared, lu);
+                    formlivbb(expr->ichain, node, lu);
                     if (outofmem) {
                         return;
                     }
 
                     (*lu)->store_count++;
-                    setbit(&node_shared->bvs.stage2.locdef, expr->ichain->bitpos);
+                    setbit(&node->bvs.stage2.locdef, expr->ichain->bitpos);
                     if ((*lu)->load_count == 0) {
                         (*lu)->firstisstr = true;
                     }
@@ -428,30 +428,30 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
 
         case issvar:
             if (expr->data.isvar_issvar.copy != NULL && expr->data.isvar_issvar.copy != nocopy) {
-                func_0045E5C4(expr->data.isvar_issvar.copy, arg1, node_shared, lu);
+                func_0045E5C4(expr->data.isvar_issvar.copy, arg1, node, lu);
                 return;
             }
 
             if (expr->unk4 == 0) {
-                if (!bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.scm.region)) {
-                    if (!bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.subinsert) ||
+                if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.scm.region)) {
+                    if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.subinsert) ||
                             (expr->killed &&
-                             !bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.cand))) {
+                             !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
                         expr->unk4 = 1;
                     } else {
                         expr->unk4 = 5;
-                        setbit(&node_shared->bvs.stage1.u.scm.region, expr->ichain->bitpos);
+                        setbit(&node->bvs.stage1.u.scm.region, expr->ichain->bitpos);
                         setbit(&coloreditems, expr->ichain->bitpos);
                     }
-                } else if (bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.delete) &&
-                        (expr->initialVal || bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.cand))) {
+                } else if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) &&
+                        (expr->initialVal || bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
                     expr->unk4 = 2;
                     expr->visited = 7;
-                } else if (expr->killed && !bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.cand)) {
+                } else if (expr->killed && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) {
                     expr->unk4 = 4;
-                } else if (bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.scm.source)) {
+                } else if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.scm.source)) {
                     expr->unk4 = 3;
-                } else if (bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.subinsert)) {
+                } else if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.subinsert)) {
                     expr->unk4 = 5;
                 } else {
                     expr->unk4 = 4;
@@ -460,29 +460,29 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
 
             if (expr->visited == 7) {
                 if (((expr->datatype != Idt && expr->datatype != Kdt) || dwopcode)) {
-                    formlivbb(expr->ichain, node_shared, lu);
+                    formlivbb(expr->ichain, node, lu);
                     if (outofmem) {
                         return;
                     }
 
                     (*lu)->load_count++;
                     if ((*lu)->load_count == 1 && (*lu)->store_count == 0) {
-                        setbit(&node_shared->bvs.stage2.loclive, expr->ichain->bitpos);
+                        setbit(&node->bvs.stage2.loclive, expr->ichain->bitpos);
                     }
                 }
                 return;
             }
 
-            func_0045E5C4(expr->data.isvar_issvar.outer_stack, 3, node_shared, lu);
+            func_0045E5C4(expr->data.isvar_issvar.outer_stack, 3, node, lu);
             if (((expr->count > 1 && expr->unk4 != 2) || ((expr->unk4 == 3 || expr->unk4 == 5) && expr->visited != 7)) &&
                     ((expr->datatype != Idt && expr->datatype != Kdt) || dwopcode)) {
-                formlivbb(expr->ichain, node_shared, lu);
+                formlivbb(expr->ichain, node, lu);
                 if (outofmem) {
                     return;
                 }
 
                 (*lu)->store_count++;
-                setbit(&node_shared->bvs.stage2.locdef, expr->ichain->bitpos);
+                setbit(&node->bvs.stage2.locdef, expr->ichain->bitpos);
 
                 if ((*lu)->load_count == 0) {
                     (*lu)->firstisstr = 1;
@@ -496,24 +496,24 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
 
         case isop:
             if (expr->unk4 == 0) {
-                if (!bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.scm.region)) {
-                    if (!bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.subinsert) ||
-                            (!expr->data.isop.available && !bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.cand))) {
+                if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.scm.region)) {
+                    if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.subinsert) ||
+                            (!expr->data.isop.available && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
                         expr->unk4 = 1;
                     } else {
                         expr->unk4 = 5;
-                        setbit(&node_shared->bvs.stage1.u.scm.region, expr->ichain->bitpos);
+                        setbit(&node->bvs.stage1.u.scm.region, expr->ichain->bitpos);
                         setbit(&coloreditems, expr->ichain->bitpos);
                     }
-                } else if (bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.delete) &&
-                        (expr->data.isop.anticipated || bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.cand))) {
+                } else if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) &&
+                        (expr->data.isop.anticipated || bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
                     expr->unk4 = 2;
                     expr->visited = 7;
-                } else if (!expr->data.isop.available && !bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.cand)) {
+                } else if (!expr->data.isop.available && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) {
                     expr->unk4 = 4;
-                } else if (bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.scm.source)) {
+                } else if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.scm.source)) {
                     expr->unk4 = 3;
-                } else if (bvectin(expr->ichain->bitpos, &node_shared->bvs.stage1.u.cm.subinsert)) {
+                } else if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.subinsert)) {
                     expr->unk4 = 5;
                 } else {
                     expr->unk4 = 4;
@@ -524,14 +524,14 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
             if (expr->visited == 7) {
                 if (((expr->data.isop.datatype != Idt && expr->data.isop.datatype != Kdt) || dwopcode) &&
                         (expr->data.isop.datatype != Sdt || sizeofsetexpr(expr->ichain) <= int_reg_size)) {
-                    formlivbb(expr->ichain, node_shared, lu);
+                    formlivbb(expr->ichain, node, lu);
                     if (outofmem) {
                         return;
                     }
 
                     (*lu)->load_count++;
                     if ((*lu)->load_count == 1 && (*lu)->store_count == 0) {
-                        setbit(&node_shared->bvs.stage2.loclive, expr->ichain->bitpos);
+                        setbit(&node->bvs.stage2.loclive, expr->ichain->bitpos);
                     }
                 }
                 return;
@@ -549,54 +549,54 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
 
                     if (expr->data.isop.aux.unk38_trep->ichain2 != NULL &&
                             ((expr->data.isop.aux.unk38_trep->ichain2->dtype != Idt && expr->data.isop.aux.unk38_trep->ichain2->dtype != Kdt) || dwopcode)) {
-                        formlivbb(expr->data.isop.aux.unk38_trep->ichain2, node_shared, lu);
+                        formlivbb(expr->data.isop.aux.unk38_trep->ichain2, node, lu);
                         if (outofmem) {
                             return;
                         }
 
                         (*lu)->load_count++;
                         if ((*lu)->load_count == 1 && (*lu)->store_count == 0) {
-                            setbit(&node_shared->bvs.stage2.loclive, expr->data.isop.aux.unk38_trep->ichain2->bitpos);
+                            setbit(&node->bvs.stage2.loclive, expr->data.isop.aux.unk38_trep->ichain2->bitpos);
                         }
 
                         if (expr->data.isop.op2->type == isconst) {
-                            func_0045E45C(expr->data.isop.aux.unk38_trep, expr->data.isop.opc == Uequ || expr->data.isop.opc == Uneq, node_shared);
+                            func_0045E45C(expr->data.isop.aux.unk38_trep, expr->data.isop.opc == Uequ || expr->data.isop.opc == Uneq, node);
                         } else if ((expr->data.isop.aux2.unk3C_trep->ichain->dtype != Idt && expr->data.isop.aux2.unk3C_trep->ichain->dtype != Kdt) || dwopcode) {
-                            formlivbb(expr->data.isop.aux2.unk3C_trep->ichain, node_shared, lu);
+                            formlivbb(expr->data.isop.aux2.unk3C_trep->ichain, node, lu);
                             if (outofmem) {
                                 return;
                             }
 
                             (*lu)->load_count++;
                             TRAP_IF((*lu)->store_count != 0);
-                            setbit(&node_shared->bvs.stage2.loclive, expr->data.isop.aux2.unk3C_trep->ichain->bitpos);
+                            setbit(&node->bvs.stage2.loclive, expr->data.isop.aux2.unk3C_trep->ichain->bitpos);
                         }
                     }
 
 
                     if (expr->data.isop.aux2.unk3C_trep->ichain2 != NULL &&
                             ((expr->data.isop.aux2.unk3C_trep->ichain2->dtype != Idt && expr->data.isop.aux2.unk3C_trep->ichain2->dtype != Kdt) || dwopcode)) {
-                        formlivbb(expr->data.isop.aux2.unk3C_trep->ichain2, node_shared, lu);
+                        formlivbb(expr->data.isop.aux2.unk3C_trep->ichain2, node, lu);
                         if (outofmem) {
                             return;
                         }
 
                         (*lu)->load_count++;
                         if ((*lu)->load_count == 1 && (*lu)->store_count == 0) {
-                            setbit(&node_shared->bvs.stage2.loclive, expr->data.isop.aux2.unk3C_trep->ichain2->bitpos);
+                            setbit(&node->bvs.stage2.loclive, expr->data.isop.aux2.unk3C_trep->ichain2->bitpos);
                         }
 
                         if (expr->data.isop.op1->type == isconst) {
-                            func_0045E45C(expr->data.isop.aux2.unk3C_trep, expr->data.isop.opc == Uequ || expr->data.isop.opc == Uneq, node_shared);
+                            func_0045E45C(expr->data.isop.aux2.unk3C_trep, expr->data.isop.opc == Uequ || expr->data.isop.opc == Uneq, node);
                         } else if ((expr->data.isop.aux.unk38_trep->ichain->dtype != Idt && expr->data.isop.aux.unk38_trep->ichain->dtype != Kdt) || dwopcode) {
-                            formlivbb(expr->data.isop.aux.unk38_trep->ichain, node_shared, lu);
+                            formlivbb(expr->data.isop.aux.unk38_trep->ichain, node, lu);
                             if (outofmem) {
                                 return;
                             }
 
                             (*lu)->load_count++;
                             TRAP_IF((*lu)->store_count != 0);
-                            setbit(&node_shared->bvs.stage2.loclive, expr->data.isop.aux.unk38_trep->ichain->bitpos);
+                            setbit(&node->bvs.stage2.loclive, expr->data.isop.aux.unk38_trep->ichain->bitpos);
                         }
                     }
                     *lu = NULL;
@@ -635,20 +635,20 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                     }
 
                     if (expr->data.isop.opc == Usub) {
-                        func_0045E5C4(expr->data.isop.op1, 3, node_shared, lu);
+                        func_0045E5C4(expr->data.isop.op1, 3, node, lu);
                     } else {
-                        func_0045E5C4(expr->data.isop.op1, phi_s1, node_shared, lu);
+                        func_0045E5C4(expr->data.isop.op1, phi_s1, node, lu);
                     }
-                    func_0045E5C4(expr->data.isop.op2, phi_s1, node_shared, lu);
+                    func_0045E5C4(expr->data.isop.op2, phi_s1, node, lu);
                 }
             } else {
                 if (expr->data.isop.opc == Uilod ||
                         expr->data.isop.opc == Uirlv ||
                         expr->data.isop.opc == Uildv ||
                         expr->data.isop.opc == Uirld) {
-                    func_0045E5C4(expr->data.isop.op1, 3, node_shared, lu);
+                    func_0045E5C4(expr->data.isop.op1, 3, node, lu);
                 } else {
-                    func_0045E5C4(expr->data.isop.op1, 0, node_shared, lu);
+                    func_0045E5C4(expr->data.isop.op1, 0, node, lu);
                 }
             }
 
@@ -660,13 +660,13 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                 }
 
                 if ((expr->data.isop.datatype != Idt && expr->data.isop.datatype != Kdt) || dwopcode) {
-                    formlivbb(expr->ichain, node_shared, lu);
+                    formlivbb(expr->ichain, node, lu);
                     if (outofmem) {
                         return;
                     }
 
                     (*lu)->store_count++;
-                    setbit(&node_shared->bvs.stage2.locdef, expr->ichain->bitpos);
+                    setbit(&node->bvs.stage2.locdef, expr->ichain->bitpos);
                     if ((*lu)->load_count == 0) {
                         (*lu)->firstisstr = true;
                     }
@@ -721,16 +721,16 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
 
                     if ((ichain->isop.datatype != Idt && ichain->isop.datatype != Kdt) || dwopcode) {
                         old_lu = *lu;
-                        formlivbb(expr->ichain->isop.unk24_cand->ichain_unk10, node_shared, lu);
+                        formlivbb(expr->ichain->isop.unk24_cand->ichain_unk10, node, lu);
                         if ((*lu)->load_count == 0 && (*lu)->store_count == 0) {
-                            setbit(&node_shared->bvs.stage2.loclive, expr->ichain->isop.unk24_cand->ichain_unk10->bitpos);
+                            setbit(&node->bvs.stage2.loclive, expr->ichain->isop.unk24_cand->ichain_unk10->bitpos);
                         }
 
                         (*lu)->load_count++;
-                        formlivbb(ichain, node_shared, lu);
+                        formlivbb(ichain, node, lu);
                         (*lu)->store_count++;
 
-                        setbit(&node_shared->bvs.stage2.locdef, expr->ichain->isop.unk24_cand->unk18);
+                        setbit(&node->bvs.stage2.locdef, expr->ichain->isop.unk24_cand->unk18);
                         if ((*lu)->load_count == 0) {
                             (*lu)->firstisstr = 1;
                         }
@@ -757,9 +757,9 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
 0045FBB4 func_0045FBB4
 00461AAC makelivranges
 */
-static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Graphnode *node_shared, struct LiveUnit **livbb_shared) {
+static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Graphnode *node, struct LiveUnit **lu) {
     //void *sp54;
-    bool const_value;
+    bool const_value = false;
     bool sp52; // a3
     //bool sp51; // t0
     //bool sp4F; // t1
@@ -787,10 +787,12 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
             expr = table[hash];
             no_assignment_in_block = true;
             found = false;
+
+            // if arg2, search through the whole table, else use the first value
             if (arg2) {
                 while (!found && expr != NULL) {
                     if (expr->type == isvar) {
-                        if (addreq(expr->data.isvar_issvar.location, ichain->isvar_issvar.location) && expr->graphnode == node_shared) {
+                        if (addreq(expr->data.isvar_issvar.location, ichain->isvar_issvar.location) && expr->graphnode == node) {
                             found = !expr->killed;
                             if (expr->data.isvar_issvar.assignment != NULL) {
                                 no_assignment_in_block = false;
@@ -804,11 +806,11 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                 }
 
                 if (!found && no_assignment_in_block && ichain->isvar_issvar.vreg) {
-                    if (node_shared->predecessors != NULL && node_shared->predecessors->next == NULL) {
+                    if (node->predecessors != NULL && node->predecessors->next == NULL) {
                         expr = table[hash];
                         while (!found && expr != NULL) {
                             if (expr->type == isvar) {
-                                if (addreq(expr->data.isvar_issvar.location, ichain->isvar_issvar.location) && expr->graphnode == node_shared->predecessors->graphnode) {
+                                if (addreq(expr->data.isvar_issvar.location, ichain->isvar_issvar.location) && expr->graphnode == node->predecessors->graphnode) {
                                     found = !expr->killed;
                                 }
                             }
@@ -834,38 +836,38 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
             }
 
             sp52 = const_value;
-            if (!const_value && !ichain->isvar_issvar.veqv && !bvectin(ichain->bitpos, &node_shared->indiracc) &&
+            if (!const_value && !ichain->isvar_issvar.veqv && !bvectin(ichain->bitpos, &node->indiracc) &&
                     ((ichain->dtype != Idt && ichain->dtype != Kdt) || dwopcode || ichain->isvar_issvar.location.memtype == Rmt)) {
-                formlivbb(ichain, node_shared, livbb_shared);
+                formlivbb(ichain, node, lu);
                 if (outofmem) {
                     break;
                 }
 
-                (*livbb_shared)->load_count++;
-                if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
-                    setbit(&node_shared->bvs.stage2.loclive, ichain->bitpos);
+                (*lu)->load_count++;
+                if ((*lu)->load_count == 1 && (*lu)->store_count == 0) {
+                    setbit(&node->bvs.stage2.loclive, ichain->bitpos);
                 }
 
-                if (graphhead == node_shared && (*livbb_shared)->firstisstr == 0) {
+                if (graphhead == node && (*lu)->firstisstr == 0) {
                     if (bvectin0(ichain->bitpos, &coloredparms)) {
                         if (!outonly_parm) {
-                            (*livbb_shared)->firstisstr = true;
+                            (*lu)->firstisstr = true;
                         }
                         if ((!allcallersave || ichain->isvar_issvar.location.memtype == Mmt) &&
-                                (*livbb_shared)->reg == 0 && doprecolor) {
+                                (*lu)->reg == 0 && doprecolor) {
                             if (passedinreg(ichain, offsetpassedbyint)) {
                                 passedcl = regclassof(ichain);
                                 if (ichain->isvar_issvar.location.memtype == Mmt) {
-                                    (*livbb_shared)->reg = 1;
+                                    (*lu)->reg = 1;
                                 } else {
-                                    (*livbb_shared)->reg = firstparmreg[passedcl - 1] + ichain->isvar_issvar.location.addr / 4;
+                                    (*lu)->reg = firstparmreg[passedcl - 1] + ichain->isvar_issvar.location.addr / 4;
                                 }
 
                                 if (passedcl == 2 && ichain->isvar_issvar.location.addr) {
-                                    (*livbb_shared)->reg = firstparmreg[passedcl - 1] + 1;
+                                    (*lu)->reg = firstparmreg[passedcl - 1] + 1;
                                 }
 
-                                SET_ADD(node_shared->regsused[passedcl - 1], (*livbb_shared)->reg);
+                                SET_ADD(node->regsused[passedcl - 1], (*lu)->reg);
                             }
                         }
                     }
@@ -873,25 +875,25 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
             }
 
             if (const_value) {
-                setbit(&node_shared->bvs.stage2.unk16C, ichain->bitpos);
+                setbit(&node->bvs.stage2.unk16C, ichain->bitpos);
             }
             break;
 
         case isilda:
         case issvar:
-            if (!bvectin(ichain->bitpos, &node_shared->bvs.stage1.u.cm.insert)) {
+            if (!bvectin(ichain->bitpos, &node->bvs.stage1.u.cm.insert)) {
                 if (arg1) {
                     noop = false;
                 } else {
                     if ((ichain->dtype != Idt && ichain->dtype != Kdt) || dwopcode) {
-                        formlivbb(ichain, node_shared, livbb_shared);
+                        formlivbb(ichain, node, lu);
                         if (outofmem) {
                             break;
                         }
 
-                        (*livbb_shared)->load_count++;
-                        if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
-                            setbit(&node_shared->bvs.stage2.loclive, ichain->bitpos);
+                        (*lu)->load_count++;
+                        if ((*lu)->load_count == 1 && (*lu)->store_count == 0) {
+                            setbit(&node->bvs.stage2.loclive, ichain->bitpos);
                         }
                     }
                     const_value = false;
@@ -899,16 +901,16 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                 break;
             }
 
-            if (!arg1 && bvectin(ichain->bitpos, &node_shared->bvs.stage1.u.scm.source)) {
+            if (!arg1 && bvectin(ichain->bitpos, &node->bvs.stage1.u.scm.source)) {
                 if ((ichain->dtype != Idt && ichain->dtype != Kdt) || dwopcode) {
-                    formlivbb(ichain, node_shared, livbb_shared);
+                    formlivbb(ichain, node, lu);
                     if (outofmem) {
                         break;
                     }
 
-                    (*livbb_shared)->load_count++;
-                        if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
-                            setbit(&node_shared->bvs.stage2.loclive, ichain->bitpos);
+                    (*lu)->load_count++;
+                        if ((*lu)->load_count == 1 && (*lu)->store_count == 0) {
+                            setbit(&node->bvs.stage2.loclive, ichain->bitpos);
                         }
                 }
                 const_value = false;
@@ -916,22 +918,22 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
             }
 
             if (ichain->type == isilda) {
-                func_0045FBB4(ichain->islda_isilda.outer_stack_ichain, 0, arg2, node_shared, livbb_shared);
+                func_0045FBB4(ichain->islda_isilda.outer_stack_ichain, 0, arg2, node, lu);
             } else {
-                func_0045FBB4(ichain->isvar_issvar.outer_stack_ichain, 0, arg2, node_shared, livbb_shared);
+                func_0045FBB4(ichain->isvar_issvar.outer_stack_ichain, 0, arg2, node, lu);
             }
 
             const_value = false;
             if (arg1 && ((ichain->dtype != Idt && ichain->dtype != Kdt) || dwopcode)) {
-                formlivbb(ichain, node_shared, livbb_shared);
+                formlivbb(ichain, node, lu);
                 if (outofmem) {
                     break;
                 }
 
-                (*livbb_shared)->store_count++;
-                setbit(&node_shared->bvs.stage2.locdef, ichain->bitpos);
-                if ((*livbb_shared)->load_count == 0) {
-                    (*livbb_shared)->firstisstr = true;
+                (*lu)->store_count++;
+                setbit(&node->bvs.stage2.locdef, ichain->bitpos);
+                if ((*lu)->load_count == 0) {
+                    (*lu)->firstisstr = true;
                 }
             }
             break;
@@ -939,26 +941,26 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
         case isop:
             if (ichain->isop.opc == Uisst || ichain->isop.opc == Ustr) {
                 if (ichain->isop.opc == Uisst) {
-                    func_0045FBB4(ichain->isop.op1->isvar_issvar.outer_stack_ichain, 0, arg2, node_shared, livbb_shared);
+                    func_0045FBB4(ichain->isop.op1->isvar_issvar.outer_stack_ichain, 0, arg2, node, lu);
                 }
-                func_0045FBB4(ichain->isop.op2, 0, arg2, node_shared, livbb_shared);
-                if (ichain->isop.op1->isvar_issvar.veqv == 0 && !bvectin(ichain->isop.op1->bitpos, &node_shared->indiracc) &&
+                func_0045FBB4(ichain->isop.op2, 0, arg2, node, lu);
+                if (ichain->isop.op1->isvar_issvar.veqv == 0 && !bvectin(ichain->isop.op1->bitpos, &node->indiracc) &&
                         ((ichain->isop.op1->dtype != Idt && ichain->isop.op1->dtype != Kdt) || dwopcode)) {
-                    formlivbb(ichain->isop.op1, node_shared, livbb_shared);
+                    formlivbb(ichain->isop.op1, node, lu);
                     if (outofmem) {
                         break;
                     }
 
-                    (*livbb_shared)->store_count++;
-                    setbit(&node_shared->bvs.stage2.locdef, ichain->isop.op1->bitpos);
-                    if ((*livbb_shared)->load_count == 0) {
-                        (*livbb_shared)->firstisstr = true;
+                    (*lu)->store_count++;
+                    setbit(&node->bvs.stage2.locdef, ichain->isop.op1->bitpos);
+                    if ((*lu)->load_count == 0) {
+                        (*lu)->firstisstr = true;
                     }
 
-                    if (node_shared->stat_tail->opc == Ucup ||
-                            node_shared->stat_tail->opc == Uicuf ||
-                            node_shared->stat_tail->opc == Ucia) {
-                        (*livbb_shared)->reg = 0;
+                    if (node->stat_tail->opc == Ucup ||
+                            node->stat_tail->opc == Uicuf ||
+                            node->stat_tail->opc == Ucia) {
+                        (*lu)->reg = 0;
                     }
                 }
                 const_value = false;
@@ -977,17 +979,17 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                     ichain->isop.opc == Utpne ||
                     ichain->isop.opc == Uirst ||
                     ichain->isop.opc == Uirsv) {
-                func_0045FBB4(ichain->isop.op1, 0, arg2, node_shared, livbb_shared);
-                func_0045FBB4(ichain->isop.op2, 0, arg2, node_shared, livbb_shared);
+                func_0045FBB4(ichain->isop.op1, 0, arg2, node, lu);
+                func_0045FBB4(ichain->isop.op2, 0, arg2, node, lu);
                 const_value = false;
                 break;
             }
             if (ichain->isop.opc == Uchkt) {
-                func_0045FBB4(ichain->isop.op1, 0, arg2, node_shared, livbb_shared);
+                func_0045FBB4(ichain->isop.op1, 0, arg2, node, lu);
                 const_value = false;
                 break;
             }
-            if (!bvectin(ichain->bitpos, &node_shared->bvs.stage1.u.cm.insert)) {
+            if (!bvectin(ichain->bitpos, &node->bvs.stage1.u.cm.insert)) {
                 if (arg1) {
                     noop = 0;
                     break;
@@ -996,32 +998,32 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
 
                 if ((ichain->isop.datatype != Sdt || int_reg_size < sizeofsetexpr(ichain)) &&
                         ((ichain->isop.datatype != Idt && ichain->isop.datatype != Kdt) || dwopcode)) {
-                    formlivbb(ichain, node_shared, livbb_shared);
+                    formlivbb(ichain, node, lu);
                     if (outofmem) {
                         break;
                     }
 
-                    (*livbb_shared)->load_count++;
-                    if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
-                        setbit(&node_shared->bvs.stage2.loclive, ichain->bitpos);
+                    (*lu)->load_count++;
+                    if ((*lu)->load_count == 1 && (*lu)->store_count == 0) {
+                        setbit(&node->bvs.stage2.loclive, ichain->bitpos);
                     }
                 }
                 break;
             }
 
-            if (!arg1 && bvectin(ichain->bitpos, &node_shared->bvs.stage1.u.scm.source)) {
-                if (!bvectin(ichain->bitpos, &node_shared->bvs.stage2.unk16C)) {
+            if (!arg1 && bvectin(ichain->bitpos, &node->bvs.stage1.u.scm.source)) {
+                if (!bvectin(ichain->bitpos, &node->bvs.stage2.unk16C)) {
                     if ((ichain->isop.datatype != Sdt || int_reg_size < sizeofsetexpr(ichain)) &&
                             ((ichain->isop.datatype != Idt && ichain->isop.datatype != Kdt) || dwopcode)) {
                         const_value = false;
-                        formlivbb(ichain, node_shared, livbb_shared);
+                        formlivbb(ichain, node, lu);
                         if (outofmem) {
                             break;
                         }
 
-                        (*livbb_shared)->load_count++;
-                        if ((*livbb_shared)->load_count == 1 && (*livbb_shared)->store_count == 0) {
-                            setbit(&node_shared->bvs.stage2.loclive, ichain->bitpos);
+                        (*lu)->load_count++;
+                        if ((*lu)->load_count == 1 && (*lu)->store_count == 0) {
+                            setbit(&node->bvs.stage2.loclive, ichain->bitpos);
                         }
                     }
                 } else {
@@ -1031,29 +1033,29 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
             }
 
             if (mipsflag != 3 && bvectin(ichain->bitpos, &old)) {
-                setbit(&node_shared->bvs.stage1.u.scm.source, ichain->bitpos);
-                setbit(&node_shared->bvs.stage1.u.scm.region, ichain->bitpos);
+                setbit(&node->bvs.stage1.u.scm.source, ichain->bitpos);
+                setbit(&node->bvs.stage1.u.scm.region, ichain->bitpos);
                 setbit(&coloreditems, ichain->bitpos);
                 if ((ichain->isop.datatype != Idt && ichain->isop.datatype != Kdt) || dwopcode) {
-                    formlivbb(ichain, node_shared, livbb_shared);
+                    formlivbb(ichain, node, lu);
                     if (outofmem) {
                         break;
                     }
 
-                    (*livbb_shared)->store_count++;
-                    setbit(&node_shared->bvs.stage2.locdef, ichain->bitpos);
-                    if ((*livbb_shared)->load_count == 0) {
-                        (*livbb_shared)->firstisstr = 1;
+                    (*lu)->store_count++;
+                    setbit(&node->bvs.stage2.locdef, ichain->bitpos);
+                    if ((*lu)->load_count == 0) {
+                        (*lu)->firstisstr = 1;
                     }
-                    (*livbb_shared)->load_count++;
+                    (*lu)->load_count++;
                 }
                 const_value = false;
                 break;
             }
 
-            sp52 = func_0045FBB4(ichain->isop.op1, 0, arg2, node_shared, livbb_shared);
+            sp52 = func_0045FBB4(ichain->isop.op1, 0, arg2, node, lu);
             if (optab[ichain->isop.opc].is_binary_op) {
-                sp52 = func_0045FBB4(ichain->isop.op2, 0, arg2, node_shared, livbb_shared) && sp52;
+                sp52 = func_0045FBB4(ichain->isop.op2, 0, arg2, node, lu) && sp52;
                 if (sp52) {
                     switch (ichain->isop.opc) {
                         case Uadd:
@@ -1087,7 +1089,7 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
             } else {
                 if (ichain->isop.opc == Ucg2) {
                     if (ichain->isop.op2 != NULL) {
-                        func_0045FBB4(ichain->isop.op2, 0, arg2, node_shared, livbb_shared);
+                        func_0045FBB4(ichain->isop.op2, 0, arg2, node, lu);
                     }
                 }
 
@@ -1126,19 +1128,19 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                 setbit(&old, ichain->bitpos); // looks like a hack
             }
             if (const_value) {
-                setbit(&node_shared->bvs.stage2.unk16C, ichain->bitpos);
+                setbit(&node->bvs.stage2.unk16C, ichain->bitpos);
             }
             if (arg1) {
                 if ((ichain->isop.datatype != Idt && ichain->isop.datatype != Kdt) || dwopcode) {
-                    formlivbb(ichain, node_shared, livbb_shared);
+                    formlivbb(ichain, node, lu);
                     if (outofmem) {
                         break;
                     }
 
-                    (*livbb_shared)->store_count++;
-                    setbit(&node_shared->bvs.stage2.locdef, ichain->bitpos);
-                    if ((*livbb_shared)->load_count == 0) {
-                        (*livbb_shared)->firstisstr = 1;
+                    (*lu)->store_count++;
+                    setbit(&node->bvs.stage2.locdef, ichain->bitpos);
+                    if ((*lu)->load_count == 0) {
+                        (*lu)->firstisstr = 1;
                     }
                 }
 
@@ -1182,14 +1184,14 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                         }
 
                         if ((sp40->isop.datatype != Idt && sp40->isop.datatype != Kdt) || dwopcode) {
-                            func_0045FBB4(ichain->isop.unk24_cand->ichain_unk10, 0, 0, node_shared, livbb_shared);
-                            formlivbb(sp40, node_shared, livbb_shared);
+                            func_0045FBB4(ichain->isop.unk24_cand->ichain_unk10, 0, 0, node, lu);
+                            formlivbb(sp40, node, lu);
 
-                            (*livbb_shared)->store_count++;
-                            setbit(&node_shared->bvs.stage2.locdef, ichain->isop.unk24_cand->unk18);
+                            (*lu)->store_count++;
+                            setbit(&node->bvs.stage2.locdef, ichain->isop.unk24_cand->unk18);
 
-                            if ((*livbb_shared)->load_count == 0) {
-                                (*livbb_shared)->firstisstr = true;
+                            if ((*lu)->load_count == 0) {
+                                (*lu)->firstisstr = true;
                             }
                         }
                     }
@@ -1209,7 +1211,7 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
 00461084 func_00461084
 0046123C func_0046123C
 */
-static void func_00461084(struct IChain *ichain, struct Graphnode *node_shared) {
+static void func_00461084(struct IChain *ichain, struct Graphnode *node) {
     struct LiveUnit *lu;
 
     switch (ichain->type) {
@@ -1218,32 +1220,32 @@ static void func_00461084(struct IChain *ichain, struct Graphnode *node_shared) 
             break;
 
         case isilda:
-            func_00461084(ichain->islda_isilda.outer_stack_ichain, node_shared);
+            func_00461084(ichain->islda_isilda.outer_stack_ichain, node);
             break;
 
         case issvar:
-            func_00461084(ichain->isvar_issvar.outer_stack_ichain, node_shared);
+            func_00461084(ichain->isvar_issvar.outer_stack_ichain, node);
             break;
 
         case isvar:
             if ((ichain->dtype != Idt && ichain->dtype != Kdt) || dwopcode || ichain->isvar_issvar.location.memtype == Rmt) {
-                formlivbb(ichain, node_shared, &lu);
+                formlivbb(ichain, node, &lu);
                 if (outofmem) {
                     return;
                 }
                 lu->load_count++;
                 if (lu->load_count == 1 && lu->store_count == 0) {
-                    setbit(&node_shared->bvs.stage2.loclive, ichain->bitpos);
+                    setbit(&node->bvs.stage2.loclive, ichain->bitpos);
                 }
             }
             return;
 
         case isop:
             if (optab[ichain->isop.opc].is_binary_op) {
-                func_00461084(ichain->isop.op1, node_shared);
-                func_00461084(ichain->isop.op2, node_shared);
+                func_00461084(ichain->isop.op1, node);
+                func_00461084(ichain->isop.op2, node);
             } else {
-                func_00461084(ichain->isop.op1, node_shared);
+                func_00461084(ichain->isop.op1, node);
             }
             break;
 
@@ -1256,7 +1258,7 @@ static void func_00461084(struct IChain *ichain, struct Graphnode *node_shared) 
 /*
 00461AAC makelivranges
 */
-static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared) {
+static void func_0046123C(struct Statement *stat, struct Graphnode *node) {
     struct LiveUnit *lu;
     int sp58;
     bool phi_s6;
@@ -1277,7 +1279,7 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared)
     while (phi_s2 != NULL) {
         if (!phi_s6 || !check_ix_candidate(phi_s2->ichain, sp58)) {
             if ((phi_s2->ichain->isop.datatype != Idt && phi_s2->ichain->isop.datatype != Kdt) || dwopcode) {
-                formlivbb(phi_s2->ichain, node_shared, &lu);
+                formlivbb(phi_s2->ichain, node, &lu);
                 if (outofmem) {
                     return;
                 }
@@ -1286,15 +1288,15 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared)
                     lu->load_count += 2;
                 }
                 if (lu->load_count == 1 && lu->store_count == 0) {
-                    setbit(&node_shared->bvs.stage2.loclive, phi_s2->ichain->bitpos);
+                    setbit(&node->bvs.stage2.loclive, phi_s2->ichain->bitpos);
                 }
                 lu->store_count += 1;
-                setbit(&node_shared->bvs.stage2.locdef, phi_s2->ichain->bitpos);
+                setbit(&node->bvs.stage2.locdef, phi_s2->ichain->bitpos);
             }
 
             if (phi_s2->ichain_unk10 != NULL) {
-                if (phi_s2->ichain->isop.unk24_cand == NULL || phi_s2->ichain->isop.unk24_cand == nota_candof || node_shared->unkBb8) {
-                    func_00461084(phi_s2->ichain_unk10, node_shared);
+                if (phi_s2->ichain->isop.unk24_cand == NULL || phi_s2->ichain->isop.unk24_cand == nota_candof || node->unkBb8) {
+                    func_00461084(phi_s2->ichain_unk10, node);
                 } else {
                     if (phi_s2->unk18 == 0) {
                         phi_s1 = alloc_new(sizeof (struct IChain), &perm_heap);
@@ -1321,10 +1323,10 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared)
                     }
 
                     if ((phi_s1->isop.datatype != Idt && phi_s1->isop.datatype != Kdt) || dwopcode) {
-                        formlivbb(phi_s1, node_shared, &lu);
+                        formlivbb(phi_s1, node, &lu);
                         lu->load_count++;
                         if (lu->load_count == 1) {
-                            setbit(&node_shared->bvs.stage2.loclive, phi_s1->bitpos);
+                            setbit(&node->bvs.stage2.loclive, phi_s1->bitpos);
                         }
                     }
                 }
@@ -1338,21 +1340,21 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node_shared)
 /*
 00461AAC makelivranges
 */
-static void func_00461640(struct Statement *stat, struct Graphnode *node_shared, struct LiveUnit **livbb_shared) {
+static void func_00461640(struct Statement *stat, struct Graphnode *node, struct LiveUnit **lu) {
     struct LiveUnit *sp50;
     struct RecurThing *recur;
 
     recur = stat->u.store.u.str.unk30;
     while (recur != NULL) {
-        func_0045E5C4(recur->expr, 0, node_shared, livbb_shared);
+        func_0045E5C4(recur->expr, 0, node, lu);
         if ((recur->ichain->isop.datatype != Idt && recur->ichain->isop.datatype != Kdt) || dwopcode) {
-            formlivbb(recur->ichain, node_shared, &sp50);
+            formlivbb(recur->ichain, node, &sp50);
             if (outofmem) {
                 return;
             }
 
             sp50->store_count += 1;
-            setbit(&node_shared->bvs.stage2.locdef, recur->ichain->bitpos);
+            setbit(&node->bvs.stage2.locdef, recur->ichain->bitpos);
             if (sp50->load_count == 0) {
                 sp50->firstisstr = true;
             }

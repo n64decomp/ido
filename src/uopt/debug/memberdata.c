@@ -64,7 +64,7 @@
     .offset = offsetof(PARENT_TYPE, member),            \
     .size = sizeof(member_type),                        \
     .numElements = nelems,                              \
-    .isList = true,                                       \
+    .isList = true,                                     \
     .listNextOffset = offsetof(list_type, list_next)    \
 }
 

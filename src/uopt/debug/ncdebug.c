@@ -748,7 +748,6 @@ alt:
 
             // open the menu
             menu_open(tile);
-
             break;
 
         case CTRL('L'):

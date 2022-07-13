@@ -598,11 +598,6 @@ void codemotion(void) {
 
 #ifdef UOPT_DEBUG
     cmtrace_trace_all_precm();
-    /* 
-    for (node = graphhead; node != NULL; node = node->next) {
-        cmtrace_copy_precm(node);
-    }
-     */
 #endif
     
     // End of precm
@@ -736,7 +731,8 @@ void codemotion(void) {
         // expressions are also PPOUT if they are AVOUT
         bvectunion(&node->bvs.stage1.u.cm.ppout, &node->bvs.stage1.u.precm.avout);
 
-        // subinsert: expressions that are not in INSERT, but are nested in a larger expression that is in INSERT
+        // subinsert: expressions that are not in INSERT, but are nested in a larger expression that is in INSERT.
+        // the subexpressions are already available, and don't need to be recomputed at the insertion
         initbv(&node->bvs.stage1.u.cm.subinsert, (struct BitVectorBlock) {0});
         block = 0;
         i = 0;
@@ -804,7 +800,9 @@ void codemotion(void) {
         bvectminus(&node->bvs.stage1.u.cm.delete, &boolexp);
         bvectintsect(&node->bvs.stage1.u.cm.delete, &node->bvs.stage1.antlocs);
 
-        // subdelete: expressions that are DELETE and only appear nested inside a larger expression that is also DELETE
+        // subdelete: expressions that are DELETE and only appear nested inside a larger expression that is also DELETE.
+        // Only the value of the outermost expression needs to be saved, so subexpressions need to be marked to indicate
+        // that they aren't used in this block
         initbv(&node->bvs.stage1.u.cm.subdelete, (struct BitVectorBlock) {0});
         bvectcopy(&node->bvs.stage1.u.cm.subdelete, &node->bvs.stage1.u.cm.delete);
         bvectminus(&node->bvs.stage1.u.cm.subdelete, &storeop);
@@ -892,10 +890,5 @@ void codemotion(void) {
 
 #ifdef UOPT_DEBUG
     cmtrace_trace_all_cm();
-    /* 
-    for (node = graphhead; node != NULL; node = node->next) {
-        cmtrace_copy_cm(node);
-    }
-     */
 #endif
 }

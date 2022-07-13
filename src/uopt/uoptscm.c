@@ -351,7 +351,7 @@ static void func_0047558C(struct Loop *loop) {
 00456A2C oneproc
 */
 void getexpsources(void) {
-    struct Graphnode *node_s2;
+    struct Graphnode *node;
     struct GraphnodeList *succ;
     struct Statement *stat;
     bool done;
@@ -359,57 +359,89 @@ void getexpsources(void) {
 
     lastdftime = getclock();
     numdataflow += 1;
-    node_s2 = graphhead;
-    while (node_s2 != NULL) {
-        // SINK = (SUBDELETE & ~(ALTERS & AVLOC) & SUBINSERT) | (DELETE & ~SUBDELETE)
-        bvectcopy(&node_s2->bvs.stage1.u.scm.sink, &node_s2->bvs.stage1.u.cm.subdelete);
-        bvectminus(&node_s2->bvs.stage1.u.scm.sink, &node_s2->bvs.stage1.alters);
-        unionnot(&node_s2->bvs.stage1.u.scm.sink, &node_s2->bvs.stage1.avlocs);
-        bvectintsect(&node_s2->bvs.stage1.u.scm.sink, &node_s2->bvs.stage1.u.cm.subinsert);
-        unionminus(&node_s2->bvs.stage1.u.scm.sink, &node_s2->bvs.stage1.u.cm.delete, &node_s2->bvs.stage1.u.cm.subdelete);
-        bvectminus(&node_s2->bvs.stage1.u.scm.sink, &storeop);
-        bvectminus(&node_s2->bvs.stage1.u.scm.sink, &trapop);
+    node = graphhead;
+    while (node != NULL) {
+        // sink = (delete & ~subdelete) | (subinsert & ~avlocs) | (subinsert & subdelete & ~altered)
+        //
+        // 1. redundant, and not nested in a larger redundant expression (delete & ~subdelete)
+        //
+        // 2. nested in inserted expression, not locally available (subinsert & ~avlocs)
+        //     subinsert = ~insert = ~ppout | avout | (ppin & ~altered)
+        //       avout = avloc | (~altered & avin)
+        //     
+        // 3. what the hell (subinsert & subdelete & ~altered)
+        //      This means:
+        //        expr is a subexpression of INSERT and not INSERT itself
+        //        expr also only appears as a subexpression of DELETE
+        //        expr is not modified by the block
+        //
+        //    It is possible for an expression to be both INSERT and DELETE, such as an indirect increment x->a++
+        //
+        //    However, not sure if an expression can be both SUBINSERT and SUBDELETE... AND not altered.
+        //
+        //    Some work towards simplifying this case:
+        //
+        //     subdelete = delete = antloc & ppin
+        //     subinsert & subdelete & ~altered = (~ppout | avout | (ppin & ~altered)) & (antloc & ppin) & ~altered
+        //                                      = (~ppout | avout) & ppin & ~altered & antloc 
+        //
+        //     ~altered & antloc => expression is also avloc => avout          (TODO: not sure if this is actually true)
+        //     case simplies to:
+        //                                      = ppin & ~altered & antloc     (& avloc)
+        //
+        //     ppin = pavin & antin & (antloc | ~altered & ppout) & all pred (ppout | avout)
+        //     antloc => antin & (antloc | ~altered & ppout)
+        //
+        //                                      = pavin & all pred (ppout | avout) & ~altered & antloc     (& avloc)
+        bvectcopy(&node->bvs.stage1.u.scm.sink, &node->bvs.stage1.u.cm.subdelete);
+        bvectminus(&node->bvs.stage1.u.scm.sink, &node->bvs.stage1.alters);
+        unionnot(&node->bvs.stage1.u.scm.sink, &node->bvs.stage1.avlocs);
+        bvectintsect(&node->bvs.stage1.u.scm.sink, &node->bvs.stage1.u.cm.subinsert);
+        unionminus(&node->bvs.stage1.u.scm.sink, &node->bvs.stage1.u.cm.delete, &node->bvs.stage1.u.cm.subdelete);
+        bvectminus(&node->bvs.stage1.u.scm.sink, &storeop);
+        bvectminus(&node->bvs.stage1.u.scm.sink, &trapop);
         
-        initbv(&node_s2->bvs.stage1.u.scm.region, (struct BitVectorBlock) {0});
+        initbv(&node->bvs.stage1.u.scm.region, (struct BitVectorBlock) {0});
 
         // SOURCE = AVLOC & (ALTERS | ~DELETE) | INSERT
-        bvectcopy(&node_s2->bvs.stage1.u.scm.source, &node_s2->bvs.stage1.alters);
-        unionnot(&node_s2->bvs.stage1.u.scm.source, &node_s2->bvs.stage1.u.cm.delete);
-        bvectintsect(&node_s2->bvs.stage1.u.scm.source, &node_s2->bvs.stage1.avlocs);
-        bvectminus(&node_s2->bvs.stage1.u.scm.source, &asgnbits);
-        bvectunion(&node_s2->bvs.stage1.u.scm.source, &node_s2->bvs.stage1.u.cm.insert);
-        node_s2 = node_s2->next;
+        bvectcopy(&node->bvs.stage1.u.scm.source, &node->bvs.stage1.alters);
+        unionnot(&node->bvs.stage1.u.scm.source, &node->bvs.stage1.u.cm.delete);
+        bvectintsect(&node->bvs.stage1.u.scm.source, &node->bvs.stage1.avlocs);
+        bvectminus(&node->bvs.stage1.u.scm.source, &asgnbits);
+        bvectunion(&node->bvs.stage1.u.scm.source, &node->bvs.stage1.u.cm.insert);
+        node = node->next;
     }
 
     do {
-        node_s2 = graphtail;
+        node = graphtail;
         dataflowiter += 1;
         changed = false;
-        while (node_s2 != NULL) {
-            if (node_s2->successors != NULL) {
+        while (node != NULL) {
+            if (node->successors != NULL) {
                 if (!changed) {
-                    bvectcopy(&old, &node_s2->bvs.stage1.u.scm.region);
+                    bvectcopy(&old, &node->bvs.stage1.u.scm.region);
                 }
 
-                succ = node_s2->successors;
-                while (succ != NULL) {
-                    bvectunion(&node_s2->bvs.stage1.u.scm.region, &succ->graphnode->bvs.stage1.u.scm.sink);
-                    succ = succ->next;
+                // region = union of succ->sink
+                for (succ = node->successors; succ != NULL; succ = succ->next) {
+                    bvectunion(&node->bvs.stage1.u.scm.region, &succ->graphnode->bvs.stage1.u.scm.sink);
                 }
-                if (!changed && !bvecteq(&old, &node_s2->bvs.stage1.u.scm.region)) {
+
+                if (!changed && !bvecteq(&old, &node->bvs.stage1.u.scm.region)) {
                     changed = true;
                 }
             }
             if (!changed) {
-                bvectcopy(&old, &node_s2->bvs.stage1.u.scm.sink);
+                bvectcopy(&old, &node->bvs.stage1.u.scm.sink);
             }
 
-            unionminus(&node_s2->bvs.stage1.u.scm.sink, &node_s2->bvs.stage1.u.scm.region, &node_s2->bvs.stage1.u.scm.source);
-            if (!changed && !bvecteq(&old, &node_s2->bvs.stage1.u.scm.sink)) {
+            // sink = sink | (region & ~source)
+            unionminus(&node->bvs.stage1.u.scm.sink, &node->bvs.stage1.u.scm.region, &node->bvs.stage1.u.scm.source);
+            if (!changed && !bvecteq(&old, &node->bvs.stage1.u.scm.sink)) {
                 changed = true;
             }
 
-            node_s2 = node_s2->prev;
+            node = node->prev;
         }
     } while (changed);
 
@@ -419,17 +451,17 @@ void getexpsources(void) {
     }
 
     checkbvlist(&coloreditems);
-    node_s2 = graphhead;
-    while (node_s2 != NULL) {
-        bvectintsect(&node_s2->bvs.stage1.u.scm.source, &node_s2->bvs.stage1.u.scm.region);
-        bvectunion(&node_s2->bvs.stage1.u.scm.region, &node_s2->bvs.stage1.u.scm.sink);
-        bvectunion(&coloreditems, &node_s2->bvs.stage1.u.scm.region);
+    node = graphhead;
+    while (node != NULL) {
+        bvectintsect(&node->bvs.stage1.u.scm.source, &node->bvs.stage1.u.scm.region);
+        bvectunion(&node->bvs.stage1.u.scm.region, &node->bvs.stage1.u.scm.sink);
+        bvectunion(&coloreditems, &node->bvs.stage1.u.scm.region);
 
-        stat = node_s2->stat_head;
+        stat = node->stat_head;
         done = false;
         while (!done && stat != NULL) {
             if ((stat->opc == Uisst || stat->opc == Ustr) && stat->is_increment) {
-                func_00474FC8(stat, node_s2);
+                func_00474FC8(stat, node);
                 if (outofmem) {
                     return;
                 }
@@ -441,7 +473,7 @@ void getexpsources(void) {
             stat = stat->next;
         }
 
-        bvectunion(&node_s2->bvs.stage1.alters, &node_s2->bvs.stage1.u.cm.cand);
-        node_s2 = node_s2->next;
+        bvectunion(&node->bvs.stage1.alters, &node->bvs.stage1.u.cm.cand);
+        node = node->next;
     }
 }

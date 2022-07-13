@@ -1750,34 +1750,34 @@ bool in_indmults(struct IChain *ichain) {
 0044F1B8 istrfold
 0047E938 checkincre
 */
-bool checkincre(struct Expression *entry, struct Expression *entry2, int *result) {
+bool checkincre(struct Expression *assigned, struct Expression *var, int *result) {
     int result1;
     int result2;
 
-    switch (entry->type) {
+    switch (assigned->type) {
         case isvar:
         case issvar:
-            if (addreq(entry->data.isvar_issvar.location, entry2->data.isvar_issvar.location)) {
+            if (addreq(assigned->data.isvar_issvar.location, var->data.isvar_issvar.location)) {
                 *result = 1;
                 return true;
             }
             return false;
 
         case isop:
-            if (optab[entry->data.isop.opc].is_binary_op) {
-                if (entry->data.isop.opc == Uadd || entry->data.isop.opc == Usub) {
-                    if (checkincre(entry->data.isop.op1, entry2, &result1) && checkincre(entry->data.isop.op2, entry2, &result2)) {
-                        *result = entry->data.isop.opc == Uadd ? result1 + result2 : result1 - result2;
+            if (optab[assigned->data.isop.opc].is_binary_op) {
+                if (assigned->data.isop.opc == Uadd || assigned->data.isop.opc == Usub) {
+                    if (checkincre(assigned->data.isop.op1, var, &result1) && checkincre(assigned->data.isop.op2, var, &result2)) {
+                        *result = assigned->data.isop.opc == Uadd ? result1 + result2 : result1 - result2;
                         return true;
                     }
                 }
-            } else if (entry->data.isop.opc == Udec || entry->data.isop.opc == Uinc || entry->data.isop.opc == Uneg ||
-                      (entry->data.isop.opc == Ucvt &&
-                        (entry->datatype == Adt || entry->datatype == Hdt || entry->datatype == Jdt || entry->datatype == Ldt) &&
-                        (entry->data.isop.aux.cvtfrom == Adt || entry->data.isop.aux.cvtfrom == Hdt || entry->data.isop.aux.cvtfrom == Jdt || entry->data.isop.aux.cvtfrom == Ldt)))
+            } else if (assigned->data.isop.opc == Udec || assigned->data.isop.opc == Uinc || assigned->data.isop.opc == Uneg ||
+                      (assigned->data.isop.opc == Ucvt &&
+                        (assigned->datatype == Adt || assigned->datatype == Hdt || assigned->datatype == Jdt || assigned->datatype == Ldt) &&
+                        (assigned->data.isop.aux.cvtfrom == Adt || assigned->data.isop.aux.cvtfrom == Hdt || assigned->data.isop.aux.cvtfrom == Jdt || assigned->data.isop.aux.cvtfrom == Ldt)))
             {
-                if (checkincre(entry->data.isop.op1, entry2, &result1)) {
-                    *result = entry->data.isop.opc == Uneg ? -result1 : result1;
+                if (checkincre(assigned->data.isop.op1, var, &result1)) {
+                    *result = assigned->data.isop.opc == Uneg ? -result1 : result1;
                     return true;
                 }
             }
@@ -1947,6 +1947,8 @@ bool has_ilod(struct Expression *expr) {
 
 /*
 0041550C find_replacements
+
+Returns true if expr is (arg +- constant). It is used to exclude an expression from copy propagation... but why?
 */
 bool is_incr(struct Expression *expr) {
     if (expr->type != isop) {
@@ -1961,6 +1963,7 @@ bool is_incr(struct Expression *expr) {
         return false;
     }
 
+    // returns true only if one of the operands is a function argument, and the other is a constant
     if (expr->data.isop.op1->type == isvar &&
         expr->data.isop.op1->data.isvar_issvar.location.memtype == Pmt &&
         expr->data.isop.op2->type == isconst)
@@ -2012,16 +2015,16 @@ void *alloc_realloc(void *old, ssize_t oldsize16, ssize_t newsize16, struct Allo
 00421C00 epilog
 0045DA18 formlivbb
 */
-bool fitparmreg(int arg0, int arg1, int arg2, int arg3) {
-    if ((arg0 % int_reg_size) == 0) {
-        if ((arg1 % int_reg_size) == 0) {
+bool fitparmreg(int var_addr, int var_size, int arg_addr, int arg_size) {
+    if ((var_addr % int_reg_size) == 0) {
+        if ((var_size % int_reg_size) == 0) {
             return true;
         }
     }
     if (!bigendian) {
-        return (arg0 == arg2);
+        return (var_addr == arg_addr);
     }
-    return ((arg2 + arg3) == (arg0 + arg1));
+    return ((arg_addr + arg_size) == (var_addr + var_size));
 }
 
 /*

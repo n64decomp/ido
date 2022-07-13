@@ -1099,7 +1099,6 @@ void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct
     sr->len = dl->pos - sr->start;
 }
 
-
 // TODO: special cases where bitvectors are sets of registers/graphnodes
 void dl_print_bitvectorbb(struct DisplayLine *dl, struct StringRep *parent, struct BitVector *bv)
 {
@@ -1110,7 +1109,7 @@ void dl_print_bitvectorbb(struct DisplayLine *dl, struct StringRep *parent, stru
     int blockpos;
     int word = 0;
     int i;
-    bool at_first = true;
+    bool first = true;
 
     if (bv->blocks == NULL) {
         dl_printf(dl, "(0) []");
@@ -1119,16 +1118,15 @@ void dl_print_bitvectorbb(struct DisplayLine *dl, struct StringRep *parent, stru
 
     dl_printf(dl, "(%d) [", bv->num_blocks);
 
-
     for (blockpos = 0; blockpos < bv->num_blocks && blockpos <= (bitposcount - 1) >> 7; blockpos++) {
         for (i = word; i < word + 128; i++) {
             if (bv->blocks[blockpos].words[(i & 0x7f) >> 5] & (1U << (31 - (i & 0x1f)))) {
-                    if (at_first) {
-                        dl_printf(dl, "%d", i);
-                        at_first = false;
-                    } else {
-                        dl_printf(dl, ", %d", i);
-                    }
+                if (first) {
+                    dl_printf(dl, "%d", i);
+                    first = false;
+                } else {
+                    dl_printf(dl, ", %d", i);
+                }
             }
         }
         word += 128;
@@ -1149,7 +1147,7 @@ void dl_print_bitvector(struct DisplayLine *dl, struct StringRep *parent, struct
     int blockpos;
     int word = 0;
     int i;
-    bool at_first = true;
+    bool first = true;
 
     if (bv->blocks == NULL) {
         dl_printf(dl, "(0) []");
@@ -1158,16 +1156,15 @@ void dl_print_bitvector(struct DisplayLine *dl, struct StringRep *parent, struct
 
     dl_printf(dl, "(%d) [", bv->num_blocks);
 
-
     for (blockpos = 0; blockpos < bv->num_blocks && blockpos <= (bitposcount - 1) >> 7; blockpos++) {
         for (i = word; i < word + 128; i++) {
             if (bv->blocks[blockpos].words[(i & 0x7f) >> 5] & (1U << (31 - (i & 0x1f)))) {
-                    if (at_first) {
-                        dl_printf(dl, "%d", i);
-                        at_first = false;
-                    } else {
-                        dl_printf(dl, ", %d", i);
-                    }
+                if (first) {
+                    dl_printf(dl, "%d", i);
+                    first = false;
+                } else {
+                    dl_printf(dl, ", %d", i);
+                }
             }
         }
         word += 128;
@@ -1365,15 +1362,21 @@ struct DisplayLine *dl_from_bittab_liverange(int bit, struct LiveRange *liverang
 struct DisplayLine *dl_from_bitvector(struct BitVector *bv, const char *name)
 {
     struct DisplayLine *dl = dl_new();
+    struct StringRep *n;
 
-    struct StringRep *n = sr_newchild(dl, dl->top);
-    n->type = INFO;
-    n->start = dl->pos;
-
-    dl_printf(dl, "%s: ", name);
-    n->len = dl->pos - n->start;
+    if (name != NULL) {
+        n = sr_newchild(dl, dl->top);
+        n->type = FIELDNAME;
+        n->start = dl->pos;
+        dl_printf(dl, "%s: ", name);
+        n->len = dl->pos - n->start;
+    }
 
     dl_print_bitvector(dl, dl->top, bv);
+
+    if (name != NULL) {
+        n->data = sr_lastchild(dl->top); // TODO: hack
+    }
 
     dl->len = dl->pos;
     return dl;

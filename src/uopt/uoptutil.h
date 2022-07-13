@@ -68,7 +68,7 @@ bool has_volt_ovfw(struct Expression *expr);
 bool has_ilod(struct Expression *expr);
 bool is_incr(struct Expression *expr);
 void *alloc_realloc(void *old_ptr, ssize_t old_size_16_byte_blocks, ssize_t new_size_16_byte_blocks, struct AllocBlock **heap);
-bool fitparmreg(int arg0, int arg1, int arg2, int arg3);
+bool fitparmreg(int var_addr, int var_size, int arg_addr, int arg_size);
 
 bool trap_imply(struct IChain *trap_ichain, struct IChain *ichain);
 int trapstat_imply(struct Statement *stmt, struct Expression *op1, struct Expression *op2);
