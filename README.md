@@ -42,10 +42,12 @@ The main keys to know are `c` (`c`olor) and `x`/`X` (e`x`amine).
 |C-B    | Jump one page up   |
 | s     | Split window horizontally, creating a new window below the current one |
 | S     | Split window vertically, creating a new window to the right of the current one |
+| Esc   | Open the tile menu in the current window |
+| Enter | While in the tile menu, open the tile under the cursor |
 | HJKL  | Move cursor to a different window |
-| q     | Close the current window (unless the current window is the main procedure window) |
-| Q     | Stop debugging the current function, and switch to the next one in the file |
-| c     | Globally highlight whatever object the cursor is on |
+| q     | Close the current window (unless there is only one window) |
+| Q     | Stop debugging the current function, advance to the next one in the file |
+| c     | Globally highlight whatever object is under the cursor |
 |C-L    | Redraw the current window |
 |C-L C-L| Redraw all windows |
 | xX    | Examine whatever object the cursor is on. Opens a new window that displays the struct's fields and their values |
@@ -67,7 +69,7 @@ cd src
 ../mipsdisasm/elfdump -i -p ~/ido7.1_compiler/usr/lib/uopt -t ../uopt_split_specification.txt
 ```
 
-To generate an assembly file that can easily be used with mips_to_c, run the following command:
+To generate an assembly file that can easily be used with mips\_to\_c, run the following command:
 
 ```
 mipsdisasm/elfdump -i -r -p ~/ido7.1_compiler/usr/lib/uopt > uopt71.s
