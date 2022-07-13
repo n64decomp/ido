@@ -161,15 +161,43 @@ struct StringRep *sr_fieldname(struct StringRep *sr)
     }
 }
 
-struct LineBuffer examine_buffer(struct StringRep *sr)
+struct LineBuffer examine_bitvector(struct StringRep *sr)
 {
     struct LineBuffer buf = {0};
     buf.lines = vec_new();
 
+    bool printed_constbit = false;
+    if (bitposcount == 0 || bvectempty(&sr->bitvector)) {
+        vec_add(buf.lines, dl_placeholder("Empty"));
+    } else {
+        vec_add(buf.lines, dl_from_bitvector(&sr->bitvector, NULL));
+        for (int i = 0; i < bitposcount; i++) {
+            if (bvectin(i, &sr->bitvector)) {
+                if (!printed_constbit && i >= firstconstbit && i > 0) {
+                    vec_add(buf.lines, dl_new_printf("Constants"));
+                    printed_constbit = true;
+                }
+                vec_add(buf.lines, dl_from_bittab_ichain(i, bittab[i].ichain));
+            }
+        }
+    }
+
+    return buf;
+}
+
+struct LineBuffer examine_buffer(struct StringRep *sr)
+{
     // TODO: hacky... sr->data points to the stringrep that should be examined
     if (sr->type == FIELDNAME && sr->data != NULL) {
         sr = sr->data;
     }
+
+    if (sr->type == BITVECTOR) {
+        return examine_bitvector(sr);
+    }
+
+    struct LineBuffer buf = {0};
+    buf.lines = vec_new();
 
     if (gStructData[sr->type].members == NULL) {
         vec_add(buf.lines, dl_new_printf("examine not implemented for this type (%d)", sr->type));
@@ -188,7 +216,7 @@ struct LineBuffer examine_buffer(struct StringRep *sr)
 void examine(struct Tile *tile, bool splitVertical)
 {
     struct StringRep *sr = dl_get_sr_at_pos(CURSOR_LINE(tile), tile->cursCol);
-    if (!sr){
+    if (!sr) {
         return;
     }
 
