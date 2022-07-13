@@ -100,7 +100,7 @@ struct Member liveRangeMembers[] = {
     MEMBER_SPECIAL(BITVECTORBB, struct BitVector, livebbs),
     MEMBER(int, unk1C),
     MEMBER_SPECIAL(REGISTER, char, assigned_reg),
-    MEMBER(unsigned char, unk21),
+    MEMBER(unsigned char, regsleft),
     MEMBER(bool, hasstore),
     MEMBER(unsigned char, unk23),
     MEMBER(int, unk24),
@@ -132,8 +132,8 @@ struct Member liveUnitMembers[] = {
 struct Member interfereListMembers[] = {
     MEMBER(struct LiveRange *, liverange),
     MEMBER(struct InterfereList *, next),
-    MEMBER(unsigned char, unk8),
     MEMBER(unsigned char, shared),
+    MEMBER(unsigned char, marked),
 };
 #undef PARENT_TYPE
 

@@ -1446,7 +1446,7 @@ long long int usedeeregs[2];
 004394FC procinit_regs
 00461AAC makelivranges
 */
-long long int dftregsused;
+long long int dftregsused; // default registers used
 
 /*
 004394FC procinit_regs

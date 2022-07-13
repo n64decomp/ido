@@ -775,8 +775,8 @@ void insintf(struct InterfereList **interfere, struct LiveRange *lr) {
     }
 
     intf->next = *interfere;
-    intf->unk8 = false;
     intf->shared = false;
+    intf->marked = false;
     intf->liverange = lr;
     *interfere = intf;
 }
@@ -1031,7 +1031,7 @@ void updatecolorsleft(struct LiveRange *lr, int regclass) {
         }
     }
 
-    lr->unk21 = regsleft;
+    lr->regsleft = regsleft;
 }
 
 /*
@@ -1062,7 +1062,7 @@ int findsharedintf(struct InterfereList *intf, int nodenum) {
             if (intf->liverange->assigned_reg == -1) {
                 intf->liverange = NULL;
             } else if (bvectin(nodenum, &intf->liverange->livebbs)) {
-                intf->unk8 = true;
+                intf->shared = true;
                 count++;
             }
         }
@@ -1078,9 +1078,9 @@ int marksharedintf(struct InterfereList *intf, int nodenum) {
     int count = 0;
 
     while (intf != NULL) {
-        if (!intf->unk8) {
+        if (!intf->shared) {
             if (intf->liverange != NULL && bvectin(nodenum, &intf->liverange->livebbs)) {
-                intf->shared = true;
+                intf->marked = true;
                 count++;
             }
         }
@@ -1106,15 +1106,18 @@ void addadjacents(struct LiveRange *lr1, struct LiveRange *lr2, struct LiveUnit 
             lu = gettolivbb(lr1->ichain, succ->graphnode);
             oldforbidden[0] = lr2->forbidden[0];
             oldforbidden[1] = lr2->forbidden[1];
-            oldunk21 = lr2->unk21;
+            oldunk21 = lr2->regsleft;
 
+            // count the new interference nodes that would be added to lr2
             shared = marksharedintf(lr1->interfere, succ->graphnode->num);
             updateforbidden(succ->graphnode, lu->reg, lr2, regclass);
             updatecolorsleft(lr2, regclass);
-            if ((shared < oldunk21 && lr2->unk21 * 2 >= lr2->unk24 + shared && doheurab) || (!doheurab && lr2->unk21 != 0)) {
+            if ((shared < oldunk21 && lr2->regsleft * 2 >= lr2->unk24 + shared && doheurab) || (!doheurab && lr2->regsleft != 0)) {
+                // add this node to the BFS queue
                 formingmax++;
                 formingtab[formingmax] = succ->graphnode;
 
+                // move node from lr1 to lr2
                 resetbit(&lr1->livebbs, succ->graphnode->num);
                 if (lu != dft_livbb) {
                     dellivbb(&lr1->liveunits, lu);
@@ -1129,19 +1132,20 @@ void addadjacents(struct LiveRange *lr1, struct LiveRange *lr2, struct LiveUnit 
                 setbitbb(&lr2->livebbs, succ->graphnode->num);
                 lr2->unk24 += shared;
 
+                // marked interference lists are now shared
                 for (intf = lr1->interfere; intf != NULL; intf = intf->next) {
-                    if (intf->shared) {
-                        intf->unk8 = true;
-                        intf->shared = false;
+                    if (intf->marked) {
+                        intf->shared = true;
+                        intf->marked = false;
                     }
                 }
             } else {
-                lr2->unk21 = oldunk21;
+                lr2->regsleft = oldunk21;
                 lr2->forbidden[0] = oldforbidden[0];
                 lr2->forbidden[1] = oldforbidden[1];
 
                 for (intf = lr1->interfere; intf != NULL; intf = intf->next) {
-                    intf->shared = false;
+                    intf->marked = false;
                 }
             }
         }
@@ -1510,7 +1514,7 @@ bool needsplit(struct LiveRange *lr, int regclass) {
     bool cantsplit;
     bool res;
 
-    if (lr->unk21 != 0) {
+    if (lr->regsleft != 0) {
         res = false;
     } else {
         cantsplit = true;
@@ -1564,7 +1568,7 @@ bool needsplit(struct LiveRange *lr, int regclass) {
 /*
 00469280 globalcolor
 */
-void split(struct LiveRange **src, struct LiveRange **dest, int regclass, bool arg3) {
+void split(struct LiveRange **newlr, struct LiveRange **out, int regclass, bool arg3) {
     bool found;
     struct LiveUnit *lu;
     int i;
@@ -1573,37 +1577,43 @@ void split(struct LiveRange **src, struct LiveRange **dest, int regclass, bool a
     struct InterfereList *next;
     struct InterfereList *intf2;
 
-    *dest = alloc_new(sizeof(struct LiveRange), &perm_heap);
-    if (*dest == NULL) {
+    // newlr: adds liveunits up to the point that the liverange still has available registers
+    // out: contains the liveunits that didn't get added to newlr
+
+    // out is allocated, but we copy the old liverange over to it, so it's confusing...
+    *out = alloc_new(sizeof(struct LiveRange), &perm_heap);
+    if (*out == NULL) {
         outofmem = true;
         return;
     }
 
 #ifdef AVOID_UB
-    (*dest)->adjsave = 0;
-    (*dest)->unk24 = 0;
+    (*out)->adjsave = 0;
+    (*out)->unk24 = 0;
 #endif
-    (*dest)->next = (*src)->next;
-    (*src)->next = *dest;
-    (*dest)->ichain = (*src)->ichain;
-    (*dest)->assigned_reg = 0;
-    (*dest)->hasstore = (*src)->hasstore;
-    (*dest)->unk21 = (*src)->unk21;
-    (*dest)->bitpos = newbit((*src)->ichain, *dest);
-    (*dest)->unk1C = -1;
-    (*dest)->livebbs = (*src)->livebbs;
-    (*dest)->reachingbbs = (*src)->reachingbbs;
-    (*dest)->liveunits = (*src)->liveunits;
-    (*dest)->forbidden[0] = (*src)->forbidden[0];
-    (*dest)->forbidden[1] = (*src)->forbidden[1];
+    (*out)->next = (*newlr)->next;
+    (*newlr)->next = *out;
+    (*out)->ichain = (*newlr)->ichain;
+    (*out)->assigned_reg = 0;
+    (*out)->hasstore = (*newlr)->hasstore;
+    (*out)->regsleft = (*newlr)->regsleft;
+    (*out)->bitpos = newbit((*newlr)->ichain, *out);
+    (*out)->unk1C = -1;
+    (*out)->livebbs = (*newlr)->livebbs;
+    (*out)->reachingbbs = (*newlr)->reachingbbs;
+    (*out)->liveunits = (*newlr)->liveunits;
+    (*out)->forbidden[0] = (*newlr)->forbidden[0];
+    (*out)->forbidden[1] = (*newlr)->forbidden[1];
 
-    (*dest)->unk23 = 0;
-    (*src)->unk23 = 0;
+    (*out)->unk23 = 0;
+    (*newlr)->unk23 = 0;
 
+    // 1. Find a live unit in the liverange where the first appearance is a definition
     found = false;
-    lu = (*dest)->liveunits;
+    lu = (*out)->liveunits;
     while (!found && lu != NULL) {
         if (lu->firstisstr &&
+                // need a node with some registers available 
                 (SET_NEQ64(lu->node->regsused[regclass - 1], setregs[regclass - 1]) || lu->reg != 0)) {
             found = true;
         } else {
@@ -1611,8 +1621,9 @@ void split(struct LiveRange **src, struct LiveRange **dest, int regclass, bool a
         }
     }
 
+    // If none of the definitions work, start from one of the uses
     if (!found) {
-        lu = (*dest)->liveunits;
+        lu = (*out)->liveunits;
         while (!found && lu != NULL) {
             if ((SET_NEQ64(lu->node->regsused[regclass - 1], setregs[regclass - 1]) || lu->reg != 0) &&
                     lu->load_count + lu->store_count != 0) {
@@ -1624,73 +1635,77 @@ void split(struct LiveRange **src, struct LiveRange **dest, int regclass, bool a
     }
 
     if (!found) {
-        (*dest)->interfere = (*src)->interfere;
+        (*out)->interfere = (*newlr)->interfere;
         if (dowhyuncolor) {
             num0occurlr += 1;
-            contiglr += contiguous(*dest);
+            contiglr += contiguous(*out);
         }
-        goto block_37; // weird
+        goto no_split;
     } else {
-        dellivbb(&(*dest)->liveunits, lu);
-        resetbit(&(*dest)->livebbs, lu->node->num);
+        dellivbb(&(*out)->liveunits, lu);
+        resetbit(&(*out)->livebbs, lu->node->num);
         lu->next = NULL;
-        (*src)->liveunits = lu;
-        formbvlivran(&(*src)->reachingbbs);
-        formbvlivran(&(*src)->livebbs);
-        if ((*src)->livebbs.blocks == NULL) {
+        (*newlr)->liveunits = lu;
+        formbvlivran(&(*newlr)->reachingbbs);
+        formbvlivran(&(*newlr)->livebbs);
+        if ((*newlr)->livebbs.blocks == NULL) {
             return;
         }
-        (*src)->unk1C = -1;
-        setbitbb(&(*src)->livebbs, lu->node->num);
-        (*src)->forbidden[1] = 0;
-        (*src)->forbidden[0] = 0;
-        updateforbidden(lu->node, lu->reg, *src, regclass);
-        updatecolorsleft(*src, regclass);
+        (*newlr)->unk1C = -1;
+        setbitbb(&(*newlr)->livebbs, lu->node->num);
+        (*newlr)->forbidden[1] = 0;
+        (*newlr)->forbidden[0] = 0;
 
-        (*dest)->interfere = (*src)->interfere;
-        (*src)->interfere = NULL;
+        // initialize forbidden to be the set of regs used in the basic block
+        updateforbidden(lu->node, lu->reg, *newlr, regclass);
+        updatecolorsleft(*newlr, regclass);
 
-        (*dest)->unk24 = (*src)->unk24;
-        (*src)->unk24 = findsharedintf((*dest)->interfere, lu->node->num);
+        (*out)->interfere = (*newlr)->interfere;
+        (*newlr)->interfere = NULL;
 
+        (*out)->unk24 = (*newlr)->unk24;
+        (*newlr)->unk24 = findsharedintf((*out)->interfere, lu->node->num);
+
+        // 2. BFS, expand the new liverange until it would have no registers available
         formingtab[0] = lu->node;
         formingmax = 0;
         for (forminginx = 0; forminginx <= formingmax; forminginx++) {
-            if (gettolivbb((*src)->ichain, formingtab[forminginx])->deadout == false &&
+            if (gettolivbb((*newlr)->ichain, formingtab[forminginx])->deadout == false &&
                     (!arg3 || !is_cup_affecting_regs(formingtab[forminginx])) &&
                     formingtab[forminginx]->stat_tail->opc != Uijp) {
-                addadjacents(*dest, *src, &lu, regclass);
+                addadjacents(*out, *newlr, &lu, regclass);
             }
         }
         numsplitlu += forminginx;
     }
 
-    if ((*dest)->liveunits == NULL && bvectcard(&(*dest)->reachingbbs) == 0) {
+    // if we took all the liveunits, then we're back to square one
+    if ((*out)->liveunits == NULL && bvectcard(&(*out)->reachingbbs) == 0) {
         if (dowhyuncolor) {
             numcalloverheadlr += 1;
             contiglr += 1;
         }
 
-block_37: // TODO: weird control flow
+no_split:
         if (!arg3) {
             dbgerror(0x273);
         }
 
-        (*src)->assigned_reg = -1;
-        (*dest)->assigned_reg = -1;
-        resetbit(&colorcand, (*src)->bitpos);
-        resetbit(&colorcand, (*dest)->bitpos);
+        (*newlr)->assigned_reg = -1;
+        (*out)->assigned_reg = -1;
+        resetbit(&colorcand, (*newlr)->bitpos);
+        resetbit(&colorcand, (*out)->bitpos);
 
-        for (intf = (*dest)->interfere; intf != NULL; intf = intf->next) {
+        for (intf = (*out)->interfere; intf != NULL; intf = intf->next) {
             if (intf->liverange != NULL) {
                 intf->liverange->unk24--;
             }
         }
 
         if (dbugno == 6) {
-            write_integer(list.c_file, (*src)->ichain->bitpos, 4, 10);
+            write_integer(list.c_file, (*newlr)->ichain->bitpos, 4, 10);
             write_char(list.c_file, ':', 1);
-            write_integer(list.c_file, (*src)->bitpos, 5, 10);
+            write_integer(list.c_file, (*newlr)->bitpos, 5, 10);
             write_string(list.c_file, " not colored, not splittable", 28, 28);
             writeln(list.c_file);
         }
@@ -1699,45 +1714,46 @@ block_37: // TODO: weird control flow
 
     if (dbugno == 6) {
         write_string(list.c_file, "live range", 10, 10);
-        write_integer(list.c_file, (*src)->ichain->bitpos, 4, 10);
+        write_integer(list.c_file, (*newlr)->ichain->bitpos, 4, 10);
         write_char(list.c_file, ':', 1);
-        write_integer(list.c_file, (*src)->bitpos, 5, 10);
+        write_integer(list.c_file, (*newlr)->bitpos, 5, 10);
         write_string(list.c_file, " split out", 10, 10);
-        write_integer(list.c_file, (*dest)->bitpos, 5, 10);
+        write_integer(list.c_file, (*out)->bitpos, 5, 10);
         writeln(list.c_file);
     }
 
-    intf = (*dest)->interfere;
+    // add the shared interference nodes to the new liverange, and remove them from the old liverange if they no longer interfere
+    intf = (*out)->interfere;
     while (intf != NULL) {
         next = intf->next;
-        if (intf->unk8) {
-            intf->unk8 = false;
-            if (intfering(intf->liverange, *dest)) {
-                insintf(&(*src)->interfere, intf->liverange);
-                insintf(&intf->liverange->interfere, *dest);
+        if (intf->shared) {
+            intf->shared = false;
+            if (intfering(intf->liverange, *out)) {
+                insintf(&(*newlr)->interfere, intf->liverange);
+                insintf(&intf->liverange->interfere, *out);
                 intf->liverange->unk24 += 1;
             } else {
-                if (intf == (*dest)->interfere) {
-                    (*dest)->interfere = intf->next;
+                if (intf == (*out)->interfere) {
+                    (*out)->interfere = intf->next;
                 } else {
-                    prev = (*dest)->interfere;
-                    intf2 = (*dest)->interfere->next;
+                    prev = (*out)->interfere;
+                    intf2 = (*out)->interfere->next;
                     while (intf2 != intf) {
                         prev = intf2;
                         intf2 = intf2->next;
                     }
                     prev->next = intf->next;
                 }
-                (*dest)->unk24--;
-                intf->next = (*src)->interfere;
-                (*src)->interfere = intf;
+                (*out)->unk24--;
+                intf->next = (*newlr)->interfere;
+                (*newlr)->interfere = intf;
             }
         } else if (intf->liverange != NULL) {
             intf2 = intf->liverange->interfere;
-            while (*src != intf2->liverange) {
+            while (*newlr != intf2->liverange) {
                 intf2 = intf2->next;
             }
-            intf2->liverange = *dest;
+            intf2->liverange = *out;
         }
 
         intf = next;
@@ -1747,35 +1763,35 @@ block_37: // TODO: weird control flow
         return;
     }
 
-    if (!isconstrained(*src)) {
-        setbit(&unconstrain, (*src)->bitpos);
-        resetbit(&colorcand, (*src)->bitpos);
+    if (!isconstrained(*newlr)) {
+        setbit(&unconstrain, (*newlr)->bitpos);
+        resetbit(&colorcand, (*newlr)->bitpos);
     }
 
-    updatelivran(*src);
-    (*dest)->forbidden[1] = 0;
-    (*dest)->forbidden[0] = 0;
-    for (lu = (*dest)->liveunits; lu != NULL; lu = lu->next) {
-        updateforbidden(lu->node, lu->reg, *dest, regclass);
+    updatelivran(*newlr);
+    (*out)->forbidden[1] = 0;
+    (*out)->forbidden[0] = 0;
+    for (lu = (*out)->liveunits; lu != NULL; lu = lu->next) {
+        updateforbidden(lu->node, lu->reg, *out, regclass);
     }
 
-    if (!bvectempty(&(*dest)->reachingbbs)) {
+    if (!bvectempty(&(*out)->reachingbbs)) {
         for (i = 0; i < curstaticno; i++) {
-            if (bvectin(i, &(*dest)->reachingbbs)) {
-                updateforbidden(bbtab[i], 0, *dest, regclass);
+            if (bvectin(i, &(*out)->reachingbbs)) {
+                updateforbidden(bbtab[i], 0, *out, regclass);
             }
         }
     }
 
-    updatecolorsleft(*dest, regclass);
+    updatecolorsleft(*out, regclass);
 
-    if (!isconstrained(*dest)) {
-        setbit(&unconstrain, (*dest)->bitpos);
+    if (!isconstrained(*out)) {
+        setbit(&unconstrain, (*out)->bitpos);
     } else {
-        setbit(&colorcand, (*dest)->bitpos);
+        setbit(&colorcand, (*out)->bitpos);
     }
 
-    for (intf = (*src)->interfere; intf != NULL; intf = intf->next) {
+    for (intf = (*newlr)->interfere; intf != NULL; intf = intf->next) {
         if (intf->liverange != NULL && bvectin0(intf->liverange->bitpos, &unconstrain) && isconstrained(intf->liverange)) {
             resetbit(&unconstrain, intf->liverange->bitpos);
             setbit(&colorcand, intf->liverange->bitpos);
@@ -2199,7 +2215,7 @@ void globalcolor(void) {
                     if (intf->liverange != NULL && intf->liverange->assigned_reg == 0 && !SET_IN(intf->liverange->forbidden, chosen_reg)) {
                         SET_ADD(intf->liverange->forbidden, chosen_reg);
 
-                        intf->liverange->unk21--;
+                        intf->liverange->regsleft--;
                         liverange = intf->liverange;
                         if (needsplit(liverange, regclass)) {
                             do {
@@ -2346,7 +2362,7 @@ void globalcolor(void) {
                 for (intf = liverange->interfere; intf != NULL; intf = intf->next) {
                     if (intf->liverange != NULL && intf->liverange->assigned_reg == 0 && !SET_IN(intf->liverange->forbidden, chosen_reg)) {
                         SET_ADD(intf->liverange->forbidden, chosen_reg);
-                        intf->liverange->unk21--;
+                        intf->liverange->regsleft--;
                     }
                 }
 

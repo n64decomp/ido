@@ -779,8 +779,8 @@ struct LiveUnit {
 struct InterfereList {
     /* 0x0 */ struct LiveRange *liverange;
     /* 0x4 */ struct InterfereList *next;
-    /* 0x8 */ unsigned char unk8;
-    /* 0x9 */ unsigned char shared;
+    /* 0x8 */ unsigned char shared;
+    /* 0x9 */ unsigned char marked;
 }; // size 0xC
 
 struct LiveRange {
@@ -791,7 +791,7 @@ struct LiveRange {
     /* 0x14 */ struct BitVector livebbs; // graphnodes where ichain appears or is defined
     /* 0x1C */ int unk1C;
     /* 0x20 */ char assigned_reg; // printregs
-    /* 0x21 */ unsigned char unk21; // regsleft
+    /* 0x21 */ unsigned char regsleft;
     /* 0x22 */ bool hasstore;
     /* 0x23 */ unsigned char unk23;
     /* 0x24 */ int unk24; // number of interfering liveranges that have registers
