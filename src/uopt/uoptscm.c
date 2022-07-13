@@ -4,6 +4,8 @@
 #include "uoptutil.h"
 #include "uoptind.h"
 
+#include "debug.h"
+
 /*
 00410098 delete_unmoved_recur
 00474FC8 func_00474FC8
@@ -228,7 +230,6 @@ static void func_00474FC8(struct Statement *stat, struct Graphnode *node_shared7
                 bit = 0;
                 while (i < bitposcount && bit != 0x80) {
                     
-                    
                     if (BVINBLOCK(bit, block, node_shared74->bvs.stage1.u.cm.cand)) {
                         
                         if (BVINBLOCK(bit, block, node_shared74->bvs.stage1.u.scm.region) ||
@@ -283,7 +284,6 @@ static void func_00474FC8(struct Statement *stat, struct Graphnode *node_shared7
                                         } else {
                                             expSourceThing->ichain_unk10 = NULL;
                                         }
-
 
                                         if (mipsflag == 3 && sp62 != 0) {
                                             if (looptab[loopno].unk9 != 0) {
@@ -476,4 +476,8 @@ void getexpsources(void) {
         bvectunion(&node->bvs.stage1.alters, &node->bvs.stage1.u.cm.cand);
         node = node->next;
     }
+
+#ifdef UOPT_DEBUG
+    cmtrace_trace_all_scm();
+#endif
 }

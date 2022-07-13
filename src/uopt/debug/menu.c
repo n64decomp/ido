@@ -125,6 +125,14 @@ void build_cm_tile(struct Tile *tile)
     tile_add_default_highlighters(tile);
 }
 
+void build_scm_tile(struct Tile *tile)
+{
+    tile->buf = build_scm_buffer();
+    tile_new_window(tile);
+    tile_set_title(tile, "Save Code Motion", strlen("Save Code Motion"));
+    tile_add_default_highlighters(tile);
+}
+
 void proc_tile_input(struct Tile *tile, int c);
 void ichain_tile_input(struct Tile *tile, int c);
 void liverange_tile_input(struct Tile *tile, int c);
@@ -134,6 +142,7 @@ void stack_tile_input(struct Tile *tile, int c);
 static struct MenuEntry bitvectorMenu[] = {
     {"Pre-Code Motion", build_precm_tile, NULL},
     {"Code Motion", build_cm_tile, NULL},
+    {"Save Code Motion", build_scm_tile, NULL},
     {"Global", build_bitvect_tile, NULL},
     {},
 };

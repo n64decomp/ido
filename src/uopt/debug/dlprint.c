@@ -1279,41 +1279,9 @@ void dl_print_var_access(struct DisplayLine *dl, struct StringRep *parent, struc
 struct DisplayLine *dl_from_var_access(struct VarAccessList *access)
 {
     struct DisplayLine *dl = dl_new();
-    /*
-    struct StringRep *sr = sr_new();
-    sr->type = VAR_ACCESS;
-    sr->varAccess = access;
-    sr->start = dl->pos;
-     */
 
     dl_print_var_access(dl, NULL, access);
 
-    //dl_printf(dl, "node %d ", node->num);
-    //if (node->prev != NULL) {
-    //    dl_printf(dl, "p%d ", node->prev->num);
-    //}
-    //if (node->next != NULL) {
-    //    dl_printf(dl, "n%d ", node->next->num);
-    //}
-    //if (node->predecessors != NULL) {
-    //    dl_printf(dl, "(pred");
-    //    for (struct GraphnodeList *pred = node->predecessors; pred != NULL; pred = pred->next) {
-    //        dl_printf(dl, " %d", pred->graphnode->num);
-    //    }
-    //    dl_printf(dl, ") ");
-    //}
-    //if (node->successors != NULL) {
-    //    dl_printf(dl, "(succ");
-    //    for (struct GraphnodeList *succ = node->successors; succ != NULL; succ = succ->next) {
-    //        dl_printf(dl, " %d", succ->graphnode->num);
-    //    }
-    //    dl_printf(dl, ")");
-    //}
-
-    /*
-    sr->len = dl->pos - sr->start;
-    dl->top = sr;
-     */
     dl->len = dl->top->len;
     return dl;
 }
@@ -1342,10 +1310,6 @@ struct DisplayLine *dl_from_bittab_ichain(int bitpos, struct IChain *ichain)
 struct DisplayLine *dl_from_bittab_liverange(int bit, struct LiveRange *liverange)
 {
     struct DisplayLine *dl = dl_new();
-    //struct StringRep *sr = sr_new();
-    //sr->type = LIVERANGE;
-    //sr->liverange = liverange;
-    //sr->start = dl->pos;
 
     if (liverange != NULL) {
         dl_print_liverange(dl, NULL, liverange);
@@ -1353,8 +1317,6 @@ struct DisplayLine *dl_from_bittab_liverange(int bit, struct LiveRange *liverang
         dl_printf(dl, "%d: NULL", bit);
     }
 
-    //sr->len = dl->pos - sr->start;
-    //dl->top = sr;
     dl->len = dl->top->len;
     return dl;
 }
