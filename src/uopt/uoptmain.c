@@ -331,6 +331,7 @@ void oneproc(void) {
                 print_loop_relations(toplevelloops, 0);
             }
             loopunroll();
+            //ncdebug();
             if (dbugno == 8) {
                 print_loop_relations(toplevelloops, 0);
             }
@@ -354,7 +355,6 @@ void oneproc(void) {
             }
             lasttime = time1;
 
-            //ncdebug();
             copypropagate();
             //ncdebug();
             if (outofmem) {
@@ -381,6 +381,7 @@ void oneproc(void) {
             }
 
             findinduct();
+            //ncdebug();
             if (outofmem) {
                 goto done;
             }

@@ -180,23 +180,31 @@ struct Loop {
     /* 0x14 */ struct Loop *next;
 }; // size 0x18
 
-// probably related to induction variables or loop invariant
-// only used when mipsflag == 3
-struct ExpSourceThing {
-    /* 0x00 */ struct IChain *ichain;
-    /* 0x04 */ struct ExpSourceThing *next;
-    /* 0x08 */ int unk8;
-    /* 0x0C */ int unkC;
-    /* 0x10 */ struct IChain *ichain_unk10;
-    /* 0x14 */ int unk14;
-    /* 0x18 */ int unk18; // bitpos
+// information for replacing an expensive expression (multiplication) with an induction variable that only uses addition
+//
+// for example, if this expression occurred in a loop: c1 * i + c2 * (var * i)
+//       where i is an induction variable,
+//             c1 and c2 are constants,
+//             var is some other variable that is unchanged in the loop
+//
+// The expression would be replaced with a new induction variable, t, that increments by c1 + c2 * var each iteration
+//
+// See ivfactor in uoptind.c, and uoptscm.c
+struct StrengthReductionCand {
+    /* 0x00 */ struct IChain *target; // the expression being replaced
+    /* 0x04 */ struct StrengthReductionCand *next;
+    /* 0x08 */ int increment;
+    /* 0x0C */ int iv_factor;             // c1 in the example expression
+    /* 0x10 */ struct IChain *multiplier; // some expression multiplied by the iv, not limited to just a variable
+    /* 0x14 */ int mult_factor;           // c2 in the example expression
+    /* 0x18 */ int unk18; // some bitpos, maybe the temp iterator?
 }; // size 0x1C
 
 // probably related to induction variables or loop invariant
 // only used when mipsflag == 3
 struct ScmThing {
     /* 0x00 */ struct IChain *ichain;
-    /* 0x04 */ struct ExpSourceThing *unk4;
+    /* 0x04 */ struct StrengthReductionCand *unk4;
     /* 0x08 */ struct ScmThing *next;
     /* 0x0C */ int unkC;
     /* 0x10 */ unsigned char unk10;
@@ -277,7 +285,7 @@ struct Graphnode {
     /* 0x07 */ unsigned char unk7;     // 0 = unseen, 1 = graphhead, 2 = graphtail?
     /* 0x08 */ unsigned short num;
     /* 0x0A */ unsigned char loopdepth;
-    /* 0x0B */ unsigned char unkBb8: 1;
+    /* 0x0B */ unsigned char in_rolled_preloop: 1; // true if the node is in the rolled pre-loop before an unrolled loop
     /* 0x0B */ unsigned char unkBb4: 1;
     /* 0x0C */ struct Graphnode *next;
     /* 0x10 */ struct Graphnode *prev;
@@ -468,7 +476,7 @@ struct Statement {
 
                 } outpar;
                 struct {
-                    struct ExpSourceThing *unk2C;
+                    struct StrengthReductionCand *unk2C;
                     struct RecurThing *unk30; // used when emitting vreg
                 } str;
                 struct {
@@ -589,7 +597,7 @@ struct Statement {
             int target_blockno; // 0x14
             int unk18;
             int incre; // initialized to 0 for tjp/fjp
-            struct Expression* unk20; // initial_value? store Statement->expr->data.isvar_issvar.unk34
+            struct Expression* iter_initial_value;
             bool unk24;
             bool loop_if_true; // tjp -> start of loop, or fjp -> outside of loop
             bool unk26; // true if iterator == op1 of loop condition
@@ -732,7 +740,7 @@ struct IChain { // TODO: rename
             union {
                 /* 0x24 */ Datatype cvtfrom;
                 /* 0x24 */ unsigned short unk24_u16;
-                struct ExpSourceThing *unk24_cand;
+                struct StrengthReductionCand *srcand;
                 union {
                     // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
                     /* 0x24 */ int word; // offset for istr/irst
@@ -972,7 +980,7 @@ extern struct Statement *stattail;
 extern int blklev[128];
 extern int staticlinkloc;
 extern struct Expression *nocopy;
-extern struct ExpSourceThing *nota_candof;
+extern struct StrengthReductionCand *nota_candof;
 extern struct VarAccessList *constprop;
 extern int maxlabnam;
 extern struct LiveUnit *dft_livbb;

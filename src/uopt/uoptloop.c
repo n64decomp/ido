@@ -5,6 +5,7 @@
 #include "uoptutil.h"
 #include "uoptppss.h"
 
+#include "debug.h"
 
 struct AllocBlock *intv_heap;
 
@@ -439,7 +440,7 @@ static void find_loops(struct Interval *child, struct Interval *parent) {
                 loopFirstNode = interval_first_node(child);
                 if (!loopFirstNode->interprocedural_controlflow) {
                     if (!usefeedback || curproc->feedback_data == NULL || node_has_higher_weight(loopFirstNode)) {
-                        loopFirstNode->unk5 = 1; // loopfirstbb
+                        loopFirstNode->unk5 = loopfirstbb; // loopfirstbb
                     }
                 }
             }
@@ -483,13 +484,13 @@ static void check_const_invariant(struct Statement *loopJump, struct Expression 
             // s64 or s32
             if (loopCond->datatype == Idt || loopCond->datatype == Jdt) {
                 if (incre > 0) {
-                    diff = loopCond->data.isop.op2->data.isconst.number.intval - loopJump->u.jp.unk20->data.isconst.number.intval;
+                    diff = loopCond->data.isop.op2->data.isconst.number.intval - loopJump->u.jp.iter_initial_value->data.isconst.number.intval;
                     if (diff > 0 && diff % incre == 0) {
                         loopJump->u.jp.incre = incre;
                         return;
                     }
                 } else {
-                    diff = loopJump->u.jp.unk20->data.isconst.number.intval - loopCond->data.isop.op2->data.isconst.number.intval;
+                    diff = loopJump->u.jp.iter_initial_value->data.isconst.number.intval - loopCond->data.isop.op2->data.isconst.number.intval;
                     if (diff > 0 && diff % incre == 0) {
                         loopJump->u.jp.incre = incre;
                         return;
@@ -497,14 +498,14 @@ static void check_const_invariant(struct Statement *loopJump, struct Expression 
                 }
             // u64 or u32
             } else if (incre > 0) {
-                initial = loopJump->u.jp.unk20->data.isconst.number.uintval;
+                initial = loopJump->u.jp.iter_initial_value->data.isconst.number.uintval;
                 range = loopCond->data.isop.op2->data.isconst.number.uintval;
                 if (initial < range && (signed int)(range - initial) % incre == 0) {
                     loopJump->u.jp.incre = incre;
                     return;
                 }
             } else {
-                initial = loopJump->u.jp.unk20->data.isconst.number.uintval;
+                initial = loopJump->u.jp.iter_initial_value->data.isconst.number.uintval;
                 range = loopCond->data.isop.op2->data.isconst.number.uintval;
                 if (range < initial && (signed int)(initial - range) % incre == 0) {
                     loopJump->u.jp.incre = incre;
@@ -517,24 +518,24 @@ static void check_const_invariant(struct Statement *loopJump, struct Expression 
             (loopJump->u.jp.loop_if_true == 0 && loopCond->data.isop.opc == Ugeq)) {
             // s64 or s32
             if (loopCond->datatype == Idt || loopCond->datatype == Jdt) {
-                if (incre > 0 && loopCond->data.isop.op2->data.isconst.number.intval - loopJump->u.jp.unk20->data.isconst.number.intval > 0) {
+                if (incre > 0 && loopCond->data.isop.op2->data.isconst.number.intval - loopJump->u.jp.iter_initial_value->data.isconst.number.intval > 0) {
                     loopJump->u.jp.incre = incre;
                     return;
                 }
             // u64 or u32
-            } else if (incre > 0 && loopJump->u.jp.unk20->data.isconst.number.uintval < loopCond->data.isop.op2->data.isconst.number.uintval) {
+            } else if (incre > 0 && loopJump->u.jp.iter_initial_value->data.isconst.number.uintval < loopCond->data.isop.op2->data.isconst.number.uintval) {
                 loopJump->u.jp.incre = incre;
                 return;
             }
         } else {
             // s64 or s32
             if (loopCond->datatype == Idt || loopCond->datatype == Jdt) {
-                if (incre < 0 && loopJump->u.jp.unk20->data.isconst.number.intval - loopCond->data.isop.op2->data.isconst.number.intval > 0) {
+                if (incre < 0 && loopJump->u.jp.iter_initial_value->data.isconst.number.intval - loopCond->data.isop.op2->data.isconst.number.intval > 0) {
                     loopJump->u.jp.incre = incre;
                     return;
                 }
             // u64 or u32
-            } else if (incre < 0 && loopCond->data.isop.op2->data.isconst.number.uintval < loopJump->u.jp.unk20->data.isconst.number.uintval) {
+            } else if (incre < 0 && loopCond->data.isop.op2->data.isconst.number.uintval < loopJump->u.jp.iter_initial_value->data.isconst.number.uintval) {
                 loopJump->u.jp.incre = incre;
             }
         }
@@ -609,7 +610,7 @@ static bool check_initial_cond(bool invertIneq, struct Expression *initialCond, 
 static bool check_loop_inequality(struct Graphnode *loopFirstNode, struct Expression *loopCond, struct Expression *loopVar, struct Expression *loopVarInit, bool loopIfTrue) {
     struct GraphnodeList *pred;
     struct Graphnode *successorNode;
-    struct Graphnode *curnode;
+    struct Graphnode *node;
     bool cond_v0;
     struct Graphnode *jumpTarget;
 
@@ -624,12 +625,12 @@ static bool check_loop_inequality(struct Graphnode *loopFirstNode, struct Expres
         return false;
     }
 
-    curnode = pred->graphnode;
-    if (curnode->stat_tail->opc == Ucia
-            || curnode->stat_tail->opc == Ucup
-            || curnode->stat_tail->opc == Uicuf
-            || curnode->stat_tail->opc == Ufjp
-            || curnode->stat_tail->opc == Utjp) {
+    node = pred->graphnode;
+    if (node->stat_tail->opc == Ucia
+            || node->stat_tail->opc == Ucup
+            || node->stat_tail->opc == Uicuf
+            || node->stat_tail->opc == Ufjp
+            || node->stat_tail->opc == Utjp) {
         return false;
     }
 
@@ -649,70 +650,70 @@ static bool check_loop_inequality(struct Graphnode *loopFirstNode, struct Expres
      *     for (i = 0; i < end; i++)
      */
     if (loopCond->data.isop.op1 == loopVar) {
-        if (bvectin0(loopCond->data.isop.op2->ichain->bitpos, &curnode->bvs.stage1.alters)) {
+        if (bvectin0(loopCond->data.isop.op2->ichain->bitpos, &node->bvs.stage1.alters)) {
             return false;
         }
     } else {
-        if (bvectin0(loopCond->data.isop.op1->ichain->bitpos, &curnode->bvs.stage1.alters)) {
+        if (bvectin0(loopCond->data.isop.op1->ichain->bitpos, &node->bvs.stage1.alters)) {
             return false;
         }
     }
 
     if (loopVarInit->type != islda && loopVarInit->type != isconst) {
-        if (bvectin0(loopVarInit->ichain->bitpos, &curnode->bvs.stage1.alters)) {
+        if (bvectin0(loopVarInit->ichain->bitpos, &node->bvs.stage1.alters)) {
             return false;
         }
     }
 
-    pred = curnode->predecessors;
+    pred = node->predecessors;
     while (pred != NULL && pred->next == NULL) {
-        successorNode = curnode;
-        curnode = pred->graphnode;
+        successorNode = node;
+        node = pred->graphnode;
         if (loopVarInit->type != islda && loopVarInit->type != isconst) {
-            if (bvectin0(loopVarInit->ichain->bitpos, &curnode->bvs.stage1.alters)) {
+            if (bvectin0(loopVarInit->ichain->bitpos, &node->bvs.stage1.alters)) {
                 return false;
             }
         }
 
-        if (curnode->stat_tail->opc == Ufjp || curnode->stat_tail->opc == Utjp) {
-            if (curnode->stat_tail->u.jp.target_blockno == curnode->successors->graphnode->blockno) {
-                jumpTarget = curnode->successors->graphnode;
+        if (node->stat_tail->opc == Ufjp || node->stat_tail->opc == Utjp) {
+            if (node->stat_tail->u.jp.target_blockno == node->successors->graphnode->blockno) {
+                jumpTarget = node->successors->graphnode;
             } else {
-                jumpTarget = curnode->successors->next->graphnode;
+                jumpTarget = node->successors->next->graphnode;
             }
 
-            cond_v0 = (curnode->stat_tail->opc == Ufjp && jumpTarget == successorNode) ||
-                      (curnode->stat_tail->opc == Utjp && jumpTarget != successorNode);
+            cond_v0 = (node->stat_tail->opc == Ufjp && jumpTarget == successorNode) ||
+                      (node->stat_tail->opc == Utjp && jumpTarget != successorNode);
             if (loopIfTrue == cond_v0) {
-                if (check_initial_cond(false, curnode->stat_tail->expr, loopCond, loopVar, loopVarInit)
-                        || loopCond->ichain == curnode->stat_tail->expr->ichain) {
+                if (check_initial_cond(false, node->stat_tail->expr, loopCond, loopVar, loopVarInit)
+                        || loopCond->ichain == node->stat_tail->expr->ichain) {
                     return true;
                 }
             } else {
-                if (check_initial_cond(true, curnode->stat_tail->expr, loopCond, loopVar, loopVarInit)) {
+                if (check_initial_cond(true, node->stat_tail->expr, loopCond, loopVar, loopVarInit)) {
                     return true;
                 }
             }
         } else {
 
-            if (curnode->stat_tail->opc == Ucia
-                    || curnode->stat_tail->opc == Ucup
-                    || curnode->stat_tail->opc == Uicuf) {
+            if (node->stat_tail->opc == Ucia
+                    || node->stat_tail->opc == Ucup
+                    || node->stat_tail->opc == Uicuf) {
                 return false;
             }
 
             if (loopVar == loopCond->data.isop.op1) {
-                if (bvectin0(loopCond->data.isop.op2->ichain->bitpos, &curnode->bvs.stage1.alters)) {
+                if (bvectin0(loopCond->data.isop.op2->ichain->bitpos, &node->bvs.stage1.alters)) {
                     return false;
                 }
             } else {
-                if (bvectin0(loopCond->data.isop.op1->ichain->bitpos, &curnode->bvs.stage1.alters)) {
+                if (bvectin0(loopCond->data.isop.op1->ichain->bitpos, &node->bvs.stage1.alters)) {
                     return false;
                 }
             }
         }
 
-        pred = curnode->predecessors;
+        pred = node->predecessors;
     }
 
     return false;
@@ -738,11 +739,11 @@ static void check_loop_condition(struct Statement *loopJump, struct Expression *
         (((loopJump->u.jp.loop_if_true == 0 && loopVar == loopCond->data.isop.op1) ||
           (loopJump->u.jp.loop_if_true != 0 && loopVar == loopCond->data.isop.op2)) 
                 && loopCond->data.isop.opc == Ugeq)) {
-        if (incre == 1 && check_loop_inequality(loopFirstNode, loopCond, loopVar, loopJump->u.jp.unk20, loopJump->u.jp.loop_if_true)) {
+        if (incre == 1 && check_loop_inequality(loopFirstNode, loopCond, loopVar, loopJump->u.jp.iter_initial_value, loopJump->u.jp.loop_if_true)) {
             loopJump->u.jp.incre = 1;
         }
     } else {
-        if (incre == -1 && check_loop_inequality(loopFirstNode, loopCond, loopVar, loopJump->u.jp.unk20, loopJump->u.jp.loop_if_true)) {
+        if (incre == -1 && check_loop_inequality(loopFirstNode, loopCond, loopVar, loopJump->u.jp.iter_initial_value, loopJump->u.jp.loop_if_true)) {
             loopJump->u.jp.incre = -1;
         }
     }
@@ -905,52 +906,52 @@ static bool is_const_invariant(struct Interval *parent, struct Expression *invar
 00455518 determine_if_unrollable
 */
 static void find_increment_expr(struct Interval *intv, struct Graphnode* childNode, struct Expression *loopVar, bool *failed, struct Expression **loopIncrement) {
-    struct Graphnode *curnode;
+    struct Graphnode *node;
 
     struct VarAccessList *varlist;
 
     if (intv->region == NULL) {
-        curnode = intv->graphnode;
-        if (curnode->loopdepth >= childNode->loopdepth) {
+        node = intv->graphnode;
+        if (node->loopdepth >= childNode->loopdepth) {
 
             // call inline asm
-            if ((curnode->stat_tail->opc == Ucia) && (lang == LANG_ADA)) {
+            if ((node->stat_tail->opc == Ucia) && (lang == LANG_ADA)) {
                 *failed = true;
                 return;
             }
 
-            if (curnode->stat_tail->opc == Ucup || curnode->stat_tail->opc == Uicuf) {
-                if (cupaltered(loopVar->ichain, curnode->stat_tail->u.call.level, curnode->stat_tail->u.call.proc)) {
+            if (node->stat_tail->opc == Ucup || node->stat_tail->opc == Uicuf) {
+                if (cupaltered(loopVar->ichain, node->stat_tail->u.call.level, node->stat_tail->u.call.proc)) {
                     *failed = true;
                     return;
                 }
-                if (listplkilled(curnode->stat_tail->u.call.parameters, loopVar, 1)) {
+                if (listplkilled(node->stat_tail->u.call.parameters, loopVar, 1)) {
                     *failed = true;
                     return;
                 }
-            } else if (curnode->stat_tail->opc == Ucia) {
+            } else if (node->stat_tail->opc == Ucia) {
                 //! wtf
-                if (IS_CIA_CALLS_ATTR(curnode->stat_tail->u.cia.flags) && cupaltered(loopVar->ichain, curnode->stat_tail->u.call.level, curnode->stat_tail->u.call.proc)) {
+                if (IS_CIA_CALLS_ATTR(node->stat_tail->u.cia.flags) && cupaltered(loopVar->ichain, node->stat_tail->u.call.level, node->stat_tail->u.call.proc)) {
                     *failed = true;
                     return;
                 }
-                if (listplkilled(curnode->stat_tail->u.cia.parameters, loopVar, 1)) {
+                if (listplkilled(node->stat_tail->u.cia.parameters, loopVar, 1)) {
                     *failed = true;
                     return;
                 }
             }
 
-            if (!bvectin0(loopVar->ichain->bitpos, &curnode->bvs.stage1.alters)) {
+            if (!bvectin0(loopVar->ichain->bitpos, &node->bvs.stage1.alters)) {
                 return;
             }
 
-            if (curnode->loopdepth > childNode->loopdepth) {
+            if (node->loopdepth > childNode->loopdepth) {
                 *failed = true;
                 return;
             }
         }
 
-        varlist = curnode->varlisthead;
+        varlist = node->varlisthead;
         while (varlist != NULL) {
             if (varlist->type == 1
                     && (varlist->data.store->opc == Uisst || varlist->data.store->opc == Ustr)
@@ -962,8 +963,7 @@ static void find_increment_expr(struct Interval *intv, struct Graphnode* childNo
                     return;
                 }
 
-
-                if (!bvectin(curnode->num, &childNode->bvs.stage1.u.precm.pavin)) {
+                if (!bvectin(node->num, &childNode->bvs.stage1.u.precm.pavin)) {
                     *failed = true;
                     return;
                 }
@@ -1012,7 +1012,7 @@ static bool complex_control_flow_in_interval(struct Interval *intv) {
 00455518 determine_if_unrollable
 */
 static bool no_early_exits(struct Interval *parent, int startNum, int endNum) {
-    struct Graphnode *curnode;
+    struct Graphnode *node;
     struct Graphnode *successor;
     struct IntervalList *region;
     int count;
@@ -1020,16 +1020,16 @@ static bool no_early_exits(struct Interval *parent, int startNum, int endNum) {
     region = parent->region;
     count = 0;
     do {
-        curnode = region->intv->graphnode;
-        if (startNum <= curnode->num && curnode->num <= endNum) {
+        node = region->intv->graphnode;
+        if (startNum <= node->num && node->num <= endNum) {
             count++;
-            if (curnode->stat_tail->opc == Ufjp
-                    || curnode->stat_tail->opc == Utjp
-                    || curnode->stat_tail->opc == Uujp) {
-                successor = curnode->successors->graphnode;
+            if (node->stat_tail->opc == Ufjp
+                    || node->stat_tail->opc == Utjp
+                    || node->stat_tail->opc == Uujp) {
+                successor = node->successors->graphnode;
 
-                if (curnode->stat_tail->u.jp.target_blockno != curnode->successors->graphnode->blockno) {
-                    successor = curnode->successors->next->graphnode;
+                if (node->stat_tail->u.jp.target_blockno != node->successors->graphnode->blockno) {
+                    successor = node->successors->next->graphnode;
                 }
 
                 // check if any control flow jumps outside
@@ -1142,7 +1142,7 @@ static void determine_if_unrollable(struct Interval *child, struct Interval *out
         }
 
         if (find_loopvar_init(loopFirstNode, loopVar->ichain, &loopVarInit)) {
-            loopJump->u.jp.unk20 = loopVarInit->expr->data.isvar_issvar.assigned_value;
+            loopJump->u.jp.iter_initial_value = loopVarInit->expr->data.isvar_issvar.assigned_value;
             if (loopVarInit->expr->data.isvar_issvar.assigned_value->type == isconst) {
                 loopJump->u.jp.has_const_init = true;
             } else {
@@ -1150,7 +1150,7 @@ static void determine_if_unrollable(struct Interval *child, struct Interval *out
             }
         } else {
             loopJump->u.jp.has_const_init = false;
-            loopJump->u.jp.unk20 = NULL;
+            loopJump->u.jp.iter_initial_value = NULL;
         }
 
         if (loopJump->u.jp.target_blockno == childNode->successors->graphnode->blockno) {
@@ -1186,7 +1186,7 @@ static void determine_if_unrollable(struct Interval *child, struct Interval *out
             check_const_invariant(loopJump, loopCond, incre);
         } else {
             // Only i++ or i-- allowed if the comparison is not == or !=
-            if (((incre == 1 || incre == -1) && loopJump->u.jp.unk20 != NULL)
+            if (((incre == 1 || incre == -1) && loopJump->u.jp.iter_initial_value != NULL)
                     || (loopCond->data.isop.opc == Uequ || loopCond->data.isop.opc == Uneq)) {
                 if (loopVar == loopCond->data.isop.op1) {
                     if (is_const_invariant(parent, loopCond->data.isop.op2, childNode)) {
@@ -1222,9 +1222,9 @@ static void determine_if_unrollable(struct Interval *child, struct Interval *out
                       || in_fsym(loopVar->data.isvar_issvar.location.blockno))))) {
             if (loopFirstNode->predecessors->next->next == NULL) { //! redundant check
                 if (loopFirstNode->predecessors->graphnode == childNode && loopFirstNode->predecessors->next->graphnode->successors->next == NULL) {
-                    loopFirstNode->unk5 = 2; // canunroll
+                    loopFirstNode->unk5 = canunroll; // canunroll
                 } else if (loopFirstNode->predecessors->graphnode->successors->next == NULL && loopFirstNode->predecessors->next->graphnode == loopFirstNode) {
-                    loopFirstNode->unk5 = 2; // canunroll
+                    loopFirstNode->unk5 = canunroll; // canunroll
                 }
             }
         }
@@ -1290,8 +1290,8 @@ void analoop() {
     struct GraphnodeList *nodePred;
     struct IntervalList *intvSucc;
     struct IntervalList *intvPred;
-    struct Graphnode *curnode;
-    bool repeat;
+    struct Graphnode *node;
+    bool changed;
     int oldInterval;
     int depth;
 
@@ -1311,16 +1311,16 @@ void analoop() {
 
     curIntv = intvRoot;
     numintval = 1;
-    curnode = graphhead->next;
+    node = graphhead->next;
 
-    while (curnode != NULL) {
+    while (node != NULL) {
         newIntv = alloc_new(sizeof(struct Interval), &intv_heap);
         newIntv->child = NULL;
-        newIntv->graphnode = curnode;
+        newIntv->graphnode = node;
 
         // count the number of predecessors
         newIntv->numPredecessors = 0;
-        nodePred = curnode->predecessors;
+        nodePred = node->predecessors;
         while (nodePred != NULL) {
             newIntv->numPredecessors++;
             nodePred = nodePred->next;
@@ -1331,29 +1331,29 @@ void analoop() {
         newIntv->loop = NULL;
         newIntv->type = intv_unvisited;
         newIntv->loopdepth = 0;
-        newIntv->interprocedural_controlflow = curnode->interprocedural_controlflow;
+        newIntv->interprocedural_controlflow = node->interprocedural_controlflow;
 
         curIntv->next = newIntv;
         curIntv = newIntv;
 
         numintval++;
-        curnode = curnode->next;
+        node = node->next;
     }
     curIntv->next = NULL;
 
-    curnode = graphhead;
+    node = graphhead;
     curIntv = intvRoot;
 
     // find successors and predecessors
     while (curIntv != NULL) {
-        if (curnode->successors == NULL) {
+        if (node->successors == NULL) {
             curIntv->successors = NULL;
         } else {
             curIntv->successors = alloc_new(sizeof(struct IntervalList), &intv_heap);
-            curIntv->successors->intv = find_interval_with_graphnode(curnode->successors->graphnode, intvRoot);
+            curIntv->successors->intv = find_interval_with_graphnode(node->successors->graphnode, intvRoot);
 
             intvSucc = curIntv->successors;
-            nodeSucc = curnode->successors->next;
+            nodeSucc = node->successors->next;
 
             while (nodeSucc != NULL) {
                 intvSucc->next = alloc_new(sizeof(struct IntervalList), &intv_heap);
@@ -1365,14 +1365,14 @@ void analoop() {
             intvSucc->next = NULL;
         }
 
-        if (curnode->predecessors == NULL) {
+        if (node->predecessors == NULL) {
             curIntv->predecessors = NULL;
         } else {
             curIntv->predecessors = alloc_new(sizeof(struct IntervalList), &intv_heap);
-            curIntv->predecessors->intv = find_interval_with_graphnode(curnode->predecessors->graphnode, intvRoot);
+            curIntv->predecessors->intv = find_interval_with_graphnode(node->predecessors->graphnode, intvRoot);
 
             intvPred = curIntv->predecessors;
-            nodePred = curnode->predecessors->next;
+            nodePred = node->predecessors->next;
 
             while (nodePred != NULL) {
                 intvPred->next = alloc_new(sizeof(struct IntervalList), &intv_heap);
@@ -1385,7 +1385,7 @@ void analoop() {
         }
 
         curIntv = curIntv->next;
-        curnode = curnode->next;
+        node = node->next;
     }
 
     do {
@@ -1417,17 +1417,17 @@ void analoop() {
         depth++;
     } while (graphhead->loopdepth == 0);
 
-    curnode = graphhead;
-    while (curnode != NULL) {
-        curnode->bvs.stage1.u.precm.pavin.num_blocks = 0;
-        curnode->bvs.stage1.u.precm.pavin.blocks = NULL;
-        checkinitbvlivran(&curnode->bvs.stage1.u.precm.pavin);
-        if (curnode->predecessors == NULL || curnode->interprocedural_controlflow) {
-            setbitbb(&curnode->bvs.stage1.u.precm.pavin, curnode->num);
+    node = graphhead;
+    while (node != NULL) {
+        node->bvs.stage1.u.precm.pavin.num_blocks = 0;
+        node->bvs.stage1.u.precm.pavin.blocks = NULL;
+        checkinitbvlivran(&node->bvs.stage1.u.precm.pavin);
+        if (node->predecessors == NULL || node->interprocedural_controlflow) {
+            setbitbb(&node->bvs.stage1.u.precm.pavin, node->num);
         } else {
-            initbv(&curnode->bvs.stage1.u.precm.pavin, (struct BitVectorBlock) {{-1, -1, -1, -1}});
+            initbv(&node->bvs.stage1.u.precm.pavin, (struct BitVectorBlock) {{-1, -1, -1, -1}});
         }
-        curnode = curnode->next;
+        node = node->next;
     }
 
     pavin.num_blocks = 0;
@@ -1435,30 +1435,30 @@ void analoop() {
     checkinitbvlivran(&pavin);
 
     do {
-        curnode = graphhead;
-        repeat = false;
-        while (curnode != NULL) {
-            nodePred = curnode->predecessors;
-            if (nodePred != NULL) {
-                if (!repeat) {
-                    bvectcopy(&pavin, &curnode->bvs.stage1.u.precm.pavin);
+        node = graphhead;
+        changed = false;
+        while (node != NULL) {
+            if (node->predecessors != NULL) {
+                if (!changed) {
+                    bvectcopy(&pavin, &node->bvs.stage1.u.precm.pavin);
                 }
 
+                nodePred = node->predecessors;
                 do {
-                    bvectintsect(&curnode->bvs.stage1.u.precm.pavin, &nodePred->graphnode->bvs.stage1.u.precm.pavin);
+                    bvectintsect(&node->bvs.stage1.u.precm.pavin, &nodePred->graphnode->bvs.stage1.u.precm.pavin);
                     nodePred = nodePred->next;
                 } while (nodePred != NULL);
 
-                setbitbb(&curnode->bvs.stage1.u.precm.pavin, curnode->num);
-                if (!repeat) {
-                    if (!bvecteq(&pavin, &curnode->bvs.stage1.u.precm.pavin)) {
-                        repeat = true;
-                    }
+                setbitbb(&node->bvs.stage1.u.precm.pavin, node->num);
+                if (!changed && !bvecteq(&pavin, &node->bvs.stage1.u.precm.pavin)) {
+                    changed = true;
                 }
             }
-            curnode = curnode->next;
+            node = node->next;
         }
-    } while (repeat);
+    } while (changed);
+
+    //ncdebug();
 
     curIntv = intvRoot;
     while (curIntv != NULL) {

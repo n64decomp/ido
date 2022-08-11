@@ -1692,7 +1692,7 @@ void new_header_node(bool arg0) {
     curgraphnode->num = curstaticno++;
 
     curgraphnode->loopdepth = loopheader->loopdepth;
-    curgraphnode->unkBb8 = loopheader->unkBb8;
+    curgraphnode->in_rolled_preloop = loopheader->in_rolled_preloop;
     curgraphnode->frequency = loopheader->frequency;
     curgraphnode->bvs.init.line = loopheader->bvs.init.line;
 
@@ -2012,7 +2012,7 @@ void termination_test(struct Statement *stat_s3, int unroll_times_local) {
     stattail->expr = oneloopblockexpr(stat_s3->expr, &sp24);
     stattail->expr = unroll_resetincr(stattail->expr, sp24);
     stattail->u.jp.incre = stat_s3->u.jp.incre * unroll_times_local;
-    stattail->u.jp.unk20 = stat_s3->u.jp.unk20;
+    stattail->u.jp.iter_initial_value = stat_s3->u.jp.iter_initial_value;
     stattail->u.jp.has_const_init = stat_s3->u.jp.has_const_init;
     stattail->u.jp.loop_if_true = stat_s3->u.jp.loop_if_true;
     stattail->u.jp.target_blockno = stat_s3->u.jp.target_blockno;
@@ -2550,7 +2550,7 @@ void loopunroll(void) {
                         if (loopCond->data.isop.op2->type == isconst) {
                             range = loopCond->data.isop.op2->data.isconst.number.intval;
                             incre = loopbody->stat_tail->u.jp.incre;
-                            rem = (range - loopbody->stat_tail->u.jp.unk20->data.isconst.number.intval - 1) % incre;
+                            rem = (range - loopbody->stat_tail->u.jp.iter_initial_value->data.isconst.number.intval - 1) % incre;
 
                             if ((rem ^ incre) < 0) {
                                 rem += incre;
@@ -2560,7 +2560,7 @@ void loopunroll(void) {
                         } else {
                             range = loopCond->data.isop.op2->data.islda_isilda.offset;
                             incre = loopbody->stat_tail->u.jp.incre;
-                            rem = (range - loopbody->stat_tail->u.jp.unk20->data.isconst.number.intval - 1) % incre;
+                            rem = (range - loopbody->stat_tail->u.jp.iter_initial_value->data.isconst.number.intval - 1) % incre;
                             if ((rem ^ incre) < 0) {
                                 rem += incre;
                             }
@@ -2570,7 +2570,7 @@ void loopunroll(void) {
                         if (loopCond->data.isop.op2->type == isconst) {
                             range = loopCond->data.isop.op2->data.isconst.number.intval;
                             incre = loopbody->stat_tail->u.jp.incre;
-                            rem = (loopbody->stat_tail->u.jp.unk20->data.isconst.number.intval - range) % -incre;
+                            rem = (loopbody->stat_tail->u.jp.iter_initial_value->data.isconst.number.intval - range) % -incre;
                             if ((rem ^ -incre) < 0) {
                                 rem -= incre;
                             }
@@ -2578,7 +2578,7 @@ void loopunroll(void) {
                         } else {
                             range = loopCond->data.isop.op2->data.islda_isilda.offset;
                             incre = loopbody->stat_tail->u.jp.incre;
-                            rem = (loopbody->stat_tail->u.jp.unk20->data.isconst.number.intval - range) % -incre;
+                            rem = (loopbody->stat_tail->u.jp.iter_initial_value->data.isconst.number.intval - range) % -incre;
                             if ((rem ^ -incre) < 0) {
                                 rem -= incre;
                             }
@@ -2593,8 +2593,8 @@ void loopunroll(void) {
                         node_s1 = loopbody->successors->next->graphnode;
                     }
 
-                    if (node_s1->unk5 == 2) {
-                        node_s1->unk5 = 1;      // loopfirstbb
+                    if (node_s1->unk5 == canunroll) {
+                        node_s1->unk5 = loopfirstbb;      // loopfirstbb
                     }
                 }
             } else {
@@ -2834,7 +2834,7 @@ void loopunroll(void) {
 
     if (unroll_times >= 2) {
         for (loopbody = graphhead; loopbody != NULL; loopbody = loopbody->next) {
-            if (loopbody->unk5 != 2) { // canunroll
+            if (loopbody->unk5 != canunroll) { // canunroll
                 continue;
             }
 
@@ -2864,7 +2864,7 @@ void loopunroll(void) {
                 continue;
             }
 
-            if (!stat_s3->u.jp.has_const_init || (loopCond->data.isop.op2->data.isconst.number.intval - stat_s3->u.jp.unk20->data.isconst.number.intval) / stat_s3->u.jp.incre >= unroll_times) {
+            if (!stat_s3->u.jp.has_const_init || (loopCond->data.isop.op2->data.isconst.number.intval - stat_s3->u.jp.iter_initial_value->data.isconst.number.intval) / stat_s3->u.jp.incre >= unroll_times) {
                 loopheader = loopbody->predecessors->graphnode;
                 if (loopbodyend == loopheader) {
                     loopheader = loopbody->predecessors->next->graphnode;
@@ -2910,7 +2910,7 @@ void loopunroll(void) {
                     stattail = loopbody->stat_head->prev;
                     stattail->next = NULL;
 
-                    rem = ((loopCond->data.isop.op2->data.isconst.number.intval - stat_s3->u.jp.unk20->data.isconst.number.intval) / stat_s3->u.jp.incre) % unroll_times_local;
+                    rem = ((loopCond->data.isop.op2->data.isconst.number.intval - stat_s3->u.jp.iter_initial_value->data.isconst.number.intval) / stat_s3->u.jp.incre) % unroll_times_local;
                     if ((rem ^ unroll_times_local) < 0) {
                         rem += unroll_times_local;
                     }
@@ -3029,8 +3029,8 @@ void loopunroll(void) {
                     sp88 = curgraphnode;
                     curgraphnode->loopdepth = loopbody->loopdepth;
                     curgraphnode->frequency = loopbody->frequency;
-                    curgraphnode->unk5 = 1;
-                    curgraphnode->unkBb8 = 1;
+                    curgraphnode->unk5 = loopfirstbb;
+                    curgraphnode->in_rolled_preloop = 1;
                     curgraphnode->bvs.init.line = loopbody->bvs.init.line;
                     if (unroll_times_local != 2) {
                         maxlabnam++;
@@ -3059,7 +3059,7 @@ void loopunroll(void) {
                     codeimage();
                     new_header_node(true);
                     curgraphnode->loop = loopbody->loop->outer;
-                    curgraphnode->unkBb8 = 0;
+                    curgraphnode->in_rolled_preloop = 0;
                     curgraphnode->frequency = node_s1->frequency;
                     if (stat_s3->opc == Ufjp) {
                         extendstat(Utjp);
@@ -3093,7 +3093,7 @@ void loopunroll(void) {
                 sp88 = curgraphnode;
                 curgraphnode->loopdepth = loopbody->loopdepth;
                 curgraphnode->frequency = loopbody->frequency;
-                curgraphnode->unk5 = 2;
+                curgraphnode->unk5 = canunroll;
                 curgraphnode->bvs.init.line = loopbody->bvs.init.line;
                 extendstat(Ulab);
                 stattail->u.label.flags = loopbody->stat_head->u.label.flags;
@@ -3128,7 +3128,7 @@ void loopunroll(void) {
                 oneloopblockstmt(incr_stat);
                 incr_amount = 0;
                 post_loopblock(0, 1, 1);
-                if (!stat_s3->u.jp.has_const_init || ((loopCond->data.isop.op2->data.isconst.number.intval - stat_s3->u.jp.unk20->data.isconst.number.intval) / stat_s3->u.jp.incre) >= unroll_times_local * 2) {
+                if (!stat_s3->u.jp.has_const_init || ((loopCond->data.isop.op2->data.isconst.number.intval - stat_s3->u.jp.iter_initial_value->data.isconst.number.intval) / stat_s3->u.jp.incre) >= unroll_times_local * 2) {
                     termination_test(stat_s3, unroll_times_local);
                     create_edge(curgraphnode, sp88);
                 }

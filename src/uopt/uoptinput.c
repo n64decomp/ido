@@ -1631,7 +1631,7 @@ void readnxtinst(void) {
 
                 if (OPC == Uisld) {
                     expr->data.isvar_issvar.temploc = 0;
-                    expr->unk4 = false;
+                    expr->unk4 = 0;
                     expr->visited = 0;
                     expr->data.isvar_issvar.outer_stack = ustack->expr;
                 } else {
@@ -1833,7 +1833,7 @@ void readnxtinst(void) {
 
                 if (OPC == Uilda) {
                     expr->count = 1;
-                    expr->unk4 = false;
+                    expr->unk4 = 0;
                     expr->visited = 0;
                     expr->data.islda_isilda.outer_stack = ustack->expr;
                     expr->data.islda_isilda.temploc = NULL;
@@ -2008,7 +2008,6 @@ void readnxtinst(void) {
                     ustack->expr = stexpr2;
                     eliminated = true;
                 }
-                
             } else if (OPC == Umpy && (DTYPE == Jdt || DTYPE == Ldt) &&
                     (stexpr2->type == isconst || stexpr1->type == isconst) &&
                     !IS_OVERFLOW_ATTR(LEXLEV))
@@ -2353,7 +2352,7 @@ void readnxtinst(void) {
                 expr->count = 1;
                 expr->data.isop.temploc = 0;
                 expr->visited = 0;
-                expr->unk4 = false;
+                expr->unk4 = 0;
                 switch (OPC) {
                     case Uequ:
                     case Ugeq:
@@ -2406,7 +2405,7 @@ void readnxtinst(void) {
                 expr->data.isop.aux2.v1.overflow_attr = false;
                 expr->data.isop.temploc = 0;
                 expr->visited = 0;
-                expr->unk4 = false;
+                expr->unk4 = 0;
                 expr->data.isop.datasize = IONE;
             } else {
                 incroccurrence(&expr);
@@ -2454,7 +2453,7 @@ void readnxtinst(void) {
                     expr->count = 1;
                     expr->data.isop.temploc = 0;
                     expr->visited = 0;
-                    expr->unk4 = false;
+                    expr->unk4 = 0;
                     expr->data.isop.op2 = stexpr2;
                 } else {
                     incroccurrence(&expr);
@@ -2497,7 +2496,7 @@ void readnxtinst(void) {
                 expr->count = 1;
                 expr->data.isop.temploc = 0;
                 expr->visited = 0;
-                expr->unk4 = false;
+                expr->unk4 = 0;
                 expr->data.isop.op1 = stexpr1;
             } else {
                 incroccurrence(&expr);
@@ -2595,7 +2594,7 @@ void readnxtinst(void) {
                     expr->data.isop.aux2.v1.overflow_attr = IS_OVERFLOW_ATTR(LEXLEV);
                     expr->data.isop.temploc = 0;
                     expr->visited = 0;
-                    expr->unk4 = false;
+                    expr->unk4 = 0;
                 } else {
                     incroccurrence(&expr);
                 }
@@ -2688,7 +2687,7 @@ void readnxtinst(void) {
                 expr->data.isop.temploc = 0;
                 expr->visited = 0;
                 expr->data.isop.aux2.v1.overflow_attr = IS_OVERFLOW_ATTR(LEXLEV);
-                expr->unk4 = false;
+                expr->unk4 = 0;
             } else {
                 incroccurrence(&expr);
             }
@@ -2707,7 +2706,7 @@ void readnxtinst(void) {
             if (expr->type == empty) {
                 expr->type = isop;
                 expr->datatype = DTYPE;
-                expr->unk4 = false;
+                expr->unk4 = 0;
                 expr->visited = 0;
                 expr->count = 1;
                 expr->data.isop.opc = OPC;
@@ -2741,7 +2740,7 @@ void readnxtinst(void) {
                 expr->data.isop.aux2.v1.overflow_attr = false;
                 expr->data.isop.temploc = 0;
                 expr->visited = 0;
-                expr->unk4 = false;
+                expr->unk4 = 0;
                 expr->data.isop.opc = OPC;
             } else {
                 incroccurrence(&expr);
@@ -2802,7 +2801,7 @@ void readnxtinst(void) {
                 }
                 expr->data.isop.temploc = 0;
                 expr->visited = 0;
-                expr->unk4 = false;
+                expr->unk4 = 0;
                 expr->data.isop.aux.mtagno = OFFSET;
                 expr->data.isop.unk34 = findbaseaddr(stexpr1);
                 if (expr->datatype != Sdt && OPC != Uildv) {
@@ -2876,7 +2875,7 @@ void readnxtinst(void) {
 
                 expr->data.isop.temploc = 0;
                 expr->visited = 0;
-                expr->unk4 = false;
+                expr->unk4 = 0;
                 expr->data.isop.aux.mtagno = OFFSET;
                 expr->data.isop.unk34 = findbaseaddr(stexpr1);
 
@@ -2918,7 +2917,7 @@ void readnxtinst(void) {
             if (expr->type == empty) {
                 expr->type = isop;
                 expr->killed = false;
-                expr->unk4 = false;
+                expr->unk4 = 0;
                 expr->visited = 0;
                 expr->datatype = Mdt;
                 expr->data.isop.datatype = Jdt;
@@ -3172,7 +3171,7 @@ void readnxtinst(void) {
 
                 if (OPC == Uisst) {
                     expr->data.isvar_issvar.temploc = 0;
-                    expr->unk4 = false;
+                    expr->unk4 = 0;
                     expr->visited = 0;
                     expr->data.isvar_issvar.outer_stack = ustack->down->expr;
                 } else {

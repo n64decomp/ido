@@ -9,6 +9,8 @@ struct Member {
     const char *name;
     const char *typeName;
     size_t offset;
+    size_t bits;
+    size_t offset_bits;
     size_t size;
     int numElements; // > 1 if member is an array, 1 otherwise
 

@@ -308,11 +308,11 @@ void check_loop_induct_usages(struct Graphnode *node, int loopno, struct ScmThin
 /*
 00448C94 find_ix_loadstores
 */
-int same_scale(struct ExpSourceThing *es1, struct ExpSourceThing *es2) {
-    if (es2->unkC == es1->unkC) {
-        if (es1->ichain_unk10 != NULL || es2->ichain_unk10 != NULL) {
-            if (es2->ichain_unk10 == es1->ichain_unk10) {
-                return es2->unk14 == es1->unk14;
+int same_scale(struct StrengthReductionCand *es1, struct StrengthReductionCand *es2) {
+    if (es2->iv_factor == es1->iv_factor) {
+        if (es1->multiplier != NULL || es2->multiplier != NULL) {
+            if (es2->multiplier == es1->multiplier) {
+                return es2->mult_factor == es1->mult_factor;
             }
         }
     }

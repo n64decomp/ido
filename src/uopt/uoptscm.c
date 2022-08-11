@@ -192,105 +192,112 @@ static int func_00474DC0(struct IChain *ichain) {
 /*
 00475680 getexpsources
 */
-static void func_00474FC8(struct Statement *stat, struct Graphnode *node_shared74) {
-    int sp80;
-    bool sp7A;
-    struct IChain *sp70;
-    int sp6C;
+static void func_00474FC8(struct Statement *stat, struct Graphnode *node) {
+    int increment; // sp80
+    bool overflow; // sp7B
+    struct IChain *multiplier; // sp70
+    int mult_factor; // sp6C
     int loopno;
-    bool sp62;
+    bool inloop;
     struct Loop *loop;
-    int temp_s1;
-    struct IChain *ichain_s2;
+    int factor;
+    struct IChain *ichain;
     struct ScmThing *unkThing2;
     int block;
     int i;
     unsigned int bit;
-    struct ExpSourceThing *phi_s0;
-    struct ExpSourceThing *expSourceThing;
+    struct StrengthReductionCand *sc;
+    struct StrengthReductionCand *srcand;
     bool inpath;
     bool found;
 
-    sp80 = func_00474DC0(stat->u.store.ichain->isop.op2);
-    loop = node_shared74->loop;
+    increment = func_00474DC0(stat->u.store.ichain->isop.op2);
+    loop = node->loop;
     block = 0;
-    if (loop == 0 || node_shared74->unkBb8) {
-        sp62 = 0;
+    if (loop == NULL || node->in_rolled_preloop) {
+        inloop = false;
     } else {
-        sp62 = 1;
+        inloop = true;
         loopno = loop->loopno;
     }
 
     i = 0;
     if (bitposcount > 0) {
         do {
-            if (BVBLOCKEMPTY(node_shared74->bvs.stage1.u.cm.cand, block) || BVBLOCKEMPTY(node_shared74->bvs.stage1.u.scm.region, block)) {
+            if (BVBLOCKEMPTY(node->bvs.stage1.u.cm.cand, block) || BVBLOCKEMPTY(node->bvs.stage1.u.scm.region, block)) {
                 i += 0x80;
             } else {
                 bit = 0;
                 while (i < bitposcount && bit != 0x80) {
-                    
-                    if (BVINBLOCK(bit, block, node_shared74->bvs.stage1.u.cm.cand)) {
-                        
-                        if (BVINBLOCK(bit, block, node_shared74->bvs.stage1.u.scm.region) ||
-                                BVINBLOCK(bit, block, node_shared74->bvs.stage1.u.cm.subinsert)) {
-                            ichain_s2 = bittab[i].ichain;
+                    if (BVINBLOCK(bit, block, node->bvs.stage1.u.cm.cand)) {
+                        if (BVINBLOCK(bit, block, node->bvs.stage1.u.scm.region) ||
+                                BVINBLOCK(bit, block, node->bvs.stage1.u.cm.subinsert)) {
+                            ichain = bittab[i].ichain;
                             if (bvectin(i, &trapop)) {
                                 inpath = false;
-                            } else if (bvectin(i, &node_shared74->bvs.stage1.u.cm.ppin)) {
-                                if (bvectin(i, &node_shared74->bvs.stage1.u.cm.ppout)) {
+                            } else if (bvectin(i, &node->bvs.stage1.u.cm.ppin)) {
+                                if (bvectin(i, &node->bvs.stage1.u.cm.ppout)) {
                                     inpath = true;
                                 } else {
-                                    inpath = inpathafter(ichain_s2, stat);
+                                    inpath = inpathafter(ichain, stat);
                                 }
-                            } else if (bvectin(i, &node_shared74->bvs.stage1.u.cm.ppout)) {
-                                inpath = ichain_s2->type == issvar || inpathbefore(ichain_s2, stat);
+                            } else if (bvectin(i, &node->bvs.stage1.u.cm.ppout)) {
+                                inpath = ichain->type == issvar || inpathbefore(ichain, stat);
                             } else {
                                 inpath = false;
                             }
 
                             if (inpath) {
-                                if (ichain_s2->type != isop || (ichain_s2->isop.opc != Uilod && ichain_s2->isop.opc != Uirld)) {
-                                    temp_s1 = ivfactor(ichain_s2, stat->u.store.ichain->isop.op1, &sp7A, &sp70, &sp6C);
-                                    if (temp_s1 != 0 || sp70 != NULL) {
-                                        phi_s0 = stat->u.store.u.str.unk2C;
-                                        if (phi_s0 == NULL) {
-                                            expSourceThing = alloc_new(sizeof(struct ExpSourceThing), &perm_heap);
-                                            stat->u.store.u.str.unk2C = expSourceThing;
+                                if (ichain->type != isop || (ichain->isop.opc != Uilod && ichain->isop.opc != Uirld)) {
+                                    factor = ivfactor(ichain, stat->u.store.ichain->isop.op1, &overflow, &multiplier, &mult_factor);
+                                    if (factor != 0 || multiplier != NULL) {
+                                        if (stat->u.store.u.str.unk2C == NULL) {
+                                            srcand = alloc_new(sizeof(struct StrengthReductionCand), &perm_heap);
+                                            stat->u.store.u.str.unk2C = srcand;
                                         } else {
-                                            while (phi_s0->next != NULL) {
-                                                phi_s0 = phi_s0->next;
+                                            sc = stat->u.store.u.str.unk2C;
+                                            while (sc->next != NULL) {
+                                                sc = sc->next;
                                             }
-                                            expSourceThing = alloc_new(sizeof(struct ExpSourceThing), &perm_heap);
-                                            phi_s0->next = expSourceThing;
+                                            srcand = alloc_new(sizeof(struct StrengthReductionCand), &perm_heap);
+                                            sc->next = srcand;
                                         }
+#ifndef AVOID_UB
+                                        *expSourceThing = (struct ExpSourceThing){0};
+#endif
 
-                                        expSourceThing->ichain = ichain_s2;
-                                        expSourceThing->next = NULL;
-                                        expSourceThing->unk8 = sp80;
-                                        expSourceThing->unkC = temp_s1;
-                                        if (sp70 != NULL) {
-                                            expSourceThing->ichain_unk10 = sp70;
-                                            expSourceThing->unk14 = sp6C;
-                                            expSourceThing->unk18 = 0;
-                                            if (ichain_s2->isop.unk24_cand != nota_candof && !node_shared74->unkBb8) {
-                                                if ((ichain_s2->isop.unk24_cand != 0) || (sp6C * sp80 == 1 && temp_s1 == 0) || (sp70->type != isvar)) {
-                                                    ichain_s2->isop.unk24_cand = nota_candof;
+                                        srcand->target = ichain;
+                                        srcand->next = NULL;
+                                        srcand->increment = increment;
+                                        srcand->iv_factor = factor;
+                                        if (multiplier != NULL) {
+                                            srcand->multiplier = multiplier;
+                                            srcand->mult_factor = mult_factor;
+                                            srcand->unk18 = 0;
+                                            if (ichain->isop.srcand != nota_candof && !node->in_rolled_preloop) {
+                                                if (ichain->isop.srcand != NULL ||
+                                                        (mult_factor * increment == 1 && factor == 0) ||
+                                                        multiplier->type != isvar) {
+                                                    ichain->isop.srcand = nota_candof;
                                                 } else {
-                                                    ichain_s2->isop.unk24_cand = expSourceThing;
-                                                    ichain_s2->isop.stat = NULL;
+                                                    ichain->isop.srcand = srcand;
+                                                    ichain->isop.stat = NULL;
                                                 }
                                             }
                                         } else {
-                                            expSourceThing->ichain_unk10 = NULL;
+                                            srcand->multiplier = NULL;
                                         }
 
-                                        if (mipsflag == 3 && sp62 != 0) {
+                                        // unused
+                                        if (mipsflag == 3 && inloop) {
                                             if (looptab[loopno].unk9 != 0) {
                                                 if (looptab[loopno].unk8 == 0) {
                                                     unkThing2 = alloc_new(sizeof(struct ScmThing), &perm_heap);
-                                                    unkThing2->ichain = ichain_s2;
-                                                    unkThing2->unk4 = expSourceThing;
+#ifndef AVOID_UB
+                                                    *unkThing2 = (struct ScmThing){0};
+#endif
+                                                    unkThing2->ichain = ichain;
+                                                    unkThing2->unk4 = srcand;
                                                     unkThing2->unk10 = 0;
                                                     unkThing2->unk11 = 0;
                                                     unkThing2->next = looptab[loopno].unk4;
@@ -299,7 +306,7 @@ static void func_00474FC8(struct Statement *stat, struct Graphnode *node_shared7
                                                     unkThing2 = looptab[loopno].unk4;
                                                     found = false;
                                                     while (unkThing2 != NULL && !found) {
-                                                        if (unkThing2->ichain == ichain_s2) {
+                                                        if (unkThing2->ichain == ichain) {
                                                             found = true;
                                                         } else {
                                                             unkThing2 = unkThing2->next;
@@ -316,15 +323,15 @@ static void func_00474FC8(struct Statement *stat, struct Graphnode *node_shared7
                             }
                         }
                     }
-                    i = i + 1;
-                    bit = bit + 1;
+                    i++;
+                    bit++;
                 }
             }
             block++;
         } while (i < bitposcount);
     }
 
-    if (mipsflag == 3 && sp62 != 0) {
+    if (mipsflag == 3 && inloop != 0) {
         if (looptab[loopno].unk4 != NULL) {
             looptab[loopno].unk8 = 1;
         }

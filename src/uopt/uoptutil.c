@@ -1741,7 +1741,7 @@ bool in_indmults(struct IChain *ichain) {
     if (ichain != NULL && ichain->type == isop){
         return bvectin0(ichain->bitpos, &indmults);
     } else {
-        return true; // ?
+        return true; // constant, variable, or address
     }
 }
 

@@ -693,15 +693,15 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                             expr->data.isop.opc != Uildv &&
                             expr->data.isop.opc != Uirld &&
                             expr->data.isop.opc != Uirlv) &&
-                        expr->ichain->isop.unk24_cand != NULL && expr->ichain->isop.unk24_cand != nota_candof) {
+                        expr->ichain->isop.srcand != NULL && expr->ichain->isop.srcand != nota_candof) {
 
-                    if (expr->ichain->isop.unk24_cand->unk18 == 0) {
+                    if (expr->ichain->isop.srcand->unk18 == 0) {
                         ichain = alloc_new(sizeof (struct IChain), &perm_heap);
-                        *ichain = *expr->ichain->isop.unk24_cand->ichain;
+                        *ichain = *expr->ichain->isop.srcand->target;
 
                         ichain->isop.opc = Ucg1;
-                        expr->ichain->isop.unk24_cand->unk18 = newbit(ichain, NULL);
-                        ichain->bitpos = expr->ichain->isop.unk24_cand->unk18;
+                        expr->ichain->isop.srcand->unk18 = newbit(ichain, NULL);
+                        ichain->bitpos = expr->ichain->isop.srcand->unk18;
 
                         if ((tempdisp & 3) != 0) {
                             tempdisp = (tempdisp - (tempdisp & 3)) + 4;
@@ -716,21 +716,21 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                             tempdisp += 4;
                         }
                     } else {
-                        ichain = bittab[expr->ichain->isop.unk24_cand->unk18].ichain;
+                        ichain = bittab[expr->ichain->isop.srcand->unk18].ichain;
                     }
 
                     if ((ichain->isop.datatype != Idt && ichain->isop.datatype != Kdt) || dwopcode) {
                         old_lu = *lu;
-                        formlivbb(expr->ichain->isop.unk24_cand->ichain_unk10, node, lu);
+                        formlivbb(expr->ichain->isop.srcand->multiplier, node, lu);
                         if ((*lu)->load_count == 0 && (*lu)->store_count == 0) {
-                            setbit(&node->bvs.stage2.loclive, expr->ichain->isop.unk24_cand->ichain_unk10->bitpos);
+                            setbit(&node->bvs.stage2.loclive, expr->ichain->isop.srcand->multiplier->bitpos);
                         }
 
                         (*lu)->load_count++;
                         formlivbb(ichain, node, lu);
                         (*lu)->store_count++;
 
-                        setbit(&node->bvs.stage2.locdef, expr->ichain->isop.unk24_cand->unk18);
+                        setbit(&node->bvs.stage2.locdef, expr->ichain->isop.srcand->unk18);
                         if ((*lu)->load_count == 0) {
                             (*lu)->firstisstr = 1;
                         }
@@ -1124,7 +1124,7 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
             if ((ichain->isop.datatype == Sdt) && int_reg_size < sizeofsetexpr(ichain)) {
                 break;
             }
-            if (!arg1 && !const_value && (ichain->isop.unk24_cand == 0 || ichain->isop.unk24_cand == nota_candof)) {
+            if (!arg1 && !const_value && (ichain->isop.srcand == NULL || ichain->isop.srcand == nota_candof)) {
                 setbit(&old, ichain->bitpos); // looks like a hack
             }
             if (const_value) {
@@ -1160,14 +1160,14 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                         ichain->isop.opc != Utyp &&
                         ichain->isop.opc != Uirld &&
                         ichain->isop.opc != Uirlv) {
-                    if (ichain->isop.unk24_cand != NULL && ichain->isop.unk24_cand != nota_candof) {
-                        if (ichain->isop.unk24_cand->unk18 == 0) {
+                    if (ichain->isop.srcand != NULL && ichain->isop.srcand != nota_candof) {
+                        if (ichain->isop.srcand->unk18 == 0) {
                             sp40 = alloc_new(sizeof (struct IChain), &perm_heap);
-                            *sp40 = *ichain->isop.unk24_cand->ichain;
+                            *sp40 = *ichain->isop.srcand->target;
 
                             sp40->isop.opc = Ucg1;
-                            ichain->isop.unk24_cand->unk18 = newbit(sp40, NULL);
-                            sp40->bitpos = ichain->isop.unk24_cand->unk18;
+                            ichain->isop.srcand->unk18 = newbit(sp40, NULL);
+                            sp40->bitpos = ichain->isop.srcand->unk18;
                             if ((tempdisp & 3) != 0) {
                                 tempdisp = (tempdisp - (tempdisp & 3)) + 4;
                             }
@@ -1180,15 +1180,15 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                                 tempdisp += 4;
                             }
                         } else {
-                            sp40 = bittab[ichain->isop.unk24_cand->unk18].ichain;
+                            sp40 = bittab[ichain->isop.srcand->unk18].ichain;
                         }
 
                         if ((sp40->isop.datatype != Idt && sp40->isop.datatype != Kdt) || dwopcode) {
-                            func_0045FBB4(ichain->isop.unk24_cand->ichain_unk10, 0, 0, node, lu);
+                            func_0045FBB4(ichain->isop.srcand->multiplier, 0, 0, node, lu);
                             formlivbb(sp40, node, lu);
 
                             (*lu)->store_count++;
-                            setbit(&node->bvs.stage2.locdef, ichain->isop.unk24_cand->unk18);
+                            setbit(&node->bvs.stage2.locdef, ichain->isop.srcand->unk18);
 
                             if ((*lu)->load_count == 0) {
                                 (*lu)->firstisstr = true;
@@ -1262,7 +1262,7 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node) {
     struct LiveUnit *lu;
     int sp58;
     bool phi_s6;
-    struct ExpSourceThing *phi_s2;
+    struct StrengthReductionCand *phi_s2;
     struct IChain *phi_s1;
 
     if (stat->u.store.u.str.unk2C == NULL) {
@@ -1277,30 +1277,30 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node) {
     }
 
     while (phi_s2 != NULL) {
-        if (!phi_s6 || !check_ix_candidate(phi_s2->ichain, sp58)) {
-            if ((phi_s2->ichain->isop.datatype != Idt && phi_s2->ichain->isop.datatype != Kdt) || dwopcode) {
-                formlivbb(phi_s2->ichain, node, &lu);
+        if (!phi_s6 || !check_ix_candidate(phi_s2->target, sp58)) {
+            if ((phi_s2->target->isop.datatype != Idt && phi_s2->target->isop.datatype != Kdt) || dwopcode) {
+                formlivbb(phi_s2->target, node, &lu);
                 if (outofmem) {
                     return;
                 }
                 lu->load_count += 1;
-                if (phi_s6 && check_ix_source(phi_s2->ichain, sp58)) {
+                if (phi_s6 && check_ix_source(phi_s2->target, sp58)) {
                     lu->load_count += 2;
                 }
                 if (lu->load_count == 1 && lu->store_count == 0) {
-                    setbit(&node->bvs.stage2.loclive, phi_s2->ichain->bitpos);
+                    setbit(&node->bvs.stage2.loclive, phi_s2->target->bitpos);
                 }
                 lu->store_count += 1;
-                setbit(&node->bvs.stage2.locdef, phi_s2->ichain->bitpos);
+                setbit(&node->bvs.stage2.locdef, phi_s2->target->bitpos);
             }
 
-            if (phi_s2->ichain_unk10 != NULL) {
-                if (phi_s2->ichain->isop.unk24_cand == NULL || phi_s2->ichain->isop.unk24_cand == nota_candof || node->unkBb8) {
-                    func_00461084(phi_s2->ichain_unk10, node);
+            if (phi_s2->multiplier != NULL) {
+                if (phi_s2->target->isop.srcand == NULL || phi_s2->target->isop.srcand == nota_candof || node->in_rolled_preloop) {
+                    func_00461084(phi_s2->multiplier, node);
                 } else {
                     if (phi_s2->unk18 == 0) {
                         phi_s1 = alloc_new(sizeof (struct IChain), &perm_heap);
-                        *phi_s1 = *phi_s2->ichain;
+                        *phi_s1 = *phi_s2->target;
 
                         phi_s1->isop.opc = Ucg1;
                         phi_s2->unk18 = newbit(phi_s1, NULL);

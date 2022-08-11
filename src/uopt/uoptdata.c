@@ -800,7 +800,7 @@ struct Expression *nocopy;
 0046123C func_0046123C
 00474FC8 func_00474FC8
 */
-struct ExpSourceThing *nota_candof;
+struct StrengthReductionCand *nota_candof;
 
 /*
 004150E4 add_cvtl

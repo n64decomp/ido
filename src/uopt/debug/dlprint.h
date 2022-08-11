@@ -19,6 +19,7 @@ enum TypeID {
     GRAPHNODE_LIST,
     VAR_ACCESS,
     TREP,
+    STRENGTH_REDUCTION,
     TEMPLOC,
     VARIABLE,
     LDATAB_ENTRY,
@@ -38,6 +39,7 @@ enum TypeID {
     EXPRTYPE,
     DATATYPE,
     OPCODE,
+    BITFIELD,
     BOOL,
     CHAR,
     SHORT,
@@ -72,6 +74,7 @@ struct StringRep {
         struct Temploc *temploc;
         struct Variable *variable;
         struct LdatabEntry *ldatabEntry;
+        struct StrengthReductionCand *cand;
         struct BitVector bitvector;
         int reg;
         int regset[2];
@@ -151,6 +154,7 @@ void dl_print_var_access(struct DisplayLine *dl, struct StringRep *parent, struc
 void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expression *expr);
 void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IChain *ichain);
 void dl_print_trepimage(struct DisplayLine *dl, struct StringRep *parent, struct TrepImageThing *trepimage);
+void dl_print_strength_reduction(struct DisplayLine *dl, struct StringRep *parent, struct StrengthReductionCand *cand);
 void dl_print_liveunit(struct DisplayLine *dl, struct StringRep *parent, struct LiveUnit *liveunit);
 void dl_print_interferelist(struct DisplayLine *dl, struct StringRep *parent, struct InterfereList *interfere);
 void dl_print_liverange(struct DisplayLine *dl, struct StringRep *parent, struct LiveRange *liverange);

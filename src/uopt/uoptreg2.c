@@ -1798,7 +1798,6 @@ no_split:
         }
     }
     finalnumlr += 1;
-
 }
 
 /*
@@ -2032,7 +2031,6 @@ void globalcolor(void) {
                 return;
             }
         }
-
 
         bvectcopy(&colorcand, &iscolored[regclass - 1]);
         bvectminus(&colorcand, &unconstrain);

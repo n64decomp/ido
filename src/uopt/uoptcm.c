@@ -459,7 +459,7 @@ void codemotion(void) {
         return;
     }
 
-    /* Complute global availability of expressions.
+    /* Compute global availability of expressions.
      *
      * An expression is available at a point if every path leading to that point contains the expression.
      * In other words the expression doesn't need to be recomputed since it was computed earlier, and the value hasn't changed.
@@ -510,7 +510,7 @@ void codemotion(void) {
 
     /* Global anticipatability
      *
-     * An expression is anticipated at a point if every path leading out from that point contains the expresion.
+     * An expression is anticipated at a point if every path leading out from that point contains the expression.
      * In other words the expression is precomputed at this point.
      *
      * Note that anticipatability implies backwards code motion, while availability does not.

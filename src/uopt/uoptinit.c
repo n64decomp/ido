@@ -746,7 +746,7 @@ void optinit(void) {
         incorp_feedback();
     }
     nocopy = alloc_new(sizeof (struct Expression), &perm_heap);
-    nota_candof = alloc_new(sizeof (struct ExpSourceThing), &perm_heap);
+    nota_candof = alloc_new(sizeof (struct StrengthReductionCand), &perm_heap);
     constprop = alloc_new(sizeof (struct VarAccessList), &perm_heap);
 
     // see coloroffset

@@ -22,6 +22,7 @@ bool member_is_pointer(struct Member *m)
 {
     switch (m->type)
     {
+        case BITFIELD:
         case BOOL:
         case CHAR:
         case SHORT:
@@ -57,6 +58,7 @@ void dl_print_typeid(struct DisplayLine *dl, struct StringRep *sr, void *data, e
         case GRAPHNODE_LIST: dl_print_graphnode_list(dl, sr, *(void**)data, true); break;
         case VAR_ACCESS:     dl_print_var_access(dl, sr, *(void**)data); break;
         case TREP:           dl_print_trepimage(dl, sr, *(void**)data); break;
+        case STRENGTH_REDUCTION: dl_print_strength_reduction(dl, sr, *(void**)data); break;
         case TEMPLOC:        dl_print_temploc(dl, *(void**)data); break;
         case VARLOC:         dl_print_variable(dl, *(struct VariableLocation*)data); break;
         case BITVECTOR:      dl_print_bitvector(dl, sr, data); break;
@@ -98,13 +100,16 @@ struct DisplayLine *dl_from_member(void **data, struct Member *m, void *lines)
 
     dl_printf(dl, "=", m->name);
 
-    /*
-    struct StringRep *sr = sr_newchild(dl, dl->top);
-    sr->type = MISC;
-    sr->start = dl->pos;
-     */
     if (data == NULL || (member_is_pointer(m) && *data == NULL)) {
         dl_printf(dl, "NULL");
+    } else if (m->type == BITFIELD) {
+        // TODO: support larger bitfields, for VariableLocation maybe
+        int fieldsize = m->size * 8;
+        int mask = ((1 << m->bits) - 1) & ((1 << fieldsize) - 1);
+
+        unsigned char value = ((*(unsigned char *)data) >> m->offset_bits) & mask;
+
+        dl_printf(dl, "%hhd", value, *(unsigned char*)data);
     } else {
         dl_print_typeid(dl, dl->top, data, m->type);
         if (dl->top->children->length > 1) {

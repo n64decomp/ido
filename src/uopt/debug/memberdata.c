@@ -25,7 +25,7 @@
         struct InterfereList *: INTERFERELIST, \
         struct TrepImageThing *: TREP, \
         struct Proc *: MISC, \
-        struct ExpSourceThing *: INT, \
+        struct StrengthReductionCand *: STRENGTH_REDUCTION, \
         struct RecurThing *: INT, \
         \
         bool: BOOL, \
@@ -90,6 +90,18 @@
 
 #define MEMBER_SPECIAL(special_type, member_type, member) MEMBER_DEF(special_type, member_type, member, 1)
 #define MEMBER_SPECIAL_ARRAY(special_type, member_type, member) MEMBER_DEF(special_type, member_type, member, ARRAYLEN(((PARENT_TYPE *)0)->member))
+#define MEMBER_BITFIELD(member_type, member, prev_member, offbits, numbits)                   \
+(struct Member)                                                                        \
+{                                                                                      \
+    .type = BITFIELD,                                                                  \
+    .name = #member,                                                                   \
+    .typeName = #member_type,                                                          \
+    .offset = offsetof(PARENT_TYPE, prev_member) + sizeof(MEMBER_TYPEOF(prev_member)), \
+    .offset_bits = offbits,                                                            \
+    .bits = numbits,                                                                   \
+    .size = sizeof(member_type),                                                       \
+    .numElements = 1,                                                                  \
+}
 
 #define PARENT_TYPE struct LiveRange
 struct Member liveRangeMembers[] = {
@@ -138,8 +150,7 @@ struct Member interfereListMembers[] = {
 #undef PARENT_TYPE
 
 #define PARENT_TYPE struct Expression
-struct Member exprIslda[] =
-{
+struct Member exprIslda[] = {
         MEMBER(int, data.islda_isilda.offset),
         MEMBER(int, data.islda_isilda.size),
         MEMBER(int, data.islda_isilda.level),
@@ -148,8 +159,7 @@ struct Member exprIslda[] =
         MEMBER(struct Temploc *, data.islda_isilda.temploc),
 };
 
-struct Member exprIsvar[] =
-{
+struct Member exprIsvar[] = {
         MEMBER(unsigned char, data.isvar_issvar.size),
         MEMBER(bool, data.isvar_issvar.veqv),
         MEMBER(bool, data.isvar_issvar.vreg),
@@ -193,19 +203,16 @@ bool condExprTrep12(void *_expr)
 
 }
 
-struct Member exprAuxCvtfrom[] =
-{
+struct Member exprAuxCvtfrom[] = {
             MEMBER_SPECIAL(DATATYPE, Datatype, data.isop.aux.cvtfrom),
 };
 
-struct Member exprAuxMtagnoAlign[] =
-{
+struct Member exprAuxMtagnoAlign[] = {
             MEMBER(int, data.isop.aux.mtagno),
             MEMBER(unsigned char, data.isop.aux2.v1.align),
 };
 
-struct Member exprAuxBaseaddr2[] =
-{
+struct Member exprAuxBaseaddr2[] = {
             MEMBER(struct Expression *, data.isop.aux.unk38),
 };
 
@@ -253,8 +260,7 @@ struct Member exprAux2overflow[] = {
     MEMBER(bool, data.isop.aux2.v1.overflow_attr),
 };
 
-struct Member exprIsop[] =
-{
+struct Member exprIsop[] = {
         MEMBER_SPECIAL(OPCODE, Uopcode, data.isop.opc),
         MEMBER(bool, data.isop.anticipated),
         MEMBER(bool, data.isop.available),
@@ -274,16 +280,14 @@ struct Member exprIsop[] =
         MEMBER_UNION(data.isop.aux2.v1.overflow_attr, exprAux2overflow, condExprAux2overflow),
 };
 
-struct Member exprIsconst[] =
-{
+struct Member exprIsconst[] = {
         //MEMBER(union Constant, data.isconst.number),
         MEMBER(int, data.isconst.size),
         MEMBER(int, data.isconst.real_significand),
         MEMBER(int, data.isconst.real_exponent),
 };
 
-struct Member exprIsrconst[] =
-{
+struct Member exprIsrconst[] = {
         MEMBER(unsigned short, data.isrconst.value),
         MEMBER(int, data.isrconst.unk24),
 };
@@ -391,12 +395,24 @@ bool condIchainIsopTemploc(void *_ichain) {
             ichain->isop.opc == Utpne || ichain->isop.opc == Uirst || ichain->isop.opc == Uirsv);
 }
 
+bool condIchainIsopCand(void *_ichain) {
+    struct IChain *ichain = _ichain;
+    return (ichain->isop.opc != Uadj && ichain->isop.opc != Ucg2 && ichain->isop.opc != Ucvt && ichain->isop.opc != Uiequ &&
+            ichain->isop.opc != Uigeq && ichain->isop.opc != Uigrt && ichain->isop.opc != Uileq && ichain->isop.opc != Uiles &&
+            ichain->isop.opc != Uineq && ichain->isop.opc != Uinn && ichain->isop.opc != Urnd && ichain->isop.opc != Utyp &&
+            ichain->isop.opc != Uilod && ichain->isop.opc != Uildv && ichain->isop.opc != Uirld && ichain->isop.opc != Uirlv);
+}
+
 struct Member ichainIsopStat[] = {
     MEMBER(struct Statement *, isop.stat),
 };
 
 struct Member ichainIsopTemploc[] = {
     MEMBER(struct Temploc *, isop.temploc),
+};
+
+struct Member ichainIsopCand[] = {
+    MEMBER(struct StrengthReductionCand *, isop.srcand),
 };
 
 struct Member ichainIsop[] = {
@@ -414,8 +430,8 @@ struct Member ichainIsop[] = {
     //union {
         MEMBER_UNION(isop.cvtfrom, ichainIsopCvtfrom, condIchainIsopCvtfrom),
         MEMBER_UNION(isop.unk24_u16, ichainIsopUnk24u16, condIchainIsopUnk24u16),
+        MEMBER_UNION(isop.srcand, ichainIsopCand, condIchainIsopCand),
         MEMBER_UNION(isop.s.word, ichainIsopSWord, condIchainIsopSWord),
-        //MEMBER(struct ExpSourceThing *, isop.unk24_cand),
             /*
         union {
             // XXX: note whether the asm uses lw/sw or lh/sh ichain->unk24
@@ -462,7 +478,7 @@ struct Member statOutpar[] = {
 };
 
 struct Member statStr[] = {
-    MEMBER(struct ExpSourceThing *, u.store.u.str.unk2C),
+    MEMBER(struct StrengthReductionCand *, u.store.u.str.unk2C),
     MEMBER(struct RecurThing *, u.store.u.str.unk30),
 };
 
@@ -616,7 +632,7 @@ struct Member statJp[] = {
     MEMBER(int, u.jp.target_blockno),
     MEMBER(int, u.jp.unk18),
     MEMBER(int, u.jp.incre),
-    MEMBER(struct Expression *, u.jp.unk20),
+    MEMBER(struct Expression *, u.jp.iter_initial_value),
     MEMBER(bool, u.jp.unk24),
     MEMBER(bool, u.jp.loop_if_true),
     MEMBER(bool, u.jp.unk26),
@@ -750,8 +766,8 @@ struct Member graphnodeMembers[] = {
     MEMBER(unsigned char, unk7),
     MEMBER(unsigned short, num),
     MEMBER(unsigned char, loopdepth),
-    //MEMBER(unsigned char, unkBb8),
-    //MEMBER(unsigned char, unkBb4),
+    MEMBER_BITFIELD(unsigned char, unkBb8, loopdepth, 0, 1),
+    MEMBER_BITFIELD(unsigned char, unkBb4, loopdepth, 1, 1),
     MEMBER(struct Graphnode *, next),
     MEMBER(struct Graphnode *, prev),
     MEMBER_LIST(struct GraphnodeList *, predecessors, struct GraphnodeList, next),
@@ -868,6 +884,18 @@ struct Member graphnodeMembers[] = {
 };
 #undef PARENT_TYPE
 
+#define PARENT_TYPE struct StrengthReductionCand
+struct Member expSourceThingMembers[] = {
+    MEMBER(struct IChain *, target),
+    MEMBER(struct StrengthReductionCand *, next),
+    MEMBER(int,  increment),
+    MEMBER(int,  iv_factor),
+    MEMBER(struct IChain *, multiplier),
+    MEMBER(int, mult_factor),
+    MEMBER(int, unk18),
+};
+#undef PARENT_TYPE
+
 #define STRUCT_DATA_DEF(type_id, structname, members_array) \
     [type_id] =                                             \
 (struct StructData)                                         \
@@ -886,6 +914,7 @@ struct StructData gStructData[TYPE_ID_MAX] = {
     STRUCT_DATA_DEF(ICHAIN, struct IChain, ichainMembers),
     STRUCT_DATA_DEF(GRAPHNODE, struct Graphnode, graphnodeMembers),
     STRUCT_DATA_DEF(INTERFERELIST, struct InterfereList, interfereListMembers),
+    STRUCT_DATA_DEF(STRENGTH_REDUCTION, struct ExpSourceThing, expSourceThingMembers),
 };
 
 #endif

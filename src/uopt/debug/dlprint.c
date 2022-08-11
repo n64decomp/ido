@@ -792,6 +792,36 @@ void dl_print_trepimage(struct DisplayLine *dl, struct StringRep *parent, struct
     }
 }
 
+void dl_print_strength_reduction(struct DisplayLine *dl, struct StringRep *parent, struct StrengthReductionCand *cand)
+{
+    if (cand == NULL) return;
+    struct StringRep *sr = sr_newchild(dl, parent);
+
+    sr->start = dl->pos;
+    sr->type = STRENGTH_REDUCTION;
+    sr->cand = cand;
+
+    if (cand == nota_candof) {
+        dl_printf(dl, "nota_candof");
+    } else {
+        dl_printf(dl, "SR: ");
+        dl_print_ichain(dl, sr, cand->target);
+        dl_printf(dl, " -> ");
+
+        //if (cand->increment > 1) dl_printf(dl, "%d * (", cand->increment);
+
+        if (cand->iv_factor != 0) {
+            dl_printf(dl, "%d", cand->iv_factor * cand->increment);
+            if (cand->multiplier != NULL) dl_printf(dl, " + ");
+        }
+        if (cand->multiplier != NULL) dl_print_ichain(dl, sr, cand->multiplier);
+        if (cand->mult_factor != 0) dl_printf(dl, " * %d", cand->increment * cand->mult_factor);
+
+        //if (cand->increment > 1) dl_printf(dl, ")");
+    }
+    sr->len = dl->pos - sr->start;
+}
+
 void dl_print_liveunit(struct DisplayLine *dl, struct StringRep *parent, struct LiveUnit *liveunit)
 {
     if (liveunit == NULL) return;

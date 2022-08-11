@@ -2134,15 +2134,15 @@ block_275:
                      expr->data.isop.opc != Utyp &&
                      expr->data.isop.opc != Uirld &&
                      expr->data.isop.opc != Uirlv) &&
-                        expr->ichain->isop.unk24_cand != NULL && expr->ichain->isop.unk24_cand != nota_candof) {
-                    func_00422D04(expr->ichain->isop.unk24_cand->ichain_unk10, node);
-                    if (expr->ichain->isop.unk24_cand->unk8 * expr->ichain->isop.unk24_cand->unk14 == -1) {
+                        expr->ichain->isop.srcand != NULL && expr->ichain->isop.srcand != nota_candof) {
+                    func_00422D04(expr->ichain->isop.srcand->multiplier, node);
+                    if (expr->ichain->isop.srcand->increment * expr->ichain->isop.srcand->mult_factor == -1) {
                         OPC = Uneg;
                         LEXLEV = 0;
                         DTYPE = expr->data.isop.datatype;
                         uwrite(&u);
-                    } else if (expr->ichain->isop.unk24_cand->unk8 * expr->ichain->isop.unk24_cand->unk14 != 1) {
-                        constval.intval = expr->ichain->isop.unk24_cand->unk8 * expr->ichain->isop.unk24_cand->unk14;
+                    } else if (expr->ichain->isop.srcand->increment * expr->ichain->isop.srcand->mult_factor != 1) {
+                        constval.intval = expr->ichain->isop.srcand->increment * expr->ichain->isop.srcand->mult_factor;
                         genloadnum(expr->data.isop.datatype, 0, constval, 4, 1);
                         OPC = Umpy;
                         LEXLEV = 0;
@@ -2150,13 +2150,13 @@ block_275:
                         uwrite(&u);
                     }
 
-                    if (inreg(bittab[expr->ichain->isop.unk24_cand->unk18].ichain, node, &reg, 0)) {
+                    if (inreg(bittab[expr->ichain->isop.srcand->unk18].ichain, node, &reg, 0)) {
                         genrop(Ustr, reg, expr->data.isop.datatype, sizeoftyp(expr->data.isop.datatype));
                     } else {
                         DTYPE = expr->data.isop.datatype;
                         MTYPE = Mmt;
                         IONE = curblk;
-                        OFFSET = bittab[expr->ichain->isop.unk24_cand->unk18].ichain->isop.temploc->disp;
+                        OFFSET = bittab[expr->ichain->isop.srcand->unk18].ichain->isop.temploc->disp;
                         if (!stack_reversed) {
                             if (highestmdef < -OFFSET) {
                                 highestmdef = -OFFSET;
@@ -3506,17 +3506,17 @@ written:
                             ichain->isop.opc != Uildv &&
                             ichain->isop.opc != Uirld &&
                             ichain->isop.opc != Uirlv) &&
-                        ichain->isop.unk24_cand != NULL &&
-                        ichain->isop.unk24_cand != nota_candof &&
+                        ichain->isop.srcand != NULL &&
+                        ichain->isop.srcand != nota_candof &&
                         !arg3) {
-                    func_00422D04(ichain->isop.unk24_cand->ichain_unk10, node);
-                    if (ichain->isop.unk24_cand->unk8 * ichain->isop.unk24_cand->unk14 == -1) {
+                    func_00422D04(ichain->isop.srcand->multiplier, node);
+                    if (ichain->isop.srcand->increment * ichain->isop.srcand->mult_factor == -1) {
                         OPC = Uneg;
                         LEXLEV = 0;
                         DTYPE = sp5F;
                         uwrite(&u);
-                    } else if (ichain->isop.unk24_cand->unk8 * ichain->isop.unk24_cand->unk14 != 1) {
-                        constval.intval = ichain->isop.unk24_cand->unk8 * ichain->isop.unk24_cand->unk14;
+                    } else if (ichain->isop.srcand->increment * ichain->isop.srcand->mult_factor != 1) {
+                        constval.intval = ichain->isop.srcand->increment * ichain->isop.srcand->mult_factor;
                         genloadnum(sp5F, 0, constval, 4, true);
                         OPC = Umpy;
                         LEXLEV = 0;
@@ -3524,7 +3524,7 @@ written:
                         uwrite(&u);
                     }
 
-                    sp58 = bittab[ichain->isop.unk24_cand->unk18].ichain;
+                    sp58 = bittab[ichain->isop.srcand->unk18].ichain;
                     if (inreg(sp58, node, &reg, 0)) {
                         genrop(Ustr, reg, sp5F, sizeoftyp(sp5F));
                     } else {
@@ -4295,22 +4295,22 @@ static void func_0042B1A8(struct Graphnode *node) {
 /*
 0042B890 func_0042B890
 */
-static void func_0042B2C0(struct ExpSourceThing *src, Datatype dtype, struct Graphnode *node) {
+static void func_0042B2C0(struct StrengthReductionCand *src, Datatype dtype, struct Graphnode *node) {
     int reg;                 // sp60
     union Constant constval; // sp58
     struct IChain *ichain;   // sp54
 
-    if (inreg(src->ichain, node, &reg, 1)) {
+    if (inreg(src->target, node, &reg, 1)) {
         genrop(Ulod, reg, dtype, sizeoftyp(dtype));
     } else {
         OPC = Uvreg;
         DTYPE = dtype;
         MTYPE = Mmt;
         IONE = curblk;
-        if (src->ichain->type == issvar) { // was isvar_issvar separate after all? :/
-            OFFSET = src->ichain->isvar_issvar.temploc->disp;
+        if (src->target->type == issvar) { // was isvar_issvar separate after all? :/
+            OFFSET = src->target->isvar_issvar.temploc->disp;
         } else {
-            OFFSET = src->ichain->isvar_issvar.temploc->disp;
+            OFFSET = src->target->isvar_issvar.temploc->disp;
         }
         LENGTH = sizeoftyp(DTYPE);
         LEXLEV = 0;
@@ -4330,29 +4330,29 @@ static void func_0042B2C0(struct ExpSourceThing *src, Datatype dtype, struct Gra
         }
     }
 
-    if (src->unkC != 0) {
+    if (src->iv_factor != 0) {
 
         if (dtype == Idt || dtype == Kdt || dtype == Wdt) {
-            constval.longval = (long long) src->unk8 * (long long) src->unkC;
+            constval.longval = (long long) src->increment * (long long) src->iv_factor;
         } else {
-            constval.intval = src->unk8 * src->unkC;
+            constval.intval = src->increment * src->iv_factor;
         }
         genloadnum(dtype, 0, constval, sizeoftyp(dtype), 1);
     }
 
-    if (src->ichain_unk10 != 0) {
-        if (src->ichain->isop.unk24_cand == NULL || src->ichain->isop.unk24_cand == nota_candof || node->unkBb8) {
-            func_00422D04(src->ichain_unk10, node);
-            if (src->unk8 * src->unk14 == -1) {
+    if (src->multiplier != 0) {
+        if (src->target->isop.srcand == NULL || src->target->isop.srcand == nota_candof || node->in_rolled_preloop) {
+            func_00422D04(src->multiplier, node);
+            if (src->increment * src->mult_factor == -1) {
                 OPC = Uneg;
                 LEXLEV = 0;
                 DTYPE = dtype;
                 uwrite(&u);
-            } else if (src->unk8 * src->unk14 != 1) {
+            } else if (src->increment * src->mult_factor != 1) {
                 if (dtype == Idt || dtype == Kdt || dtype == Wdt) {
-                    constval.longval = (long long) src->unk8 * (long long) src->unk14;
+                    constval.longval = (long long) src->increment * (long long) src->mult_factor;
                 } else {
-                    constval.intval = src->unk8 * src->unk14;
+                    constval.intval = src->increment * src->mult_factor;
                 }
                 genloadnum(dtype, 0,  constval, sizeoftyp(dtype), 1);
                 OPC = Umpy;
@@ -4390,7 +4390,7 @@ static void func_0042B2C0(struct ExpSourceThing *src, Datatype dtype, struct Gra
         }
     }
 
-    if (src->unkC != 0 && src->ichain_unk10 != NULL) {
+    if (src->iv_factor != 0 && src->multiplier != NULL) {
         OPC = Uadd;
         LEXLEV = 0;
         DTYPE = dtype;
@@ -4407,7 +4407,7 @@ static void func_0042B2C0(struct ExpSourceThing *src, Datatype dtype, struct Gra
 */
 static void func_0042B890(struct Statement *stat, struct Graphnode *node) {
     //void *sp64;                        v0-4
-    struct ExpSourceThing *src; // sp60, v0-8
+    struct StrengthReductionCand *src; // sp60, v0-8
     Datatype dtype;             // sp5F, v0-9
     int reg;                    // sp58
     struct IChain *ichain;
@@ -4417,11 +4417,11 @@ static void func_0042B890(struct Statement *stat, struct Graphnode *node) {
 
 
     for (src = stat->u.store.u.str.unk2C; src != NULL; src = src->next) {
-        if (checking_ix && check_ix_candidate(src->ichain, loopno)) {
+        if (checking_ix && check_ix_candidate(src->target, loopno)) {
             continue;
         }
 
-        ichain = src->ichain;
+        ichain = src->target;
         if (ichain->isop.opc == Uixa) {
             dtype = ichain->isop.datatype;
         } else {
@@ -4429,7 +4429,7 @@ static void func_0042B890(struct Statement *stat, struct Graphnode *node) {
         }
 
         func_0042B2C0(src, dtype, node);
-        if (inreg(src->ichain, node, &reg, 0)) {
+        if (inreg(src->target, node, &reg, 0)) {
             genrop(Ustr, reg, dtype, sizeoftyp(dtype));
         } else {
             OPC = Uvreg;

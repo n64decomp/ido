@@ -453,7 +453,7 @@ static void func_00477E20(struct Expression *op1, struct Expression *op2, struct
     int sp70;
     int temp_s3;
     int temp_s7;
-    struct IChain *temp_s1;
+    struct IChain *indmult;
     int block; // s8/fp
     int bit; // s4
 
@@ -477,7 +477,7 @@ static void func_00477E20(struct Expression *op1, struct Expression *op2, struct
             break;
 
         case isilda:
-        default:
+        default: // islda, isconst, isrconst
             break;
     }
 
@@ -501,26 +501,26 @@ static void func_00477E20(struct Expression *op1, struct Expression *op2, struct
             bit = i & 0x7f;
             while (bit >= 0) {
                 if (BVINBLOCK(bit, block, indmults)) {
-                    temp_s1 = bittab[i].ichain;
+                    indmult = bittab[i].ichain;
                     induction_base = NULL;
-                    if (func_00476ECC(op1->ichain, temp_s1, op2->type != isconst) == 1 &&
-                            ivfactor(temp_s1, op1->ichain, &sp7B, &sp74, &sp70) != 0 &&
+                    if (func_00476ECC(op1->ichain, indmult, op2->type != isconst) == 1 &&
+                            ivfactor(indmult, op1->ichain, &sp7B, &sp74, &sp70) != 0 &&
                             BVINBLOCK(bit, block, node->bvs.stage1.u.cm.ppin) &&
                             !BVINBLOCK(bit, block, node->bvs.stage1.u.cm.subdelete) &&
                             !BVINBLOCK(bit, block, node->bvs.stage1.alters)) {
                         *overflow = false;
-                        temp_s3 = func_00477118(temp_s1, op1->ichain, op2, &sp82, sb, overflow);
-                        temp_s7 = func_00477B0C(temp_s1, op1->ichain);
+                        temp_s3 = func_00477118(indmult, op1->ichain, op2, &sp82, sb, overflow);
+                        temp_s7 = func_00477B0C(indmult, op1->ichain);
                         if (*overflow == false) {
-                            if (temp_s3 != 0 || (temp_s1->dtype != Ldt && temp_s1->dtype != Kdt) ||
+                            if (temp_s3 != 0 || (indmult->dtype != Ldt && indmult->dtype != Kdt) ||
                                     (expr_shared->data.isop.opc != Ugeq &&
                                      expr_shared->data.isop.opc != Ugrt &&
                                      expr_shared->data.isop.opc != Uleq &&
                                      expr_shared->data.isop.opc != Ules)) {
-                                if (temp_s7 >= 0 || temp_s1->dtype == op1->datatype) {
+                                if (temp_s7 >= 0 || indmult->dtype == op1->datatype) {
                                     sp83 = true;
-                                    (*trep)->ichain2 = temp_s1;
-                                    setbit(&savedexp,  temp_s1->bitpos);
+                                    (*trep)->ichain2 = indmult;
+                                    setbit(&savedexp,  indmult->bitpos);
                                     (*trep)->unk28 = alloc_new(sizeof (struct IChain), &perm_heap);
 
                                     if (sp82) {
