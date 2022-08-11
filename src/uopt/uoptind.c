@@ -1257,27 +1257,26 @@ void findinduct(void) {
 00474FC8 func_00474FC8
 00477E20 func_00477E20
 */
-int ivfactor(struct IChain *ichain, struct IChain *iv, bool *overflow, struct IChain **arg3, int *arg4) {
-    int sp54; // t1
-    int sp50;
-    bool sp4B;
-    struct IChain *sp44;
-    int sp4C;
-    int sp40;
+int ivfactor(struct IChain *ichain, struct IChain *iv, bool *overflow, struct IChain **multiplier, int *mult_factor) {
+    int factor; // t1, sp54
+    int left; // sp50
+    int right; // sp4C
+    bool right_ovf; // sp4B
+    struct IChain *right_mult; // sp44
+    int right_mult_factor; // sp40
 
     *overflow = false;
-    *arg3 = NULL;
-    *arg4 = 1;
+    *multiplier = NULL;
+    *mult_factor = 1;
 
     if (ichain->type == isvar || ichain->type == issvar) {
         if (ichain == iv) {
-            sp54 = 1;
+            factor = 1;
         } else {
-            sp54 = 0;
+            factor = 0;
         }
-
     } else if (ichain->type == islda || ichain->type == isilda || ichain->type == isconst || ichain->type == isrconst) {
-        sp54 = 0;
+        factor = 0;
     } else if (ichain->isop.opc == Uadd ||
                ichain->isop.opc == Udec ||
                ichain->isop.opc == Uinc ||
@@ -1288,97 +1287,99 @@ int ivfactor(struct IChain *ichain, struct IChain *iv, bool *overflow, struct IC
         switch (ichain->isop.opc) {
             case Umpy:
                 if (ichain->isop.op1->type == isconst) {
-                    sp54 = ichain->isop.op1->isconst.number.intval * ivfactor(ichain->isop.op2, iv, overflow, arg3, arg4);
-                    if (*arg3 != NULL) {
-                        *arg4 = (ichain->isop.op1->isconst.number.intval * *arg4);
+                    factor = ichain->isop.op1->isconst.number.intval * ivfactor(ichain->isop.op2, iv, overflow, multiplier, mult_factor);
+                    if (*multiplier != NULL) {
+                        *mult_factor = (ichain->isop.op1->isconst.number.intval * *mult_factor);
                     }
                 } else if (ichain->isop.op2->type == isconst) {
-                    sp54 = ichain->isop.op2->isconst.number.intval * ivfactor(ichain->isop.op1, iv, overflow, arg3, arg4);
-                    if (*arg3 != NULL) {
-                        *arg4 = (ichain->isop.op2->isconst.number.intval * *arg4);
+                    factor = ichain->isop.op2->isconst.number.intval * ivfactor(ichain->isop.op1, iv, overflow, multiplier, mult_factor);
+                    if (*multiplier != NULL) {
+                        *mult_factor = (ichain->isop.op2->isconst.number.intval * *mult_factor);
                     }
                 } else {
-                    sp54 = 0;
-                    sp50 = ivfactor(ichain->isop.op1, iv, overflow, arg3, arg4);
-                    sp4C = ivfactor(ichain->isop.op2, iv, &sp4B, &sp44, &sp40);
-                    if (sp50 != 0) {
-                        TRAP_IF(sp4C != 0);
-                        TRAP_IF(*arg3 != 0);
-                        *arg3 = ichain->isop.op2;
-                        *arg4 = sp50;
-                    } else if (sp4C != 0) {
-                        TRAP_IF(sp50 != 0);
-                        TRAP_IF(sp44 != 0);
-                        *arg3 = ichain->isop.op1;
-                        *arg4 = sp4C;
+                    factor = 0;
+                    left = ivfactor(ichain->isop.op1, iv, overflow, multiplier, mult_factor);
+                    right = ivfactor(ichain->isop.op2, iv, &right_ovf, &right_mult, &right_mult_factor);
+                    if (left != 0) {
+                        TRAP_IF(right != 0);
+                        TRAP_IF(*multiplier != 0);
+                        *multiplier = ichain->isop.op2;
+                        *mult_factor = left;
+                    } else if (right != 0) {
+                        TRAP_IF(left != 0);
+                        TRAP_IF(right_mult != 0);
+                        *multiplier = ichain->isop.op1;
+                        *mult_factor = right;
                     }
                 }
                 break;
 
             case Udec:
             case Uinc:
-                sp54 = ivfactor(ichain->isop.op1, iv, overflow, arg3, arg4);
+                factor = ivfactor(ichain->isop.op1, iv, overflow, multiplier, mult_factor);
                 break;
 
-            case Uneg: // switch 2
-                sp54 = -ivfactor(ichain->isop.op1, iv, overflow, arg3, arg4);
-                if (*arg3 != 0) {
-                    *arg4 = -*arg4;
+            case Uneg:
+                factor = -ivfactor(ichain->isop.op1, iv, overflow, multiplier, mult_factor);
+                if (*multiplier != NULL) {
+                    *mult_factor = -*mult_factor;
                 }
                 break;
 
             case Usub:
             case Uadd:
-                sp50 = ivfactor(ichain->isop.op1, iv, overflow, arg3, arg4);
-                sp4C = ivfactor(ichain->isop.op2, iv, &sp4B, &sp44, &sp40);
-                sp54 = sp50 - sp4C;
+                left = ivfactor(ichain->isop.op1, iv, overflow, multiplier, mult_factor);
+                right = ivfactor(ichain->isop.op2, iv, &right_ovf, &right_mult, &right_mult_factor);
+
                 if (!*overflow) {
-                    *overflow = sp4B;
+                    *overflow = right_ovf;
                 }
 
                 if (ichain->isop.opc == Uadd) {
-                    sp54 = sp50 + sp4C;
+                    factor = left + right;
+                } else {
+                    factor = left - right;
                 }
 
-                if (*arg3 == 0) {
-                    *arg3 = sp44;
+                if (*multiplier == NULL) {
+                    *multiplier = right_mult;
                     if (ichain->isop.opc == Uadd) {
-                        *arg4 = sp40;
+                        *mult_factor = right_mult_factor;
                     } else {
-                        *arg4 = -sp40;
+                        *mult_factor = -right_mult_factor;
                     }
                 }
                 break;
 
             case Uixa:
-                sp50 = ivfactor(ichain->isop.op1, iv, overflow, arg3, arg4);
+                left = ivfactor(ichain->isop.op1, iv, overflow, multiplier, mult_factor);
                 switch (ichain->isop.op2->type) {
                     case isconst:
                     case isrconst:
-                        sp54 = sp50;
+                        factor = left;
                         break;
 
                     case isvar:
                     case issvar:
                         if (ichain->isop.op2 == iv) {
-                            sp54 = sp50 + ichain->isop.size;
+                            factor = left + ichain->isop.size;
                         } else {
-                            sp54 = sp50;
+                            factor = left;
                         }
                         break;
 
                     case isop:
-                        sp4C = ivfactor(ichain->isop.op2, iv, &sp4B, &sp44, &sp40) * ichain->isop.size;
+                        right = ivfactor(ichain->isop.op2, iv, &right_ovf, &right_mult, &right_mult_factor) * ichain->isop.size;
                         if (!*overflow) {
-                            *overflow = sp4B;
+                            *overflow = right_ovf;
                         }
 
-                        if (*arg3 == NULL) {
-                            *arg3 = sp44;
-                            sp54 = sp50 + sp4C;
-                            *arg4 = sp40 * ichain->isop.size;
+                        if (*multiplier == NULL) {
+                            *multiplier = right_mult;
+                            factor = left + right;
+                            *mult_factor = right_mult_factor * ichain->isop.size;
                         } else {
-                            sp54 = sp50 + sp4C;
+                            factor = left + right;
                         }
                         break;
 
@@ -1397,8 +1398,8 @@ int ivfactor(struct IChain *ichain, struct IChain *iv, bool *overflow, struct IC
             *overflow = ichain->isop.overflow_attr;
         }
     } else {
-        sp54 = 0;
+        factor = 0;
     }
     
-    return sp54;
+    return factor;
 }
