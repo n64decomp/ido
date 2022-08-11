@@ -191,13 +191,6 @@ const int ucode_nc_colors[] = {
     [Ustsp] = 31,
     [Uldap] = 31,
 
-    // control flow
-    [Ufjp] = 227,
-    [Utjp] = 227,
-    [Uujp] = 227,
-    [Uxjp] = 227,
-    [Uijp] = 227,
-
     // check traps
     [Uchkt] = 227,
     [Uchkh] = 227,
@@ -242,6 +235,13 @@ const int ucode_nc_colors[] = {
     [Ugrt] = 204,
     [Uleq] = 204,
     [Ules] = 204,
+
+    // control flow
+    [Ufjp] = 204,
+    [Utjp] = 204,
+    [Uujp] = 204,
+    [Uxjp] = 204,
+    [Uijp] = 204,
 
     // struct comparisons
     [Uiequ] = 204,
@@ -318,7 +318,7 @@ const int ucode_nc_colors[] = {
 
 int ucode_opc_color(int opc)
 {
-    if (opc <= 0 || opc >= ARRAYLEN(ucode_nc_colors)) return 0;
+    if (opc < 0 || opc >= ARRAYLEN(ucode_nc_colors)) return 0;
     return ucode_nc_colors[opc];
 }
 

@@ -194,13 +194,16 @@ void dl_print_constant(struct DisplayLine *dl, Datatype dtype, union Constant co
         case Gdt:
         case Hdt:
         case Jdt:
-        case Ldt:
         case Ndt:
             dl_printf(dl, "%d", constval.intval); break;
-
         case Idt:
+            dl_printf(dl, "%lldll", constval.longval); break;
+
+            // unsigned integers get a 'u(ll)' suffix
+        case Ldt:
+            dl_printf(dl, "%uu", constval.uintval); break;
         case Kdt:
-            dl_printf(dl, "%lld", constval.longval); break;
+            dl_printf(dl, "%lluull", constval.longval); break;
 
         default:
             real = realstore;
@@ -435,7 +438,19 @@ void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expr
 
 
                 case Uixa:
+                    if (leftParens) {
+                        dl_printf(dl,  "(");
+                    } else {
+                        /* 
+                        if (expr->data.isop.op1->type == isop) {
+                        dl_printf(dl, "my precedence: %d, op1 precedence: %d", opc_precedence[expr->data.isop.opc], opc_precedence[expr->data.isop.op1->data.isop.opc]);
+                        }
+                         */
+                    }
                     dl_print_expr(dl, sr, expr->data.isop.op1);
+                    if (leftParens) {
+                        dl_printf(dl,  ")");
+                    }
                     dl_printf(dl,  "[");
                     dl_print_expr(dl, sr, expr->data.isop.op2);
                     dl_printf(dl,  "]");
@@ -623,7 +638,13 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
 
 
                 case Uixa:
+                    if (leftParens) {
+                        dl_printf(dl,  "(");
+                    }
                     dl_print_ichain(dl, sr, ichain->isop.op1);
+                    if (leftParens) {
+                        dl_printf(dl,  ")");
+                    }
                     dl_printf(dl,  "[");
                     dl_print_ichain(dl, sr, ichain->isop.op2);
                     dl_printf(dl,  "]");

@@ -154,6 +154,8 @@ void print_small_dtype(enum Datatype type, int length) {
 
 // if a node has higher precedence than its parent, surround with parens
 int opc_precedence[Uirsv + 1] = {
+    [Uixa] = 1,
+
     [Uilod] = 2,
     [Ulda] = 2,
     [Ucvt] = 2,
@@ -214,6 +216,9 @@ void print_regset64(const char *name, long long set) {
 
 int higher_precedence_expr(Uopcode opc, struct Expression *op) {
     if (op == NULL) return false;
+    while (op->type == isvar && op->data.isvar_issvar.copy != NULL && op->data.isvar_issvar.copy != nocopy) {
+        op = op->data.isvar_issvar.copy;
+    }
     switch (op->type) {
         default:
             return false;
@@ -381,7 +386,7 @@ void print_image(struct IChain *image) {
                 case Uxor:
                 case Ushr:
                 case Ushl:
-                    if (higher_precedence_image(opc_precedence[image->isop.opc], image->isop.op1)) {
+                    if (higher_precedence_image(image->isop.opc, image->isop.op1)) {
                         fprintf(stdout, "(");
                         print_image(image->isop.op1);
                         fprintf(stdout, ")");
@@ -389,7 +394,7 @@ void print_image(struct IChain *image) {
                         print_image(image->isop.op1);
                     }
                     printf(" %s ", opc_operator(image->isop.opc));
-                    if (higher_precedence_image(opc_precedence[image->isop.opc], image->isop.op2)) {
+                    if (higher_precedence_image(image->isop.opc, image->isop.op2)) {
                         fprintf(stdout, "(");
                         print_image(image->isop.op2);
                         fprintf(stdout, ")");
@@ -403,7 +408,7 @@ void print_image(struct IChain *image) {
                 case Ulnot:
                 case Uneg:
                     printf("%s", opc_operator(image->isop.opc));
-                    if (higher_precedence_image(opc_precedence[image->isop.opc], image->isop.op1))
+                    if (higher_precedence_image(image->isop.opc, image->isop.op1))
                     {
                         printf("(");
                         print_image(image->isop.op1);
@@ -421,11 +426,11 @@ void print_image(struct IChain *image) {
 
                         // output: *((e1 + e2) + offset)
                         printf("%s", opc_operator(image->isop.opc));
-                        if (hasOffset || higher_precedence_image(opc_precedence[image->isop.opc], image->isop.op1)) {
+                        if (hasOffset || higher_precedence_image(image->isop.opc, image->isop.op1)) {
                             closeParens = true;
                             fprintf(stdout, "(");
                         }
-                        if (hasOffset && higher_precedence_image(opc_precedence[Uadd], image->isop.op1)) {
+                        if (hasOffset && higher_precedence_image(Uadd, image->isop.op1)) {
                             closeInnerParens = true;
                             fprintf(stdout, "(");
                         }
@@ -446,7 +451,13 @@ void print_image(struct IChain *image) {
 
 
                 case Uixa:
-                    print_image(image->isop.op1);
+                    if (higher_precedence_image(image->isop.opc, image->isop.op1)) {
+                        printf("(");
+                        print_image(image->isop.op1);
+                        printf(")");
+                    } else {
+                        print_image(image->isop.op1);
+                    }
                     fprintf(stdout, "[");
                     print_image(image->isop.op2);
                     fprintf(stdout, "]");
@@ -457,7 +468,7 @@ void print_image(struct IChain *image) {
                     print_small_dtype(image->dtype, image->isop.size);
                     fprintf(stdout, ")");
 
-                    if (higher_precedence_image(opc_precedence[image->isop.opc], image->isop.op1)) {
+                    if (higher_precedence_image(image->isop.opc, image->isop.op1)) {
                         printf("(");
                         print_image(image->isop.op1);
                         printf(")");
@@ -468,7 +479,7 @@ void print_image(struct IChain *image) {
 
                 case Ucvt:
                     fprintf(stdout, "(%s)", dtype_name(image->isop.datatype));
-                    if (higher_precedence_image(opc_precedence[image->isop.opc], image->isop.op1)) {
+                    if (higher_precedence_image(image->isop.opc, image->isop.op1)) {
                         printf("(");
                         print_image(image->isop.op1);
                         printf(")");
@@ -532,7 +543,7 @@ void print_expr(struct Expression *expr)
                 case Uxor:
                 case Ushr:
                 case Ushl:
-                    if (higher_precedence_expr(opc_precedence[expr->data.isop.opc], expr->data.isop.op1)) {
+                    if (higher_precedence_expr(expr->data.isop.opc, expr->data.isop.op1)) {
                         fprintf(stdout, "(");
                         print_expr(expr->data.isop.op1);
                         fprintf(stdout, ")");
@@ -540,7 +551,7 @@ void print_expr(struct Expression *expr)
                         print_expr(expr->data.isop.op1);
                     }
                     printf(" %s ", opc_operator(expr->data.isop.opc));
-                    if (higher_precedence_expr(opc_precedence[expr->data.isop.opc], expr->data.isop.op2)) {
+                    if (higher_precedence_expr(expr->data.isop.opc, expr->data.isop.op2)) {
                         fprintf(stdout, "(");
                         print_expr(expr->data.isop.op2);
                         fprintf(stdout, ")");
@@ -554,7 +565,7 @@ void print_expr(struct Expression *expr)
                 case Ulnot:
                 case Uneg:
                     printf("%s", opc_operator(expr->data.isop.opc));
-                    if (higher_precedence_expr(opc_precedence[expr->data.isop.opc], expr->data.isop.op1))
+                    if (higher_precedence_expr(expr->data.isop.opc, expr->data.isop.op1))
                     {
                         printf("(");
                         print_expr(expr->data.isop.op1);
@@ -572,11 +583,11 @@ void print_expr(struct Expression *expr)
 
                         // output: *((e1 + e2) + offset)
                         printf("%s", opc_operator(expr->data.isop.opc));
-                        if (hasOffset || higher_precedence_expr(opc_precedence[expr->data.isop.opc], expr->data.isop.op1)) {
+                        if (hasOffset || higher_precedence_expr(expr->data.isop.opc, expr->data.isop.op1)) {
                             closeParens = true;
                             fprintf(stdout, "(");
                         }
-                        if (hasOffset && higher_precedence_expr(opc_precedence[Uadd], expr->data.isop.op1)) {
+                        if (hasOffset && higher_precedence_expr(Uadd, expr->data.isop.op1)) {
                             closeInnerParens = true;
                             fprintf(stdout, "(");
                         }
@@ -608,7 +619,7 @@ void print_expr(struct Expression *expr)
                     print_small_dtype(expr->datatype, expr->data.isop.datasize);
                     fprintf(stdout, ")");
 
-                    if (higher_precedence_expr(opc_precedence[expr->data.isop.opc], expr->data.isop.op1)) {
+                    if (higher_precedence_expr(expr->data.isop.opc, expr->data.isop.op1)) {
                         printf("(");
                         print_expr(expr->data.isop.op1);
                         printf(")");
@@ -619,7 +630,7 @@ void print_expr(struct Expression *expr)
 
                 case Ucvt:
                     fprintf(stdout, "(%s)", dtype_name(expr->data.isop.datatype));
-                    if (higher_precedence_expr(opc_precedence[expr->data.isop.opc], expr->data.isop.op1)) {
+                    if (higher_precedence_expr(expr->data.isop.opc, expr->data.isop.op1)) {
                         printf("(");
                         print_expr(expr->data.isop.op1);
                         printf(")");

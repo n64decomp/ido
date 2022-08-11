@@ -231,6 +231,22 @@ bool sr_expr_unk4(struct StringRep *sr, void *unused)
     }
 }
 
+bool condIchainIsopCand(void *_ichain);
+bool sr_has_cand(struct StringRep *sr, void *unused)
+{
+    switch (sr->type) {
+        case STATEMENT:
+            return sr->stat->opc == Ustr && sr->stat->u.store.u.str.unk2C != NULL && sr->stat->u.store.u.str.unk2C != nota_candof;
+
+        case ICHAIN:
+            return sr->ichain->type == isop && condIchainIsopCand(sr->ichain) && sr->ichain->isop.srcand != NULL && sr->ichain->isop.srcand != nota_candof;
+
+        default:
+            return false;
+
+    }
+}
+
 void proc_tile_input(struct Tile *tile, int c)
 {
     switch (c) {
@@ -276,6 +292,17 @@ void proc_tile_input(struct Tile *tile, int c)
                     .defaultColorPair = COLOR_GRAY9
                 };
                 tile_highlight_once(tile, &hl);
+            }
+            break;
+
+        case '%':
+            {
+                struct Highlighter hl =
+                {
+                    .shouldHighlight = sr_has_cand,
+                    .defaultColorPair = COLOR_BRIGHTRED
+                };
+                tile_highlight_all(NULL, &hl);
             }
             break;
 
