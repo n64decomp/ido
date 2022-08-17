@@ -2986,7 +2986,7 @@ void copypropagate(void) {
                         setbit(&node->bvs.stage1.absalters, i);
                     }
 
-                    if (!phi_s1 || phi_s2) {
+                    if (phi_s1 || phi_s2) {
                         setbit(&node->bvs.stage1.alters, i);
                     }
                 }
