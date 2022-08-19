@@ -307,38 +307,38 @@ void *xmalloc(ssize_t size) {
 void *alloc_new(ssize_t size, struct AllocBlock **heap) {
     ssize_t temp_t2;
     struct AllocItem *first_item;
-    struct AllocItem *temp_t3;
-    struct AllocItem *temp_t4;
-    struct AllocBlock *phi_t0;
-    struct AllocItem *phi_t1;
+    struct AllocItem *prev;
+    struct AllocItem *next;
+    struct AllocBlock *block;
+    struct AllocItem *item;
     ssize_t free_size;
 
     size = size + 0xF;
-    phi_t0 = *heap;
+    block = *heap;
     if (*heap == NULL) {
         if (alloc_mark(heap) == NULL) {
             return NULL;
         }
-        phi_t0 = *heap;
+        block = *heap;
     }
-    first_item = phi_t0->item_list;
+    first_item = block->item_list;
     size = size & -8;
     if (size < 0x10) {
         size = 0x10;
     }
     free_size = first_item->size & -8;
-    phi_t1 = first_item;
-    while (phi_t1->size < size) {
-        phi_t1 = phi_t1->next;
-        if (phi_t1 != first_item) {
-            free_size = phi_t1->size & -8;
+    item = first_item;
+    while (item->size < size) {
+        item = item->next;
+        if (item != first_item) {
+            free_size = item->size & -8;
         } else {
             // We came back to the beginning of the list
             if (!alloc_next_scb(size - 4, heap)) {
                 return NULL;
             }
-            free_size = phi_t0->item_list->size & -8;
-            phi_t1 = phi_t0->item_list;
+            free_size = block->item_list->size & -8;
+            item = block->item_list;
             break;
         }
     }
@@ -348,30 +348,30 @@ void *alloc_new(ssize_t size, struct AllocBlock **heap) {
         // Don't leave a hole of up to 256 bytes,
         // so waste this whole item,
         // and remove from the free list.
-        temp_t3 = phi_t1->prev;
-        temp_t4 = phi_t1->next;
-        temp_t3->next = temp_t4;
-        temp_t4->prev = temp_t3;
+        prev = item->prev;
+        next = item->next;
+        prev->next = next;
+        next->prev = prev;
 
-        phi_t0->item_list = temp_t3;
+        block->item_list = prev;
 
-        phi_t1->size |= 1;
+        item->size |= 1;
 
-        temp_t3 = (struct AllocItem *)((unsigned char *)phi_t1 + free_size);
-        temp_t3->size |= 2;
-        return (void *)&phi_t1->prev;
+        prev = (struct AllocItem *)((unsigned char *)item + free_size);
+        prev->size |= 2;
+        return (void *)&item->prev;
     } else {
-        temp_t3 = (struct AllocItem *)((unsigned char *)phi_t1 + free_size);
+        prev = (struct AllocItem *)((unsigned char *)item + free_size);
 
-        temp_t3->prev_size = size;
-        temp_t3->size |= 2;
+        prev->prev_size = size;
+        prev->size |= 2;
 
-        temp_t3 = (struct AllocItem *)((unsigned char *)temp_t3 - size);
-        temp_t3->size = size | 1;
+        prev = (struct AllocItem *)((unsigned char *)prev - size);
+        prev->size = size | 1;
         temp_t2 = free_size - size;
-        temp_t3->prev_size = temp_t2;
+        prev->prev_size = temp_t2;
 
-        phi_t1->size = temp_t2 | 2;
-        return (void *)&temp_t3->prev;
+        item->size = temp_t2 | 2;
+        return (void *)&prev->prev;
     }
 }
