@@ -3,7 +3,7 @@
 
 void findinduct(void);
 
-int ivfactor(struct IChain *ichain, struct IChain *ichain1, bool *arg2, struct IChain **dest_ichain, int *arg4);
+int ivfactor(struct IChain *ichain, struct IChain *iv, bool *overflow, struct IChain **multiplier, int *mult_factor);
 
 
 #endif

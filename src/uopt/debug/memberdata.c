@@ -478,7 +478,7 @@ struct Member statOutpar[] = {
 };
 
 struct Member statStr[] = {
-    MEMBER(struct StrengthReductionCand *, u.store.u.str.unk2C),
+    MEMBER_LIST(struct StrengthReductionCand *, u.store.u.str.srcands, struct StrengthReductionCand, next),
     MEMBER(struct RecurThing *, u.store.u.str.unk30),
 };
 
@@ -885,7 +885,7 @@ struct Member graphnodeMembers[] = {
 #undef PARENT_TYPE
 
 #define PARENT_TYPE struct StrengthReductionCand
-struct Member expSourceThingMembers[] = {
+struct Member strengthReductionCandMembers[] = {
     MEMBER(struct IChain *, target),
     MEMBER(struct StrengthReductionCand *, next),
     MEMBER(int,  increment),
@@ -914,7 +914,7 @@ struct StructData gStructData[TYPE_ID_MAX] = {
     STRUCT_DATA_DEF(ICHAIN, struct IChain, ichainMembers),
     STRUCT_DATA_DEF(GRAPHNODE, struct Graphnode, graphnodeMembers),
     STRUCT_DATA_DEF(INTERFERELIST, struct InterfereList, interfereListMembers),
-    STRUCT_DATA_DEF(STRENGTH_REDUCTION, struct ExpSourceThing, expSourceThingMembers),
+    STRUCT_DATA_DEF(STRENGTH_REDUCTION, struct StrengthReductionCand, strengthReductionCandMembers),
 };
 
 #endif

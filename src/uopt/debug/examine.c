@@ -2,21 +2,6 @@
 #include <string.h>
 #include "uopt/uoptutil.h"
 #include "debug.h"
-/* 'x': examine line whatever is under the cursor
- *
- *
- *  STATEMENT,
- *  EXPRESSION,
- *  ICHAIN,
- *  LIVERANGE,
- *  GRAPHNODE,
- *  VAR_ACCESS:
- *      Show the values of all of the fields
- *
- *  default:
- *      do nothing
- *
- */
 
 bool member_is_pointer(struct Member *m)
 {
@@ -98,7 +83,7 @@ struct DisplayLine *dl_from_member(void **data, struct Member *m, void *lines)
     dl_printf(dl, "%s", m->name);
     field->len = dl->pos - field->start;
 
-    dl_printf(dl, "=", m->name);
+    dl_printf(dl, "=");
 
     if (data == NULL || (member_is_pointer(m) && *data == NULL)) {
         dl_printf(dl, "NULL");
@@ -109,7 +94,7 @@ struct DisplayLine *dl_from_member(void **data, struct Member *m, void *lines)
 
         unsigned char value = ((*(unsigned char *)data) >> m->offset_bits) & mask;
 
-        dl_printf(dl, "%hhd", value, *(unsigned char*)data);
+        dl_printf(dl, "%hhd", value);
     } else {
         dl_print_typeid(dl, dl->top, data, m->type);
         if (dl->top->children->length > 1) {
@@ -132,12 +117,14 @@ void member_print(void *data, struct Member *m, void *lines)
         }
     } else if (m->isList) { // linked list
         void **list = MEMBER_GET(data, m);
-        while (*list != NULL) {
+        do {
             vec_add(lines, dl_from_member(list, m, lines));
-            list = LIST_MEMBER_NEXT(*list, m);
-        }
+            if (*list != NULL) {
+                list = LIST_MEMBER_NEXT(*list, m);
+            }
+        } while (*list != NULL);
     } else {
-        vec_add(lines, dl_from_member(MEMBER_GET(data,m), m, lines));
+        vec_add(lines, dl_from_member(MEMBER_GET(data, m), m, lines));
     }
 }
 
@@ -171,16 +158,18 @@ struct LineBuffer examine_bitvector(struct StringRep *sr)
     struct LineBuffer buf = {0};
     buf.lines = vec_new();
 
-    bool printed_constbit = false;
+    struct DisplayLine *header = dl_new();
+    dl_printf(header, "struct Bitvector ");
+    dl_print_bitvector(header, header->top, &sr->bitvector);
+
     if (bitposcount == 0 || bvectempty(&sr->bitvector)) {
         vec_add(buf.lines, dl_placeholder("Empty"));
     } else {
         vec_add(buf.lines, dl_from_bitvector(&sr->bitvector, NULL));
         for (int i = 0; i < bitposcount; i++) {
             if (bvectin(i, &sr->bitvector)) {
-                if (!printed_constbit && i >= firstconstbit && i > 0) {
+                if (i == firstconstbit && i > 0) {
                     vec_add(buf.lines, dl_new_printf("Constants"));
-                    printed_constbit = true;
                 }
                 vec_add(buf.lines, dl_from_bittab_ichain(i, bittab[i].ichain));
             }

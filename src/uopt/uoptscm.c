@@ -251,19 +251,19 @@ static void func_00474FC8(struct Statement *stat, struct Graphnode *node) {
                                 if (ichain->type != isop || (ichain->isop.opc != Uilod && ichain->isop.opc != Uirld)) {
                                     factor = ivfactor(ichain, stat->u.store.ichain->isop.op1, &overflow, &multiplier, &mult_factor);
                                     if (factor != 0 || multiplier != NULL) {
-                                        if (stat->u.store.u.str.unk2C == NULL) {
+                                        if (stat->u.store.u.str.srcands == NULL) {
                                             srcand = alloc_new(sizeof(struct StrengthReductionCand), &perm_heap);
-                                            stat->u.store.u.str.unk2C = srcand;
+                                            stat->u.store.u.str.srcands = srcand;
                                         } else {
-                                            sc = stat->u.store.u.str.unk2C;
+                                            sc = stat->u.store.u.str.srcands;
                                             while (sc->next != NULL) {
                                                 sc = sc->next;
                                             }
                                             srcand = alloc_new(sizeof(struct StrengthReductionCand), &perm_heap);
                                             sc->next = srcand;
                                         }
-#ifndef AVOID_UB
-                                        *expSourceThing = (struct ExpSourceThing){0};
+#ifdef AVOID_UB
+                                        *srcand = (struct StrengthReductionCand){0};
 #endif
 
                                         srcand->target = ichain;
@@ -293,7 +293,7 @@ static void func_00474FC8(struct Statement *stat, struct Graphnode *node) {
                                             if (looptab[loopno].unk9 != 0) {
                                                 if (looptab[loopno].unk8 == 0) {
                                                     unkThing2 = alloc_new(sizeof(struct ScmThing), &perm_heap);
-#ifndef AVOID_UB
+#ifdef AVOID_UB
                                                     *unkThing2 = (struct ScmThing){0};
 #endif
                                                     unkThing2->ichain = ichain;

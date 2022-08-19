@@ -104,6 +104,7 @@ void cmtrace_copy_precm(struct Graphnode *node)
 
     vec_add(sPrecmData, data);
 }
+
 void cmtrace_copy_cm(struct Graphnode *node)
 {
     if (sCmData == NULL) {
@@ -113,7 +114,7 @@ void cmtrace_copy_cm(struct Graphnode *node)
     struct CmData *data = calloc(1, sizeof (struct CmData));
 
     data->node = node;
-    
+
     checkbvlist(&data->antlocs);
     checkbvlist(&data->alters);
     checkbvlist(&data->avlocs);
@@ -121,20 +122,20 @@ void cmtrace_copy_cm(struct Graphnode *node)
 
     checkbvlist(&data->delete);
     checkbvlist(&data->ppin);
-    /* 
+    /*
     checkbvlist(&data->iv);
     checkbvlist(&data->cand);
      */
     checkbvlist(&data->subdelete);
     checkbvlist(&data->subinsert);
-    
+
     checkbvlist(&data->antin);
     checkbvlist(&data->antout);
 
     checkbvlist(&data->insert);
     checkbvlist(&data->ppout);
 
-    
+
     bvectcopy(&data->antlocs, &node->bvs.stage1.antlocs);
     bvectcopy(&data->alters, &node->bvs.stage1.alters);
     bvectcopy(&data->avlocs, &node->bvs.stage1.avlocs);
@@ -142,13 +143,13 @@ void cmtrace_copy_cm(struct Graphnode *node)
 
     bvectcopy(&data->delete, &node->bvs.stage1.u.cm.delete);
     bvectcopy(&data->ppin, &node->bvs.stage1.u.cm.ppin);
-    /* 
+    /*
     bvectcopy(&data->iv, &node->bvs.stage1.u.cm.iv);
     bvectcopy(&data->cand, &node->bvs.stage1.u.cm.cand);
      */
     bvectcopy(&data->subdelete, &node->bvs.stage1.u.cm.subdelete);
     bvectcopy(&data->subinsert, &node->bvs.stage1.u.cm.subinsert);
-    
+
     bvectcopy(&data->antin, &node->bvs.stage1.u.cm.antin);
     bvectcopy(&data->antout, &node->bvs.stage1.u.cm.antout);
 
@@ -167,7 +168,7 @@ void cmtrace_copy_scm(struct Graphnode *node)
     struct ScmData *data = calloc(1, sizeof (struct ScmData));
 
     data->node = node;
-    
+
     checkbvlist(&data->antlocs);
     checkbvlist(&data->alters);
     checkbvlist(&data->avlocs);
@@ -184,7 +185,6 @@ void cmtrace_copy_scm(struct Graphnode *node)
     checkbvlist(&data->insert);
     checkbvlist(&data->ppout);
 
-    
     bvectcopy(&data->antlocs, &node->bvs.stage1.antlocs);
     bvectcopy(&data->alters, &node->bvs.stage1.alters);
     bvectcopy(&data->avlocs, &node->bvs.stage1.avlocs);
@@ -212,11 +212,18 @@ void cmtrace_clear()
     for (int i = 0; i < sCmData->length; i++) {
         free(sCmData->items[i]);
     }
+    for (int i = 0; i < sScmData->length; i++) {
+        free(sScmData->items[i]);
+    }
     vec_free(sPrecmData);
     vec_free(sCmData);
+    vec_free(sScmData);
 
     sPrecmData = NULL;
     sCmData = NULL;
+    sScmData = NULL;
+
+    // since bitvectors are allocated on uopt's heap, they don't need to be freed
 }
 
 struct LineBuffer build_precm_buffer()
@@ -262,16 +269,15 @@ struct LineBuffer build_cm_buffer()
         for (int i = 0; i < sCmData->length; i++) {
             vec_add(buf.lines, dl_from_graphnode(sCmData->items[i]->node, true));
 
-            
             vec_add(buf.lines, dl_from_bitvector(&sCmData->items[i]->antlocs, "  antlocs"));
             vec_add(buf.lines, dl_from_bitvector(&sCmData->items[i]->avlocs, "   avlocs"));
             vec_add(buf.lines, dl_from_bitvector(&sCmData->items[i]->alters, "   alters"));
             vec_add(buf.lines, dl_from_bitvector(&sCmData->items[i]->absalters, "absalters"));
-            
+
             vec_add(buf.lines, dl_from_bitvector(&sCmData->items[i]->antin, "    antin"));
             vec_add(buf.lines, dl_from_bitvector(&sCmData->items[i]->antout, "   antout"));
 
-            /* 
+            /*
             vec_add(buf.lines, dl_from_bitvector(&sCmData->items[i]->iv, "       iv"));
             vec_add(buf.lines, dl_from_bitvector(&sCmData->items[i]->cand, "     cand"));
              */

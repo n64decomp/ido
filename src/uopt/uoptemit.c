@@ -4416,7 +4416,7 @@ static void func_0042B890(struct Statement *stat, struct Graphnode *node) {
     checking_ix = has_ix && looptab[loopno].unk9 && looptab[loopno].unk4 != NULL;
 
 
-    for (src = stat->u.store.u.str.unk2C; src != NULL; src = src->next) {
+    for (src = stat->u.store.u.str.srcands; src != NULL; src = src->next) {
         if (checking_ix && check_ix_candidate(src->target, loopno)) {
             continue;
         }

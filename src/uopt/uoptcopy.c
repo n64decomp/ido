@@ -2419,7 +2419,7 @@ void copypropagate(void) {
             }
         } while (changed);
 
-        dataflowtime = (dataflowtime + getclock()) - lastdftime;
+        dataflowtime += getclock() - lastdftime;
         node = graphtail;
         curlocpg = 0;
         curlocln = 0;

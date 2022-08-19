@@ -1803,8 +1803,8 @@ bool checkincre(struct Expression *assigned, struct Expression *var, int *result
 0047EBB0 findincre
 */
 int findincre(struct Expression *entry) {
-    int result1;
-    int result2;
+    int left;
+    int right;
 
     switch (entry->type) {
         case isconst:
@@ -1819,20 +1819,20 @@ int findincre(struct Expression *entry) {
 
         case isop:
             if (optab[entry->data.isop.opc].is_binary_op) {
-                result1 = findincre(entry->data.isop.op1);
-                result2 = findincre(entry->data.isop.op2);
-                return entry->data.isop.opc == Uadd ? result1 + result2 : result1 - result2;
+                left = findincre(entry->data.isop.op1);
+                right = findincre(entry->data.isop.op2);
+                return entry->data.isop.opc == Uadd ? left + right : left - right;
             }
-            result1 = findincre(entry->data.isop.op1);
+            left = findincre(entry->data.isop.op1);
             switch (entry->data.isop.opc) {
                 case Uneg:
-                    return -result1;
+                    return -left;
                 case Ucvt:
-                    return result1;
+                    return left;
                 case Uinc:
-                    return result1 + entry->data.isop.datasize;
+                    return left + entry->data.isop.datasize;
                 case Udec:
-                    return result1 + entry->data.isop.datasize;
+                    return left + entry->data.isop.datasize;
                 default:
                     caseerror(1, 1251, "uoptutil.p", 10);
                     return 0; // originally an uninitialized stack value was returned

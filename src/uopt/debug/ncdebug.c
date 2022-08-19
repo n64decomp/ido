@@ -236,7 +236,7 @@ bool sr_has_cand(struct StringRep *sr, void *unused)
 {
     switch (sr->type) {
         case STATEMENT:
-            return sr->stat->opc == Ustr && sr->stat->u.store.u.str.unk2C != NULL && sr->stat->u.store.u.str.unk2C != nota_candof;
+            return sr->stat->opc == Ustr && sr->stat->u.store.u.str.srcands != NULL && sr->stat->u.store.u.str.srcands != nota_candof;
 
         case ICHAIN:
             return sr->ichain->type == isop && condIchainIsopCand(sr->ichain) && sr->ichain->isop.srcand != NULL && sr->ichain->isop.srcand != nota_candof;

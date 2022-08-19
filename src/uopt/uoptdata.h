@@ -476,7 +476,7 @@ struct Statement {
 
                 } outpar;
                 struct {
-                    struct StrengthReductionCand *unk2C;
+                    struct StrengthReductionCand *srcands;
                     struct RecurThing *unk30; // used when emitting vreg
                 } str;
                 struct {

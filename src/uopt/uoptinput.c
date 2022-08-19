@@ -1505,7 +1505,7 @@ void readnxtinst(void) {
         stattail->u.store.store_ant = false;
         stattail->u.store.lval_av = false;
         stattail->u.store.store_av = false;
-        stattail->u.store.u.str.unk2C = 0;
+        stattail->u.store.u.str.srcands = NULL;
         stattail->u.store.u.str.unk30 = 0;
         expr->data.isvar_issvar.assignment = NULL;
         appendstorelist();
@@ -3281,7 +3281,7 @@ void readnxtinst(void) {
                 stattail->u.store.store_av = false;
                 stattail->is_increment = false;
             }
-            stattail->u.store.u.str.unk2C = 0;
+            stattail->u.store.u.str.srcands = NULL;
             stattail->u.store.u.str.unk30 = 0;
             stattail->suppressed_iv = false;
             if (!expr->data.isvar_issvar.vreg) {

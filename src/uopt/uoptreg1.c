@@ -1265,11 +1265,11 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node) {
     struct StrengthReductionCand *phi_s2;
     struct IChain *phi_s1;
 
-    if (stat->u.store.u.str.unk2C == NULL) {
+    if (stat->u.store.u.str.srcands == NULL) {
         return;
     }
 
-    phi_s2 = stat->u.store.u.str.unk2C;
+    phi_s2 = stat->u.store.u.str.srcands;
     phi_s6 = mipsflag == 3 && stat->graphnode->loop != NULL;
     if (phi_s6) {
         sp58 = stat->graphnode->loop->loopno;

@@ -512,7 +512,7 @@ void istrfold(struct Statement *stmt) {
     stmt->suppressed_iv = false;
     stmt->outpar = false;
     stmt->u.store.var_access_list_item->unk8 = false;
-    stmt->u.store.u.str.unk2C = 0;
+    stmt->u.store.u.str.srcands = NULL;
     stmt->u.store.u.str.unk30 = 0;
 }
 
