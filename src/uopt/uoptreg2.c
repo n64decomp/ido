@@ -603,7 +603,7 @@ void localcolor(void) {
                 if (ichain->isvar_issvar.location.addr == r_v0) {
                     if (!mips3_64data && r2_overlap_r3(ichain->expr->table_index)) {
                         SET_INIT(tempset, firsterreg[0]);
-                        SET_INIT(tempset, firsterreg[0] + 1);
+                        SET_ADD(tempset, firsterreg[0] + 1);
                     } else {
                         SET_INIT(tempset, firsterreg[0]);
                     }
