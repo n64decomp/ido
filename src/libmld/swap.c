@@ -731,6 +731,20 @@ void swap_opt(OPTR *popt, int count, int destsex) {
     }
 }
 
+void swap_aux(AUXU *paux, int type, int destsex) {
+    switch(type){
+        case ST_AUX_TIR:
+        case ST_AUX_RNDXR:
+        case ST_AUX_DNLOW:
+        case ST_AUX_DNMAC:
+        case ST_AUX_ISYM:
+        case ST_AUX_ISS:
+        case ST_AUX_WIDTH:
+        default:
+            paux->width = swap_word(paux->width);
+            break;
+    }
+}
 #if 0
 glabel swap_aux
     .ent swap_aux

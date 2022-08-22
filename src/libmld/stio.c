@@ -286,6 +286,11 @@ int st_readst(int fn, char how, int filebase, CHDRR *pchdr, int flags) {
                 cfdr->paux = &st_pchdr->paux[cfdr->pfd->iauxBase];
                 cfdr->freadin |= ST_PAUXS;
             }
+#ifdef UOPT_LITTLE_ENDIAN
+            for (int j = 0; j < cfdr->pfd->caux; j++) {
+                swap_aux(&cfdr->paux[j], ST_AUX_WIDTH, gethostsex());
+            }
+#endif
         }
         if (sp58) {
             if (cfdr->pfd->copt > 0) {
@@ -614,6 +619,9 @@ void st_writest(int fn, int flags) {
             pfd->iauxBase = fdr.iauxBase + fdr.caux;
             sp120 += pfd->caux * 4;
             if (pfd->caux != 0) {
+#ifdef UOPT_LITTLE_ENDIAN
+                swap_aux(cfd->paux, ST_AUX_WIDTH, gethostsex());
+#endif
                 if (fwrite(cfd->paux, sizeof (AUXU), pfd->caux, out) != pfd->caux) {
                     st_error("cannot write pfield");
                 }
