@@ -6,6 +6,7 @@
 #include "uoptinput.h"
 #include "uoptcontrolflow.h"
 #include "uoptppss.h"
+#include "uoptroll.h"
 
 struct IChain *i_var_inx;
 struct Statement *incr_stat;
@@ -661,11 +662,11 @@ struct Expression *unroll_resetincr(struct Expression *expr, int spCC) {
 0046E77C oneloopblockstmt
 */
 struct Expression *unroll_resetincr_mod(struct Expression *expr, int *incr) {
-
     //! why not incr > 0x8000 (or incr <= -0x8000)?
     if (*incr < -0x8000 || *incr >= 0x8000) {
-        *incr = *incr - (*incr & 0xFFFF8000);
-        expr = binopwithconst(Uadd, expr, (*incr & 0xFFFF8000));
+        int highbits = *incr & 0xFFFF8000;
+        *incr -= highbits;
+        expr = binopwithconst(Uadd, expr, highbits);
     }
     return expr;
 }
