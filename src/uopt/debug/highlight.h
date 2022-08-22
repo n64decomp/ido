@@ -1,5 +1,4 @@
 #pragma once
-#include <ncurses.h>
 
 #include "uopt/uoptdata.h"
 #include "uopt/debug/dlprint.h"

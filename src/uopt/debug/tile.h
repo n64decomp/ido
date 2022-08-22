@@ -1,4 +1,5 @@
 #pragma once
+#ifdef UOPT_DEBUG
 #include <ncurses.h>
 
 #include "uopt/uoptdata.h"
@@ -132,3 +133,4 @@ void container_nc_refresh(struct Container *cont);
 void root_container_nc_refresh();
 void container_redraw(struct Container *cont);
 void root_container_redraw(void);
+#endif
