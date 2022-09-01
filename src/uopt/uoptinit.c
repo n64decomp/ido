@@ -983,35 +983,35 @@ void procinit_regs(void) {
     highesterreg[1] = 27;
     usedeeregs[1] = 0;
     highesteereg[1] = lasterreg[1];
+
     if (!usingregoption) {
         if (!no_r23) {
             dftregsused = 0;
-            return;
-        }
-        if (!no_r3) {
+        } else if (!no_r3) {
             dftregsused = BIT(21);
-            return;
+        } else {
+            dftregsused = BIT(2) | BIT(21);
         }
-        dftregsused = BIT(2) | BIT(21);
-    }
-    dftregsused = GENMASK(3, 6 + 1); // a0 to a3
-    if (actnuminterregs != 9) {
-        dftregsused = GENMASK(1, 13 + 1); // v0 to ra
-        if (actnuminterregs > 0) {
-            dftregsused = GENMASK(7, MIN(actnuminterregs, 6) + 6 + 1); // t0 to t5
-            if (actnuminterregs == 7) {
-                dftregsused &= ~BIT(2);
-            } else if (actnuminterregs == 8) {
-                dftregsused &= ~(BIT(2) | BIT(6));
-            } else if (actnuminterregs == 9) {
-                dftregsused &= ~(BIT(2) | BIT(6) | BIT(13));
+    } else {
+        dftregsused = GENMASK(3, 6 + 1); // a0 to a3
+        if (actnuminterregs != 9) {
+            dftregsused = GENMASK(1, 13 + 1); // v0 to ra
+            if (actnuminterregs > 0) {
+                dftregsused = GENMASK(7, MIN(actnuminterregs, 6) + 6 + 1); // t0 to t5
+                if (actnuminterregs == 7) {
+                    dftregsused &= ~BIT(2);
+                } else if (actnuminterregs == 8) {
+                    dftregsused &= ~(BIT(2) | BIT(6));
+                } else if (actnuminterregs == 9) {
+                    dftregsused &= ~(BIT(2) | BIT(6) | BIT(13));
+                }
             }
         }
+        if (actnuminteeregs != 10) {
+            dftregsused = GENMASK(firsteereg[0] + actnuminteeregs, lasteereg[0] + 1);
+        }
+        dftregsused &= setregs[0];
     }
-    if (actnuminteeregs != 10) {
-        dftregsused = GENMASK(firsteereg[0] + actnuminteeregs, lasteereg[0] + 1);
-    }
-    dftregsused &= setregs[0];
 }
 
 /*
