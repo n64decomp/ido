@@ -201,7 +201,7 @@ bool pointtoheap(struct Expression *baseaddr) {
 // most of this is jankiness for fortran, pascal, and cobol
 /*
 004123C4 varinsert
-00431268 func_00431268
+00431268 ilod_aliased
 004324F4 findinduct
 0044B308 strkillprev
 0044B448 lodkillprev

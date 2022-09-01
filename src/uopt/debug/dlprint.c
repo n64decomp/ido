@@ -843,6 +843,22 @@ void dl_print_strength_reduction(struct DisplayLine *dl, struct StringRep *paren
     sr->len = dl->pos - sr->start;
 }
 
+void dl_print_recur_info(struct DisplayLine *dl, struct StringRep *parent, struct RecurInfo *recur)
+{
+    if (recur == NULL) return;
+    struct StringRep *sr = sr_newchild(dl, parent);
+
+    sr->start = dl->pos;
+    sr->type = RECUR_INFO;
+    sr->recur = recur;
+
+    dl_printf(dl, "Recur: ");
+    dl_print_ichain(dl, sr, recur->ichain);
+    dl_printf(dl, " -> ");
+    dl_print_expr(dl, sr, recur->expr);
+    sr->len = dl->pos - sr->start;
+}
+
 void dl_print_liveunit(struct DisplayLine *dl, struct StringRep *parent, struct LiveUnit *liveunit)
 {
     if (liveunit == NULL) return;

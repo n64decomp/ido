@@ -975,7 +975,7 @@ int newbit(struct IChain *ichain, struct LiveRange *liverange) {
 
 /*
 004127C8 checkexpoccur
-0042FEA0 func_0042FEA0
+0042FEA0 check_recurring_ilod
 00474AF0 inpathbefore
 00474C58 inpathafter
 0047D000 exproccurred
@@ -1797,8 +1797,8 @@ bool checkincre(struct Expression *assigned, struct Expression *var, int *result
 }
 
 /*
-00430680 func_00430680
-004313E4 func_004313E4
+00430680 find_recurring_mem_accesses
+004313E4 all_increments
 00455518 func_00455518
 0047EBB0 findincre
 */

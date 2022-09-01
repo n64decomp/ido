@@ -16,10 +16,10 @@
 #include "uoptprep.h"
 
 /*
-00430680 func_00430680
+00430680 find_recurring_mem_accesses
 */
-static bool func_0042FEA0(struct IChain *offset_ilod, struct Statement *stat, struct Graphnode *node) {
-    bool result = false;
+static bool check_recurring_ilod(struct IChain *offset_ilod, struct Statement *stat, struct Graphnode *node) {
+    bool found = false;
     struct Statement *search = stat;
 
     while (search != node->stat_head) {
@@ -27,9 +27,10 @@ static bool func_0042FEA0(struct IChain *offset_ilod, struct Statement *stat, st
 
         if (search->opc == Uisst || search->opc == Ustr) {
             if (stat->u.store.ichain->isop.op1 == search->expr->ichain) {
+                // a statement modifies the induction variable before the offset_ilod occurs
                 return false;
             }
-            result = exproccurred(offset_ilod, search->expr->data.isvar_issvar.assigned_value);
+            found = exproccurred(offset_ilod, search->expr->data.isvar_issvar.assigned_value);
         } else if (search->opc != Uaent &&
                    search->opc != Ubgnb &&
                    search->opc != Ucia &&
@@ -55,20 +56,20 @@ static bool func_0042FEA0(struct IChain *offset_ilod, struct Statement *stat, st
                    search->opc != Uujp &&
                    search->opc != Uxpar &&
                    search->opc != Urcuf) {
-            result = exproccurred(offset_ilod, search->expr);
-            if (!result) {
+            found = exproccurred(offset_ilod, search->expr);
+            if (!found) {
                 if (search->opc == Uistr || search->opc == Uistv ||
                         search->opc == Uirst || search->opc == Uirsv ||
                         search->opc == Umov || search->opc == Umovv ||
                         search->opc == Utpeq || search->opc == Utpne ||
                         search->opc == Utpgt || search->opc == Utpge ||
                         search->opc == Utplt || search->opc == Utple) {
-                    result = exproccurred(offset_ilod, search->u.store.expr);
+                    found = exproccurred(offset_ilod, search->u.store.expr);
                 }
             }
         }
 
-        if (result) {
+        if (found) {
             return true;
         }
     }
@@ -77,10 +78,10 @@ static bool func_0042FEA0(struct IChain *offset_ilod, struct Statement *stat, st
 }
 
 /*
-0043005C func_0043005C
-0043019C func_0043019C
+0043005C get_ilod
+0043019C copy_recurring_ilod
 */
-static bool func_0043005C(struct IChain *ichain, struct Expression *expr, struct Expression **dest) {
+static bool get_ilod(struct IChain *offset_ilod, struct Expression *expr, struct Expression **dest) {
     bool result = false;
 
     switch (expr->type) {
@@ -95,15 +96,15 @@ static bool func_0043005C(struct IChain *ichain, struct Expression *expr, struct
             break;
 
         case isop:
-            if (expr->ichain == ichain) {
+            if (expr->ichain == offset_ilod) {
                 expr->count++;
                 *dest = expr;
                 result = true;
             } else if (optab[expr->data.isop.opc].is_binary_op) {
-                result = func_0043005C(ichain, expr->data.isop.op1, dest) ||
-                         func_0043005C(ichain, expr->data.isop.op2, dest);
+                result = get_ilod(offset_ilod, expr->data.isop.op1, dest) ||
+                         get_ilod(offset_ilod, expr->data.isop.op2, dest);
             } else {
-                return func_0043005C(ichain, expr->data.isop.op1, dest);
+                return get_ilod(offset_ilod, expr->data.isop.op1, dest);
             }
             break;
 
@@ -115,10 +116,10 @@ static bool func_0043005C(struct IChain *ichain, struct Expression *expr, struct
 }
 
 /*
-00430680 func_00430680
+00430680 find_recurring_mem_accesses
 */
-static void func_0043019C(struct IChain *ilod, struct Expression **expr, struct Statement *stat, struct Graphnode *node) {
-    bool result = false;
+static void copy_recurring_ilod(struct IChain *offset_ilod, struct Expression **expr, struct Statement *stat, struct Graphnode *node) {
+    bool found = false;
     struct Statement *search = stat;
 
     do {
@@ -127,7 +128,7 @@ static void func_0043019C(struct IChain *ilod, struct Expression **expr, struct 
             if (stat->u.store.ichain->isop.op1 == search->expr->ichain) {
                 TRAP_IF(false == false);
             }
-            result = func_0043005C(ilod, search->expr->data.isvar_issvar.assigned_value, expr);
+            found = get_ilod(offset_ilod, search->expr->data.isvar_issvar.assigned_value, expr);
         } else if (search->opc != Uaent &&
                    search->opc != Ubgnb &&
                    search->opc != Ucia &&
@@ -153,20 +154,20 @@ static void func_0043019C(struct IChain *ilod, struct Expression **expr, struct 
                    search->opc != Uujp &&
                    search->opc != Uxpar &&
                    search->opc != Urcuf) {
-            result = func_0043005C(ilod, search->expr, expr);
-            if (!result) {
+            found = get_ilod(offset_ilod, search->expr, expr);
+            if (!found) {
                 if (search->opc == Uistr || search->opc == Uistv ||
                         search->opc == Uirst || search->opc == Uirsv ||
                         search->opc == Umov || search->opc == Umovv ||
                         search->opc == Utpeq || search->opc == Utpne ||
                         search->opc == Utpgt || search->opc == Utpge ||
                         search->opc == Utplt || search->opc == Utple) {
-                    result = func_0043005C(ilod, search->u.store.expr, expr);
+                    found = get_ilod(offset_ilod, search->u.store.expr, expr);
                 }
             }
         }
         
-        if (result) {
+        if (found) {
             return;
         }
     } while (search != node->stat_head);
@@ -174,19 +175,21 @@ static void func_0043019C(struct IChain *ilod, struct Expression **expr, struct 
 }
 
 /*
-00430680 func_00430680
+00430680 find_recurring_mem_accesses
 
 stat: increment statement
+
+return 0 if none found, -1 if the istr is hardcoded
 */
-static int func_00430354(struct IChain *ichain, int offset, struct Statement *stat, struct Graphnode *node) {
+static int check_recurring_istr(struct IChain *baseaddr, int offset, struct Statement *stat, struct Graphnode *node) {
     struct Statement *search = stat;
     while (search != node->stat_head) {
         search = search->prev;
         if (search->opc == Uisst || search->opc == Ustr) {
-            if (stat->u.store.ichain->isop.op1 == search->expr->ichain) { // direct store to the increment...?
+            if (stat->u.store.ichain->isop.op1 == search->expr->ichain) {
                 return 0;
             }
-        } else if (search->opc == Uistr && search->expr->ichain == ichain && search->u.store.u.istr.offset == offset) {
+        } else if (search->opc == Uistr && search->expr->ichain == baseaddr && search->u.store.u.istr.offset == offset) {
             if (search->u.store.expr->type == isop) {
                 return 1;
             } else {
@@ -199,9 +202,9 @@ static int func_00430354(struct IChain *ichain, int offset, struct Statement *st
 }
 
 /*
-00430680 func_00430680
+00430680 find_recurring_mem_accesses
 */
-static bool func_0043044C(struct IChain *ichain, int arg1, struct Expression **expr, struct Statement *stat, struct Graphnode *node) {
+static bool copy_recurring_istr(struct IChain *baseaddr, int offset, struct Expression **dest, struct Statement *stat, struct Graphnode *node) {
     struct Statement *search = stat;
     do {
         search = search->prev;
@@ -210,9 +213,9 @@ static bool func_0043044C(struct IChain *ichain, int arg1, struct Expression **e
             if (stat->u.store.ichain->isop.op1 == search->expr->ichain) {
                 return false;
             }
-        } else if (search->opc == Uistr && search->expr->ichain == ichain && search->u.store.u.istr.offset == arg1) {
+        } else if (search->opc == Uistr && search->expr->ichain == baseaddr && search->u.store.u.istr.offset == offset) {
             search->u.store.expr->count++;
-            *expr = search->u.store.expr;
+            *dest = search->u.store.expr;
             return true;
         }
     } while (search != node->stat_head);
@@ -221,12 +224,12 @@ static bool func_0043044C(struct IChain *ichain, int arg1, struct Expression **e
 }
 
 /*
-00430548 func_00430548
+00430548 insert_recur
    asm shared outer function's arg2 through shared stack, somehow, with outer
-   function storing `positive` at sp50 and this function accessing through $v0 + 11
+   function storing `pos_incr` at sp50 and this function accessing through $v0 + 11
 */
-static int func_00430528(int offset1, int offset2, bool positive) {
-    if (positive) {
+static int cmp_recur(int offset1, int offset2, bool pos_incr) {
+    if (pos_incr) {
         return offset1 < offset2;
     } else {
         return offset2 < offset1;
@@ -234,36 +237,35 @@ static int func_00430528(int offset1, int offset2, bool positive) {
 }
 
 /*
-00430680 func_00430680
-   uncalled
+00430680 find_recurring_mem_accesses
 */
-static void func_00430548(struct RecurThing *recur, struct Statement *stat, bool positive) {
-    struct RecurThing *stat_recur; // s1
-    struct RecurThing *next;
+static void insert_recur(struct RecurInfo *ins, struct Statement *stat, bool pos_incr) {
+    struct RecurInfo *curr; // s1
+    struct RecurInfo *next;
 
-    stat_recur = stat->u.store.u.str.unk30;
-    if (stat_recur == NULL ||
-            (stat_recur->ichain->isop.op1 == recur->ichain->isop.op1 &&
-             func_00430528(recur->ichain->isop.size, stat_recur->ichain->isop.size, positive))) {
-        stat->u.store.u.str.unk30 = recur;
-        recur->next = stat_recur;
+    curr = stat->u.store.u.str.recurs;
+    if (curr == NULL ||
+            (curr->ichain->isop.op1 == ins->ichain->isop.op1 &&
+             cmp_recur(ins->ichain->isop.size, curr->ichain->isop.size, pos_incr))) {
+        stat->u.store.u.str.recurs = ins;
+        ins->next = curr;
     } else {
-        next = stat_recur->next;
+        next = curr->next;
         while (next != NULL &&
-                (recur->ichain->isop.op1 != next->ichain->isop.op1 ||
-                 func_00430528(next->ichain->isop.size, recur->ichain->isop.size, positive))) {
-            stat_recur = next;
+                !(ins->ichain->isop.op1 == next->ichain->isop.op1 &&
+                 !cmp_recur(next->ichain->isop.size, ins->ichain->isop.size, pos_incr))) {
+            curr = next;
             next = next->next;
         }
-        stat_recur->next = recur;
-        recur->next = next;
+        curr->next = ins;
+        ins->next = next;
     }
 }
 
 /*
 00431508 candidate
 */
-static bool func_00430680(struct IChain *ilod, struct Graphnode *node) {
+static bool find_recurring_mem_accesses(struct IChain *ilod, struct Graphnode *node) {
     //void *sp84;
     struct Statement *stat; // sp7C
     bool overflow;
@@ -271,7 +273,7 @@ static bool func_00430680(struct IChain *ilod, struct Graphnode *node) {
     int mult_factor;
     int increment;
     int factor;
-    struct RecurThing *recur;
+    struct RecurInfo *recur;
     struct IChain *offset_ilod;
     bool found;
     struct IChain *iv_ichain;
@@ -289,8 +291,12 @@ static bool func_00430680(struct IChain *ilod, struct Graphnode *node) {
 
             if (factor != 0) {
                 increment = findincre(stat->expr->data.isvar_issvar.assigned_value);
-                switch (func_00430354(ilod->isop.op1, ilod->isop.size + increment * factor, stat, node)) {
+                switch (check_recurring_istr(ilod->isop.op1, ilod->isop.size + increment * factor, stat, node)) {
                     case 0:
+                        // no istrs, or the iv was modified
+                        // look for an ilod to the next element of the array
+                        //
+                        // ex: if p[i] occurred, look for p[i + 1]
                         offset_ilod = itable[ilod->table_index];
                         found = false;
                         while (!found && offset_ilod != NULL) {
@@ -309,10 +315,8 @@ static bool func_00430680(struct IChain *ilod, struct Graphnode *node) {
                             return false;
                         }
 
-                        // check if offset_ilod occurred in the same node,
-                        // before the increment statement, but after any
-                        // assignments to the iv
-                        if (!func_0042FEA0(offset_ilod, stat, node)) {
+                        // check if offset_ilod came after any assignments to the iv
+                        if (!check_recurring_ilod(offset_ilod, stat, node)) {
                             return false;
                         }
 
@@ -327,6 +331,8 @@ static bool func_00430680(struct IChain *ilod, struct Graphnode *node) {
                         return false;
 
                     case 1:
+                        // found an istr to the next element in the array, e.g. p[i + 1] = p[i];
+                        // just check that there's only 1 induction variable in the original ilod
                         if (iv_ichain == NULL) {
                             iv_ichain = stat->expr->ichain;
                         } else if (iv_ichain != stat->expr->ichain) {
@@ -356,10 +362,12 @@ static bool func_00430680(struct IChain *ilod, struct Graphnode *node) {
                 if (factor != 0) {
                     TRAP_IF(multiplier != NULL);
                     increment = findincre(stat->expr->data.isvar_issvar.assigned_value);
-                    recur = alloc_new(sizeof (struct RecurThing), &perm_heap);
+                    recur = alloc_new(sizeof (struct RecurInfo), &perm_heap);
                     recur->ichain = ilod;
-                    func_00430548(recur, stat, increment * factor > 0);
-                    if (!func_0043044C(ilod->isop.op1, ilod->isop.size + increment * factor, &recur->expr, stat, node)) {
+                    insert_recur(recur, stat, increment * factor > 0);
+
+                    // get a pointer to the istr. If none, get the ilod
+                    if (!copy_recurring_istr(ilod->isop.op1, ilod->isop.size + increment * factor, &recur->expr, stat, node)) {
                         offset_ilod = itable[ilod->table_index];
                         found = false;
                         do {
@@ -373,7 +381,7 @@ static bool func_00430680(struct IChain *ilod, struct Graphnode *node) {
                                 offset_ilod = offset_ilod->next;
                             }
                         } while (!found);
-                        func_0043019C(offset_ilod, &recur->expr, stat, node);
+                        copy_recurring_ilod(offset_ilod, &recur->expr, stat, node);
                     }
                 }
             }
@@ -389,11 +397,11 @@ static bool func_00430680(struct IChain *ilod, struct Graphnode *node) {
 }
 
 /*
-00430BF4 func_00430BF4
-00430D74 func_00430D74
+00430BF4 no_var_mults
+00430D74 check_mpy_cand
 00431508 candidate
 */
-static bool func_00430BF4(struct IChain *ichain, struct Graphnode *node) {
+static bool no_var_mults(struct IChain *ichain, struct Graphnode *node) {
     bool result;
 
     if (ichain->type != isop) {
@@ -405,16 +413,16 @@ static bool func_00430BF4(struct IChain *ichain, struct Graphnode *node) {
     }
 
     if (!optab[ichain->isop.opc].is_binary_op) {
-        return func_00430BF4(ichain->isop.op1, node);
+        return no_var_mults(ichain->isop.op1, node);
     }
 
     if (ichain->isop.opc == Umpy) {
         if (ichain->isop.op1->type != isconst && ichain->isop.op2->type != isconst) {
             return false;
         }
-        result = func_00430BF4(ichain->isop.op1, node) && func_00430BF4(ichain->isop.op2, node);
+        result = no_var_mults(ichain->isop.op1, node) && no_var_mults(ichain->isop.op2, node);
     } else {
-        result = func_00430BF4(ichain->isop.op1, node) && func_00430BF4(ichain->isop.op2, node);
+        result = no_var_mults(ichain->isop.op1, node) && no_var_mults(ichain->isop.op2, node);
     }
 
     return result;
@@ -422,10 +430,12 @@ static bool func_00430BF4(struct IChain *ichain, struct Graphnode *node) {
 
 
 /*
-00430D74 func_00430D74
+00430D74 check_mpy_cand
 00431508 candidate
+
+check if operand of a multiply is CAND
 */
-static bool func_00430D74(struct IChain *ichain, struct Graphnode *node) {
+static bool check_mpy_cand(struct IChain *ichain, struct Graphnode *node) {
     bool result;
 
     switch (ichain->type) {
@@ -439,6 +449,10 @@ static bool func_00430D74(struct IChain *ichain, struct Graphnode *node) {
             result = false;
             break;
 
+        // very tricky, but this ensures that at least one of the variables is iv
+        //
+        // in findinduct, CAND is intersected with ALTERS, so the overall expression must be altered.
+        // IV variables are always altered
         case isvar:
         case issvar:
             result = bvectin(ichain->bitpos, &node->bvs.stage1.u.cm.iv) || !bvectin(ichain->bitpos, &node->bvs.stage1.alters);
@@ -446,12 +460,12 @@ static bool func_00430D74(struct IChain *ichain, struct Graphnode *node) {
 
         case isop:
             if (ichain->isop.opc == Udec || ichain->isop.opc == Uinc || ichain->isop.opc == Uneg) {
-                return func_00430D74(ichain->isop.op1, node);
+                return check_mpy_cand(ichain->isop.op1, node);
             }
 
             if (ichain->isop.opc == Uadd || ichain->isop.opc == Usub) {
-                result = func_00430D74(ichain->isop.op1, node) && func_00430D74(ichain->isop.op2, node) &&
-                        (func_00430BF4(ichain->isop.op1, node) || func_00430BF4(ichain->isop.op2, node));
+                result = check_mpy_cand(ichain->isop.op1, node) && check_mpy_cand(ichain->isop.op2, node) &&
+                        (no_var_mults(ichain->isop.op1, node) || no_var_mults(ichain->isop.op2, node));
             } else if (ichain->isop.opc == Uilod || ichain->isop.opc == Uirld) {
                 result = !bvectin(ichain->bitpos, &node->bvs.stage1.alters);
             } else {
@@ -469,18 +483,18 @@ static bool func_00430D74(struct IChain *ichain, struct Graphnode *node) {
 }
 
 /*
-00430FF4 func_00430FF4
+00430FF4 setcand
 00431508 candidate
 */
-static void func_00430FF4(struct IChain *ichain, struct Graphnode *node) {
+static void setcand(struct IChain *ichain, struct Graphnode *node) {
     if (ichain->type == isop) {
         if (bvectin(ichain->bitpos, &node->bvs.stage1.alters)) {
             setbit(&node->bvs.stage1.u.cm.cand, ichain->bitpos);
         }
 
-        func_00430FF4(ichain->isop.op1, node);
+        setcand(ichain->isop.op1, node);
         if (optab[ichain->isop.opc].is_binary_op) {
-            func_00430FF4(ichain->isop.op2, node);
+            setcand(ichain->isop.op2, node);
         }
     }
 }
@@ -488,7 +502,7 @@ static void func_00430FF4(struct IChain *ichain, struct Graphnode *node) {
 /*
 00431508 candidate
 */
-static bool func_004310EC(struct IChain *ichain, bool *sp43, struct Graphnode *node) {
+static bool check_addsub_cand(struct IChain *ichain, bool *no_isrconst, struct Graphnode *node) {
     bool result = false;
 
     switch (ichain->type) {
@@ -499,7 +513,7 @@ static bool func_004310EC(struct IChain *ichain, bool *sp43, struct Graphnode *n
             break;
 
         case isrconst:
-            *sp43 = false;
+            *no_isrconst = false; // has no effect
             break;
 
         case isvar:
@@ -511,6 +525,8 @@ static bool func_004310EC(struct IChain *ichain, bool *sp43, struct Graphnode *n
             if (ichain->isop.opc == Uilod || ichain->isop.opc == Uirld) {
                 result = !bvectin(ichain->bitpos, &node->bvs.stage1.alters);
             } else {
+                // tricky, relies on the fact that nested expressions are added to bittab before larger expressions. So if
+                // the ichain is cand, then it already passed through candidate() and there's no need to use recursion.
                 result = bvectin(ichain->bitpos, &node->bvs.stage1.u.cm.cand) || !bvectin(ichain->bitpos, &node->bvs.stage1.alters);
             }
             break;
@@ -525,7 +541,7 @@ static bool func_004310EC(struct IChain *ichain, bool *sp43, struct Graphnode *n
 /*
 00431508 candidate
 */
-static bool func_00431268(struct IChain *ichain, struct VarAccessList *list, struct Graphnode *node) {
+static bool ilod_aliased(struct IChain *ilod, struct VarAccessList *list, struct Graphnode *node) {
     struct VarAccessList *access;
     bool result;
 
@@ -533,20 +549,20 @@ static bool func_00431268(struct IChain *ichain, struct VarAccessList *list, str
     result = false;
     while (access != NULL && !result) {
         if (access->type == 1 && !access->unk8) {
-            result = slkilled(access->data.store, ichain->expr);
+            result = slkilled(access->data.store, ilod->expr);
             if (result) {
                 if ((access->data.store->opc == Uistr || access->data.store->opc == Uirst) &&
-                        access->data.store->expr->ichain == ichain->isop.op1 &&
-                        bvectin(ichain->bitpos, &node->bvs.stage1.u.precm.expoccur)) {
-                    result = access->data.store->u.store.u.istr.offset >= ichain->isop.size;
-                    if (result != 0) {
-                        result = (access->data.store->u.store.u.istr.offset - ichain->isop.size) < ichain->isop.unk24_u16;
+                        access->data.store->expr->ichain == ilod->isop.op1 &&
+                        bvectin(ilod->bitpos, &node->bvs.stage1.u.precm.expoccur)) {
+                    result = access->data.store->u.store.u.istr.offset >= ilod->isop.size;
+                    if (result) {
+                        result = (access->data.store->u.store.u.istr.offset - ilod->isop.size) < ilod->isop.unk24_u16;
                     }
 
                     if (!result) {
-                        result = ichain->isop.size >= access->data.store->u.store.u.istr.offset;
-                        if (result != 0) {
-                            result = (ichain->isop.size - access->data.store->u.store.u.istr.offset) < access->data.store->u.store.size;
+                        result = access->data.store->u.store.u.istr.offset <= ilod->isop.size;
+                        if (result) {
+                            result = (ilod->isop.size - access->data.store->u.store.u.istr.offset) < access->data.store->u.store.size;
                         }
                     }
                 }
@@ -559,22 +575,24 @@ static bool func_00431268(struct IChain *ichain, struct VarAccessList *list, str
 
 /*
 00431508 candidate
+
+Return some number != 0 if the increments to iv are all positive or all negative
 */
-static int func_004313E4(struct IChain *ichain, struct Graphnode *node) {
+static int all_increments(struct IChain *iv, struct Graphnode *node) {
     struct VarAccessList *access;
-    int incre_result;
+    int increment;
     int result = 0;
 
     access = node->varlisthead;
     while (access != NULL) {
         if (access->type == 1) {
             if ((access->data.store->opc == Uisst || access->data.store->opc == Ustr) &&
-                    access->data.store->is_increment && ichain == access->data.store->expr->ichain) {
-                incre_result = findincre(access->data.store->expr->data.isvar_issvar.assigned_value);
+                    access->data.store->is_increment && iv == access->data.store->expr->ichain) {
+                increment = findincre(access->data.store->expr->data.isvar_issvar.assigned_value);
                 if (result == 0 ||
-                        (incre_result > 0 && result > 0) ||
-                        (incre_result < 0 && result < 0)) {
-                    result = incre_result;
+                        (increment > 0 && result > 0) ||
+                        (increment < 0 && result < 0)) {
+                    result = increment;
                 } else {
                     return 0;
                 }
@@ -591,7 +609,7 @@ static int func_004313E4(struct IChain *ichain, struct Graphnode *node) {
     determine if the expression is a candidate for operator strength reduction
 */
 static bool candidate(struct IChain *ichain, struct Graphnode *node) {
-    bool sp43 = false; // ???
+    bool no_isrconst = false; // sp43
     bool iscand = false; // t0
     bool sp41 = false; // a3
     bool rhs_const = false; // sp40
@@ -621,9 +639,9 @@ static bool candidate(struct IChain *ichain, struct Graphnode *node) {
                             iscand = false;
                         }
                     } else {
-                        iscand = func_00430D74(ichain->isop.op1, node);
+                        iscand = check_mpy_cand(ichain->isop.op1, node);
                         if (iscand) {
-                            func_00430FF4(ichain->isop.op1, node);
+                            setcand(ichain->isop.op1, node);
                         }
                     }
                 } else {
@@ -636,29 +654,29 @@ static bool candidate(struct IChain *ichain, struct Graphnode *node) {
                             iscand = false;
                         }
                     } else {
-                        iscand = func_00430D74(ichain->isop.op2, node);
+                        iscand = check_mpy_cand(ichain->isop.op2, node);
                         if (iscand) {
-                            func_00430FF4(ichain->isop.op2, node);
+                            setcand(ichain->isop.op2, node);
                         }
                     }
                 }
-            } else if (func_00430D74(ichain->isop.op1, node) && func_00430D74(ichain->isop.op2, node)) {
+            } else if (check_mpy_cand(ichain->isop.op1, node) && check_mpy_cand(ichain->isop.op2, node)) {
                 if (ichain->isop.op2->type == isvar) {
-                    iscand = func_00430BF4(ichain->isop.op1, node);
+                    iscand = no_var_mults(ichain->isop.op1, node);
                     if (iscand) {
                         iscand = !iexproccurred(ichain->isop.op2, ichain->isop.op1);
                     }
                     if (iscand) {
-                        func_00430FF4(ichain->isop.op1, node);
+                        setcand(ichain->isop.op1, node);
                     }
                     setbit(&varfactor_muls, ichain->bitpos);
                 } else if (ichain->isop.op1->type == isvar) {
-                    iscand = func_00430BF4(ichain->isop.op2, node);
+                    iscand = no_var_mults(ichain->isop.op2, node);
                     if (iscand) {
                         iscand = !iexproccurred(ichain->isop.op1, ichain->isop.op2);
                     }
                     if (iscand) {
-                        func_00430FF4(ichain->isop.op2, node);
+                        setcand(ichain->isop.op2, node);
                     }
                     setbit(&varfactor_muls, ichain->bitpos);
                 } else {
@@ -684,7 +702,7 @@ static bool candidate(struct IChain *ichain, struct Graphnode *node) {
                 case issvar:
                     iscand = false;
                     if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.iv)) {
-                        iscand = func_004310EC(ichain->isop.op1, &sp43, node);
+                        iscand = check_addsub_cand(ichain->isop.op1, &no_isrconst, node);
                     }
                     if (!bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.alters)) {
                         if (ichain->isop.op1->type == isop) {
@@ -708,15 +726,15 @@ static bool candidate(struct IChain *ichain, struct Graphnode *node) {
                             }
                         }
                     } else {
-                        if (func_004310EC(ichain->isop.op1, &sp43, node)) {
+                        if (check_addsub_cand(ichain->isop.op1, &no_isrconst, node)) {
                             if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.cand)) {
                                 if (ichain->isop.op2->isop.opc != Uilod && ichain->isop.op2->isop.opc != Uirld) {
                                     iscand = true;
                                 }
                             } else {
-                                iscand = func_00430D74(ichain->isop.op2, node);
+                                iscand = check_mpy_cand(ichain->isop.op2, node);
                                 if (iscand) {
-                                    func_00430FF4(ichain->isop.op2, node);
+                                    setcand(ichain->isop.op2, node);
                                 }
                             }
                         }
@@ -733,7 +751,7 @@ static bool candidate(struct IChain *ichain, struct Graphnode *node) {
             }
 
             if (iscand) {
-                iscand = func_00430BF4(ichain->isop.op1, node) || func_00430BF4(ichain->isop.op2, node);
+                iscand = no_var_mults(ichain->isop.op1, node) || no_var_mults(ichain->isop.op2, node);
             }
             break;
 
@@ -756,7 +774,7 @@ static bool candidate(struct IChain *ichain, struct Graphnode *node) {
             if (ichain->isop.op1->type == isop) {
                 if (bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.cand)) {
                     if (ichain->isop.op1->isop.opc != Uilod && ichain->isop.op1->isop.opc != Uirld) {
-                        iscand = func_004310EC(ichain->isop.op2, &sp43, node);
+                        iscand = check_addsub_cand(ichain->isop.op2, &no_isrconst, node);
                     }
                 }
 
@@ -764,29 +782,27 @@ static bool candidate(struct IChain *ichain, struct Graphnode *node) {
                     if (ichain->isop.op2->type == isop) {
                         if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.cand)) {
                             if (ichain->isop.op2->isop.opc != Uilod && ichain->isop.op2->isop.opc != Uirld) {
-                                iscand = func_004310EC(ichain->isop.op1, &sp43, node);
+                                iscand = check_addsub_cand(ichain->isop.op1, &no_isrconst, node);
                             }
                         }
                     }
                 }
-            } else {
-                if (ichain->isop.op2->type == isop) {
-                    if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.cand)) {
-                        if (ichain->isop.op2->isop.opc != Uilod && ichain->isop.op2->isop.opc != Uirld) {
-                            iscand = func_004310EC(ichain->isop.op1, &sp43, node);
-                        }
+            } else if (ichain->isop.op2->type == isop) {
+                if (bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.cand)) {
+                    if (ichain->isop.op2->isop.opc != Uilod && ichain->isop.op2->isop.opc != Uirld) {
+                        iscand = check_addsub_cand(ichain->isop.op1, &no_isrconst, node);
                     }
                 }
             }
 
             if (iscand) {
-                iscand = func_00430BF4(ichain->isop.op1, node) || func_00430BF4(ichain->isop.op2, node);
+                iscand = no_var_mults(ichain->isop.op1, node) || no_var_mults(ichain->isop.op2, node);
             }
 
             if (!iscand) {
                 if (ichain->isop.op1->type == isvar) {
                     if (ichain->isop.op2->type == isvar || ichain->isop.op2->type == isop) {
-                        iscand = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.iv) && func_004310EC(ichain->isop.op2, &sp43, node);
+                        iscand = bvectin(ichain->isop.op1->bitpos, &node->bvs.stage1.u.cm.iv) && check_addsub_cand(ichain->isop.op2, &no_isrconst, node);
                     }
                 }
             }
@@ -794,7 +810,7 @@ static bool candidate(struct IChain *ichain, struct Graphnode *node) {
             if (!iscand) {
                 if (ichain->isop.op2->type == isvar) {
                     if (ichain->isop.op1->type == isvar || ichain->isop.op1->type == isop) {
-                        iscand = bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.iv) && func_004310EC(ichain->isop.op1, &sp43, node);
+                        iscand = bvectin(ichain->isop.op2->bitpos, &node->bvs.stage1.u.cm.iv) && check_addsub_cand(ichain->isop.op1, &no_isrconst, node);
                     }
                 }
             }
@@ -812,7 +828,7 @@ static bool candidate(struct IChain *ichain, struct Graphnode *node) {
             }
 
             if (iscand) {
-                sp41 = func_00431268(ichain, node->varlisthead, node);
+                sp41 = ilod_aliased(ichain, node->varlisthead, node);
                 if (!sp41) {
                     if (node->stat_tail->opc == Ucia) {
                         if (lang == LANG_ADA ||
@@ -831,7 +847,7 @@ static bool candidate(struct IChain *ichain, struct Graphnode *node) {
             }
 
             if (iscand) {
-                iscand = dorecur && func_00430680(ichain, node);
+                iscand = dorecur && find_recurring_mem_accesses(ichain, node);
             }
             break;
 
@@ -851,12 +867,12 @@ static bool candidate(struct IChain *ichain, struct Graphnode *node) {
                 switch (ichain->isop.opc) {
                     case Utpge:
                     case Utpgt:
-                        iscand = func_004313E4(ichain->isop.op1, node) < 0;
+                        iscand = all_increments(ichain->isop.op1, node) < 0;
                         break;
 
                     case Utple:
                     case Utplt:
-                        iscand = func_004313E4(ichain->isop.op1, node) > 0;
+                        iscand = all_increments(ichain->isop.op1, node) > 0;
                         break;
 
                     default:
@@ -1259,7 +1275,7 @@ void findinduct(void) {
 }
 
 /*
-00430680 func_00430680
+00430680 find_recurring_mem_accesses
 00433B00 ivfactor
 00474FC8 func_00474FC8
 00477E20 func_00477E20

@@ -273,7 +273,7 @@ static void func_00474FC8(struct Statement *stat, struct Graphnode *node) {
                                         if (multiplier != NULL) {
                                             srcand->multiplier = multiplier;
                                             srcand->mult_factor = mult_factor;
-                                            srcand->unk18 = 0;
+                                            srcand->tempbit = 0;
                                             if (ichain->isop.srcand != nota_candof && !node->in_rolled_preloop) {
                                                 if (ichain->isop.srcand != NULL ||
                                                         (mult_factor * increment == 1 && factor == 0) ||

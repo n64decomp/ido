@@ -197,7 +197,7 @@ struct StrengthReductionCand {
     /* 0x0C */ int iv_factor;             // c1 in the example expression
     /* 0x10 */ struct IChain *multiplier; // some expression multiplied by the iv, not limited to just a variable
     /* 0x14 */ int mult_factor;           // c2 in the example expression
-    /* 0x18 */ int unk18; // some bitpos, maybe the temp iterator?
+    /* 0x18 */ int tempbit; // some bitpos, maybe the temp iterator?
 }; // size 0x1C
 
 // probably related to induction variables or loop invariant
@@ -477,7 +477,7 @@ struct Statement {
                 } outpar;
                 struct {
                     struct StrengthReductionCand *srcands;
-                    struct RecurThing *unk30; // used when emitting vreg
+                    struct RecurInfo *recurs; // used when emitting vreg
                 } str;
                 struct {
                     Datatype dtype; // 0x2C
@@ -835,11 +835,11 @@ struct TailRecParameter {
     /* 0x10 */ struct TailRecParameter *next;
 }; // size 0x14
 
-// Statement.u.store.u.str.unk30
-struct RecurThing {
+// Information for eliminating recurring memory accesses in a loop
+struct RecurInfo {
     /* 0x00 */ struct IChain *ichain;
     /* 0x04 */ struct Expression *expr;
-    /* 0x08 */ struct RecurThing *next;
+    /* 0x08 */ struct RecurInfo *next;
 }; // size 0xC
 
 /**
@@ -905,7 +905,7 @@ struct Expression {
             } aux;
             union {
                 struct {
-                    /* 0x3C */ unsigned short unk3C; // some size, used before createcvtl. used with Uinn
+                    /* 0x3C */ unsigned short unk3C; // some size, used before createcvtl. used with Uinn. bytes accessed for ilod/istr
                     /* 0x3E */ bool overflow_attr;
                     /* 0x3F */ unsigned char align; // see Uildv and Uilod in readnxtinst
                 } v1;

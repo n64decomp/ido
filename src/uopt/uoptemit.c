@@ -2150,13 +2150,13 @@ block_275:
                         uwrite(&u);
                     }
 
-                    if (inreg(bittab[expr->ichain->isop.srcand->unk18].ichain, node, &reg, 0)) {
+                    if (inreg(bittab[expr->ichain->isop.srcand->tempbit].ichain, node, &reg, 0)) {
                         genrop(Ustr, reg, expr->data.isop.datatype, sizeoftyp(expr->data.isop.datatype));
                     } else {
                         DTYPE = expr->data.isop.datatype;
                         MTYPE = Mmt;
                         IONE = curblk;
-                        OFFSET = bittab[expr->ichain->isop.srcand->unk18].ichain->isop.temploc->disp;
+                        OFFSET = bittab[expr->ichain->isop.srcand->tempbit].ichain->isop.temploc->disp;
                         if (!stack_reversed) {
                             if (highestmdef < -OFFSET) {
                                 highestmdef = -OFFSET;
@@ -3524,7 +3524,7 @@ written:
                         uwrite(&u);
                     }
 
-                    sp58 = bittab[ichain->isop.srcand->unk18].ichain;
+                    sp58 = bittab[ichain->isop.srcand->tempbit].ichain;
                     if (inreg(sp58, node, &reg, 0)) {
                         genrop(Ustr, reg, sp5F, sizeoftyp(sp5F));
                     } else {
@@ -4361,7 +4361,7 @@ static void func_0042B2C0(struct StrengthReductionCand *src, Datatype dtype, str
                 uwrite(&u);
             }
         } else {
-            ichain = bittab[src->unk18].ichain;
+            ichain = bittab[src->tempbit].ichain;
             if (inreg(ichain, node, &reg, 1)) {
                 genrop(Ulod, reg, dtype, 4);
             } else {
@@ -4467,10 +4467,10 @@ static void func_0042B890(struct Statement *stat, struct Graphnode *node) {
 */
 static void func_0042BB4C(struct Statement *stat, struct Graphnode *node) {
     int reg;
-    struct RecurThing *recur;
+    struct RecurInfo *recur;
     bool usingReg;
 
-    for (recur = stat->u.store.u.str.unk30; recur != NULL; recur = recur->next) {
+    for (recur = stat->u.store.u.str.recurs; recur != NULL; recur = recur->next) {
         usingReg = inreg(recur->ichain, node, &reg, 0);
         if (usingReg || recur->ichain->isvar_issvar.temploc != NULL) {
             func_00424FFC(recur->expr, NULL, node);

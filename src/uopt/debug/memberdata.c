@@ -26,7 +26,7 @@
         struct TrepImageThing *: TREP, \
         struct Proc *: MISC, \
         struct StrengthReductionCand *: STRENGTH_REDUCTION, \
-        struct RecurThing *: INT, \
+        struct RecurInfo *: RECUR_INFO, \
         \
         bool: BOOL, \
         unsigned char: CHAR, \
@@ -479,7 +479,7 @@ struct Member statOutpar[] = {
 
 struct Member statStr[] = {
     MEMBER_LIST(struct StrengthReductionCand *, u.store.u.str.srcands, struct StrengthReductionCand, next),
-    MEMBER(struct RecurThing *, u.store.u.str.unk30),
+    MEMBER_LIST(struct RecurInfo *, u.store.u.str.recurs, struct RecurInfo, next),
 };
 
 struct Member statIstr[] = {
@@ -892,7 +892,15 @@ struct Member strengthReductionCandMembers[] = {
     MEMBER(int,  iv_factor),
     MEMBER(struct IChain *, multiplier),
     MEMBER(int, mult_factor),
-    MEMBER(int, unk18),
+    MEMBER(int, tempbit),
+};
+#undef PARENT_TYPE
+
+#define PARENT_TYPE struct RecurInfo
+struct Member recurInfoMembers[] = {
+    MEMBER(struct IChain *, ichain),
+    MEMBER(struct Expression *, expr),
+    MEMBER(struct RecurInfo *, next),
 };
 #undef PARENT_TYPE
 
@@ -915,6 +923,7 @@ struct StructData gStructData[TYPE_ID_MAX] = {
     STRUCT_DATA_DEF(GRAPHNODE, struct Graphnode, graphnodeMembers),
     STRUCT_DATA_DEF(INTERFERELIST, struct InterfereList, interfereListMembers),
     STRUCT_DATA_DEF(STRENGTH_REDUCTION, struct StrengthReductionCand, strengthReductionCandMembers),
+    STRUCT_DATA_DEF(RECUR_INFO, struct RecurInfo, recurInfoMembers),
 };
 
 #endif

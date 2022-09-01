@@ -242,7 +242,7 @@ void *xmalloc(ssize_t size) {
 0042EB10 incorp_feedback
 0042F424 appendgraph
 0042F6CC controlflow
-00430680 func_00430680
+00430680 find_recurring_mem_accesses
 00434434 func_00434434
 0043771C optinit
 00439188 procinit

@@ -201,12 +201,12 @@ bool trap_implying_v(Uopcode opc, struct IChain *op1, struct IChain *op2, struct
 00410204 codemotion
 */
 void delete_unmoved_recur(struct Statement *stat, struct Graphnode *node) {
-    struct RecurThing *recur;
-    struct RecurThing *last_inpath;
+    struct RecurInfo *recur;
+    struct RecurInfo *last_inpath;
     bool inpath;
 
     last_inpath = NULL;
-    recur = stat->u.store.u.str.unk30; // always NULL in oot
+    recur = stat->u.store.u.str.recurs;
     while (recur != NULL) {
         if (bvectin(recur->ichain->bitpos, &node->bvs.stage1.u.cm.ppin)) {
             if (bvectin(recur->ichain->bitpos, &node->bvs.stage1.u.cm.ppout)) {
@@ -223,7 +223,7 @@ void delete_unmoved_recur(struct Statement *stat, struct Graphnode *node) {
         if (!inpath) {
             recur->expr->count--;
             if (last_inpath == NULL) {
-                stat->u.store.u.str.unk30 = recur->next;
+                stat->u.store.u.str.recurs = recur->next;
             } else {
                 last_inpath->next = recur->next;
             }

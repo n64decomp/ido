@@ -36,24 +36,25 @@ bool member_is_pointer(struct Member *m)
 void dl_print_typeid(struct DisplayLine *dl, struct StringRep *sr, void *data, enum TypeID type)
 {
     switch (type) {
-        case EXPRESSION:     dl_print_expr(dl, sr, *(void**)data); break;
-        case ICHAIN:         dl_print_ichain(dl, sr, *(void**)data); break;
-        case STATEMENT:      dl_print_statement(dl, sr, *(void**)data); break;
-        case GRAPHNODE:      dl_print_graphnode(dl, sr, *(void**)data, true); break;
-        case GRAPHNODE_LIST: dl_print_graphnode_list(dl, sr, *(void**)data, true); break;
-        case VAR_ACCESS:     dl_print_var_access(dl, sr, *(void**)data); break;
-        case TREP:           dl_print_trepimage(dl, sr, *(void**)data); break;
+        case EXPRESSION:         dl_print_expr(dl, sr, *(void**)data); break;
+        case ICHAIN:             dl_print_ichain(dl, sr, *(void**)data); break;
+        case STATEMENT:          dl_print_statement(dl, sr, *(void**)data); break;
+        case GRAPHNODE:          dl_print_graphnode(dl, sr, *(void**)data, true); break;
+        case GRAPHNODE_LIST:     dl_print_graphnode_list(dl, sr, *(void**)data, true); break;
+        case VAR_ACCESS:         dl_print_var_access(dl, sr, *(void**)data); break;
+        case TREP:               dl_print_trepimage(dl, sr, *(void**)data); break;
         case STRENGTH_REDUCTION: dl_print_strength_reduction(dl, sr, *(void**)data); break;
-        case TEMPLOC:        dl_print_temploc(dl, *(void**)data); break;
-        case VARLOC:         dl_print_variable(dl, *(struct VariableLocation*)data); break;
-        case BITVECTOR:      dl_print_bitvector(dl, sr, data); break;
-        case BITVECTORBB:    dl_print_bitvectorbb(dl, sr, data); break;
-        case LIVERANGE:      dl_print_liverange(dl, sr, *(void**)data); break;
-        case LIVEUNIT:       dl_print_liveunit(dl, sr, *(void**)data); break;
-        case INTERFERELIST:  dl_print_interferelist(dl, sr, *(void**)data); break;
-        case REGISTER:       dl_print_register(dl, sr, *(char *)data); break;
-        case REGSET64:       dl_print_regset64(dl, sr, *(int(*)[2])data); break;
-        case REGBOOLARRAY:   dl_print_reg_boolarray(dl, sr, *(char(*)[5])data); break;
+        case RECUR_INFO:         dl_print_recur_info(dl, sr, *(void**)data); break;
+        case TEMPLOC:            dl_print_temploc(dl, *(void**)data); break;
+        case VARLOC:             dl_print_variable(dl, *(struct VariableLocation*)data); break;
+        case BITVECTOR:          dl_print_bitvector(dl, sr, data); break;
+        case BITVECTORBB:        dl_print_bitvectorbb(dl, sr, data); break;
+        case LIVERANGE:          dl_print_liverange(dl, sr, *(void**)data); break;
+        case LIVEUNIT:           dl_print_liveunit(dl, sr, *(void**)data); break;
+        case INTERFERELIST:      dl_print_interferelist(dl, sr, *(void**)data); break;
+        case REGISTER:           dl_print_register(dl, sr, *(char *)data); break;
+        case REGSET64:           dl_print_regset64(dl, sr, *(int(*)[2])data); break;
+        case REGBOOLARRAY:       dl_print_reg_boolarray(dl, sr, *(char(*)[5])data); break;
 
         // scalar types
         case EXPRTYPE: dl_printf(dl, "%s", exprtype_name(*(ExpressionType *)data)); break;

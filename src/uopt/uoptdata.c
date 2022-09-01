@@ -161,7 +161,7 @@ union Bcode lastcopiedu;
 0042EB10 incorp_feedback
 0042F424 appendgraph
 0042F6CC controlflow
-00430680 func_00430680
+00430680 find_recurring_mem_accesses
 00434434 func_00434434
 0043771C optinit
 00439188 procinit
@@ -243,9 +243,9 @@ struct AllocBlock *heapptr;
 00424FFC func_00424FFC
 00425618 func_00425618
 00426FA4 func_00426FA4
-0043005C func_0043005C
-00430BF4 func_00430BF4
-00430FF4 func_00430FF4
+0043005C get_ilod
+00430BF4 no_var_mults
+00430FF4 setcand
 004376E0 func_004376E0
 00439C40 getop
 0043A8F0 constexp
@@ -1241,7 +1241,7 @@ int pdefno;
 /*
 00410204 codemotion
 0042020C gen_static_link
-00430680 func_00430680
+00430680 find_recurring_mem_accesses
 004324F4 findinduct
 00439188 procinit
 00444984 appendichain

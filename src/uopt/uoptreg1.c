@@ -695,13 +695,13 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                             expr->data.isop.opc != Uirlv) &&
                         expr->ichain->isop.srcand != NULL && expr->ichain->isop.srcand != nota_candof) {
 
-                    if (expr->ichain->isop.srcand->unk18 == 0) {
+                    if (expr->ichain->isop.srcand->tempbit == 0) {
                         ichain = alloc_new(sizeof (struct IChain), &perm_heap);
                         *ichain = *expr->ichain->isop.srcand->target;
 
                         ichain->isop.opc = Ucg1;
-                        expr->ichain->isop.srcand->unk18 = newbit(ichain, NULL);
-                        ichain->bitpos = expr->ichain->isop.srcand->unk18;
+                        expr->ichain->isop.srcand->tempbit = newbit(ichain, NULL);
+                        ichain->bitpos = expr->ichain->isop.srcand->tempbit;
 
                         if ((tempdisp & 3) != 0) {
                             tempdisp = (tempdisp - (tempdisp & 3)) + 4;
@@ -716,7 +716,7 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                             tempdisp += 4;
                         }
                     } else {
-                        ichain = bittab[expr->ichain->isop.srcand->unk18].ichain;
+                        ichain = bittab[expr->ichain->isop.srcand->tempbit].ichain;
                     }
 
                     if ((ichain->isop.datatype != Idt && ichain->isop.datatype != Kdt) || dwopcode) {
@@ -730,7 +730,7 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                         formlivbb(ichain, node, lu);
                         (*lu)->store_count++;
 
-                        setbit(&node->bvs.stage2.locdef, expr->ichain->isop.srcand->unk18);
+                        setbit(&node->bvs.stage2.locdef, expr->ichain->isop.srcand->tempbit);
                         if ((*lu)->load_count == 0) {
                             (*lu)->firstisstr = 1;
                         }
@@ -1161,13 +1161,13 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                         ichain->isop.opc != Uirld &&
                         ichain->isop.opc != Uirlv) {
                     if (ichain->isop.srcand != NULL && ichain->isop.srcand != nota_candof) {
-                        if (ichain->isop.srcand->unk18 == 0) {
+                        if (ichain->isop.srcand->tempbit == 0) {
                             sp40 = alloc_new(sizeof (struct IChain), &perm_heap);
                             *sp40 = *ichain->isop.srcand->target;
 
                             sp40->isop.opc = Ucg1;
-                            ichain->isop.srcand->unk18 = newbit(sp40, NULL);
-                            sp40->bitpos = ichain->isop.srcand->unk18;
+                            ichain->isop.srcand->tempbit = newbit(sp40, NULL);
+                            sp40->bitpos = ichain->isop.srcand->tempbit;
                             if ((tempdisp & 3) != 0) {
                                 tempdisp = (tempdisp - (tempdisp & 3)) + 4;
                             }
@@ -1180,7 +1180,7 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                                 tempdisp += 4;
                             }
                         } else {
-                            sp40 = bittab[ichain->isop.srcand->unk18].ichain;
+                            sp40 = bittab[ichain->isop.srcand->tempbit].ichain;
                         }
 
                         if ((sp40->isop.datatype != Idt && sp40->isop.datatype != Kdt) || dwopcode) {
@@ -1188,7 +1188,7 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                             formlivbb(sp40, node, lu);
 
                             (*lu)->store_count++;
-                            setbit(&node->bvs.stage2.locdef, ichain->isop.srcand->unk18);
+                            setbit(&node->bvs.stage2.locdef, ichain->isop.srcand->tempbit);
 
                             if ((*lu)->load_count == 0) {
                                 (*lu)->firstisstr = true;
@@ -1260,80 +1260,80 @@ static void func_00461084(struct IChain *ichain, struct Graphnode *node) {
 */
 static void func_0046123C(struct Statement *stat, struct Graphnode *node) {
     struct LiveUnit *lu;
-    int sp58;
+    int loopno;
     bool phi_s6;
-    struct StrengthReductionCand *phi_s2;
-    struct IChain *phi_s1;
+    struct StrengthReductionCand *cand;
+    struct IChain *temp_ichain;
 
     if (stat->u.store.u.str.srcands == NULL) {
         return;
     }
 
-    phi_s2 = stat->u.store.u.str.srcands;
+    cand = stat->u.store.u.str.srcands;
     phi_s6 = mipsflag == 3 && stat->graphnode->loop != NULL;
     if (phi_s6) {
-        sp58 = stat->graphnode->loop->loopno;
+        loopno = stat->graphnode->loop->loopno;
         phi_s6 = looptab[stat->graphnode->loop->loopno].unk9 && looptab[stat->graphnode->loop->loopno].unk4 != NULL;
     }
 
-    while (phi_s2 != NULL) {
-        if (!phi_s6 || !check_ix_candidate(phi_s2->target, sp58)) {
-            if ((phi_s2->target->isop.datatype != Idt && phi_s2->target->isop.datatype != Kdt) || dwopcode) {
-                formlivbb(phi_s2->target, node, &lu);
+    while (cand != NULL) {
+        if (!phi_s6 || !check_ix_candidate(cand->target, loopno)) {
+            if ((cand->target->isop.datatype != Idt && cand->target->isop.datatype != Kdt) || dwopcode) {
+                formlivbb(cand->target, node, &lu);
                 if (outofmem) {
                     return;
                 }
                 lu->load_count += 1;
-                if (phi_s6 && check_ix_source(phi_s2->target, sp58)) {
+                if (phi_s6 && check_ix_source(cand->target, loopno)) {
                     lu->load_count += 2;
                 }
                 if (lu->load_count == 1 && lu->store_count == 0) {
-                    setbit(&node->bvs.stage2.loclive, phi_s2->target->bitpos);
+                    setbit(&node->bvs.stage2.loclive, cand->target->bitpos);
                 }
                 lu->store_count += 1;
-                setbit(&node->bvs.stage2.locdef, phi_s2->target->bitpos);
+                setbit(&node->bvs.stage2.locdef, cand->target->bitpos);
             }
 
-            if (phi_s2->multiplier != NULL) {
-                if (phi_s2->target->isop.srcand == NULL || phi_s2->target->isop.srcand == nota_candof || node->in_rolled_preloop) {
-                    func_00461084(phi_s2->multiplier, node);
+            if (cand->multiplier != NULL) {
+                if (cand->target->isop.srcand == NULL || cand->target->isop.srcand == nota_candof || node->in_rolled_preloop) {
+                    func_00461084(cand->multiplier, node);
                 } else {
-                    if (phi_s2->unk18 == 0) {
-                        phi_s1 = alloc_new(sizeof (struct IChain), &perm_heap);
-                        *phi_s1 = *phi_s2->target;
+                    if (cand->tempbit == 0) {
+                        temp_ichain = alloc_new(sizeof (struct IChain), &perm_heap);
+                        *temp_ichain = *cand->target;
 
-                        phi_s1->isop.opc = Ucg1;
-                        phi_s2->unk18 = newbit(phi_s1, NULL);
-                        phi_s1->bitpos = phi_s2->unk18;
+                        temp_ichain->isop.opc = Ucg1;
+                        cand->tempbit = newbit(temp_ichain, NULL);
+                        temp_ichain->bitpos = cand->tempbit;
 
                         if ((tempdisp & 3) != 0) {
                             tempdisp = (tempdisp - (tempdisp & 3)) + 4;
                         }
 
-                        phi_s1->isop.temploc = alloc_new(sizeof (struct Temploc), &perm_heap);
+                        temp_ichain->isop.temploc = alloc_new(sizeof (struct Temploc), &perm_heap);
                         if (!stack_reversed) {
                             tempdisp += 4;
-                            phi_s1->isop.temploc->disp = -tempdisp;
+                            temp_ichain->isop.temploc->disp = -tempdisp;
                         } else {
-                            phi_s1->isop.temploc->disp = tempdisp;
+                            temp_ichain->isop.temploc->disp = tempdisp;
                             tempdisp += 4;
                         }
                     } else {
-                        phi_s1 = bittab[phi_s2->unk18].ichain;
+                        temp_ichain = bittab[cand->tempbit].ichain;
                     }
 
-                    if ((phi_s1->isop.datatype != Idt && phi_s1->isop.datatype != Kdt) || dwopcode) {
-                        formlivbb(phi_s1, node, &lu);
+                    if ((temp_ichain->isop.datatype != Idt && temp_ichain->isop.datatype != Kdt) || dwopcode) {
+                        formlivbb(temp_ichain, node, &lu);
                         lu->load_count++;
                         if (lu->load_count == 1) {
-                            setbit(&node->bvs.stage2.loclive, phi_s1->bitpos);
+                            setbit(&node->bvs.stage2.loclive, temp_ichain->bitpos);
                         }
                     }
                 }
             }
         }
 
-        phi_s2 = phi_s2->next;
+        cand = cand->next;
     }
 }
 
@@ -1342,9 +1342,9 @@ static void func_0046123C(struct Statement *stat, struct Graphnode *node) {
 */
 static void func_00461640(struct Statement *stat, struct Graphnode *node, struct LiveUnit **lu) {
     struct LiveUnit *sp50;
-    struct RecurThing *recur;
+    struct RecurInfo *recur;
 
-    recur = stat->u.store.u.str.unk30;
+    recur = stat->u.store.u.str.recurs;
     while (recur != NULL) {
         func_0045E5C4(recur->expr, 0, node, lu);
         if ((recur->ichain->isop.datatype != Idt && recur->ichain->isop.datatype != Kdt) || dwopcode) {

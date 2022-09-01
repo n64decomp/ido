@@ -1362,8 +1362,8 @@ void oneloopblockstmt(struct Statement *stat) {
             }
 
             stattail->u.store.u.str.srcands = NULL;
-            stattail->u.store.u.str.unk30 = 0;
-            stattail->suppressed_iv = 0;
+            stattail->u.store.u.str.recurs = NULL;
+            stattail->suppressed_iv = false;
             if (!phi_s1->data.isvar_issvar.vreg) {
                 strkillprev(stattail);
             }
@@ -2440,8 +2440,8 @@ struct Expression *str_to_temporary(int addr, struct Expression *store) {
     stattail->u.store.store_av = true;
     stattail->is_increment = false;
     stattail->u.store.u.str.srcands = NULL;
-    stattail->u.store.u.str.unk30 = 0;
-    stattail->suppressed_iv = 0;
+    stattail->u.store.u.str.recurs = NULL;
+    stattail->suppressed_iv = false;
     ret->data.isvar_issvar.assignment = stattail;
     appendstorelist();
     curgraphnode->varlisttail->unk8 = true;
@@ -3511,7 +3511,7 @@ void par_to_str(struct Statement *par, bool arg1, int disp) {
     stattail->u.store.u.str.srcands = NULL;
     stattail->u.store.lval_av = !sp5C->data.isvar_issvar.veqv;
     stattail->u.store.store_av = !sp5C->data.isvar_issvar.veqv;
-    stattail->u.store.u.str.unk30 = 0;
+    stattail->u.store.u.str.recurs = NULL;
     stattail->suppressed_iv = false;
     sp5C->data.isvar_issvar.assignment = stattail;
     if (sp5C->data.isvar_issvar.vreg == 0) {

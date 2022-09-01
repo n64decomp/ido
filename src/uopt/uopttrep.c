@@ -1565,7 +1565,7 @@ void eliminduct(void) {
                                 stat->expr = stat->expr->data.isvar_issvar.assigned_value;
                                 func_00479778(stat->expr, node);
                             } else {
-                                stat->suppressed_iv = 1;
+                                stat->suppressed_iv = true;
                                 if (stat->opc == Uisst) {
                                     deccount(stat->u.store.expr, node);
                                 }

@@ -136,7 +136,7 @@ bool cupaltered(struct IChain *ichain, int level, struct Proc *proc) {
             if (!altered && optab[ichain->isop.opc].is_binary_op) {
                 altered = cupaltered(ichain->isop.op2, level, proc);
             }
-    
+
             if (!altered &&
                     (ichain->isop.opc == Uiequ ||
                      ichain->isop.opc == Uineq ||

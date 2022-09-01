@@ -1506,7 +1506,7 @@ void readnxtinst(void) {
         stattail->u.store.lval_av = false;
         stattail->u.store.store_av = false;
         stattail->u.store.u.str.srcands = NULL;
-        stattail->u.store.u.str.unk30 = 0;
+        stattail->u.store.u.str.recurs = NULL;
         expr->data.isvar_issvar.assignment = NULL;
         appendstorelist();
         curgraphnode->varlisttail->unk8 = true;
@@ -3282,7 +3282,7 @@ void readnxtinst(void) {
                 stattail->is_increment = false;
             }
             stattail->u.store.u.str.srcands = NULL;
-            stattail->u.store.u.str.unk30 = 0;
+            stattail->u.store.u.str.recurs = NULL;
             stattail->suppressed_iv = false;
             if (!expr->data.isvar_issvar.vreg) {
                 strkillprev(stattail);

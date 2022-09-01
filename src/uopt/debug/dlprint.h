@@ -20,6 +20,7 @@ enum TypeID {
     VAR_ACCESS,
     TREP,
     STRENGTH_REDUCTION,
+    RECUR_INFO,
     TEMPLOC,
     VARIABLE,
     LDATAB_ENTRY,
@@ -75,6 +76,7 @@ struct StringRep {
         struct Variable *variable;
         struct LdatabEntry *ldatabEntry;
         struct StrengthReductionCand *cand;
+        struct RecurInfo *recur;
         struct BitVector bitvector;
         int reg;
         int regset[2];
@@ -155,6 +157,7 @@ void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expr
 void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IChain *ichain);
 void dl_print_trepimage(struct DisplayLine *dl, struct StringRep *parent, struct TrepImageThing *trepimage);
 void dl_print_strength_reduction(struct DisplayLine *dl, struct StringRep *parent, struct StrengthReductionCand *cand);
+void dl_print_recur_info(struct DisplayLine *dl, struct StringRep *parent, struct RecurInfo *recur);
 void dl_print_liveunit(struct DisplayLine *dl, struct StringRep *parent, struct LiveUnit *liveunit);
 void dl_print_interferelist(struct DisplayLine *dl, struct StringRep *parent, struct InterfereList *interfere);
 void dl_print_liverange(struct DisplayLine *dl, struct StringRep *parent, struct LiveRange *liverange);
