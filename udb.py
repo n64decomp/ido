@@ -255,6 +255,8 @@ def main():
             subprocess.check_call(uopt_command, stderr=FNULL)
     except KeyboardInterrupt as e:
         pass
+    except subprocess.CalledProcessError as e:
+        print("failed to run command:", " ".join(e.cmd))
     except:
         print("\x1b[91mfailed for some reason!!! haHA!\x1b[m")
 
