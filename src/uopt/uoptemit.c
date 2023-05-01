@@ -1020,14 +1020,14 @@ void prolog(void) {
                             if (parmRegclass == 1) {
                                 if (reg_s2 <= firstparmreg[0] + MIN((pdefmax + (pdeftab[pdefmax].size / 4)) - 1, 3)) {
                                     if (reg < reg_s2) {
-                                        BITARR_SET(graphhead->unkD0, reg_s2 - 1, true);
+                                        BITARR_SET(graphhead->rlods, reg_s2 - 1, true);
                                         phi_s3 = 1;
                                     }
                                 }
                             } else if ((reg_s2 == firstparmreg[1] + 1 &&
                                         ((offsetpassedbyint == 8 && pdeftab->dtype != Qdt) || offsetpassedbyint > 8)) ||
                                     reg_s2 < firstparmreg[0] + 4) {
-                                BITARR_SET(graphhead->unkD0, reg_s2 - 1, true);
+                                BITARR_SET(graphhead->rlods, reg_s2 - 1, true);
                                 phi_s3 = 1;
                             }
                         }
@@ -1320,7 +1320,7 @@ void gen_outparcode(struct Graphnode *node) {
                         if (parmReg < 24) {
                             if (parmReg < reg &&
                             (reg - firstparmreg[0]) * 4 <= curmst->u.mst.loc) {
-                                BITARR_SET(node->unkD0, reg - 1, true);
+                                BITARR_SET(node->rlods, reg - 1, true);
                                 phi_s3 = 1;
                             } else {
                                 genrop(Ulod, parmReg, stat->expr->datatype, stat->expr->data.isvar_issvar.location.addr);
@@ -1328,7 +1328,7 @@ void gen_outparcode(struct Graphnode *node) {
                                 phi_s3 = 2;
                             }
                         } else if ((reg == firstparmreg[1] + 1 && curmst->u.mst.fp_offset >= 8) || reg < firstparmreg[0] + 4) {
-                            BITARR_SET(node->unkD0, reg - 1, true);
+                            BITARR_SET(node->rlods, reg - 1, true);
                             phi_s3 = 1;
                         } else {
                             genrop(Ulod, parmReg, stat->expr->datatype, stat->expr->data.isvar_issvar.location.addr);
@@ -2353,7 +2353,7 @@ static void func_00424FFC(struct Expression *expr, struct Expression *baseaddr, 
 */
 static void func_00425594(struct JumpFallthroughBB *bbs) {
     while (bbs != NULL) {
-        if (bbs->unk1) {
+        if (bbs->rlod) {
             genrlodrstr(Urlod, bbs->reg, bbs->ichain);
         } else {
             genrlodrstr(Urstr, bbs->reg, bbs->ichain);
@@ -4253,7 +4253,7 @@ static void func_0042B09C(struct Graphnode *node) {
     int reg;
 
     for (reg = 1; reg <= 35; reg++) {
-        if (node->regdata.unk44[reg - 1] != NULL && BITARR_GET(node->unkD5, reg - 1)) {
+        if (node->regdata.unk44[reg - 1] != NULL && BITARR_GET(node->rstrs, reg - 1)) {
             genrlodrstr(Urstr, reg, node->regdata.unk44[reg - 1]);
         }
     }
@@ -4286,7 +4286,7 @@ static void func_0042B1A8(struct Graphnode *node) {
     }
 
     for (reg = 1; reg <= 35; reg++) {
-        if (node->regdata.unk44[reg - 1] != NULL && BITARR_GET(node->unkD0, reg - 1)) {
+        if (node->regdata.unk44[reg - 1] != NULL && BITARR_GET(node->rlods, reg - 1)) {
             genrlodrstr(Urlod, reg, node->regdata.unk44[reg - 1]);
         }
     }

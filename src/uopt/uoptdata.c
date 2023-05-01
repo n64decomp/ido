@@ -210,7 +210,7 @@ union Bcode lastcopiedu;
 0046FA20 new_header_node
 0046FB40 record_labels
 004713E8 loopunroll
-00474FC8 func_00474FC8
+00474FC8 strength_reduce
 00475680 getexpsources
 0047606C func_0047606C
 004761D0 tail_recursion
@@ -798,7 +798,7 @@ struct Expression *nocopy;
 0045E5C4 func_0045E5C4
 0045FBB4 func_0045FBB4
 0046123C func_0046123C
-00474FC8 func_00474FC8
+00474FC8 strength_reduce
 */
 struct StrengthReductionCand *nota_candof;
 
@@ -845,7 +845,7 @@ struct LiveUnit *dft_livbb;
 00464BFC localcolor
 00465E50 spilltemps
 00469280 globalcolor
-00474FC8 func_00474FC8
+00474FC8 strength_reduce
 00477E20 func_00477E20
 00478ED4 func_00478ED4
 00478FA0 func_00478FA0
@@ -974,7 +974,7 @@ struct BitVector storeop;
 00446E18 searchstore
 0045D208 patchvectors
 00461AAC makelivranges
-00474FC8 func_00474FC8
+00474FC8 strength_reduce
 00475680 getexpsources
 */
 struct BitVector trapop;
@@ -1165,7 +1165,7 @@ struct BitVector workbvect;
 00464BFC localcolor
 00465E50 spilltemps
 00469280 globalcolor
-00474FC8 func_00474FC8
+00474FC8 strength_reduce
 00476AA0 findbbtemps
 00477E20 func_00477E20
 00478ED4 func_00478ED4
@@ -1264,7 +1264,7 @@ struct Loop *toplevelloops;
 0042BE58 func_0042BE58
 00448C94 find_ix_loadstores
 0046123C func_0046123C
-00474FC8 func_00474FC8
+00474FC8 strength_reduce
 0047558C func_0047558C
 00475680 getexpsources
 004804CC check_ix_candidate
@@ -2159,7 +2159,7 @@ bool outofmem;
 00456A2C oneproc
 0045FBB4 func_0045FBB4
 0046123C func_0046123C
-00474FC8 func_00474FC8
+00474FC8 strength_reduce
 00475680 getexpsources
 */
 unsigned char mipsflag;

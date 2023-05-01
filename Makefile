@@ -18,7 +18,8 @@ ARCH_FLAGS := -m32 -mfpmath=sse -msse2 -ffp-contract=off $(ENDIANNESS)
         OPTIMIZATION := -Og -flto=auto -ggdb3
         #OPTIMIZATION := -O0 -ggdb3
     else
-        OPTIMIZATION := -O2 -march=native -mtune=native -flto=auto
+        OPTIMIZATION := -Og -flto=auto -ggdb3
+        #OPTIMIZATION := -O2 -march=native -mtune=native -flto=auto
     endif
 else ifeq ($(ARCH),mips)
 CC := mips-linux-gnu-gcc

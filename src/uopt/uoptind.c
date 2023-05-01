@@ -1277,7 +1277,7 @@ void findinduct(void) {
 /*
 00430680 find_recurring_mem_accesses
 00433B00 ivfactor
-00474FC8 func_00474FC8
+00474FC8 strength_reduce
 00477E20 func_00477E20
 */
 int ivfactor(struct IChain *ichain, struct IChain *iv, bool *overflow, struct IChain **multiplier, int *mult_factor) {

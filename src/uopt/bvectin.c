@@ -56,7 +56,7 @@
 00468A14 cupcosts
 00469280 globalcolor
 0046BD90 change_to_var_eq
-00474FC8 func_00474FC8
+00474FC8 strength_reduce
 00476AA0 findbbtemps
 00477E20 func_00477E20
 0047847C func_0047847C

@@ -63,8 +63,6 @@ typedef enum RegisterColor RegisterColor;
 typedef char RegisterColor;
 #endif
 
-
-
 #define IS_UNSIGNED(dtype) \
     (dtype == Adt || \
      dtype == Hdt || \
@@ -219,7 +217,6 @@ struct LooptabItem {
     /* 0xA */ unsigned char unkA;
 }; // size 0xC
 
-
 struct IntervalList {
     /* 0x00 */ struct Interval* intv;
     /* 0x04 */ struct IntervalList* next;
@@ -259,7 +256,7 @@ struct GraphnodeList {
 // See put_in_fallthru_bb and put_in_jump_bb
 struct JumpFallthroughBB {
     unsigned char reg;
-    bool unk1; // true = rlod, false = rstr
+    bool rlod; // true = rlod, false = rstr
     struct IChain *ichain;
     struct JumpFallthroughBB *next;
 };
@@ -303,8 +300,8 @@ struct Graphnode {
                    struct IChain *unk44[35];
                } regdata;
     // packed array of bools, great
-    /* 0xD0 */ unsigned char unkD0[5]; // rlods
-    /* 0xD5 */ unsigned char unkD5[5]; // rstrs
+    /* 0xD0 */ unsigned char rlods[5]; // rlods
+    /* 0xD5 */ unsigned char rstrs[5]; // rstrs
     /* 0xDA */ unsigned char unkDA[5]; // some temporary array
     /* 0xE0 */ struct RegisterNode *unkE0; // rstrs
     /* 0xE4 */ struct RegisterNode *unkE4; // rlods
@@ -667,7 +664,6 @@ union Constant {
     } string;
 };
 
-
 enum ExpressionType {
     /* 0 */ empty,
     /* 1 */ islda,
@@ -802,10 +798,10 @@ struct LiveRange {
     /* 0x21 */ unsigned char regsleft;
     /* 0x22 */ bool hasstore;
     /* 0x23 */ unsigned char unk23;
-    /* 0x24 */ int unk24; // number of interfering liveranges that have registers
+    /* 0x24 */ int numintf; // number of interfering liveranges that have registers
     /* 0x28 */ int forbidden[2];
     /* 0x30 */ float adjsave;
-    /* 0x34 */ struct LiveRange *next;
+    /* 0x34 */ struct LiveRange *next; // if split, points to the other nodes in the original liverange
     union {
         /* 0x38 */ struct InterfereList *interfere;
         /* 0x38 */ struct LiveUnit *liveunitsTail; // overwritten in localcolor()
@@ -841,6 +837,14 @@ struct RecurInfo {
     /* 0x04 */ struct Expression *expr;
     /* 0x08 */ struct RecurInfo *next;
 }; // size 0xC
+
+enum unk4enum {
+    u4_1_notregion_notsubinsert_or_notav_notcand,
+    u4_2_region_delete_ant_or_cand,
+    u4_3_region_notdelete_notsubinsert_or_notav_notcand,
+    u4_4_region_notsubinsert_or_notav_notcand,
+    u4_5_notregion_subinsert_and_av_or_cand,
+};
 
 /**
  * Expression Trees: variables (isvar, issvar), constants (isconst, isrconst), addresses (islda, isilda), and operators (isop).

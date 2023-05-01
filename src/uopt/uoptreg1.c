@@ -38,7 +38,7 @@ void formlivbb(struct IChain *ichain, struct Graphnode *node, struct LiveUnit **
     int argnum;
     int i;
     bool phi_t3;
-    bool phi_v1_2;
+    bool new_bb;
 
     if (bittab[ichain->bitpos].liverange == NULL) {
         setbit(&iscolored[regclassof(ichain) - 1], ichain->bitpos);
@@ -88,22 +88,22 @@ void formlivbb(struct IChain *ichain, struct Graphnode *node, struct LiveUnit **
         bittab[ichain->bitpos].liverange->bitpos = ichain->bitpos;
         formbvlivran(&bittab[ichain->bitpos].liverange->reachingbbs);
         formbvlivran(&bittab[ichain->bitpos].liverange->livebbs);
-        phi_v1_2 = false;
+        new_bb = false;
         if (bittab[ichain->bitpos].liverange->livebbs.blocks == NULL) {
             return;
         }
 
         bittab[ichain->bitpos].liverange->unk1C = -1;
         bittab[ichain->bitpos].liverange->assigned_reg = 0;
-        bittab[ichain->bitpos].liverange->unk24 = 0;
+        bittab[ichain->bitpos].liverange->numintf = 0;
         bittab[ichain->bitpos].liverange->unk23 = 0;
         bittab[ichain->bitpos].liverange->next = NULL;
         bittab[ichain->bitpos].liverange->liveunitsTail = NULL;
     } else {
-        phi_v1_2 = bvectin(node->num, &bittab[ichain->bitpos].liverange->livebbs);
+        new_bb = bvectin(node->num, &bittab[ichain->bitpos].liverange->livebbs);
     }
 
-    if (!phi_v1_2) {
+    if (!new_bb) {
         numlu++;
 
         *dest = alloc_new(sizeof(struct LiveUnit), &perm_heap);
@@ -499,23 +499,33 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                 if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.scm.region)) {
                     if (!bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.subinsert) ||
                             (!expr->data.isop.available && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
+                        // !region, !subinsert || (!av && !cand)
                         expr->unk4 = 1;
+                        // killed, and not in region
                     } else {
+                        // !region, subinsert && (av || cand)
                         expr->unk4 = 5;
+                        // subinsert and can be moved forward
                         setbit(&node->bvs.stage1.u.scm.region, expr->ichain->bitpos);
                         setbit(&coloreditems, expr->ichain->bitpos);
                     }
                 } else if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.delete) &&
                         (expr->data.isop.anticipated || bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand))) {
+                    // region, delete, ant || cand
                     expr->unk4 = 2;
                     expr->visited = 7;
                 } else if (!expr->data.isop.available && !bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.cand)) {
+                    // region, !delete || !ant && !cand, !av && !cand
                     expr->unk4 = 4;
                 } else if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.scm.source)) {
+                    // region, !delete || !ant && !cand, av || cand, source
                     expr->unk4 = 3;
                 } else if (bvectin(expr->ichain->bitpos, &node->bvs.stage1.u.cm.subinsert)) {
+                    // region, !delete || !ant && !cand, av || cand, !source, subinsert
                     expr->unk4 = 5;
+                    // subinsert and can be moved forward
                 } else {
+                    // region, !delete || !ant && !cand, av || cand, !source, !subinsert
                     expr->unk4 = 4;
                 }
             }
@@ -538,7 +548,6 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
             }
 
             if (optab[expr->data.isop.opc].is_binary_op) {
-
                 if ((expr->data.isop.opc == Uequ ||
                             expr->data.isop.opc == Ugeq ||
                             expr->data.isop.opc == Ugrt ||
@@ -572,7 +581,6 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
                             setbit(&node->bvs.stage2.loclive, expr->data.isop.aux2.unk3C_trep->ichain->bitpos);
                         }
                     }
-
 
                     if (expr->data.isop.aux2.unk3C_trep->ichain2 != NULL &&
                             ((expr->data.isop.aux2.unk3C_trep->ichain2->dtype != Idt && expr->data.isop.aux2.unk3C_trep->ichain2->dtype != Kdt) || dwopcode)) {

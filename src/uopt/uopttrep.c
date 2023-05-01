@@ -1343,29 +1343,27 @@ void eliminduct(void) {
                     func_00478B8C(bittab[i].ichain, node);
                 }
                 i++; // skip assignment bit
-            } else {
-                if (bvectin(i, &node->bvs.stage1.u.cm.insert)) {
-                    store_ichain = bittab[i].ichain;
-                    if (bvectin(i, &storeop)) {
-                        if (store_ichain->isop.opc == Uisst || store_ichain->isop.opc == Ustr) {
-                            if (!store_ichain->isop.op1->isvar_issvar.veqv &&
-                                    !bvectin(store_ichain->isop.op1->isvar_issvar.assignbit, &node->bvs.stage1.alters)) {
-                                setbit(&node->bvs.stage1.antlocs, store_ichain->isop.op1->isvar_issvar.assignbit);
-                            }
-                        } else {
-                            func_00478ED4(node);
+            } else if (bvectin(i, &node->bvs.stage1.u.cm.insert)) {
+                store_ichain = bittab[i].ichain;
+                if (bvectin(i, &storeop)) {
+                    if (store_ichain->isop.opc == Uisst || store_ichain->isop.opc == Ustr) {
+                        if (!store_ichain->isop.op1->isvar_issvar.veqv &&
+                                !bvectin(store_ichain->isop.op1->isvar_issvar.assignbit, &node->bvs.stage1.alters)) {
+                            setbit(&node->bvs.stage1.antlocs, store_ichain->isop.op1->isvar_issvar.assignbit);
                         }
+                    } else {
+                        func_00478ED4(node);
                     }
-
-                    if (store_ichain->isop.opc == Uilod ||
-                            store_ichain->isop.opc == Uistr ||
-                            store_ichain->isop.opc == Umov ||
-                            store_ichain->isop.opc == Uirld ||
-                            store_ichain->isop.opc == Uirst) {
-                        func_00478FA0(store_ichain, node);
-                    }
-                    func_00478C14(store_ichain, node);
                 }
+
+                if (store_ichain->isop.opc == Uilod ||
+                        store_ichain->isop.opc == Uistr ||
+                        store_ichain->isop.opc == Umov ||
+                        store_ichain->isop.opc == Uirld ||
+                        store_ichain->isop.opc == Uirst) {
+                    func_00478FA0(store_ichain, node);
+                }
+                func_00478C14(store_ichain, node);
             }
         }
         node = node->next;

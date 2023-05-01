@@ -10,6 +10,8 @@
 #include "uoptutil.h"
 #include "uoptfeedback.h"
 
+#include "debug.h"
+
 /*
 00469280 globalcolor
 */
@@ -797,9 +799,9 @@ bool intfering(struct LiveRange *lr1, struct LiveRange *lr2) {
 */
 static void func_00465DA4(struct LiveRange *lr1, struct LiveRange *lr2) {
     insintf(&lr1->interfere, lr2);
-    lr1->unk24 += 1;
+    lr1->numintf += 1;
     insintf(&lr2->interfere, lr1);
-    lr2->unk24 += 1;
+    lr2->numintf += 1;
 }
 
 /*
@@ -1095,7 +1097,7 @@ int marksharedintf(struct InterfereList *intf, int nodenum) {
 */
 void addadjacents(struct LiveRange *lr1, struct LiveRange *lr2, struct LiveUnit **list, int regclass) {
     int oldforbidden[2];
-    int oldunk21;
+    int prevregsleft;
     int shared;
     struct LiveUnit *lu;
     struct GraphnodeList *succ;
@@ -1106,13 +1108,13 @@ void addadjacents(struct LiveRange *lr1, struct LiveRange *lr2, struct LiveUnit 
             lu = gettolivbb(lr1->ichain, succ->graphnode);
             oldforbidden[0] = lr2->forbidden[0];
             oldforbidden[1] = lr2->forbidden[1];
-            oldunk21 = lr2->regsleft;
+            prevregsleft = lr2->regsleft;
 
             // count the new interference nodes that would be added to lr2
             shared = marksharedintf(lr1->interfere, succ->graphnode->num);
             updateforbidden(succ->graphnode, lu->reg, lr2, regclass);
             updatecolorsleft(lr2, regclass);
-            if ((shared < oldunk21 && lr2->regsleft * 2 >= lr2->unk24 + shared && doheurab) || (!doheurab && lr2->regsleft != 0)) {
+            if ((shared < prevregsleft && lr2->regsleft * 2 >= lr2->numintf + shared && doheurab) || (!doheurab && lr2->regsleft != 0)) {
                 // add this node to the BFS queue
                 formingmax++;
                 formingtab[formingmax] = succ->graphnode;
@@ -1130,7 +1132,7 @@ void addadjacents(struct LiveRange *lr1, struct LiveRange *lr2, struct LiveUnit 
                 }
 
                 setbitbb(&lr2->livebbs, succ->graphnode->num);
-                lr2->unk24 += shared;
+                lr2->numintf += shared;
 
                 // marked interference lists are now shared
                 for (intf = lr1->interfere; intf != NULL; intf = intf->next) {
@@ -1140,7 +1142,7 @@ void addadjacents(struct LiveRange *lr1, struct LiveRange *lr2, struct LiveUnit 
                     }
                 }
             } else {
-                lr2->regsleft = oldunk21;
+                lr2->regsleft = prevregsleft;
                 lr2->forbidden[0] = oldforbidden[0];
                 lr2->forbidden[1] = oldforbidden[1];
 
@@ -1175,7 +1177,7 @@ bool somepostmember(struct GraphnodeList *succ, int reg, struct IChain *ichain, 
 
     while (!member && succ != NULL) {
         if (succ->graphnode->regdata.unk44[reg - 1] == ichain &&
-                !BITARR_GET(succ->graphnode->unkD0, reg - 1) &&
+                !BITARR_GET(succ->graphnode->rlods, reg - 1) &&
                 (!BITARR_GET(succ->graphnode->unkDA, reg - 1) || bvectin(succ->graphnode->num, &lr->livebbs))) {
             member = true;
         }
@@ -1222,7 +1224,7 @@ bool allsucppin(struct GraphnodeList *succ, int reg, struct IChain *ichain, stru
 
     while (ppin && succ != NULL) {
         if (succ->graphnode->regdata.unk44[reg - 1] == ichain &&
-                 !BITARR_GET(succ->graphnode->unkD0, reg - 1) &&
+                 !BITARR_GET(succ->graphnode->rlods, reg - 1) &&
                 (!BITARR_GET(succ->graphnode->unkDA, reg - 1) || bvectin(succ->graphnode->num, &lr->livebbs))) {
             succ = succ->next;
         } else if (succ->graphnode->predecessors->next == NULL && !succ->graphnode->interprocedural_controlflow) {
@@ -1325,7 +1327,7 @@ bool isconstrained(struct LiveRange *lr) {
     if (!leaf_for_ugen) {
         return true;
     } else {
-        return lr->unk24 >= regsinclass[regclassof(lr->ichain) - 1];
+        return lr->numintf >= regsinclass[regclassof(lr->ichain) - 1];
     }
 }
 
@@ -1518,7 +1520,7 @@ bool needsplit(struct LiveRange *lr, int regclass) {
         res = false;
     } else {
         cantsplit = true;
-        if (lr->unk24 < 30 || ((lr->unk23 == 0 || lr->adjsave > 0.2f) && lr->unk24 < 800)) {
+        if (lr->numintf < 30 || ((lr->unk23 == 0 || lr->adjsave > 0.2f) && lr->numintf < 800)) {
             for (lu = lr->liveunits; lu != NULL && cantsplit; lu = lu->next) {
                 if ((lu->reg != 0 || SET_NEQ64(lu->node->regsused[regclass - 1], setregs[regclass - 1])) &&
                         lu->load_count + lu->store_count != 0) {
@@ -1535,7 +1537,7 @@ bool needsplit(struct LiveRange *lr, int regclass) {
 
             for (intf = lr->interfere; intf != NULL; intf = intf->next) {
                 if (intf->liverange != NULL) {
-                    intf->liverange->unk24--;
+                    intf->liverange->numintf--;
                 }
             }
 
@@ -1589,7 +1591,7 @@ void split(struct LiveRange **newlr, struct LiveRange **out, int regclass, bool 
 
 #ifdef AVOID_UB
     (*out)->adjsave = 0;
-    (*out)->unk24 = 0;
+    (*out)->numintf = 0;
 #endif
     (*out)->next = (*newlr)->next;
     (*newlr)->next = *out;
@@ -1641,43 +1643,43 @@ void split(struct LiveRange **newlr, struct LiveRange **out, int regclass, bool 
             contiglr += contiguous(*out);
         }
         goto no_split;
-    } else {
-        dellivbb(&(*out)->liveunits, lu);
-        resetbit(&(*out)->livebbs, lu->node->num);
-        lu->next = NULL;
-        (*newlr)->liveunits = lu;
-        formbvlivran(&(*newlr)->reachingbbs);
-        formbvlivran(&(*newlr)->livebbs);
-        if ((*newlr)->livebbs.blocks == NULL) {
-            return;
-        }
-        (*newlr)->unk1C = -1;
-        setbitbb(&(*newlr)->livebbs, lu->node->num);
-        (*newlr)->forbidden[1] = 0;
-        (*newlr)->forbidden[0] = 0;
-
-        // initialize forbidden to be the set of regs used in the basic block
-        updateforbidden(lu->node, lu->reg, *newlr, regclass);
-        updatecolorsleft(*newlr, regclass);
-
-        (*out)->interfere = (*newlr)->interfere;
-        (*newlr)->interfere = NULL;
-
-        (*out)->unk24 = (*newlr)->unk24;
-        (*newlr)->unk24 = findsharedintf((*out)->interfere, lu->node->num);
-
-        // 2. BFS, expand the new liverange until it would have no registers available
-        formingtab[0] = lu->node;
-        formingmax = 0;
-        for (forminginx = 0; forminginx <= formingmax; forminginx++) {
-            if (gettolivbb((*newlr)->ichain, formingtab[forminginx])->deadout == false &&
-                    (!arg3 || !is_cup_affecting_regs(formingtab[forminginx])) &&
-                    formingtab[forminginx]->stat_tail->opc != Uijp) {
-                addadjacents(*out, *newlr, &lu, regclass);
-            }
-        }
-        numsplitlu += forminginx;
     }
+
+    dellivbb(&(*out)->liveunits, lu);
+    resetbit(&(*out)->livebbs, lu->node->num);
+    lu->next = NULL;
+    (*newlr)->liveunits = lu;
+    formbvlivran(&(*newlr)->reachingbbs);
+    formbvlivran(&(*newlr)->livebbs);
+    if ((*newlr)->livebbs.blocks == NULL) {
+        return;
+    }
+    (*newlr)->unk1C = -1;
+    setbitbb(&(*newlr)->livebbs, lu->node->num);
+    (*newlr)->forbidden[1] = 0;
+    (*newlr)->forbidden[0] = 0;
+
+    // initialize forbidden to be the set of regs used in the basic block
+    updateforbidden(lu->node, lu->reg, *newlr, regclass);
+    updatecolorsleft(*newlr, regclass);
+
+    (*out)->interfere = (*newlr)->interfere;
+    (*newlr)->interfere = NULL;
+
+    (*out)->numintf = (*newlr)->numintf;
+    (*newlr)->numintf = findsharedintf((*out)->interfere, lu->node->num);
+
+    // 2. BFS, expand the new liverange until it would have no registers available
+    formingtab[0] = lu->node;
+    formingmax = 0;
+    for (forminginx = 0; forminginx <= formingmax; forminginx++) {
+        if (gettolivbb((*newlr)->ichain, formingtab[forminginx])->deadout == false &&
+                (!arg3 || !is_cup_affecting_regs(formingtab[forminginx])) &&
+                formingtab[forminginx]->stat_tail->opc != Uijp) {
+            addadjacents(*out, *newlr, &lu, regclass);
+        }
+    }
+    numsplitlu += forminginx;
 
     // if we took all the liveunits, then we're back to square one
     if ((*out)->liveunits == NULL && bvectcard(&(*out)->reachingbbs) == 0) {
@@ -1685,31 +1687,7 @@ void split(struct LiveRange **newlr, struct LiveRange **out, int regclass, bool 
             numcalloverheadlr += 1;
             contiglr += 1;
         }
-
-no_split:
-        if (!arg3) {
-            dbgerror(0x273);
-        }
-
-        (*newlr)->assigned_reg = -1;
-        (*out)->assigned_reg = -1;
-        resetbit(&colorcand, (*newlr)->bitpos);
-        resetbit(&colorcand, (*out)->bitpos);
-
-        for (intf = (*out)->interfere; intf != NULL; intf = intf->next) {
-            if (intf->liverange != NULL) {
-                intf->liverange->unk24--;
-            }
-        }
-
-        if (dbugno == 6) {
-            write_integer(list.c_file, (*newlr)->ichain->bitpos, 4, 10);
-            write_char(list.c_file, ':', 1);
-            write_integer(list.c_file, (*newlr)->bitpos, 5, 10);
-            write_string(list.c_file, " not colored, not splittable", 28, 28);
-            writeln(list.c_file);
-        }
-        return;
+        goto no_split;
     }
 
     if (dbugno == 6) {
@@ -1731,7 +1709,7 @@ no_split:
             if (intfering(intf->liverange, *out)) {
                 insintf(&(*newlr)->interfere, intf->liverange);
                 insintf(&intf->liverange->interfere, *out);
-                intf->liverange->unk24 += 1;
+                intf->liverange->numintf += 1;
             } else {
                 if (intf == (*out)->interfere) {
                     (*out)->interfere = intf->next;
@@ -1744,7 +1722,7 @@ no_split:
                     }
                     prev->next = intf->next;
                 }
-                (*out)->unk24--;
+                (*out)->numintf--;
                 intf->next = (*newlr)->interfere;
                 (*newlr)->interfere = intf;
             }
@@ -1798,6 +1776,31 @@ no_split:
         }
     }
     finalnumlr += 1;
+    return;
+
+no_split:
+    if (!arg3) {
+        dbgerror(0x273);
+    }
+
+    (*newlr)->assigned_reg = -1;
+    (*out)->assigned_reg = -1;
+    resetbit(&colorcand, (*newlr)->bitpos);
+    resetbit(&colorcand, (*out)->bitpos);
+
+    for (intf = (*out)->interfere; intf != NULL; intf = intf->next) {
+        if (intf->liverange != NULL) {
+            intf->liverange->numintf--;
+        }
+    }
+
+    if (dbugno == 6) {
+        write_integer(list.c_file, (*newlr)->ichain->bitpos, 4, 10);
+        write_char(list.c_file, ':', 1);
+        write_integer(list.c_file, (*newlr)->bitpos, 5, 10);
+        write_string(list.c_file, " not colored, not splittable", 28, 28);
+        writeln(list.c_file);
+    }
 }
 
 /*
@@ -1822,7 +1825,7 @@ float cupcosts(struct LiveRange *liverange, int reg, bool caller_saved) {
                     }
                 } else if ((caller_saved || stat->u.call.proc->o3opt) &&
                         (!IS_TEMP_REGISTERS_INTACT_ATTR(stat->u.call.extrnal_flags) ||
-                            stat->opc != Ucup || reg == 13) &&
+                            stat->opc != Ucup || reg == er_ra) &&
                         (!stat->u.call.proc->o3opt ||
                           stat->u.call.proc->regstaken_parregs->regstaken[reg - 1])) {
                     cost += movcostused * lu->node->frequency;
@@ -1914,13 +1917,13 @@ float cupcosts(struct LiveRange *liverange, int reg, bool caller_saved) {
 /*
 00469280 globalcolor
 */
-void put_in_fallthru_bb(struct Graphnode *node, int reg, struct IChain *ichain, bool flag) {
+void put_in_fallthru_bb(struct Graphnode *node, int reg, struct IChain *ichain, bool rlod) {
     struct JumpFallthroughBB *newbb;
 
     newbb = alloc_new(sizeof (struct JumpFallthroughBB), &perm_heap);
     newbb->reg = reg;
     newbb->ichain = ichain;
-    newbb->unk1 = flag;
+    newbb->rlod = rlod;
     newbb->next = node->fallthrough_bbs;
     node->fallthrough_bbs = newbb;
 }
@@ -1928,13 +1931,13 @@ void put_in_fallthru_bb(struct Graphnode *node, int reg, struct IChain *ichain, 
 /*
 00469280 globalcolor
 */
-void put_in_jump_bb(struct Graphnode *node, int reg, struct IChain *ichain, bool flag) {
+void put_in_jump_bb(struct Graphnode *node, int reg, struct IChain *ichain, bool rlod) {
     struct JumpFallthroughBB *newbb;
 
     newbb = alloc_new(sizeof (struct JumpFallthroughBB), &perm_heap);
     newbb->reg = reg;
     newbb->ichain = ichain;
-    newbb->unk1 = flag;
+    newbb->rlod = rlod;
     newbb->next = node->jump_bbs;
     node->jump_bbs = newbb;
 }
@@ -1961,9 +1964,9 @@ void globalcolor(void) {
     struct InterfereList *intf;
     struct GraphnodeList *pred;
     struct GraphnodeList *succ;
-    float firstUseCost; // first use cost
+    float firstUseCost; // penalty of adding rlod and rstr at the start and end of the function for a saved register
     float phi_f22;
-    float phi_f20;
+    float best;
     float registerCost;
     bool chosen;
     bool phi_s1;
@@ -2036,7 +2039,7 @@ void globalcolor(void) {
         bvectminus(&colorcand, &unconstrain);
         while (!bvectempty(&colorcand)) {
             candidate_bit = -1;
-            phi_f20 = -3333.0f;
+            best = -3333.0f;
 
             for (i = 0; i < bitposcount; i++) {
                 if (bvectin0(i, &colorcand)) {
@@ -2054,7 +2057,7 @@ void globalcolor(void) {
                         resetbit(&colorcand, i);
                         for (intf = liverange->interfere; intf != NULL; intf = intf->next) {
                             if (intf->liverange != NULL) {
-                                intf->liverange->unk24--;
+                                intf->liverange->numintf--;
                             }
                         }
 
@@ -2068,9 +2071,9 @@ void globalcolor(void) {
                         }
                     }
 
-                    if (liverange->adjsave > phi_f20 && liverange->unk23 == 1) {
+                    if (liverange->adjsave > best && liverange->unk23 == 1) {
                         candidate_bit = i;
-                        phi_f20 = liverange->adjsave;
+                        best = liverange->adjsave;
                     }
                 }
             }
@@ -2082,7 +2085,7 @@ void globalcolor(void) {
             liverange = bittab[candidate_bit].liverange;
             chosen_reg = -1;
 
-            phi_f20 = 1.0e20f;
+            best = 1.0e20f;
             if (!o3opt) {
                 phi_f22 = cupcosts(liverange, firsterreg[regclass - 1] + 1, true);
             }
@@ -2095,12 +2098,12 @@ void globalcolor(void) {
                         registerCost = cupcosts(liverange, reg, true);
                     }
 
-                    if (registerCost < phi_f20) {
+                    if (registerCost < best) {
                         chosen_reg = reg;
-                        phi_f20 = registerCost;
+                        best = registerCost;
 
                         SET64_INIT(available_regs, reg);
-                    } else if (registerCost == phi_f20) {
+                    } else if (registerCost == best) {
                         // floating point equality...
                         SET64_ADD(available_regs, reg);
                     }
@@ -2126,18 +2129,18 @@ void globalcolor(void) {
                         }
                     }
 
-                    if (registerCost < phi_f20) {
+                    if (registerCost < best) {
                         chosen_reg = reg;
-                        phi_f20 = registerCost;
+                        best = registerCost;
                         SET64_INIT(available_regs, reg);
-                    } else if (registerCost == phi_f20) {
+                    } else if (registerCost == best) {
                         SET64_ADD(available_regs, reg);
                     }
                 }
             }
 
             //! this comparison makes -mfpmath=sse necessary, because otherwise the compiler uses double comparisons
-            if (liverange->adjsave * liverange->unk1C <= phi_f20) {
+            if (liverange->adjsave * liverange->unk1C <= best) {
                 split(&liverange, &splitlr, regclass, true);
 
                 if (outofmem) {
@@ -2240,7 +2243,7 @@ void globalcolor(void) {
             liverange = bittab[i].liverange;
             chosen_reg = -1;
             regclass = regclassof(liverange->ichain);
-            phi_f20 = 1.0e20f;
+            best = 1.0e20f;
 
             if (liverange->assigned_reg == -1) {
                 dbgerror(0x1C16);
@@ -2261,11 +2264,11 @@ void globalcolor(void) {
                     } else {
                         registerCost = cupcosts(liverange, reg, true);
                     }
-                    if (registerCost < phi_f20) {
+                    if (registerCost < best) {
                         chosen_reg = reg;
-                        phi_f20 = registerCost;
+                        best = registerCost;
                         SET64_INIT(available_regs, reg);
-                    } else if (registerCost == phi_f20) {
+                    } else if (registerCost == best) {
                         SET64_ADD(available_regs, reg);
                     }
                 }
@@ -2289,17 +2292,17 @@ void globalcolor(void) {
                         }
                     }
 
-                    if (registerCost < phi_f20) {
+                    if (registerCost < best) {
                         SET64_INIT(available_regs, reg);
-                        phi_f20 = registerCost;
+                        best = registerCost;
                         chosen_reg = reg;
-                    } else if (registerCost == phi_f20) {
+                    } else if (registerCost == best) {
                         SET64_ADD(available_regs, reg);
                     }
                 }
             }
 
-            if (liverange->adjsave * liverange->unk1C > phi_f20 && liverange->unk23 == 1) {
+            if (liverange->adjsave * liverange->unk1C > best && liverange->unk23 == 1) {
                 if (dowhyuncolor) {
                     numcoloredlr += 1;
                     inc_allococ(liverange);
@@ -2375,14 +2378,12 @@ void globalcolor(void) {
                         SET_ADD(bbtab[bb]->regsused[regclass - 1], chosen_reg);
                     }
                 }
-            } else {
-                if (dowhyuncolor) {
-                    if (liverange->unk23 == 1) {
-                        numcalloverheadlr += 1;
-                        contiglr += contiguous(liverange);
-                    } else {
-                        whyuncolored(liverange);
-                    }
+            } else if (dowhyuncolor) {
+                if (liverange->unk23 == 1) {
+                    numcalloverheadlr += 1;
+                    contiglr += contiguous(liverange);
+                } else {
+                    whyuncolored(liverange);
                 }
             }
         }
@@ -2430,9 +2431,9 @@ void globalcolor(void) {
                 }
 
                 if (lu->firstisstr) {
-                    BITARR_SET(node->unkD0, reg - 1, false);
+                    BITARR_SET(node->rlods, reg - 1, false);
                 } else {
-                    BITARR_SET(node->unkD0, reg - 1, lu->needreglod);
+                    BITARR_SET(node->rlods, reg - 1, lu->needreglod);
                     if (pred_is_call) {
                         if (node->regdata.unk44[reg - 1] == node->predecessors->graphnode->regdata.unk44[reg - 1] &&
                                 (prev_call->o3opt || reg < firsteereg[regclass - 1]) &&
@@ -2440,35 +2441,54 @@ void globalcolor(void) {
                                  node->predecessors->graphnode->stat_tail->opc != Ucup || reg == er_ra)) {
                             if (prev_call == ciaprocs) {
                                 if (in_reg_masks(reg, node->predecessors->graphnode->stat_tail->u.cia.unk20, node->predecessors->graphnode->stat_tail->u.cia.len)) {
-                                    BITARR_SET(node->unkD0, reg - 1, true);
+                                    BITARR_SET(node->rlods, reg - 1, true);
                                 }
                             } else if (!prev_call->o3opt || prev_call->regstaken_parregs->regstaken[reg - 1]) {
-                                BITARR_SET(node->unkD0, reg - 1, true);
+                                BITARR_SET(node->rlods, reg - 1, true);
                             }
                         }
                     }
                 }
 
-                BITARR_SET(node->unkD5, reg - 1, false);
+                BITARR_SET(node->rstrs, reg - 1, false);
                 if (liverange->hasstore && !lu->deadout &&
                         (lu->needregsave ||
                          (is_cup_affecting_regs(node) &&
+                          // cup, icuf:
                           ((node->stat_tail->opc != Ucia &&
+                            // register is caller saved
                             ((!next_call->o3opt && reg < firsteereg[regclass - 1]) ||
                               (next_call->o3opt && next_call->regstaken_parregs->regstaken[reg - 1])) &&
+                            // call doesn't preserve temp registers, or function pointer (icuf), or reg is $ra (auto set by jal)
                             (!IS_TEMP_REGISTERS_INTACT_ATTR(node->stat_tail->u.call.extrnal_flags) ||
                              node->stat_tail->opc != Ucup || reg == er_ra)) ||
+                           // cia: caller-saved and reg used in the asm
                            (node->stat_tail->opc == Ucia && reg < firsteereg[regclass - 1] &&
                             in_reg_masks(reg, node->stat_tail->u.cia.unk20, node->stat_tail->u.cia.len)))))) {
-                    if (lu->store_count != 0 || lu->firstisstr || !BITARR_GET(node->unkD0, reg - 1)) {
-                        BITARR_SET(node->unkD5, reg - 1, true);
+                    if (lu->store_count != 0 || lu->firstisstr || !BITARR_GET(node->rlods, reg - 1)) {
+                        BITARR_SET(node->rstrs, reg - 1, true);
                     } else {
+#ifdef UOPT_DEBUG
+                        if (lu->needregsave) {
+                            REDPRINT("this happened " ENTNAM_FMT() "\n", ENTNAM());
+                            print_register(reg);
+                            printf(" in node %d\n", node->num);
+                        }
+#endif
+                        // store_count == 0, !firstisstr, in rlods
+                        // but hasstore, !deadout, and needregsave or affected by call
+                        // it thought it needed a store, but it actually didn't...?
+
+                        // in testing, happens when a live unit is only used as a parameter to a function,
+                        // (or doesn't even appear in the block for some reason),
+                        // and the previous block had a function call
                         phi_s1 = false;
                     }
                 }
 
+                // expression has an rlod and rstr in the same block
                 BITARR_SET(node->unkDA, reg - 1, false);
-                if (phi_s1 && BITARR_GET(node->unkD0, reg - 1) && !node->interprocedural_controlflow && dorlodrstropt) {
+                if (phi_s1 && BITARR_GET(node->rlods, reg - 1) && !node->interprocedural_controlflow && dorlodrstropt) {
                     if (node->predecessors != NULL && node->predecessors->next != NULL) {
                         if (somepremember(node->predecessors, reg, node->regdata.unk44[reg - 1], liverange) &&
                                 allpreppout(node->predecessors, reg, node->regdata.unk44[reg - 1], liverange)) {
@@ -2490,14 +2510,14 @@ void globalcolor(void) {
                                     }
                                 }
                             }
-                            BITARR_SET(node->unkD0, reg - 1, false);
+                            BITARR_SET(node->rlods, reg - 1, false);
                             BITARR_SET(node->unkDA, reg - 1, true);
                         }
                     }
                 }
             } else {
-                BITARR_SET(node->unkD0, reg - 1, false);
-                BITARR_SET(node->unkD5, reg - 1, false);
+                BITARR_SET(node->rlods, reg - 1, false);
+                BITARR_SET(node->rstrs, reg - 1, false);
                 BITARR_SET(node->unkDA, reg - 1, false);
             }
         }
@@ -2517,7 +2537,7 @@ void globalcolor(void) {
                         not_call = true;
                     }
 
-                    if (not_call && BITARR_GET(node->unkD5, reg - 1) && node->successors != NULL) {
+                    if (not_call && BITARR_GET(node->rstrs, reg - 1) && node->successors != NULL) {
                         if (somepostmember(node->successors, reg, node->regdata.unk44[reg - 1], liverange) &&
                                 (docreatebb || allsucppin(node->successors, reg, node->regdata.unk44[reg - 1], liverange))) {
 
@@ -2526,8 +2546,10 @@ void globalcolor(void) {
                             }
 
                             for (succ = node->successors; succ != NULL; succ = succ->next) {
-                                if ((succ->graphnode->regdata.unk44[reg - 1] != node->regdata.unk44[reg - 1] || BITARR_GET(succ->graphnode->unkD0, reg - 1)) ||
-                                        (BITARR_GET(succ->graphnode->unkDA, reg - 1) && !bvectin(succ->graphnode->num, &liverange->livebbs))) {
+                                if (succ->graphnode->regdata.unk44[reg - 1] != node->regdata.unk44[reg - 1] ||
+                                        BITARR_GET(succ->graphnode->rlods, reg - 1) ||
+                                        (BITARR_GET(succ->graphnode->unkDA, reg - 1) &&
+                                         !bvectin(succ->graphnode->num, &liverange->livebbs))) {
                                     TRAP_IF(node->stat_tail->opc != Ufjp && node->stat_tail->opc != Utjp);
                                     if (succ->graphnode->blockno == 0 || node->stat_tail->u.jp.target_blockno != succ->graphnode->blockno) {
                                         if (docreatebb) {
@@ -2551,7 +2573,7 @@ void globalcolor(void) {
                                     }
                                 }
                             }
-                            BITARR_SET(node->unkD5, reg - 1, false);
+                            BITARR_SET(node->rstrs, reg - 1, false);
                         }
                     }
                 }
