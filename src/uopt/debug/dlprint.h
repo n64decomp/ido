@@ -21,6 +21,7 @@ enum TypeID {
     TREP,
     STRENGTH_REDUCTION,
     RECUR_INFO,
+    LOOP,
     TEMPLOC,
     VARIABLE,
     LDATAB_ENTRY,
@@ -71,6 +72,7 @@ struct StringRep {
         struct LiveUnit *liveunit;
         struct InterfereList *interfere;
         struct Graphnode *node;
+        struct Loop *loop;
         struct VarAccessList *varAccess;
         struct Temploc *temploc;
         struct Variable *variable;
@@ -123,7 +125,6 @@ extern bool gDebugTracingInput;
 
 
 struct DisplayLine {
-    int pos;
     int len; // number of used chars in s
     int maxLen; // number of chars allocated in s
     char *s;
@@ -152,6 +153,7 @@ void dl_print_small_dtype(struct DisplayLine *dl, enum Datatype type, int length
 void dl_print_register(struct DisplayLine *dl, struct StringRep *parent, int regColor);
 void dl_print_graphnode(struct DisplayLine *dl, struct StringRep *parent, struct Graphnode *node, bool printPredSucc);
 void dl_print_graphnode_list(struct DisplayLine *dl, struct StringRep *parent, struct GraphnodeList *list, bool printPredSucc);
+void dl_print_loop(struct DisplayLine *dl, struct StringRep *parent, struct Loop *loop);
 void dl_print_var_access(struct DisplayLine *dl, struct StringRep *parent, struct VarAccessList *access);
 void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expression *expr);
 void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IChain *ichain);

@@ -115,14 +115,14 @@ static int dl_vprintf(struct DisplayLine *restrict dl, char *restrict fmt, va_li
     int printed;
     int maxLen;
     do {
-        printed = vsnprintf(dl->s + dl->pos, dl->maxLen - dl->pos, fmt, args);
+        printed = vsnprintf(dl->s + dl->len, dl->maxLen - dl->len, fmt, args);
 
         maxLen = dl->maxLen;
-        if (dl->pos + printed >= maxLen) {
+        if (dl->len + printed >= maxLen) {
             dl_realloc(dl);
         }
-    } while (dl->pos + printed >= maxLen);
-    dl->pos += printed;
+    } while (dl->len + printed >= maxLen);
+    dl->len += printed;
     return printed;
 
 }
@@ -134,23 +134,6 @@ int dl_printf(struct DisplayLine *restrict dl, char *restrict fmt, ...)
     int printed = dl_vprintf(dl, fmt, args);
     va_end(args);
     return printed;
-
-    /*
-    int printed;
-    int maxLen;
-    do {
-        va_start(args, fmt);
-        printed = vsnprintf(dl->s + dl->pos, dl->maxLen - dl->pos, fmt, args);
-        va_end(args);
-
-        maxLen = dl->maxLen;
-        if (dl->pos + printed >= maxLen) {
-            dl_realloc(dl);
-        }
-    } while (dl->pos + printed >= maxLen);
-    dl->pos += printed;
-    return printed;
-     */
 }
 
 void dl_print_opcode(struct DisplayLine *dl, struct StringRep *parent, Uopcode opc)
@@ -158,9 +141,9 @@ void dl_print_opcode(struct DisplayLine *dl, struct StringRep *parent, Uopcode o
     struct StringRep *sr = sr_transparent(dl, parent);
     sr->type = OPCODE;
     sr->opc = opc;
-    sr->start = dl->pos;
+    sr->start = dl->len;
     dl_printf(dl, "%.4s ", utab[opc].opcname);
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 void dl_print_variable(struct DisplayLine *dl, struct VariableLocation loc)
@@ -234,7 +217,7 @@ void dl_print_register(struct DisplayLine *dl, struct StringRep *parent, int reg
     //if (regColor <= 0) return 0;
 
     struct StringRep *sr = sr_newchild(dl, parent);
-    sr->start = dl->pos;
+    sr->start = dl->len;
     sr->type = REGISTER;
     if (regColor >= 1 && regColor <= 35) {
         sr->reg = coloroffset(regColor);
@@ -245,13 +228,13 @@ void dl_print_register(struct DisplayLine *dl, struct StringRep *parent, int reg
 
     }
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 void dl_print_regset64(struct DisplayLine *dl, struct StringRep *parent, int set[static 2])
 {
     struct StringRep *sr = sr_newchild(dl, parent);
-    sr->start = dl->pos;
+    sr->start = dl->len;
     sr->type = REGSET64;
     sr->regset[0] = set[0];
     sr->regset[1] = set[1];
@@ -268,13 +251,13 @@ void dl_print_regset64(struct DisplayLine *dl, struct StringRep *parent, int set
         }
     }
     dl_printf(dl, "]");
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 void dl_print_reg_boolarray(struct DisplayLine *dl, struct StringRep *parent, char regs[static 5])
 {
     struct StringRep *sr = sr_newchild(dl, parent);
-    sr->start = dl->pos;
+    sr->start = dl->len;
     sr->type = REGBOOLARRAY;
     for (int i = 0; i < 5; i++) {
         sr->regboolarray[i] = regs[i];
@@ -293,7 +276,7 @@ void dl_print_reg_boolarray(struct DisplayLine *dl, struct StringRep *parent, ch
         }
     }
     dl_printf(dl, "]");
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expression *expr)
@@ -308,7 +291,7 @@ void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expr
 
     struct StringRep *sr = sr_newchild(dl, parent);
 
-    sr->start = dl->pos;
+    sr->start = dl->len;
     sr->type = EXPRESSION;
     sr->expr = expr;
 
@@ -506,7 +489,7 @@ void dl_print_expr(struct DisplayLine *dl, struct StringRep *parent, struct Expr
             fprintf(stderr, "unhandled expr type %p %d", expr, expr->type);
             break;
     }
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 // duplicate code because IChains are ridiculously similar to Expressions.
@@ -519,7 +502,7 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
 
     struct StringRep *sr = sr_newchild(dl, parent);
 
-    sr->start = dl->pos;
+    sr->start = dl->len;
     sr->type = ICHAIN;
     sr->ichain = ichain;
 
@@ -788,7 +771,7 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
             break;
     }
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 void dl_print_trepimage(struct DisplayLine *dl, struct StringRep *parent, struct TrepImageThing *trep)
@@ -818,7 +801,7 @@ void dl_print_strength_reduction(struct DisplayLine *dl, struct StringRep *paren
     if (cand == NULL) return;
     struct StringRep *sr = sr_newchild(dl, parent);
 
-    sr->start = dl->pos;
+    sr->start = dl->len;
     sr->type = STRENGTH_REDUCTION;
     sr->cand = cand;
 
@@ -840,7 +823,7 @@ void dl_print_strength_reduction(struct DisplayLine *dl, struct StringRep *paren
 
         //if (cand->increment > 1) dl_printf(dl, ")");
     }
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 void dl_print_recur_info(struct DisplayLine *dl, struct StringRep *parent, struct RecurInfo *recur)
@@ -848,7 +831,7 @@ void dl_print_recur_info(struct DisplayLine *dl, struct StringRep *parent, struc
     if (recur == NULL) return;
     struct StringRep *sr = sr_newchild(dl, parent);
 
-    sr->start = dl->pos;
+    sr->start = dl->len;
     sr->type = RECUR_INFO;
     sr->recur = recur;
 
@@ -856,7 +839,7 @@ void dl_print_recur_info(struct DisplayLine *dl, struct StringRep *parent, struc
     dl_print_ichain(dl, sr, recur->ichain);
     dl_printf(dl, " -> ");
     dl_print_expr(dl, sr, recur->expr);
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 void dl_print_liveunit(struct DisplayLine *dl, struct StringRep *parent, struct LiveUnit *liveunit)
@@ -865,7 +848,7 @@ void dl_print_liveunit(struct DisplayLine *dl, struct StringRep *parent, struct 
 
     struct StringRep *sr = sr_newchild(dl, parent);
 
-    sr->start = dl->pos;
+    sr->start = dl->len;
     sr->type = LIVEUNIT;
     sr->liveunit = liveunit;
 
@@ -882,7 +865,7 @@ void dl_print_liveunit(struct DisplayLine *dl, struct StringRep *parent, struct 
     if (liveunit->node != NULL) {
         dl_print_graphnode(dl, sr, liveunit->node, false);
     }
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 void dl_print_interferelist(struct DisplayLine *dl, struct StringRep *parent, struct InterfereList *interfere)
@@ -890,7 +873,7 @@ void dl_print_interferelist(struct DisplayLine *dl, struct StringRep *parent, st
     if (interfere == NULL) return;
 
     struct StringRep *sr = sr_newchild(dl, parent);
-    sr->start = dl->pos;
+    sr->start = dl->len;
     sr->type = INTERFERELIST;
     sr->interfere = interfere;
 
@@ -917,7 +900,7 @@ void dl_print_interferelist(struct DisplayLine *dl, struct StringRep *parent, st
     }
 
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 void dl_print_liverange(struct DisplayLine *dl, struct StringRep *parent, struct LiveRange *liverange)
@@ -926,7 +909,7 @@ void dl_print_liverange(struct DisplayLine *dl, struct StringRep *parent, struct
 
     struct StringRep *sr = sr_newchild(dl, parent);
 
-    sr->start = dl->pos;
+    sr->start = dl->len;
     sr->type = LIVERANGE;
     sr->liverange = liverange;
 
@@ -942,7 +925,7 @@ void dl_print_liverange(struct DisplayLine *dl, struct StringRep *parent, struct
         dl_printf(dl, "ichain NULL?!");
     }
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 void dl_print_assignment(struct DisplayLine *dl, struct StringRep *sr, struct Statement *stat)
@@ -1029,13 +1012,13 @@ void dl_print_label(struct DisplayLine *dl, struct StringRep *parent, int label)
 {
     struct StringRep *sr = sr_newchild(dl, parent);
 
-    sr->start = dl->pos;
+    sr->start = dl->len;
     sr->type = LABEL;
     sr->data32 = label;
 
     dl_printf(dl, "L%d", label);
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct Statement *stat)
@@ -1044,7 +1027,7 @@ void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct
     struct StringRep *sr = sr_newchild(dl, parent);
     sr->type = STATEMENT;
     sr->stat = stat;
-    sr->start = dl->pos;
+    sr->start = dl->len;
 
     dl_print_opcode(dl, sr, stat->opc);
 
@@ -1102,7 +1085,6 @@ void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct
 
         case Uujp:
             dl_print_label(dl, sr, stat->u.jp.target_blockno);
-            //dl_printf(dl, "%d", stat->u.jp.target_blockno);
             break;
 
         case Ufjp:
@@ -1110,12 +1092,13 @@ void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct
             dl_print_expr(dl, sr, stat->expr);
             dl_printf(dl, ", ");
             dl_print_label(dl, sr, stat->u.jp.target_blockno);
-            //dl_printf(dl, ", %d", stat->u.jp.target_blockno);
             break;
 
         case Ulab:
             dl_print_label(dl, sr, stat->u.label.blockno);
-            //blocknodl_printf(dl, "%d", stat->u.label.blockno);
+            if (stat->u.label.length != 0) {
+                dl_printf(dl, " id %d", stat->u.label.length);
+            }
             break;
 
         case Uisst:
@@ -1163,7 +1146,7 @@ void dl_print_statement(struct DisplayLine *dl, struct StringRep *parent, struct
             dl_print_expr(dl, sr, stat->expr);
             break;
     }
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 // TODO: special cases where bitvectors are sets of registers/graphnodes
@@ -1172,7 +1155,7 @@ void dl_print_bitvectorbb(struct DisplayLine *dl, struct StringRep *parent, stru
     struct StringRep *sr = sr_newchild(dl, parent);
     sr->type = BITVECTORBB;
     sr->bitvector = *bv;
-    sr->start = dl->pos;
+    sr->start = dl->len;
     int blockpos;
     int word = 0;
     int i;
@@ -1199,9 +1182,7 @@ void dl_print_bitvectorbb(struct DisplayLine *dl, struct StringRep *parent, stru
         word += 128;
     }
     dl_printf(dl, "]");
-    sr->len = dl->pos - sr->start;
-    //dl->top = sr;
-    //dl->len = sr->len;
+    sr->len = dl->len - sr->start;
 }
 
 // TODO: special cases where bitvectors are sets of registers/graphnodes
@@ -1210,7 +1191,7 @@ void dl_print_bitvector(struct DisplayLine *dl, struct StringRep *parent, struct
     struct StringRep *sr = sr_newchild(dl, parent);
     sr->type = BITVECTOR;
     sr->bitvector = *bv;
-    sr->start = dl->pos;
+    sr->start = dl->len;
     int blockpos;
     int word = 0;
     int i;
@@ -1237,9 +1218,7 @@ void dl_print_bitvector(struct DisplayLine *dl, struct StringRep *parent, struct
         word += 128;
     }
     dl_printf(dl, "]");
-    sr->len = dl->pos - sr->start;
-    //dl->top = sr;
-    //dl->len = sr->len;
+    sr->len = dl->len - sr->start;
 }
 
 /* top-level */
@@ -1249,7 +1228,6 @@ struct DisplayLine *dl_from_statement(struct Statement *stat)
     if (stat == NULL) return NULL;
     struct DisplayLine *dl = dl_new();
     dl_print_statement(dl, NULL, stat);
-    dl->len = dl->top->len;
     return dl;
 }
 
@@ -1265,7 +1243,7 @@ void dl_print_graphnode(struct DisplayLine *dl, struct StringRep *parent, struct
     struct StringRep *sr = sr_newchild(dl, parent);
     sr->type = GRAPHNODE;
     sr->node = node;
-    sr->start = dl->pos;
+    sr->start = dl->len;
     if (node == NULL) {
         dl_printf(dl, "NULL");
         return;
@@ -1294,7 +1272,21 @@ void dl_print_graphnode(struct DisplayLine *dl, struct StringRep *parent, struct
             dl_printf(dl, ")");
         }
     }
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
+}
+
+void dl_print_loop(struct DisplayLine *dl, struct StringRep *parent, struct Loop *loop)
+{
+    if (loop == NULL) return;
+    struct StringRep *sr = sr_newchild(dl, parent);
+    sr->type = LOOP;
+    sr->loop = loop;
+    sr->start = dl->len;
+
+    dl_printf(dl, "loop %d depth %d body ", loop->loopno, loop->depth);
+    dl_print_graphnode(dl, sr, loop->body, false);
+
+    sr->len = dl->len - sr->start;
 }
 
 struct DisplayLine *dl_from_graphnode(struct Graphnode *node, bool printPredSucc)
@@ -1314,7 +1306,6 @@ struct DisplayLine *dl_from_graphnode(struct Graphnode *node, bool printPredSucc
     sr->len = dl->pos - sr->start;
     dl->top = sr;
      */
-    dl->len = dl->top->len;
     return dl;
 }
 
@@ -1323,7 +1314,7 @@ void dl_print_var_access(struct DisplayLine *dl, struct StringRep *parent, struc
     struct StringRep *sr = sr_newchild(dl, parent);
     sr->type = VAR_ACCESS;
     sr->varAccess = access;
-    sr->start = dl->pos;
+    sr->start = dl->len;
     switch (access->type) {
         case 1: // store
             dl_printf(dl, "store: ");
@@ -1340,7 +1331,7 @@ void dl_print_var_access(struct DisplayLine *dl, struct StringRep *parent, struc
             dl_print_statement(dl, sr, access->data.move);
             break;
     }
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 struct DisplayLine *dl_from_var_access(struct VarAccessList *access)
@@ -1349,7 +1340,6 @@ struct DisplayLine *dl_from_var_access(struct VarAccessList *access)
 
     dl_print_var_access(dl, NULL, access);
 
-    dl->len = dl->top->len;
     return dl;
 }
 
@@ -1359,7 +1349,7 @@ struct DisplayLine *dl_from_bittab_ichain(int bitpos, struct IChain *ichain)
     struct DisplayLine *dl = dl_new();
     struct StringRep *sr = sr_new();
     sr->type = MISC;
-    sr->start = dl->pos;
+    sr->start = dl->len;
 
     dl_printf(dl, "%*d: ", bittabdigits, bitpos);
     dl_print_ichain(dl, sr, ichain);
@@ -1368,9 +1358,8 @@ struct DisplayLine *dl_from_bittab_ichain(int bitpos, struct IChain *ichain)
         dl_printf(dl, " (assign)");
     }
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
     dl->top = sr;
-    dl->len = sr->len;
     return dl;
 }
 
@@ -1384,7 +1373,6 @@ struct DisplayLine *dl_from_bittab_liverange(int bit, struct LiveRange *liverang
         dl_printf(dl, "%d: NULL", bit);
     }
 
-    dl->len = dl->top->len;
     return dl;
 }
 
@@ -1396,9 +1384,9 @@ struct DisplayLine *dl_from_bitvector(struct BitVector *bv, const char *name)
     if (name != NULL) {
         n = sr_newchild(dl, dl->top);
         n->type = FIELDNAME;
-        n->start = dl->pos;
+        n->start = dl->len;
         dl_printf(dl, "%s: ", name);
-        n->len = dl->pos - n->start;
+        n->len = dl->len - n->start;
     }
 
     dl_print_bitvector(dl, dl->top, bv);
@@ -1407,7 +1395,6 @@ struct DisplayLine *dl_from_bitvector(struct BitVector *bv, const char *name)
         n->data = sr_lastchild(dl->top); // TODO: hack
     }
 
-    dl->len = dl->pos;
     return dl;
 }
 
@@ -1416,7 +1403,7 @@ struct DisplayLine *dl_from_reg_assignment(int reg, struct IChain *ichain)
     struct DisplayLine *dl = dl_new();
     struct StringRep *sr = sr_new();
     sr->type = MISC;
-    sr->start = dl->pos;
+    sr->start = dl->len;
 
     if (ichain != NULL) {
         dl_print_register(dl, sr, reg);
@@ -1429,9 +1416,8 @@ struct DisplayLine *dl_from_reg_assignment(int reg, struct IChain *ichain)
         dl_printf(dl, "NULL");
     }
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
     dl->top = sr;
-    dl->len = sr->len;
     return dl;
 }
 
@@ -1441,15 +1427,14 @@ struct DisplayLine *dl_from_variable(struct Variable *var)
     struct StringRep *sr = sr_new();
     sr->type = VARIABLE;
     sr->variable = var;
-    sr->start = dl->pos;
+    sr->start = dl->len;
 
     sr->start += dl_printf(dl, " % 4d: ", var->location.addr);
     dl_print_variable(dl, var->location);
     //dl_printf(dl, "temp %d: offset %d, %s", temp->index, temp->disp, temp->not_spilled ? "not spilled" : "spilled");
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
     dl->top = sr;
-    dl->len = dl->pos;
     return dl;
 }
 
@@ -1459,16 +1444,15 @@ struct DisplayLine *dl_from_ldatab(struct LdatabEntry *lda)
     struct StringRep *sr = sr_new();
     sr->type = LDATAB_ENTRY;
     sr->ldatabEntry = lda;
-    sr->start = dl->pos;
+    sr->start = dl->len;
 
     sr->start += dl_printf(dl, " % 4d: ", lda->var.addr);
     dl_print_variable(dl, lda->var);
     dl_printf(dl, " (lda only)");
     //dl_printf(dl, "temp %d: offset %d, %s", temp->index, temp->disp, temp->not_spilled ? "not spilled" : "spilled");
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
     dl->top = sr;
-    dl->len = dl->pos;
     return dl;
 }
 
@@ -1483,14 +1467,13 @@ struct DisplayLine *dl_from_temploc(struct Temploc *temp)
     struct StringRep *sr = sr_new();
     sr->type = TEMPLOC;
     sr->temploc = temp;
-    sr->start = dl->pos;
+    sr->start = dl->len;
 
     sr->start += dl_printf(dl, " % 4d: ", temp->disp);
     dl_printf(dl, "temp %d, %s", temp->index, temp->not_spilled ? "not spilled" : "spilled");
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
     dl->top = sr;
-    dl->len = dl->pos;//sr->len;
     return dl;
 }
 
@@ -1502,16 +1485,15 @@ struct DisplayLine *dl_new_printf(char *fmt, ...)
     sr->type = INFO;
     sr->data = NULL;
     //sr->data = message;
-    sr->start = dl->pos;
+    sr->start = dl->len;
 
     va_list args;
     va_start(args, fmt);
     dl_vprintf(dl, fmt, args);
     va_end(args);
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
     dl->top = sr;
-    dl->len = sr->len;
     return dl;
 }
 
@@ -1522,13 +1504,12 @@ struct DisplayLine *dl_placeholder(const char *message)
     struct StringRep *sr = sr_new();
     sr->type = INFO;
     sr->message = message;
-    sr->start = dl->pos;
+    sr->start = dl->len;
 
     dl_printf(dl, "%s", message);
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
     dl->top = sr;
-    dl->len = sr->len;
     return dl;
 }
 

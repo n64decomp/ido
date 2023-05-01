@@ -466,7 +466,7 @@ void dl_print_register_ucode(struct DisplayLine *dl, struct StringRep *parent, i
     //if (regColor <= 0) return 0;
 
     struct StringRep *sr = sr_newchild(dl, parent);
-    sr->start = dl->pos;
+    sr->start = dl->len;
     sr->type = REGISTER;
     if (regNum < sizeof(reg_names) / sizeof(reg_names[0])) {
         sr->reg = regNum;
@@ -483,7 +483,7 @@ void dl_print_register_ucode(struct DisplayLine *dl, struct StringRep *parent, i
     }
          */
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 void dl_print_offset(struct DisplayLine *dl, int offset, bool hasMemType, union Bcode *b) {
@@ -563,7 +563,6 @@ void dl_print_valu(struct DisplayLine *dl, union Valu v, union Bcode *b)
         }
     }
 }
-
 
 bool print_uregs(struct DisplayLine *dl, union Bcode *b) {
     dl_print_ione(dl, IONE(*b), b);
@@ -689,7 +688,7 @@ void dl_print_ucode(struct DisplayLine *dl, struct StringRep *parent, union Bcod
     struct StringRep *sr = sr_newchild(dl, parent);
     sr->type = UCODE;
     sr->ucode = b;
-    sr->start = dl->pos;
+    sr->start = dl->len;
 
     struct utabrec urec = utab[OPC(*b)];
 
@@ -699,7 +698,7 @@ void dl_print_ucode(struct DisplayLine *dl, struct StringRep *parent, union Bcod
     // handle unique opcodes, usually just to print the right field as a register
     if (print_function[OPC(*b)] != NULL) {
         if (print_function[OPC(*b)](dl, b)) {
-            sr->len = dl->pos - sr->start;
+            sr->len = dl->len - sr->start;
             return;
         }
     }
@@ -742,14 +741,13 @@ void dl_print_ucode(struct DisplayLine *dl, struct StringRep *parent, union Bcod
             default:                                                break;
         }
     }
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
 }
 
 struct DisplayLine *dl_from_ucode(union Bcode *b)
 {
     struct DisplayLine *dl = dl_new();
     dl_print_ucode(dl, NULL, b);
-    dl->len = dl->pos;
     return dl;
 }
 #endif

@@ -18,13 +18,12 @@ struct DisplayLine *dl_menu(int line, struct MenuEntry *entry) {
     struct StringRep *sr = sr_new();
     sr->type = MENU;
     sr->menuEntry = entry;
-    sr->start = dl->pos;
+    sr->start = dl->len;
 
     dl_printf(dl, entry->name);
 
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
     dl->top = sr;
-    dl->len = sr->len;
     return dl;
 }
 

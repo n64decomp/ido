@@ -41,6 +41,7 @@ void dl_print_typeid(struct DisplayLine *dl, struct StringRep *sr, void *data, e
         case STATEMENT:          dl_print_statement(dl, sr, *(void**)data); break;
         case GRAPHNODE:          dl_print_graphnode(dl, sr, *(void**)data, true); break;
         case GRAPHNODE_LIST:     dl_print_graphnode_list(dl, sr, *(void**)data, true); break;
+        case LOOP:               dl_print_loop(dl, sr, *(void**)data); break;
         case VAR_ACCESS:         dl_print_var_access(dl, sr, *(void**)data); break;
         case TREP:               dl_print_trepimage(dl, sr, *(void**)data); break;
         case STRENGTH_REDUCTION: dl_print_strength_reduction(dl, sr, *(void**)data); break;
@@ -80,9 +81,9 @@ struct DisplayLine *dl_from_member(void **data, struct Member *m, void *lines)
 
     field->type = FIELDNAME;
     field->data = NULL;
-    field->start = dl->pos;
+    field->start = dl->len;
     dl_printf(dl, "%s", m->name);
-    field->len = dl->pos - field->start;
+    field->len = dl->len - field->start;
 
     dl_printf(dl, "=");
 
@@ -103,8 +104,7 @@ struct DisplayLine *dl_from_member(void **data, struct Member *m, void *lines)
         }
     }
 
-    dl->top->len = dl->pos - dl->top->start;
-    dl->len = dl->top->len;
+    dl->top->len = dl->len - dl->top->start;
     return dl;
 }
 
@@ -137,11 +137,10 @@ struct DisplayLine *dl_from_struct(struct StringRep *examined)
     sr->type = examined->type;
     sr->data = examined->data;
     dl_printf(dl, "%s ", gStructData[examined->type].structName);
-    sr->start = dl->pos;
+    sr->start = dl->len;
     dl_print_typeid(dl, sr, &sr->data, sr->type);
-    sr->len = dl->pos - sr->start;
+    sr->len = dl->len - sr->start;
     dl->top = sr;
-    dl->len = dl->pos;
     return dl;
 }
 

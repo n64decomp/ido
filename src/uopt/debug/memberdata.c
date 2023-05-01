@@ -27,6 +27,7 @@
         struct Proc *: MISC, \
         struct StrengthReductionCand *: STRENGTH_REDUCTION, \
         struct RecurInfo *: RECUR_INFO, \
+        struct Loop *: LOOP, \
         \
         bool: BOOL, \
         unsigned char: CHAR, \
@@ -115,7 +116,7 @@ struct Member liveRangeMembers[] = {
     MEMBER(unsigned char, regsleft),
     MEMBER(bool, hasstore),
     MEMBER(unsigned char, unk23),
-    MEMBER(int, unk24),
+    MEMBER(int, numintf),
     MEMBER_SPECIAL_ARRAY(REGSET64, int[2], forbidden),
     MEMBER(float, adjsave),
     MEMBER(struct LiveRange *, next),
@@ -785,12 +786,12 @@ struct Member graphnodeMembers[] = {
         struct IChain *unk44[35];
     } regdata;
      */
-    MEMBER_SPECIAL_ARRAY(REGBOOLARRAY, unsigned char, unkD0),
-    MEMBER_SPECIAL_ARRAY(REGBOOLARRAY, unsigned char, unkD5),
+    MEMBER_SPECIAL_ARRAY(REGBOOLARRAY, unsigned char, rlods),
+    MEMBER_SPECIAL_ARRAY(REGBOOLARRAY, unsigned char, rstrs),
     MEMBER_SPECIAL_ARRAY(REGBOOLARRAY, unsigned char, unkDA),
     //MEMBER(struct RegisterNode *, unkE0),
     //MEMBER(struct RegisterNode *, unkE4),
-    //MEMBER(struct Loop *, loop),
+    MEMBER(struct Loop *, loop),
     //MEMBER(struct JumpFallthroughBB *, fallthrough_bbs),
     //MEMBER(struct JumpFallthroughBB *, jump_bbs),
 
@@ -884,6 +885,17 @@ struct Member graphnodeMembers[] = {
 };
 #undef PARENT_TYPE
 
+#define PARENT_TYPE struct Loop
+struct Member loopMembers[] =  {
+    MEMBER(int, loopno),
+    MEMBER(unsigned short, depth),
+    MEMBER(struct Graphnode *, body),
+    MEMBER(struct Loop *, inner),
+    MEMBER(struct Loop *, outer),
+    MEMBER(struct Loop *, next),
+};
+#undef PARENT_TYPE
+
 #define PARENT_TYPE struct StrengthReductionCand
 struct Member strengthReductionCandMembers[] = {
     MEMBER(struct IChain *, target),
@@ -924,6 +936,7 @@ struct StructData gStructData[TYPE_ID_MAX] = {
     STRUCT_DATA_DEF(INTERFERELIST, struct InterfereList, interfereListMembers),
     STRUCT_DATA_DEF(STRENGTH_REDUCTION, struct StrengthReductionCand, strengthReductionCandMembers),
     STRUCT_DATA_DEF(RECUR_INFO, struct RecurInfo, recurInfoMembers),
+    STRUCT_DATA_DEF(LOOP, struct Loop, loopMembers),
 };
 
 #endif

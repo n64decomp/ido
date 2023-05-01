@@ -114,6 +114,7 @@ void output_new_graphnode(struct Graphnode *node);
 void trace_indent();
 void trace_dedent();
 
+void print_register(int color);
 void print_regset64(const char *name, long long set);
 void print_function_statements(const char *desc);
 void print_node_statements(struct Graphnode *node);

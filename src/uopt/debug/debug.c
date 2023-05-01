@@ -197,6 +197,12 @@ int opc_precedence[Uirsv + 1] = {
     [Uior] = 10,
 };
 
+void print_register(int reg)
+{
+    int color = coloroffset(reg);
+    printf("%s%s" C_RESET, regname_color(color), regname(color));
+}
+
 void print_regset64(const char *name, long long set) {
     printf("%s: ", name);
     bool firstPrint = true;
