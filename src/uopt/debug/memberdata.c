@@ -17,6 +17,7 @@
         struct LiveUnit *: LIVEUNIT, \
         struct Graphnode *: GRAPHNODE, \
         struct GraphnodeList *: GRAPHNODE_LIST, \
+        struct RegisterNode *: REGISTER_NODE, \
         struct VarAccessList *: VAR_ACCESS, \
         struct Temploc *: TEMPLOC, \
         struct Variable *: VARIABLE, \
@@ -108,7 +109,7 @@
 struct Member liveRangeMembers[] = {
     MEMBER(struct IChain *, ichain),
     MEMBER(int, bitpos),
-    MEMBER_LIST(struct LiveUnit *,liveunits, struct LiveUnit, next),
+    MEMBER_LIST(struct LiveUnit *, liveunits, struct LiveUnit, next),
     MEMBER_SPECIAL(BITVECTORBB, struct BitVector, reachingbbs),
     MEMBER_SPECIAL(BITVECTORBB, struct BitVector, livebbs),
     MEMBER(int, unk1C),
@@ -789,8 +790,8 @@ struct Member graphnodeMembers[] = {
     MEMBER_SPECIAL_ARRAY(REGBOOLARRAY, unsigned char, rlods),
     MEMBER_SPECIAL_ARRAY(REGBOOLARRAY, unsigned char, rstrs),
     MEMBER_SPECIAL_ARRAY(REGBOOLARRAY, unsigned char, unkDA),
-    //MEMBER(struct RegisterNode *, unkE0),
-    //MEMBER(struct RegisterNode *, unkE4),
+    MEMBER_LIST(struct RegisterNode *, rstrbb, struct RegisterNode, next),
+    MEMBER_LIST(struct RegisterNode *, rlodbb, struct RegisterNode, next),
     MEMBER(struct Loop *, loop),
     //MEMBER(struct JumpFallthroughBB *, fallthrough_bbs),
     //MEMBER(struct JumpFallthroughBB *, jump_bbs),

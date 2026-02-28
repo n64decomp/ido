@@ -17,6 +17,7 @@ enum TypeID {
     BITVECTORBB,
     GRAPHNODE,
     GRAPHNODE_LIST,
+    REGISTER_NODE,
     VAR_ACCESS,
     TREP,
     STRENGTH_REDUCTION,
@@ -69,6 +70,7 @@ struct StringRep {
         struct Expression *expr;
         struct IChain *ichain;
         struct LiveRange *liverange;
+        struct RegisterNode *regnode;
         struct LiveUnit *liveunit;
         struct InterfereList *interfere;
         struct Graphnode *node;
@@ -134,6 +136,7 @@ struct DisplayLine {
 extern int bittabdigits; // maximum digits in an ichain/liverange's bitpos
 
 struct StringRep *sr_new();
+static inline void sr_finalize(struct DisplayLine *dl, struct StringRep *sr) { sr->len = dl->len - sr->start; }
 void sr_free(struct StringRep *sr);
 struct StringRep *sr_newchild(struct DisplayLine *dl, struct StringRep *parent);
 struct StringRep *sr_transparent(struct DisplayLine *dl, struct StringRep *parent);
@@ -160,6 +163,7 @@ void dl_print_ichain(struct DisplayLine *dl, struct StringRep *parent, struct IC
 void dl_print_trepimage(struct DisplayLine *dl, struct StringRep *parent, struct TrepImageThing *trepimage);
 void dl_print_strength_reduction(struct DisplayLine *dl, struct StringRep *parent, struct StrengthReductionCand *cand);
 void dl_print_recur_info(struct DisplayLine *dl, struct StringRep *parent, struct RecurInfo *recur);
+void dl_print_register_node(struct DisplayLine *dl, struct StringRep *parent, struct RegisterNode *regnode);
 void dl_print_liveunit(struct DisplayLine *dl, struct StringRep *parent, struct LiveUnit *liveunit);
 void dl_print_interferelist(struct DisplayLine *dl, struct StringRep *parent, struct InterfereList *interfere);
 void dl_print_liverange(struct DisplayLine *dl, struct StringRep *parent, struct LiveRange *liverange);

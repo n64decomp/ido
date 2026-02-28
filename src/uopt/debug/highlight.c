@@ -115,11 +115,7 @@ void sr_highlight(struct Tile *tile, int line, struct StringRep *sr, struct High
     //! sr->data being NULL should not cause a crash
 
     if (hl->shouldHighlight(sr, hl->arg)) {
-        int colorPair = hl->defaultColorPair;
-        if (hl->getColorPair != NULL) {
-            colorPair = hl->getColorPair(sr);
-        }
-        tile_highlight_sr(tile, line, sr, colorPair);
+        tile_highlight_sr(tile, line, sr, hl->getColorPair ? hl->getColorPair(sr) : hl->defaultColorPair);
         tile->needRedraw = true;
         if (!hl->deep) {
             return;

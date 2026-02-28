@@ -15,15 +15,13 @@ struct MenuEntry {
 
 struct DisplayLine *dl_menu(int line, struct MenuEntry *entry) {
     struct DisplayLine *dl = dl_new();
-    struct StringRep *sr = sr_new();
+    struct StringRep *sr = sr_newchild(dl, dl->top);
     sr->type = MENU;
     sr->menuEntry = entry;
-    sr->start = dl->len;
 
     dl_printf(dl, entry->name);
 
-    sr->len = dl->len - sr->start;
-    dl->top = sr;
+    sr_finalize(dl, sr);
     return dl;
 }
 

@@ -466,7 +466,6 @@ void dl_print_register_ucode(struct DisplayLine *dl, struct StringRep *parent, i
     //if (regColor <= 0) return 0;
 
     struct StringRep *sr = sr_newchild(dl, parent);
-    sr->start = dl->len;
     sr->type = REGISTER;
     if (regNum < sizeof(reg_names) / sizeof(reg_names[0])) {
         sr->reg = regNum;
@@ -483,7 +482,7 @@ void dl_print_register_ucode(struct DisplayLine *dl, struct StringRep *parent, i
     }
          */
 
-    sr->len = dl->len - sr->start;
+    sr_finalize(dl, sr);
 }
 
 void dl_print_offset(struct DisplayLine *dl, int offset, bool hasMemType, union Bcode *b) {
@@ -561,6 +560,15 @@ void dl_print_valu(struct DisplayLine *dl, union Valu v, union Bcode *b)
 /* 64 bit wide pointer           */ case Wdt: dl_printf(dl, "wptr 0x%llx", v.dwval); break;
 /* undefined                     */ case Zdt: dl_printf(dl, "undefined %lld", v.dwval); break;
         }
+    }
+}
+
+void dl_print_ucode_attr(struct DisplayLine *dl, union Bcode *b) {
+    if (IS_VOLATILE_ATTR(LEXLEV(*b))) {
+        dl_printf(dl, "vol ");
+    }
+    if (IS_OVERFLOW_ATTR(LEXLEV(*b))) {
+        dl_printf(dl, "ovf ");
     }
 }
 
@@ -658,6 +666,17 @@ bool print_ilodistr(struct DisplayLine *dl, union Bcode *b) {
     return true;
 }
 
+bool print_mov(struct DisplayLine *dl, union Bcode *b) {
+    dl_print_dtype(dl, DTYPE(*b));
+    dl_print_lexlev(dl, LEXLEV(*b) & ~0x7, b);
+    dl_print_ione(dl, IONE(*b), b);
+    dl_printf(dl, "len %d ", LENGTH(*b));
+
+    // Mov is the only opcode that uses Lexlev for two purposes: alignment and v/o attrs
+    dl_print_ucode_attr(dl, b);
+    return true;
+}
+
 bool print_cvtl(struct DisplayLine *dl, union Bcode *b) {
     dl_print_small_dtype(dl, DTYPE(*b), IONE(*b));
     return true;
@@ -674,6 +693,7 @@ static bool (*print_function[Uirsv + 1])(struct DisplayLine *dl, union Bcode *b)
     [Uistr] = print_ilodistr,
     [Urlod] = print_rlodrstr,
     [Urstr] = print_rlodrstr,
+    [Umov]  = print_mov,
     [Urpar] = print_rpar,
     [Uldc]  = print_ldc,
     [Urldc] = print_rldc,
@@ -688,7 +708,6 @@ void dl_print_ucode(struct DisplayLine *dl, struct StringRep *parent, union Bcod
     struct StringRep *sr = sr_newchild(dl, parent);
     sr->type = UCODE;
     sr->ucode = b;
-    sr->start = dl->len;
 
     struct utabrec urec = utab[OPC(*b)];
 
@@ -698,7 +717,7 @@ void dl_print_ucode(struct DisplayLine *dl, struct StringRep *parent, union Bcod
     // handle unique opcodes, usually just to print the right field as a register
     if (print_function[OPC(*b)] != NULL) {
         if (print_function[OPC(*b)](dl, b)) {
-            sr->len = dl->len - sr->start;
+            sr_finalize(dl, sr);
             return;
         }
     }
@@ -735,13 +754,16 @@ void dl_print_ucode(struct DisplayLine *dl, struct StringRep *parent, union Bcod
             case SarrayOffset: dl_printf(dl, "aryoff %d ", ARYOFF(*b));        break;
 
             case Slbound: dl_printf(dl, "%lld-", LBOUND(*b));                  break;
-            case Shbound: dl_printf(dl, "%lld",  HBOUND(*b));                  break;
+            case Shbound: dl_printf(dl, "%lld ", HBOUND(*b));                  break;
 
             case Send:
             default:                                                break;
         }
     }
-    sr->len = dl->len - sr->start;
+    if (urec.hasattr) {
+        dl_print_ucode_attr(dl, b);
+    }
+    sr_finalize(dl, sr);
 }
 
 struct DisplayLine *dl_from_ucode(union Bcode *b)

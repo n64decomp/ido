@@ -98,13 +98,7 @@ bool sr_ichain_equals(struct StringRep *sr, void *ichain)
 
 bool sr_expr_equals(struct StringRep *sr, void *expr)
 {
-    switch (sr->type) {
-        case EXPRESSION:
-            return sr->expr == expr;
-
-        default:
-            return false;
-    }
+    return sr->type == EXPRESSION && sr->expr == expr;
 }
 
 bool sr_stat_equals(struct StringRep *sr, void *stat)

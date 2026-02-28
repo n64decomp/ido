@@ -50,6 +50,7 @@ void dl_print_typeid(struct DisplayLine *dl, struct StringRep *sr, void *data, e
         case VARLOC:             dl_print_variable(dl, *(struct VariableLocation*)data); break;
         case BITVECTOR:          dl_print_bitvector(dl, sr, data); break;
         case BITVECTORBB:        dl_print_bitvectorbb(dl, sr, data); break;
+        case REGISTER_NODE:      dl_print_register_node(dl, sr, *(void**)data); break;
         case LIVERANGE:          dl_print_liverange(dl, sr, *(void**)data); break;
         case LIVEUNIT:           dl_print_liveunit(dl, sr, *(void**)data); break;
         case INTERFERELIST:      dl_print_interferelist(dl, sr, *(void**)data); break;
@@ -75,15 +76,14 @@ void dl_print_typeid(struct DisplayLine *dl, struct StringRep *sr, void *data, e
 struct DisplayLine *dl_from_member(void **data, struct Member *m, void *lines)
 {
     struct DisplayLine *dl = dl_new();
-    dl->top = sr_new();
-    dl->top->type = MISC;
-    struct StringRep *field = sr_newchild(dl, dl->top);
+    struct StringRep *sr = sr_newchild(dl, dl->top);
+    sr->type = MISC;
+    struct StringRep *field = sr_newchild(dl, sr);
 
     field->type = FIELDNAME;
     field->data = NULL;
-    field->start = dl->len;
     dl_printf(dl, "%s", m->name);
-    field->len = dl->len - field->start;
+    sr_finalize(dl, field);
 
     dl_printf(dl, "=");
 
@@ -98,13 +98,13 @@ struct DisplayLine *dl_from_member(void **data, struct Member *m, void *lines)
 
         dl_printf(dl, "%hhd", value);
     } else {
-        dl_print_typeid(dl, dl->top, data, m->type);
-        if (dl->top->children->length > 1) {
-            field->data = dl->top->children->items[1]; // TODO: hack
+        dl_print_typeid(dl, sr, data, m->type);
+        if (sr->children->length > 1) {
+            field->data = sr->children->items[1]; // TODO: hack
         }
     }
 
-    dl->top->len = dl->len - dl->top->start;
+    sr_finalize(dl, sr);
     return dl;
 }
 
@@ -132,15 +132,14 @@ void member_print(void *data, struct Member *m, void *lines)
 struct DisplayLine *dl_from_struct(struct StringRep *examined)
 {
     struct DisplayLine *dl = dl_new();
-    struct StringRep *sr = sr_new();
+    struct StringRep *sr = sr_newchild(dl, dl->top);
 
     sr->type = examined->type;
     sr->data = examined->data;
-    dl_printf(dl, "%s ", gStructData[examined->type].structName);
-    sr->start = dl->len;
+    sr->start += dl_printf(dl, "%s ", gStructData[examined->type].structName);
+
     dl_print_typeid(dl, sr, &sr->data, sr->type);
-    sr->len = dl->len - sr->start;
-    dl->top = sr;
+    sr_finalize(dl, sr);
     return dl;
 }
 
