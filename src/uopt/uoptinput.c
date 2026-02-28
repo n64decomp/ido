@@ -3183,7 +3183,7 @@ void readnxtinst(void) {
                     expr->killed = true;
                 }
                 expr->var_access_list = NULL;
-                expr->data.isvar_issvar.is_volatile = IS_OVERFLOW_ATTR(LEXLEV);
+                expr->data.isvar_issvar.is_volatile = IS_VOLATILE_ATTR(LEXLEV);
             }
 
             if (expr->data.isvar_issvar.veqv) {
