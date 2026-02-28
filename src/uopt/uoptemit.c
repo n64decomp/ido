@@ -693,8 +693,8 @@ void gen_static_link(void) {
 0042269C gen_outparcode
 00425594 func_00425594
 0042B09C func_0042B09C
-0042B144 func_0042B144
-0042B1A8 func_0042B1A8
+0042B144 emit_rlods
+0042B1A8 emit_rstrs
 */
 void genrlodrstr(Uopcode opc, int reg, struct IChain *ichain) {
     if (ichain->type == isconst) {
@@ -4012,7 +4012,7 @@ static void func_0042A1C8(struct Graphnode *node) {
 }
 
 /*
-0042B1A8 func_0042B1A8
+0042B1A8 emit_rstrs
 */
 static void func_0042A4CC(struct Graphnode *node) {
     RegisterColor reg;
@@ -4262,10 +4262,10 @@ static void func_0042B09C(struct Graphnode *node) {
 /*
 0042BF08 reemit
 */
-static void func_0042B144(struct Graphnode *node) {
+static void emit_rlods(struct Graphnode *node) {
     struct RegisterNode *rlod;
 
-    for (rlod = node->unkE4; rlod != NULL; rlod = rlod->next) {
+    for (rlod = node->rlodbb; rlod != NULL; rlod = rlod->next) {
         genrlodrstr(Urlod, rlod->reg, rlod->ichain);
     }
 }
@@ -4273,11 +4273,11 @@ static void func_0042B144(struct Graphnode *node) {
 /*
 0042BF08 reemit
 */
-static void func_0042B1A8(struct Graphnode *node) {
+static void emit_rstrs(struct Graphnode *node) {
     struct RegisterNode *str;
     RegisterColor reg;
 
-    for (str = node->unkE0; str != NULL; str = str->next) {
+    for (str = node->rstrbb; str != NULL; str = str->next) {
         genrlodrstr(Urstr, str->reg, str->ichain);
     }
 
@@ -4592,7 +4592,7 @@ void reemit() {
     memset(unaltab, 0, sizeof(unaltab));
 
     if (stat->opc != Ulab) {
-        func_0042B1A8(node);
+        emit_rstrs(node);
     }
 
     sp97 = false;
@@ -4607,7 +4607,7 @@ void reemit() {
             if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                 func_0042A1C8(node);
             }
-            func_0042B144(node);
+            emit_rlods(node);
         }
 
         switch (stat->opc) {
@@ -4994,7 +4994,7 @@ void reemit() {
                 LEXLEV = stat->u.label.flags;
                 LENGTH = stat->u.label.length;
                 uwrite(&u);
-                func_0042B1A8(node);
+                emit_rstrs(node);
                 break;
 
             case Uxjp:
@@ -5050,7 +5050,7 @@ void reemit() {
                 if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                     func_0042A1C8(node);
                 }
-                func_0042B144(node);
+                emit_rlods(node);
                 OPC = Uijp;
                 uwrite(&u);
                 break;
@@ -5180,7 +5180,7 @@ void reemit() {
                 if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                     func_0042A1C8(node);
                 }
-                func_0042B144(node);
+                emit_rlods(node);
                 if (curmst->u.mst.loc >= 0) {
                     gen_outparcode(node->successors->graphnode);
                 }
@@ -5224,7 +5224,7 @@ void reemit() {
                 if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                     func_0042A1C8(node);
                 }
-                func_0042B144(node);
+                emit_rlods(node);
                 break;
 
             case Uaent:
@@ -5272,7 +5272,7 @@ void reemit() {
                     LEXLEV = coloroffset(firstparmreg[0] + i);
                     uwrite(&u);
                 }
-                func_0042B1A8(node);
+                emit_rstrs(node);
                 break;
 
             case Ulbgn:
@@ -5329,7 +5329,7 @@ void reemit() {
                 if (do_opt_saved_regs && !SET32_EMPTY(node->bvs.stage3.lodinsertout)) {
                     func_0042A1C8(node);
                 }
-                func_0042B144(node);
+                emit_rlods(node);
             }
 
             sp97 = false;
@@ -5372,7 +5372,7 @@ void reemit() {
             func_00422AF0(node);
 
             if (node->blockno == 0 && node->stat_head->opc != Uaent) {
-                func_0042B1A8(node);
+                emit_rstrs(node);
             }
         }
     }

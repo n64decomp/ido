@@ -275,6 +275,8 @@ static void func_0045E45C(struct TrepImageThing *trep, bool is_equ_neq, struct G
     union Constant value;
     bool const_reg;
 
+    // printf("called this! %s\n",  __func__);
+
     if (do_const_in_reg) {
         if (trep->OPC == Ulda) {
             const_reg = true;
@@ -321,6 +323,7 @@ static void func_0045E5C4(struct Expression *expr, unsigned char arg1, struct Gr
         case isconst:
             // create a liveunit if the constant can't fit in an immediate operand of a mips instruction
             // e.g. if the constant could be directly used in an addi instruction, it doesn't need to be loaded into a register first
+            // printf("called this! %s %d\n",  __func__, expr->data.isconst.number.intval);
             if (constinreg(expr->datatype, arg1, expr->data.isconst.number, arg1)) {
                 if (expr->ichain->bitpos == 0xFFFF) {
                     expr->ichain->bitpos = newbit(expr->ichain, NULL);
@@ -772,7 +775,7 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
     //bool sp51; // t0
     //bool sp4F; // t1
     unsigned short hash; //sp48
-    struct IChain *sp40;
+    struct IChain *cg1;
     struct Expression *expr;
     bool no_assignment_in_block;
     bool found;
@@ -1170,30 +1173,30 @@ static bool func_0045FBB4(struct IChain *ichain, int arg1, int arg2, struct Grap
                         ichain->isop.opc != Uirlv) {
                     if (ichain->isop.srcand != NULL && ichain->isop.srcand != nota_candof) {
                         if (ichain->isop.srcand->tempbit == 0) {
-                            sp40 = alloc_new(sizeof (struct IChain), &perm_heap);
-                            *sp40 = *ichain->isop.srcand->target;
+                            cg1 = alloc_new(sizeof (struct IChain), &perm_heap);
+                            *cg1 = *ichain->isop.srcand->target;
 
-                            sp40->isop.opc = Ucg1;
-                            ichain->isop.srcand->tempbit = newbit(sp40, NULL);
-                            sp40->bitpos = ichain->isop.srcand->tempbit;
+                            cg1->isop.opc = Ucg1;
+                            ichain->isop.srcand->tempbit = newbit(cg1, NULL);
+                            cg1->bitpos = ichain->isop.srcand->tempbit;
                             if ((tempdisp & 3) != 0) {
                                 tempdisp = (tempdisp - (tempdisp & 3)) + 4;
                             }
-                            sp40->isop.temploc = alloc_new(sizeof (struct Temploc), &perm_heap);
+                            cg1->isop.temploc = alloc_new(sizeof (struct Temploc), &perm_heap);
                             if (stack_reversed == 0) {
                                 tempdisp += 4;
-                                sp40->isop.temploc->disp = -tempdisp;
+                                cg1->isop.temploc->disp = -tempdisp;
                             } else {
-                                sp40->isop.temploc->disp = tempdisp;
+                                cg1->isop.temploc->disp = tempdisp;
                                 tempdisp += 4;
                             }
                         } else {
-                            sp40 = bittab[ichain->isop.srcand->tempbit].ichain;
+                            cg1 = bittab[ichain->isop.srcand->tempbit].ichain;
                         }
 
-                        if ((sp40->isop.datatype != Idt && sp40->isop.datatype != Kdt) || dwopcode) {
+                        if ((cg1->isop.datatype != Idt && cg1->isop.datatype != Kdt) || dwopcode) {
                             func_0045FBB4(ichain->isop.srcand->multiplier, 0, 0, node, lu);
-                            formlivbb(sp40, node, lu);
+                            formlivbb(cg1, node, lu);
 
                             (*lu)->store_count++;
                             setbit(&node->bvs.stage2.locdef, ichain->isop.srcand->tempbit);
@@ -1534,8 +1537,8 @@ void makelivranges(void) {
         node->regsused[0][1] = dftregsused;
         node->regsused[1][0] = 0;
         node->regsused[1][1] = 0;
-        node->unkE0 = NULL;
-        node->unkE4 = NULL;
+        node->rstrbb = NULL;
+        node->rlodbb = NULL;
         node->regdata = (struct RegisterData) {0};
 
         bvectminus(&node->indiracc, &slvarbits);

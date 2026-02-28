@@ -2552,11 +2552,9 @@ void loopunroll(void) {
                             range = loopCond->data.isop.op2->data.isconst.number.intval;
                             incre = loopbody->stat_tail->u.jp.incre;
                             rem = (range - loopbody->stat_tail->u.jp.iter_initial_value->data.isconst.number.intval - 1) % incre;
-
                             if ((rem ^ incre) < 0) {
                                 rem += incre;
                             }
-
                             loopbody->stat_tail->expr = change_to_const_eq(loopbody->stat_tail->u.jp.loop_if_true, loopCond, loopbody, incre - rem - 1);
                         } else {
                             range = loopCond->data.isop.op2->data.islda_isilda.offset;
@@ -2595,7 +2593,7 @@ void loopunroll(void) {
                     }
 
                     if (node_s1->unk5 == canunroll) {
-                        node_s1->unk5 = loopfirstbb;      // loopfirstbb
+                        node_s1->unk5 = loopfirstbb;
                     }
                 }
             } else {

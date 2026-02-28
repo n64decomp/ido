@@ -303,8 +303,8 @@ struct Graphnode {
     /* 0xD0 */ unsigned char rlods[5]; // rlods
     /* 0xD5 */ unsigned char rstrs[5]; // rstrs
     /* 0xDA */ unsigned char unkDA[5]; // some temporary array
-    /* 0xE0 */ struct RegisterNode *unkE0; // rstrs
-    /* 0xE4 */ struct RegisterNode *unkE4; // rlods
+    /* 0xE0 */ struct RegisterNode *rstrbb; // rstrs
+    /* 0xE4 */ struct RegisterNode *rlodbb; // rlods
     /* 0xE8 */ struct Loop *loop;
     /* 0xEC */ struct JumpFallthroughBB *fallthrough_bbs;
     /* 0xF0 */ struct JumpFallthroughBB *jump_bbs;

@@ -1954,12 +1954,12 @@ void globalcolor(void) {
     long long available_regs;    // spD8
     struct Proc *prev_call;      // spC8
     struct Proc *next_call;      // spC4
-    long long spB8;
+    long long used_by_func;
     unsigned int regclass;
     unsigned int reg;
     int bb;
     struct Graphnode *node;
-    struct RegisterNode *newRegNode;
+    struct RegisterNode *new_regnode;
     struct LiveUnit *lu;
     struct InterfereList *intf;
     struct GraphnodeList *pred;
@@ -1987,7 +1987,8 @@ void globalcolor(void) {
     }
 
     //spB8 := regscantpass - [23] + [firstparmreg[1]..firstparmreg[1]+3] + [firstparmreg[2]..firstparmreg[2]+1];
-    spB8 = SET64_MINUS(regscantpass, ee_ra) | GENMASK(firstparmreg[0], firstparmreg[0]+4) | GENMASK(firstparmreg[1], firstparmreg[1]+2);
+    // argument and return registers
+    used_by_func = SET64_MINUS(regscantpass, ee_ra) | GENMASK(firstparmreg[0], firstparmreg[0]+4) | GENMASK(firstparmreg[1], firstparmreg[1]+2);
 
     unconstrain.num_blocks = 0;
     unconstrain.blocks = NULL;
@@ -2092,7 +2093,7 @@ void globalcolor(void) {
 
             for (reg = firsterreg[regclass - 1]; reg <= lasterreg[regclass - 1]; reg++) {
                 if (!SET_IN(liverange->forbidden, reg)) {
-                    if (!o3opt && !SET64_IN(spB8, reg)) {
+                    if (!o3opt && !SET64_IN(used_by_func, reg)) {
                         registerCost = phi_f22;
                     } else {
                         registerCost = cupcosts(liverange, reg, true);
@@ -2116,7 +2117,7 @@ void globalcolor(void) {
 
             for (reg = firsteereg[regclass - 1]; reg <= lasteereg[regclass - 1]; reg++) {
                 if (!SET_IN(liverange->forbidden, reg)) {
-                    if (!o3opt && !SET64_IN(spB8, reg)) {
+                    if (!o3opt && !SET64_IN(used_by_func, reg)) {
                         registerCost = phi_f22;
                     } else {
                         registerCost = cupcosts(liverange, reg, false);
@@ -2254,12 +2255,13 @@ void globalcolor(void) {
             }
 
             if (!o3opt) {
+                // cost of any caller-saved regiser
                 phi_f22 = cupcosts(liverange, firsterreg[regclass - 1] + 1, true);
             }
 
             for (reg = firsterreg[regclass - 1]; reg <= lasterreg[regclass - 1]; reg++) {
                 if (!SET_IN(liverange->forbidden, reg)) {
-                    if (!o3opt && !SET64_IN(spB8, reg)) {
+                    if (!o3opt && !SET64_IN(used_by_func, reg)) {
                         registerCost = phi_f22;
                     } else {
                         registerCost = cupcosts(liverange, reg, true);
@@ -2275,12 +2277,13 @@ void globalcolor(void) {
             }
 
             if (!o3opt) {
+                // cost of any callee-saved regiser
                 phi_f22 = cupcosts(liverange, firsteereg[regclass - 1], false);
             }
 
             for (reg = firsteereg[regclass - 1]; reg <= lasteereg[regclass - 1]; reg++) {
                 if (!SET_IN(liverange->forbidden, reg)) {
-                    if (!o3opt && !SET64_IN(spB8, reg)) {
+                    if (!o3opt && !SET64_IN(used_by_func, reg)) {
                         registerCost = phi_f22;
                     } else {
                         registerCost = cupcosts(liverange, reg, false);
@@ -2495,11 +2498,14 @@ void globalcolor(void) {
                             for (pred = node->predecessors; pred != NULL; pred = pred->next) {
                                 if (node->regdata.unk44[reg - 1] != pred->graphnode->regdata.unk44[reg - 1]) {
                                     if (pred->graphnode->stat_tail->opc != Ufjp && pred->graphnode->stat_tail->opc != Utjp) {
-                                        newRegNode = alloc_new(sizeof(struct RegisterNode), &perm_heap);
-                                        newRegNode->reg = reg;
-                                        newRegNode->ichain = node->regdata.unk44[reg - 1];
-                                        newRegNode->next = pred->graphnode->unkE4;
-                                        pred->graphnode->unkE4 = newRegNode;
+                                        // REDPRINT("made register node unkE4: " ENTNAM_FMT() "\n", ENTNAM());
+                                        // print_register(reg);
+                                        // printf(" in node %d\n", node->num);
+                                        new_regnode = alloc_new(sizeof(struct RegisterNode), &perm_heap);
+                                        new_regnode->reg = reg;
+                                        new_regnode->ichain = node->regdata.unk44[reg - 1];
+                                        new_regnode->next = pred->graphnode->rlodbb;
+                                        pred->graphnode->rlodbb = new_regnode;
                                     } else {
                                         TRAP_IF(!docreatebb);
                                         if (node->blockno == 0 || node->blockno != pred->graphnode->stat_tail->u.jp.target_blockno) {
@@ -2555,21 +2561,27 @@ void globalcolor(void) {
                                         if (docreatebb) {
                                             put_in_fallthru_bb(node, reg, node->regdata.unk44[reg - 1], false);
                                         } else {
-                                            newRegNode = alloc_new(sizeof(struct RegisterNode), &perm_heap);
-                                            newRegNode->reg = reg;
-                                            newRegNode->ichain = node->regdata.unk44[reg - 1];
-                                            newRegNode->next = succ->graphnode->unkE0;
-                                            succ->graphnode->unkE0 = newRegNode;
+                                            // REDPRINT("made register node unkE0 (1): " ENTNAM_FMT() "\n", ENTNAM());
+                                            // print_register(reg);
+                                            // printf(" in node %d\n", node->num);
+                                            new_regnode = alloc_new(sizeof(struct RegisterNode), &perm_heap);
+                                            new_regnode->reg = reg;
+                                            new_regnode->ichain = node->regdata.unk44[reg - 1];
+                                            new_regnode->next = succ->graphnode->rstrbb;
+                                            succ->graphnode->rstrbb = new_regnode;
                                         }
                                     } else if (succ->graphnode->predecessors->next != NULL || succ->graphnode->interprocedural_controlflow) {
                                         put_in_jump_bb(node, reg, node->regdata.unk44[reg - 1], false);
                                         TRAP_IF(!docreatebb);
                                     } else {
-                                        newRegNode = alloc_new(sizeof(struct RegisterNode), &perm_heap);
-                                        newRegNode->reg = reg;
-                                        newRegNode->ichain = node->regdata.unk44[reg - 1];
-                                        newRegNode->next = succ->graphnode->unkE0;
-                                        succ->graphnode->unkE0 = newRegNode;
+                                        // REDPRINT("made register node unkE0 (2): " ENTNAM_FMT() "\n", ENTNAM());
+                                        // print_register(reg);
+                                        // printf(" in node %d\n", node->num);
+                                        new_regnode = alloc_new(sizeof(struct RegisterNode), &perm_heap);
+                                        new_regnode->reg = reg;
+                                        new_regnode->ichain = node->regdata.unk44[reg - 1];
+                                        new_regnode->next = succ->graphnode->rstrbb;
+                                        succ->graphnode->rstrbb = new_regnode;
                                     }
                                 }
                             }

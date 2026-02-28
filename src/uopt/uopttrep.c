@@ -522,6 +522,9 @@ static void func_00477E20(struct Expression *op1, struct Expression *op2, struct
                                     (*trep)->ichain2 = indmult;
                                     setbit(&savedexp,  indmult->bitpos);
                                     (*trep)->unk28 = alloc_new(sizeof (struct IChain), &perm_heap);
+#ifdef AVOID_UB
+                                    *(*trep)->unk28 = (struct IChain) {0};
+#endif
 
                                     if (sp82) {
                                         (*trep)->u = sb->u;
@@ -602,16 +605,16 @@ static void func_0047847C(struct Expression *expr, struct SharedBcode *sb) {
 
             expr->visited = 3;
             phi_t0 = expr;
-            if (((!expr->data.isop.anticipated && !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.cand)) ||
-                        !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.delete))) {
+            if ((!expr->data.isop.anticipated && !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.cand)) ||
+                        !bvectin(expr->ichain->bitpos, &expr->graphnode->bvs.stage1.u.cm.delete)) {
                 func_0047847C(expr->data.isop.op1, sb);
                 if (optab[expr->data.isop.opc].is_binary_op) {
                     func_0047847C(expr->data.isop.op2, sb);
                 }
 
-                if ((expr->data.isop.opc == Uequ || expr->data.isop.opc == Uneq ||
-                            expr->data.isop.opc == Ugeq || expr->data.isop.opc == Ugrt ||
-                            expr->data.isop.opc == Uleq || expr->data.isop.opc == Ules)) {
+                if (expr->data.isop.opc == Uequ || expr->data.isop.opc == Uneq ||
+                        expr->data.isop.opc == Ugeq || expr->data.isop.opc == Ugrt ||
+                        expr->data.isop.opc == Uleq || expr->data.isop.opc == Ules) {
                     expr->data.isop.aux.unk38_trep->ichain2 = NULL;
                     expr->data.isop.aux2.unk3C_trep->ichain2 = NULL;
 
