@@ -185,6 +185,7 @@ void uini(void) {
     op_name(&s, Uosym, "osym"); op_fmt(&s, Sblockno); op_fmt(&s, Soffset); op_fmt(&s, Send);
     // volatile ops
     op_name(&s, Uistv, "istv"); op_fmt(&s, Sdtype); op_fmt(&s, Ssomenumber); op_fmt(&s, Slexlev); op_fmt(&s, Slength); op_fmt(&s, Soffset); op_fmt(&s, Send);
+    op_name(&s, Uildv, "ildv"); op_fmt(&s, Sdtype); op_fmt(&s, Ssomenumber); op_fmt(&s, Slexlev); op_fmt(&s, Slength); op_fmt(&s, Soffset); op_fmt(&s, Send);
     op_name(&s, Umovv, "movv"); op_fmt(&s, Sdtype); op_fmt(&s, Slexlev); op_fmt(&s, Ssomenumber); op_fmt(&s, Slength); op_fmt(&s, Send);
     op_name(&s, Uirlv, "irlv"); op_fmt(&s, Sdtype); op_fmt(&s, Sblockno); op_fmt(&s, Slexlev); op_fmt(&s, Slength); op_fmt(&s, Send);
     op_name(&s, Uirsv, "irsv"); op_fmt(&s, Sdtype); op_fmt(&s, Sblockno); op_fmt(&s, Slexlev); op_fmt(&s, Slength); op_fmt(&s, Send);
