@@ -225,6 +225,7 @@ glabel fnamelen
 */
 void uwrite(union Bcode *bcode) {
     struct Bcrec *uinstr = &bcode->Ucode;
+    int instlength;
     int i;
     int strlength;
     char *str;
@@ -238,13 +239,27 @@ void uwrite(union Bcode *bcode) {
 #endif
 
     struct utabrec urec = utab[uinstr->Opc];
-    for (i = 0; i < urec.instlength; i += 2) {
-        uputint(bcode->intarray[i], true);
-        uputint(bcode->intarray[i + 1], true);
+    instlength = urec.instlength;
+
+    for (i = 0; i < instlength; i += 2) {
+        if (uinstr->Opc == Uxjp && i == 6) {
+            uputint(bcode->intarray[i + 1], true);
+            uputint(bcode->intarray[i], true);
+        } else {
+            uputint(bcode->intarray[i], true);
+            uputint(bcode->intarray[i + 1], true);
+        }
     }
     if (urec.hasconst) {
-        uputint(bcode->intarray[urec.instlength], true);
-        uputint(bcode->intarray[urec.instlength + 1], true);
+        int first = instlength;
+        int second = instlength + 1;
+        // 64 bit constant
+        if (uinstr->Dtype == Idt || uinstr->Dtype == Kdt) {
+            first = instlength + 1;
+            second = instlength;
+        }
+        uputint(bcode->intarray[first], true);
+        uputint(bcode->intarray[second], true);
         if (((1 << uinstr->Dtype) & ((1 << Mdt) | (1 << Qdt) | (1 << Rdt) | (1 << Sdt) | (1 << Xdt))) || uinstr->Opc == Ucomm) {
             if (uinstr->Opc == Uinit) {
                 strlength = (uinstr->Uopcde.uiequ1.uop2.uinit.initval.swpart.Ival + 3) / 4;
